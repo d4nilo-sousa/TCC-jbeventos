@@ -1,4 +1,4 @@
-@extends('layouts')
+@extends('layout')
 
 @section('content')
     <h1>Bem-vindo ao JBEventos!</h1>
