@@ -1,0 +1,20 @@
+ /* public/css/custom.css */
+.header-bg {
+  background: linear-gradient(90deg, #8B0000, #c70039);
+  color: white;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.logo {
+  height: 40px;
+}
+
+.nav-link {
+  color: #333 !important;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  color: #c70039 !important;
+}
