@@ -1,0 +1,39 @@
+/* Logo */
+.logo {
+  height: 50px;
+  width: auto;
+}
+
+/* Navbar */
+.navbar {
+  padding: 1rem 0;
+}
+
+.navbar-nav .nav-link {
+  font-weight: bold;
+  color: #333;
+  margin-left: 1.5rem;
+  transition: color 0.3s;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #d92323; /* Cor de hover vermelha */
+}
+
+/* Header */
+.header-bg {
+  background: linear-gradient(to right, #7a0000, #ff7777);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.header-bg h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.header-bg p {
+  font-size: 1.1rem;
+  margin-bottom: 0;
+}
