@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center" href="#">
-      <img src="{{ asset('images/logo_jbeventos.png') }}" alt="Logo JBEventos" class="logo me-2">
+      <img src="{{ asset('imgs/logo.png') }}" alt="Logo JBEventos" class="logo me-2">
       <strong>JBEeventos</strong>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

@@ -3,6 +3,11 @@
   height: 50px;
   width: auto;
 }
+/* Logo */
+.logo {
+  height: 70px;
+  width: auto;
+}
 
 /* Navbar */
 .navbar {
