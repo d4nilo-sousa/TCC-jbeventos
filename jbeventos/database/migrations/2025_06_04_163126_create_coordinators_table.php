@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('coordinators', function (Blueprint $table) {
             $table->id();
+            $table->enum('coordinator_type', ['general', 'course']);
+            $table->boolean('temporary_password')->default(true);
+            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('course_id')->nullable()->constrained('courses')->onDelete('set null');
             $table->timestamps();
         });
     }
