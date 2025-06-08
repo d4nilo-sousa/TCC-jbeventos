@@ -19,7 +19,7 @@ class eventController extends Controller
      */
     public function create()
     {
-        //
+        return view('coordinator.events.form_events');
     }
 
     /**
