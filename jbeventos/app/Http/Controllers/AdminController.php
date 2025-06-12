@@ -4,14 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class CourseController extends Controller
+class AdminController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('admin.courses.index');
+        return view('admin.coordinators.index');
     }
 
     /**
@@ -19,7 +19,7 @@ class CourseController extends Controller
      */
     public function create()
     {
-        return view('admin.courses.create_courses');
+        //
     }
 
     /**

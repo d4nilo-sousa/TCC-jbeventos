@@ -11,8 +11,8 @@
     <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
       <ul class="navbar-nav">
         <li class="nav-item"><a class="nav-link" href="/events">Eventos</a></li>
-        <li class="nav-item"><a class="nav-link" href="/courses">Cursos</a></li>
         <li class="nav-item"><a class="nav-link" href="/events/new">Criar Evento</a></li> {{-- Futuramente restringir a coordenadores --}}
+        <li class="nav-item"><a class="nav-link" href="/courses">Cursos</a></li>
         <li class="nav-item"><a class="nav-link" href="/courses/new">Criar Curso</a></li>  {{-- Futuramente restringir ao admin --}}
          <li class="nav-item"><a class="nav-link" href="/coordinators">Coordenadores</a></li> {{-- Futuramente restringir ao admin --}}
         <li class="nav-item"><a class="nav-link" href="/about">Sobre</a></li>
@@ -22,10 +22,4 @@
   </div>
 </nav>
 
-<!-- Header -->
-<header class="header-bg">
-  <div class="container">
-    <h1 class="fw-bold">Bem-vindo ao JBEeventos!</h1>
-    <p class="lead">Fique por dentro dos principais eventos da nossa escola</p>
-  </div>
-</header>
+
