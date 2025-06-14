@@ -53,7 +53,7 @@ class User extends Authenticatable
         return $this->hasMany(Course::class);
     }
 
-    public function coordinators() {
+    public function coordinator() {
         return $this->hasOne(Coordinator::class);
     }
 
