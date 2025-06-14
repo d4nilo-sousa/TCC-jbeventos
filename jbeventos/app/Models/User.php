@@ -50,15 +50,15 @@ class User extends Authenticatable
     }
 
     public function courses() {
-        return $this->hasMany(Course:class);
+        return $this->hasMany(Course::class);
     }
 
     public function coordinators() {
-        return $this->hasOne(Coordinator:class);
+        return $this->hasOne(Coordinator::class);
     }
 
     public function comments() {
-        return $this->hasMany(Comment:class);
+        return $this->hasMany(Comment::class);
     }
 }
 
