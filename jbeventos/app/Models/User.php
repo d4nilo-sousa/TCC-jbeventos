@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number',
+        'user_image',
     ];
 
     /**
@@ -42,7 +44,22 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_number_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
+
+    public function courses() {
+        return $this->hasMany(Course:class);
+    }
+
+    public function coordinators() {
+        return $this->hasOne(Coordinator:class);
+    }
+
+    public function comments() {
+        return $this->hasMany(Comment:class);
+    }
 }
+
+
