@@ -12,8 +12,8 @@ class Course extends Model
     protected $fillable = [
         'course_name',
         'course_description',
-        'user_icon',
-        'user_banner',
+        'coruse_icon',
+        'course_banner',
     ];
 
     public function coordinator() {
