@@ -22,7 +22,7 @@ class Event extends Model
     protected function casts(): array
     {
         return [
-            'event_start' => 'datetime',
+            'event_scheduled_at' => 'datetime',
             'event_expired_at' => 'datetime',
             'visible_event' => 'boolean',
         ];
