@@ -20,15 +20,15 @@ class Coordinator extends Model
         ];
     }
 
-    public function events() {
+    public function managedEvents() {
         return $this->hasMany(Event::class);
     }
 
-    public function user() {
+    public function userAccount() {
         return $this->belongsTo(User::class);
     }
 
-    public function course() {
+    public function coordinatedCourse() {
         return $this->belongsTo(Course::class);
     }
 }

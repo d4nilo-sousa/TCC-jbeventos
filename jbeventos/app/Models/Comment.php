@@ -21,11 +21,11 @@ class Comment extends Model
         ];
     }
 
-    public function user() {
+    public function commentUser() {
         return $this->belongsTo(User::class);
     }
 
-    public function event() {
+    public function commentedEvent() {
         return $this->belongsTo(Event::class);
     }
 }

@@ -28,15 +28,15 @@ class Event extends Model
         ];
     }
 
-    public function comments() {
+    public function eventComments() {
         return $this->hasMany(Comment::class);
     }
 
-    public function coordinator() {
+    public function eventCoordinator() {
         return $this->belongsTo(Coordinator::class);
     }
 
-    public function categories() {
+    public function eventCategories() {
         return $this->belongsToMany(Category::class, 'category_event')->withTimestamps();
     }
 }

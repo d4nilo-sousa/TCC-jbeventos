@@ -54,11 +54,11 @@ class User extends Authenticatable
         return $this->hasMany(Course::class);
     }
 
-    public function coordinator() {
+    public function coordinatorRole() {
         return $this->hasOne(Coordinator::class);
     }
 
-    public function comments() {
+    public function userComments() {
         return $this->hasMany(Comment::class);
     }
 

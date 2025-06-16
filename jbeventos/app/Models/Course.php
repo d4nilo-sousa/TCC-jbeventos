@@ -16,15 +16,15 @@ class Course extends Model
         'course_banner',
     ];
 
-    public function coordinator() {
+    public function courseCoordinator() {
         return $this->hasOne(Coordinator::class);
     }
 
-    public function user() {
+    public function courseCreator() {
         return $this->belongsTo(User::class);
     }
 
-    public function users() {
+    public function courseParticipants() {
         return $this->belongsToMany(User::class, 'course_user_follow')->withTimestamps();
     }
 }

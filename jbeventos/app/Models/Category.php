@@ -13,7 +13,7 @@ class Category extends Model
         'category_name',
     ];
 
-    public function events() {
+    public function relatedEvents() {
         return $this->belongsToMany(Event::class, 'category_event')->withTimestamps();
     }
 }
