@@ -12,4 +12,8 @@ class Category extends Model
     protected $fillable = [
         'category_name',
     ];
+
+    public function events() {
+        return $this->belongsToMany(Event::class, 'category_event')->withTimestamps();
+    }
 }

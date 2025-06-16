@@ -35,4 +35,8 @@ class Event extends Model
     public function coordinator() {
         return $this->belongsTo(Coordinator::class);
     }
+
+    public function categories() {
+        return $this->belongsToMany(Category::class, 'category_event')->withTimestamps();
+    }
 }
