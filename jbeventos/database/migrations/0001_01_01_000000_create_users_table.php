@@ -19,7 +19,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone_number')->nullable()->unique();
             $table->timestamp('phone_number_verified_at')->nullable();
-            $table->string('user_image')->nullable();
+            $table->string('user_icon')->nullable();
+            $table->string('user_banner')->nullable();
             $table->enum('user_type', ['admin', 'coordinator', 'user'])->default('user');
             $table->rememberToken();
             $table->timestamps();
