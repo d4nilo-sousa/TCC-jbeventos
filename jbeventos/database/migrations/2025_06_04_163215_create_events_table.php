@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('event_location');
             $table->dateTime('event_start');
             $table->timestamp('event_expired_at')->nullable();
+            $table->string('event_image')->nullable();
             $table->boolean('visible_event')->default(true);
             $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null');
             $table->foreignId('course_id')->nullable()->constrained('courses')->onDelete('cascade');

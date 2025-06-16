@@ -15,6 +15,7 @@ class Event extends Model
         'event_location',
         'event_start',
         'event_expired_at',
+        'event_image',
         'visible_event',
     ];
 
