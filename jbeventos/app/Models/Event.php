@@ -13,7 +13,7 @@ class Event extends Model
         'event_name',
         'event_description',
         'event_location',
-        'event_start',
+        'event_scheduled_at',
         'event_expired_at',
         'event_image',
         'visible_event',

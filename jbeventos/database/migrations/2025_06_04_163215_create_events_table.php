@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('event_name')->unique();
             $table->text('event_description')->nullable();
             $table->string('event_location');
-            $table->dateTime('event_start');
+            $table->dateTime('event_scheduled_at');
             $table->timestamp('event_expired_at')->nullable();
             $table->string('event_image')->nullable();
             $table->boolean('visible_event')->default(true);
