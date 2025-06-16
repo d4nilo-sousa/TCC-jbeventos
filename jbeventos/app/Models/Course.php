@@ -12,7 +12,7 @@ class Course extends Model
     protected $fillable = [
         'course_name',
         'course_description',
-        'coruse_icon',
+        'course_icon',
         'course_banner',
     ];
 
@@ -22,5 +22,9 @@ class Course extends Model
 
     public function user() {
         return $this->belongsTo(User::class);
+    }
+
+    public function users() {
+        return $this->belongsToMany(User::class, 'course_user_follow')->withTimestamps();
     }
 }

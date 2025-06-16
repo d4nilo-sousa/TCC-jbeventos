@@ -50,7 +50,7 @@ class User extends Authenticatable
         ];
     }
 
-    public function courses() {
+    public function createdCourses() {
         return $this->hasMany(Course::class);
     }
 
@@ -60,6 +60,10 @@ class User extends Authenticatable
 
     public function comments() {
         return $this->hasMany(Comment::class);
+    }
+
+    public function participatingCourses() {
+        return $this->belongsToMany(Course::class, 'course_user_follow')->withTimestamps();
     }
 }
 
