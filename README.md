@@ -1,13 +1,18 @@
 # TCC-jbeventos
-Trabalho de Conclusão de curso - Gerenciador de Eventos da Etec João Belarmino
+Trabalho de Conclusão de Curso - Gerenciador de Eventos da Etec João Belarmino
 
 ## Integrantes: 
 
-Enzo Assis
+Danilo Farias de Sousa
+https://github.com/d4nilo-sousa
+
+Enzo Miguel Silva de Assis
 https://github.com/eassis10
 
-Felipe Barbosa
+Felipe Barbosa da Silva
 https://github.com/Felipe-Silva07
 
-Leonardo Bodini
+Leonardo Bodini Prieto Nunes dos Santos
 https://github.com/LeonardoBPNS
+
+
