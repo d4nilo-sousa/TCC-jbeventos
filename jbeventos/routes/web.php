@@ -19,5 +19,11 @@ Route::put('/eventos/{id}', [eventController::class, 'update'])->name('events.up
 Route::delete('/eventos/{id}', [EventoController::class, 'destroy']); //excluir evento
 
 
+//rota dos cursos
+Route::get('/courses',[CourseController::class,'index'])->name('courses.index'); //exibe os cursos cadastrados
+Route::get('/courses/new',[CourseController::class,'create'])->name('courses.create'); //exibe o form de cadastro de curso 
 
 
+
+//Rotas do admin
+Route::get('/coordinators',[AdminController::class,'index'])->name('admin.index'); //exibe os cursos cadastrados
