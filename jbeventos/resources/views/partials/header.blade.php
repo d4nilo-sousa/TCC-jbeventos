@@ -21,11 +21,3 @@
     </div>
   </div>
 </nav>
-
-<!-- Header -->
-<header class="header-bg">
-  <div class="container">
-    <h1 class="fw-bold">Bem-vindo ao JBEeventos!</h1>
-    <p class="lead">Fique por dentro dos principais eventos da nossa escola</p>
-  </div>
-</header>
