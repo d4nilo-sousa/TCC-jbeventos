@@ -65,6 +65,10 @@ class User extends Authenticatable
     public function participatingCourses() {
         return $this->belongsToMany(Course::class, 'course_user_follow')->withTimestamps();
     }
+
+    public function eventReactions() {
+        return $this->hasMany(EventUserReaction::class);
+    }
 }
 
 

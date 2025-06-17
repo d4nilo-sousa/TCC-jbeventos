@@ -39,4 +39,8 @@ class Event extends Model
     public function eventCategories() {
         return $this->belongsToMany(Category::class, 'category_event')->withTimestamps();
     }
+
+    public function reactions() {
+        return $this->hasMany(EventUserReaction::class);
+    }
 }
