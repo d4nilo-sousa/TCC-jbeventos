@@ -13,13 +13,7 @@ Route::get('/', function () {
 
 
 //Rotas dos eventos
-Route::get('/events', [EventController::class,'index'])->name('events.index'); //exibe a lista de eventos
-Route::get('/events/{$id}/', [EventController::class,'show'])->name('events.show');
-Route::get('/events/new', [EventController::class,'create'])->name('events.create'); //exibe o formulário de eventos
-Route::post('/events', [EventController::class, 'store'])->name('events.store'); //Enviar o formulário para salvar no banco
-Route::get('/eventos/{id}/edit', [EventController::class, 'edit'])->name('events.edit'); //editar evento   
-Route::put('/eventos/{id}', [EventController::class, 'update'])->name('events.update'); //editar evento
-Route::delete('/eventos/{id}', [EventoController::class, 'destroy']); //excluir evento
+Route::resource('events', EventController::class);
 
 
 //rota dos cursos
