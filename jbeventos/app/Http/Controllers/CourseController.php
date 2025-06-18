@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Course;
 
 class CourseController extends Controller
 {
@@ -11,7 +12,8 @@ class CourseController extends Controller
      */
     public function index()
     {
-        //
+        $courses = Course::all();
+        return view('courses.index', compact('courses'));
     }
 
     /**
@@ -19,7 +21,7 @@ class CourseController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.courses.create');
     }
 
     /**
@@ -27,7 +29,13 @@ class CourseController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'course_name' => 'required|unique:courses,course_name|max:255',
+            'course_description' => 'nullable|string|max:1000',
+        ]);
+
+        Course::create($request->all());
+        return redirect()->route('courses.index')->with('success', 'Curso criado com sucesso');
     }
 
     /**
@@ -35,7 +43,8 @@ class CourseController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $course = Course::findOrFail($id);
+        return view('courses.show', compact('course'));
     }
 
     /**
@@ -43,7 +52,8 @@ class CourseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $course = Course::findOrFail($id);
+        return view('admin.courses.edit', compact('course'));
     }
 
     /**
@@ -51,7 +61,14 @@ class CourseController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'course_name' => 'required|unique:courses,course_name|max:255',
+            'course_description' => 'nullable|string|max:1000',
+        ]);
+
+        $course = Course::findOrFail($id);
+        $course->update($request->all());
+        return redirect()->route('courses.index')->with('success', 'Curso atualizado com sucesso');
     }
 
     /**
@@ -59,6 +76,9 @@ class CourseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $course = Course::findOrFail($id);
+        $course->delete();
+
+        return redirect()->route('courses.index')->with('success', 'Curso excluído com sucesso');
     }
 }
