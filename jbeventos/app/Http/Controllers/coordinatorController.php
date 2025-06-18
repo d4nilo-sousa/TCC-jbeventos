@@ -11,7 +11,7 @@ class CoordinatorController extends Controller
      */
     public function index()
     {
-        return view('coordinator.events.index');
+        //
     }
 
     /**

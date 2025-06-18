@@ -27,6 +27,3 @@ Route::get('/courses',[CourseController::class,'index'])->name('courses.index');
 Route::get('/courses/new',[CourseController::class,'create'])->name('courses.create'); //exibe o form de cadastro de curso 
 
 
-
-//Rotas do admin
-Route::get('/coordinators',[AdminController::class,'index'])->name('admin.index'); //exibe os cursos cadastrados
