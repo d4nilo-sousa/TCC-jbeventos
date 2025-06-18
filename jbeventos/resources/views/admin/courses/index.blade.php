@@ -1,5 +1,6 @@
+<!----Listagem de cursos ----->
 @extends('layouts.layout')
 
 @section('content')
- <h1>home</h1>
+<h1>Cursos</h1>
 @endsection
