@@ -136,7 +136,7 @@ class EventController extends Controller
             Storage::disk('public')->delete($event->event_image);
         }
 
-        $event->delete(); 
+        $event->delete(); // Exclui o evento
 
         return redirect()->route('events.index')->with('success', 'Evento excluído com sucesso!');
     }
