@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('course_icon')->nullable();
             $table->string('course_banner')->nullable();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null');
             $table->timestamps();
         });
     }

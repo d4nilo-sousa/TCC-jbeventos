@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Course;
+use App\Models\Coordinator;
+use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
@@ -12,7 +14,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses = Course::all();
+        $courses = Course::with('courseCoordinator')->get();
         return view('courses.index', compact('courses'));
     }
 
@@ -21,7 +23,8 @@ class CourseController extends Controller
      */
     public function create()
     {
-        return view('admin.courses.create');
+        $coordinators = Coordinator::all();
+        return view('admin.courses.create', compact('coordinators'));
     }
 
     /**
@@ -32,9 +35,23 @@ class CourseController extends Controller
         $request->validate([
             'course_name' => 'required|unique:courses,course_name|max:255',
             'course_description' => 'nullable|string|max:1000',
+            'course_icon' => 'nullable|image|max:2048',
+            'course_banner' => 'nullable|image|max:2048',
+            'coordinator_id' => 'nullable|exists:coordinators,id',
         ]);
 
-        Course::create($request->all());
+
+        $data = $request->only(['course_name', 'course_description', 'coordinator_id']);
+
+        if ($request->hasFile('course_icon')) {
+            $data['course_icon'] = $request->file('course_icon')->store('course_icons', 'public');
+        }
+
+        if ($request->hasFile('course_banner')) {
+            $data['course_banner'] = $request->file('course_banner')->store('course_banners', 'public');
+        }
+
+        Course::create($data);
         return redirect()->route('courses.index')->with('success', 'Curso criado com sucesso');
     }
 
@@ -43,7 +60,7 @@ class CourseController extends Controller
      */
     public function show(string $id)
     {
-        $course = Course::findOrFail($id);
+        $course = Course::with('courseCoordinator')->findOrFail($id);
         return view('courses.show', compact('course'));
     }
 
@@ -53,7 +70,8 @@ class CourseController extends Controller
     public function edit(string $id)
     {
         $course = Course::findOrFail($id);
-        return view('admin.courses.edit', compact('course'));
+        $coordinators = Coordinator::all();
+        return view('admin.courses.edit', compact('course', 'coordinators'));
     }
 
     /**
@@ -62,13 +80,28 @@ class CourseController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'course_name' => 'required|unique:courses,course_name|max:255',
+            'course_name' => 'required|unique:courses,course_name,' . $id . '|max:255',
             'course_description' => 'nullable|string|max:1000',
+            'course_icon' => 'nullable|image|max:2048',
+            'course_banner' => 'nullable|image|max:2048',
+            'coordinator_id' => 'nullable|exists:coordinators,id',
         ]);
 
         $course = Course::findOrFail($id);
-        $course->update($request->all());
-        return redirect()->route('courses.index')->with('success', 'Curso atualizado com sucesso');
+
+        $data = $request->only(['course_name', 'course_description', 'coordinator_id']);
+
+        if ($request->hasFile('course_icon')) {
+            $data['course_icon'] = $request->file('course_icon')->store('course_icons', 'public');
+        }
+
+        if ($request->hasFile('course_banner')) {
+            $data['course_banner'] = $request->file('course_banner')->store('course_banners', 'public');
+        }
+
+       $course->update($data);
+
+       return redirect()->route('courses.index')->with('success', 'Curso atualizado com sucesso');
     }
 
     /**
@@ -77,6 +110,14 @@ class CourseController extends Controller
     public function destroy(string $id)
     {
         $course = Course::findOrFail($id);
+
+        if ($course->course_icon) {
+            Storage::disk('public')->delete($course->course_icon);
+        }
+        if ($course->course_banner) {
+            Storage::disk('public')->delete($course->course_banner);
+        }
+
         $course->delete();
 
         return redirect()->route('courses.index')->with('success', 'Curso excluído com sucesso');

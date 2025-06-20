@@ -16,7 +16,6 @@ return new class extends Migration
             $table->enum('coordinator_type', ['general', 'course']);
             $table->boolean('temporary_password')->default(true);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('course_id')->nullable()->constrained('courses')->onDelete('set null');
             $table->timestamps();
         });
     }

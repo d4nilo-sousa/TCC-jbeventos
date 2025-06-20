@@ -29,6 +29,6 @@ class Coordinator extends Model
     }
 
     public function coordinatedCourse() {
-        return $this->belongsTo(Course::class);
+        return $this->HasOne(Course::class);
     }
 }

@@ -14,10 +14,11 @@ class Course extends Model
         'course_description',
         'course_icon',
         'course_banner',
+        'coordinator_id',
     ];
 
     public function courseCoordinator() {
-        return $this->hasOne(Coordinator::class);
+        return $this->belongsTo(Coordinator::class);
     }
 
     public function courseCreator() {
