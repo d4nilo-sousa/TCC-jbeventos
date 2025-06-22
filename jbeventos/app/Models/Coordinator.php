@@ -11,6 +11,7 @@ class Coordinator extends Model
 
     protected $fillable = [
         'coordinator_type',
+        'user_id'
     ];
 
     protected function casts(): array

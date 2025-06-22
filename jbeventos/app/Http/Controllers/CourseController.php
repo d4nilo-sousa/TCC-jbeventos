@@ -79,6 +79,8 @@ class CourseController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $course = Course::findOrFail($id);
+
         $request->validate([
             'course_name' => 'required|unique:courses,course_name,' . $id . '|max:255',
             'course_description' => 'nullable|string|max:1000',
@@ -86,8 +88,6 @@ class CourseController extends Controller
             'course_banner' => 'nullable|image|max:2048',
             'coordinator_id' => 'nullable|exists:coordinators,id',
         ]);
-
-        $course = Course::findOrFail($id);
 
         $data = $request->only(['course_name', 'course_description', 'coordinator_id']);
 
