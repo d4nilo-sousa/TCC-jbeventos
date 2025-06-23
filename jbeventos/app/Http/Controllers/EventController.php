@@ -13,7 +13,7 @@ class EventController extends Controller
     public function index()
     {
         $events = Event::with(['coordinator.course'])->get();
-        return view('coordinator.events.index', compact('events'));
+        return view('events.index', compact('events'));
     }
 
     // Formulário para criar evento
@@ -70,7 +70,7 @@ class EventController extends Controller
     {
         // Busca o evento com coordenador e curso (se houver)
         $event = Event::with(['coordinator.course'])->findOrFail($id);
-        return view('coordinator.events.show', compact('event'));
+        return view('events.show', compact('event'));
     }
 
     // Formulário para editar evento
