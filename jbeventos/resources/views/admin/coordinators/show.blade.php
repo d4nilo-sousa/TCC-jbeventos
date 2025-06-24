@@ -12,7 +12,7 @@
         <dd class="col-sm-9">{{ $coordinator->userAccount->email ?? '-' }}</dd>
 
         <dt class="col-sm-3">Tipo de Coordenador</dt>
-        <dd class="col-sm-9">{{ ucfirst($coordinator->coordinator_type) }}</dd>
+        <dd class="col-sm-9">{{ ['general' => 'Geral', 'course' => 'Curso'][$coordinator->coordinator_type]}}</dd>
 
         <dt class="col-sm-3">Criado em</dt>
         <dd class="col-sm-9">{{ $coordinator->created_at->format('d/m/Y H:i') }}</dd>

@@ -12,10 +12,10 @@
       <ul class="navbar-nav">
         <li class="nav-item"><a class="nav-link" href="{{route('events.index')}}">Eventos</a></li>
         <li class="nav-item"><a class="nav-link" href="{{route('courses.index')}}">Cursos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{route('coordinators.index')}}">Coordenadores</a></li> {{-- Futuramente restringir ao admin --}}
         <li class="nav-item"><a class="nav-link" href="{{route('events.create')}}">Criar Evento</a></li> {{-- Futuramente restringir a coordenadores --}}
         <li class="nav-item"><a class="nav-link" href="{{ route('courses.create') }}">Criar Curso</a></li>  {{-- Futuramente restringir ao admin --}}
         <li class="nav-item"><a class="nav-link" href="{{ route('coordinators.create') }}">Criar Coordenador</a></li>  {{-- Futuramente restringir ao admin --}}
-        <li class="nav-item"><a class="nav-link" href="{{route('events.index')}}">Coordenadores</a></li> {{-- Futuramente restringir ao admin --}}
 
       </ul>
     </div>

@@ -23,9 +23,9 @@
             <tbody>
                 @foreach($coordinators as $coordinator)
                 <tr>
-                    <td>{{ $coordinator->userAccount->name ?? 'Sem usuário' }}</td>
-                    <td>{{ $coordinator->userAccount->email ?? '-' }}</td>
-                    <td>{{ ucfirst($coordinator->coordinator_type) }}</td>
+                    <td>{{ $coordinator->userAccount->name}}</td>
+                    <td>{{ $coordinator->userAccount->email}}</td>
+                    <td>{{ ['general' => 'Geral', 'course' => 'Curso'][$coordinator->coordinator_type]}}</td>
                     <td>
                         <a href="{{ route('coordinators.show', $coordinator->id) }}" class="btn btn-info btn-sm">Ver</a>
                         <a href="{{ route('coordinators.edit', $coordinator->id) }}" class="btn btn-warning btn-sm">Editar</a>

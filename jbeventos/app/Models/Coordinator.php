@@ -26,7 +26,7 @@ class Coordinator extends Model
     }
 
     public function userAccount() {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function coordinatedCourse() {

@@ -31,7 +31,7 @@
         <div class="mb-3">
             <label for="coordinator_type" class="form-label">Tipo de Coordenador</label>
             <select name="coordinator_type" class="form-select" required>
-                <option value="general" {{ $coordinator->coordinator_type == 'general' ? 'selected' : '' }}>General</option>
+                <option value="general" {{ $coordinator->coordinator_type == 'geral' ? 'selected' : '' }}>Geral</option>
                 <option value="course" {{ $coordinator->coordinator_type == 'course' ? 'selected' : '' }}>Curso</option>
             </select>
         </div>

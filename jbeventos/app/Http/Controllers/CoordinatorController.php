@@ -86,7 +86,7 @@ class CoordinatorController extends Controller
             'coordinator_type' => $request->coordinator_type,
         ]);
 
-        return redirect()->route('admin.coordinators.index')->with('success', 'Coordenador atualizado com sucesso!');
+        return redirect()->route('coordinators.index')->with('success', 'Coordenador atualizado com sucesso!');
     }
 
     /**
@@ -103,6 +103,6 @@ class CoordinatorController extends Controller
             $user->delete();
         }
 
-        return redirect()->route('admin.coordinators.index')->with('success', 'Coordenador excluído com sucesso!');
+        return redirect()->route('coordinators.index')->with('success', 'Coordenador excluído com sucesso!');
     }
 }
