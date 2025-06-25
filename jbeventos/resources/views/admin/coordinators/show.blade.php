@@ -14,6 +14,14 @@
         <dt class="col-sm-3">Tipo de Coordenador</dt>
         <dd class="col-sm-9">{{ ['general' => 'Geral', 'course' => 'Curso'][$coordinator->coordinator_type]}}</dd>
 
+        @if($coordinator->coordinator_type === 'course' && $coordinator->coordinatedCourse) 
+           <dt class="col-sm-3">Curso que gerencia</dt>
+           <dd class="col-sm-9">{{ $coordinator->coordinatedCourse->course_name }}</dd>
+        @elseif($coordinator->coordinator_type === 'course')
+            <dt class="col-sm-3">Curso que gerencia</dt>
+            <dd class="col-sm-9">Nenhum curso gerenciado</dd>
+        @endif
+
         <dt class="col-sm-3">Criado em</dt>
         <dd class="col-sm-9">{{ $coordinator->created_at->format('d/m/Y H:i') }}</dd>
 
