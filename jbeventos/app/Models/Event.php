@@ -17,6 +17,8 @@ class Event extends Model
         'event_expired_at',
         'event_image',
         'visible_event',
+        'coordinator_id', // Relacionamento com Coordenador
+        'course_id', // Relacionamento com Curso (opcional)
     ];
 
     protected function casts(): array
