@@ -18,7 +18,7 @@ class Course extends Model
     ];
 
     public function courseCoordinator() {
-        return $this->belongsTo(Coordinator::class);
+        return $this->belongsTo(Coordinator::class, 'coordinator_id');
     }
 
     public function courseCreator() {

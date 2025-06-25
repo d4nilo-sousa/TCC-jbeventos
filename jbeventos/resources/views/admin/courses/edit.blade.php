@@ -35,7 +35,7 @@
                 <option value="">-- Nenhum --</option>
                 @foreach($coordinators as $coordinator)
                     <option value="{{ $coordinator->id }}" {{ (old('coordinator_id', $course->coordinator_id) == $coordinator->id) ? 'selected' : '' }}>
-                        {{ $coordinator->name }}
+                        {{ $coordinator->userAccount->name ?? 'Sem nome' }}
                     </option>
                 @endforeach
             </select>

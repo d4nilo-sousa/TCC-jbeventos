@@ -16,9 +16,8 @@
             <thead>
                 <tr>
                     <th>Ícone</th>
-                    <th>Banner</th> <!-- Nova coluna -->
+                    <th>Banner</th>
                     <th>Nome</th>
-                    <th>Descrição</th>
                     <th>Coordenador</th>
                     <th>Ações</th>
                 </tr>
@@ -45,10 +44,10 @@
                                 {{ $course->course_name }}
                             </a>
                         </td>
-                        <td>{{ Str::limit($course->course_description, 100) }}</td>
-                        <td>{{ $course->coordinator ? $course->coordinator->name : 'Sem coordenador' }}</td>
+                        <td>{{ $course->courseCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}</td>
                         <td>
                             <a href="{{ route('courses.edit', $course->id) }}" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="{{ route('courses.show', $course->id) }}" class="btn btn-info btn-sm">Ver</a>
 
                             <form action="{{ route('courses.destroy', $course->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir?')">
                                 @csrf

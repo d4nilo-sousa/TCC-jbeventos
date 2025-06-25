@@ -6,10 +6,10 @@
 
     <dl class="row">
         <dt class="col-sm-3">Nome</dt>
-        <dd class="col-sm-9">{{ $coordinator->userAccount->name ?? '-' }}</dd>
+        <dd class="col-sm-9">{{ $coordinator->userAccount->name}}</dd>
 
         <dt class="col-sm-3">Email</dt>
-        <dd class="col-sm-9">{{ $coordinator->userAccount->email ?? '-' }}</dd>
+        <dd class="col-sm-9">{{ $coordinator->userAccount->email}}</dd>
 
         <dt class="col-sm-3">Tipo de Coordenador</dt>
         <dd class="col-sm-9">{{ ['general' => 'Geral', 'course' => 'Curso'][$coordinator->coordinator_type]}}</dd>
