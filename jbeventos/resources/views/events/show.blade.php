@@ -26,7 +26,7 @@
 
             <div class="mb-3">
                 {{-- Acessa o coordenador através do relacionamento eventCoordinator --}}
-                <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator->userAccount->name ?? 'Coordenador Não Atribuído' }}<br>
+                <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}<br>
                 {{-- Acessa o curso através do relacionamento coordinatedCourse do coordenador --}}
                 <strong>🎓 Curso:</strong> {{ $event->eventCoordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
             </div>
