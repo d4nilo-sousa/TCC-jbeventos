@@ -12,7 +12,7 @@ class EventController extends Controller
     // Lista todos os eventos com coordenador e curso
     public function index()
     {
-        $events = Event::with(['eventCoordinator.coordinatedCourse'])->get();
+         $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->get();
         return view('events.index', compact('events'));
     }
 
@@ -62,7 +62,7 @@ class EventController extends Controller
     // Exibir detalhes do evento
     public function show($id)
     {
-        $event = Event::with(['eventCoordinator.coordinatedCourse'])->findOrFail($id);
+        $event = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->findOrFail($id);
         return view('events.show', compact('event'));
     }
 

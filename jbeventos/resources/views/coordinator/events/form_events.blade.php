@@ -54,20 +54,22 @@
         </div>
     </div>
 
-    {{-- Coordenador --}}
-    <div class="mb-3">
-        <label for="coordinator_id" class="form-label">Coordenador Responsável</label>
-        <select name="coordinator_id" class="form-select" required>
-            <option value="">Selecione</option>
-            @foreach($coordinators as $coordinator)
-                <option value="{{ $coordinator->id }}"
-                    {{ old('coordinator_id', $event->coordinator_id ?? '') == $coordinator->id ? 'selected' : '' }}> <!-- Verifica se o coordenador atual foi selecionado -->
-                    <!-- Exibe o nome do coordenador e o curso associado, se existir  -->
-                    {{ $coordinator->name }} — {{ $coordinator->course->course_name ?? 'Evento Geral' }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+ {{-- Coordenador --}}
+<div class="mb-3">
+    <label for="coordinator_id" class="form-label">Coordenador Responsável</label>
+    <select name="coordinator_id" class="form-select" required>
+        <option value="">Selecione</option>
+        @foreach($coordinators as $coordinator)
+            <option value="{{ $coordinator->id }}"
+                {{ old('coordinator_id', $event->coordinator_id ?? '') == $coordinator->id ? 'selected' : '' }}>
+                {{-- Acessa o nome do coordenador através do relacionamento userAccount --}}
+                {{ $coordinator->userAccount->name ?? 'Coordenador Sem Nome' }}
+                {{-- Exibe o nome do curso associado, se existir --}}
+                — {{ $coordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
+            </option>
+        @endforeach
+    </select>
+</div>
 
     {{-- Botões --}}
     <div class="d-flex justify-content-between mt-4">

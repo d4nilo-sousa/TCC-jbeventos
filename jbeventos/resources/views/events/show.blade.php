@@ -24,11 +24,12 @@
                 </div>
             </div>
 
-            <div class="mb-3">
-                <strong>👤 Coordenador:</strong> {{ $event->coordinator->name }}<br>
-                <strong>🎓 Curso:</strong> {{ $event->coordinator->course->course_name ?? 'Evento Geral' }}
-            </div>
-
+           <div class="mb-3">
+    {{-- Acessa o coordenador através do relacionamento eventCoordinator --}}
+    <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator->userAccount->name ?? 'Coordenador Não Atribuído' }}<br>
+    {{-- Acessa o curso através do relacionamento coordinatedCourse do coordenador --}}
+    <strong>🎓 Curso:</strong> {{ $event->eventCoordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
+</div>
             {{-- Botões de ação --}}
             <div class="d-flex justify-content-between">
                 <a href="{{ route('events.index') }}" class="btn btn-secondary">← Voltar</a>
