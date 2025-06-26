@@ -40,6 +40,27 @@
         <input type="text" name="event_location" class="form-control" value="{{ old('event_location', $event->event_location ?? '') }}" required>
     </div>
 
+     {{-- Categorias do Evento --}}
+    <div class="mb-3">
+        <label class="form-label">Categorias do Evento</label>
+        <div class="d-flex flex-wrap gap-3">
+            @foreach($categories as $category)
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->id }}" id="category_{{ $category->id }}"
+                        {{-- Lógica corrigida para verificar se a categoria deve ser marcada --}}
+                        {{ in_array($category->id, old('categories', isset($event) ? $event->eventCategories->pluck('id')->toArray() : [])) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="category_{{ $category->id }}">
+                        {{ $category->category_name }}
+                    </label>
+                </div>
+            @endforeach
+        </div>
+        @error('categories')
+            <div class="text-danger mt-2">{{ $message }}</div>
+        @enderror
+    </div>
+  
+
     {{-- Data e Hora --}}
     <div class="row mb-3">
         <div class="col-md-6">

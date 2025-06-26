@@ -24,12 +24,23 @@
                 </div>
             </div>
 
-           <div class="mb-3">
-    {{-- Acessa o coordenador através do relacionamento eventCoordinator --}}
-    <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator->userAccount->name ?? 'Coordenador Não Atribuído' }}<br>
-    {{-- Acessa o curso através do relacionamento coordinatedCourse do coordenador --}}
-    <strong>🎓 Curso:</strong> {{ $event->eventCoordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
-</div>
+            <div class="mb-3">
+                {{-- Acessa o coordenador através do relacionamento eventCoordinator --}}
+                <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator->userAccount->name ?? 'Coordenador Não Atribuído' }}<br>
+                {{-- Acessa o curso através do relacionamento coordinatedCourse do coordenador --}}
+                <strong>🎓 Curso:</strong> {{ $event->eventCoordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
+            </div>
+
+            {{-- Novo bloco para as Categorias --}}
+            <div class="mb-3">
+                <strong>🏷 Categorias:</strong>
+                @forelse($event->eventCategories as $category)
+                    <span class="badge bg-primary me-1">{{ $category->category_name }}</span>
+                @empty
+                    <span class="text-muted">Nenhuma categoria atribuída.</span>
+                @endforelse
+            </div>
+
             {{-- Botões de ação --}}
             <div class="d-flex justify-content-between">
                 <a href="{{ route('events.index') }}" class="btn btn-secondary">← Voltar</a>

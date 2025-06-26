@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Coordinator;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,9 +20,10 @@ class EventController extends Controller
     // Formulário para criar evento
     public function create()
     {
-        // Carregar coordenadores com curso para o select
-        $coordinators = Coordinator::with('coordinatedCourse')->get();
-        return view('coordinator.events.form_events', compact('coordinators'));
+        $coordinators = Coordinator::with('coordinatedCourse')->get(); // Carregar coordenadores com curso associado
+        $categories = Category::all(); // carrega as categorias
+        return view('coordinator.events.form_events', compact('coordinators', 'categories')); //compact é usado para passar variáveis para a view
+        
     }
 
     // Salvar novo evento
@@ -35,6 +37,8 @@ class EventController extends Controller
             'event_expired_at' => 'nullable|date|after:event_scheduled_at',
             'event_image' => 'nullable|image|max:2048',
             'coordinator_id' => 'required|exists:coordinators,id',
+            'categories' => 'array',
+            'categories.*' => 'exists:categories,id', // Valida se as categorias existem
         ]);
 
         $coordinator = Coordinator::findOrFail($request->coordinator_id);
@@ -45,16 +49,29 @@ class EventController extends Controller
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
+            'event_image',
+            'visible_event',            
         ]);
 
+        // Verifica se o usuário enviou uma imagem e a armazena
+        // Se o usuário não enviar uma imagem, o campo event_image será null 
         if ($request->hasFile('event_image')) {
             $data['event_image'] = $request->file('event_image')->store('event_images', 'public');
         }
 
+        // Define o coordenador e o curso associado
+        // Se o coordenador não tiver curso associado, course_id será null
         $data['coordinator_id'] = $coordinator->id;
-        $data['course_id'] = optional($coordinator->coordinatedCourse)->id; // Pode ser null
+        $data['course_id'] = optional($coordinator->coordinatedCourse)->id; 
 
-        Event::create($data);
+        $event = Event::create($data); // Cria o evento com os dados validados
+
+        // sincroniza as categorias selecionadas
+        if($request->has('categories')) {
+            $event->eventCategories()->sync($request->input('categories')); // Sincroniza as categorias selecionadas (categories); 
+        } else{
+            $event->eventCategories()->detach(); // Desassocia categorias se nenhuma for selecionada
+        }
 
         return redirect()->route('events.index')->with('success', 'Evento criado com sucesso!');
     }
@@ -62,7 +79,8 @@ class EventController extends Controller
     // Exibir detalhes do evento
     public function show($id)
     {
-        $event = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->findOrFail($id);
+        // Carrega o evento com coordenador e curso associados
+        $event = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse', 'eventCategories'])->findOrFail($id);
         return view('events.show', compact('event'));
     }
 
@@ -71,7 +89,8 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
         $coordinators = Coordinator::with('coordinatedCourse')->get();
-        return view('coordinator.events.edit', compact('event', 'coordinators'));
+        $categories = Category::all();
+        return view('coordinator.events.edit', compact('event', 'coordinators', 'categories')); //passando as variáveis para a view
     }
 
     // Atualizar evento
@@ -87,6 +106,8 @@ class EventController extends Controller
             'event_expired_at' => 'nullable|date|after:event_scheduled_at',
             'event_image' => 'nullable|image|max:2048',
             'coordinator_id' => 'required|exists:coordinators,id',
+            'categories' => 'array',
+            'categories.*' => 'exists:categories,id', // Valida se as categorias existem
         ]);
 
         $coordinator = Coordinator::findOrFail($request->coordinator_id);
@@ -97,6 +118,8 @@ class EventController extends Controller
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
+            'event_image',
+            'visible_event',
         ]);
 
         if ($request->hasFile('event_image')) {
@@ -110,6 +133,13 @@ class EventController extends Controller
         $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
 
         $event->update($data);
+
+        // sincroniza as categorias selecionadas
+        if($request->has('categories')) {
+            $event->eventCategories()->sync($request->input('categories'));  
+        } else{
+            $event->eventCategories()->detach(); // Desassocia categorias se nenhuma for selecionada
+        }
 
         return redirect()->route('events.index')->with('success', 'Evento atualizado com sucesso!');
     }
