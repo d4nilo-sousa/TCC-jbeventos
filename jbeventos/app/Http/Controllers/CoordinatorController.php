@@ -9,28 +9,21 @@ use Illuminate\Support\Facades\Hash;
 
 class CoordinatorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
+        // Carrega todos os coordenadores com os dados do usuário relacionados
         $coordinators = Coordinator::with('userAccount')->get();
         return view('admin.coordinators.index', compact('coordinators'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.coordinators.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+        // Validação básica dos dados do formulário
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -38,10 +31,11 @@ class CoordinatorController extends Controller
             'coordinator_type' => 'required|in:general,course',
         ]);
 
+        // Cria o usuário e associa como coordenador
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->password), // Criptografa a senha
             'user_type' => 'coordinator',
         ]);
 
@@ -53,27 +47,19 @@ class CoordinatorController extends Controller
         return redirect()->route('coordinators.index')->with('success', 'Coordenador criado com sucesso!');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
+        // Busca coordenador com dados do usuário ou lança erro 404
         $coordinator = Coordinator::with('userAccount')->findOrFail($id);
         return view('admin.coordinators.show', compact('coordinator'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         $coordinator = Coordinator::with('userAccount')->findOrFail($id);
         return view('admin.coordinators.edit', compact('coordinator'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         $coordinator = Coordinator::findOrFail($id);
@@ -89,14 +75,12 @@ class CoordinatorController extends Controller
         return redirect()->route('coordinators.index')->with('success', 'Coordenador atualizado com sucesso!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $coordinator = Coordinator::findOrFail($id);
         $user = $coordinator->userAccount;
 
+        // Remove coordenador e o usuário associado
         $coordinator->delete();
 
         if ($user) {
