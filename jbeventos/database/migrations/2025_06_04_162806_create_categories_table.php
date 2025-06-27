@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela 'categories' para armazenar categorias do sistema
         Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('category_name')->unique();
-            $table->timestamps();
+            $table->id(); // ID único da categoria
+            $table->string('category_name')->unique(); // Nome único da categoria
+            $table->timestamps(); // Controle automático de criação e atualização
         });
     }
 

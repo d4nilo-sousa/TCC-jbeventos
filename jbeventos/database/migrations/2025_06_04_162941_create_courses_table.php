@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela 'courses' com informações do curso e relacionamentos
         Schema::create('courses', function (Blueprint $table) {
-            $table->id();
-            $table->string('course_name')->unique();
-            $table->text('course_description')->nullable();
-            $table->string('course_icon')->nullable();
-            $table->string('course_banner')->nullable();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null');
-            $table->timestamps();
+            $table->id(); // ID único do curso
+
+            $table->string('course_name')->unique(); // Nome único do curso
+            $table->text('course_description')->nullable(); // Descrição detalhada (opcional)
+            $table->string('course_icon')->nullable(); // Ícone do curso (opcional)
+            $table->string('course_banner')->nullable(); // Banner do curso (opcional)
+
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); // Criador do curso, pode ser nulo, se usuário deletado, seta null
+            $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null'); // Coordenador responsável, pode ser nulo, se deletado seta null
+
+            $table->timestamps(); // Controle de criação e atualização
         });
     }
 

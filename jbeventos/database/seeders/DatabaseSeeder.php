@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
     }
     */
 
+    // Chamada da seeder de categorias
     public function run(): void
     {
         $this->call([

@@ -11,11 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela 'course_user_follow' para registrar quais usuários seguem quais cursos
         Schema::create('course_user_follow', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->timestamps();
+            $table->id(); // ID único do registro
+
+            // Relacionamento com o curso seguido
+            $table->foreignId('course_id')->constrained('courses')->onDelete('cascade'); 
+            // Relacionamento com o usuário que está seguindo
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
+
+            $table->timestamps(); // Controle de criação e atualização do registro
         });
     }
 

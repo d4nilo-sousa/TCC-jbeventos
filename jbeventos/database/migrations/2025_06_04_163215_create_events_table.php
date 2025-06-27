@@ -11,21 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela 'events' com informações do evento e relacionamentos
         Schema::create('events', function (Blueprint $table) {
-            $table->id();
-            $table->string('event_name')->unique();
-            $table->text('event_description')->nullable();
-            $table->string('event_location');
-            $table->dateTime('event_scheduled_at');
-            $table->timestamp('event_expired_at')->nullable();
-            $table->string('event_image')->nullable();
-            $table->boolean('visible_event')->default(true);
-            $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null');
-            $table->foreignId('course_id')->nullable()->constrained('courses')->onDelete('cascade');
-            $table->timestamps();
+            $table->id(); // ID único do evento
+
+            $table->string('event_name')->unique(); // Nome único do evento
+            $table->text('event_description')->nullable(); // Descrição detalhada do evento (opcional)
+            $table->string('event_location'); // Local onde o evento será realizado
+            $table->dateTime('event_scheduled_at'); // Data e hora agendada para o evento
+            $table->timestamp('event_expired_at')->nullable(); // Data e hora de expiração automática do evento (opcional)
+            $table->string('event_image')->nullable(); // Imagem representativa do evento (opcional)
+            $table->boolean('visible_event')->default(true); // Flag para visibilidade do evento (padrão visível)
+
+            $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null'); // Coordenador responsável, se deletado seta null
+            $table->foreignId('course_id')->nullable()->constrained('courses')->onDelete('cascade'); // Curso associado, se deletado deleta evento
+
+            $table->timestamps(); // Controle de criação e atualização
         });
     }
- 
+
     /**
      * Reverse the migrations.
      */

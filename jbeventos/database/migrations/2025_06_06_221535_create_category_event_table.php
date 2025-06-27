@@ -11,11 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela pivot 'category_event' para associar categorias a eventos
         Schema::create('category_event', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
+            $table->id(); // ID único do registro
+
+            // Chave estrangeira para a categoria
+            $table->foreignId('category_id')->constrained('categories')->onDelete('cascade'); 
+            // Chave estrangeira para o evento
             $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
-            $table->timestamps();
+
+            $table->timestamps(); // Controle de criação e atualização do registro
         });
     }
 

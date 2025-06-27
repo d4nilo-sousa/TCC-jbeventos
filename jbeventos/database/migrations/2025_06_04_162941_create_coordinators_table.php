@@ -11,12 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela 'coordinators' para armazenar coordenadores do sistema
         Schema::create('coordinators', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // ID único do coordenador
+
+            // Tipo de coordenador: 'general' (geral) ou 'course' (curso)
             $table->enum('coordinator_type', ['general', 'course']);
+
+            // Flag para indicar se o coordenador será cadastrado com uma senha provisória
             $table->boolean('temporary_password')->default(true);
+
+            // Chave estrangeira referenciando o usuário associado, com exclusão em cascata
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->timestamps();
+
+            $table->timestamps(); // Controle automático de criação e atualização
         });
     }
 

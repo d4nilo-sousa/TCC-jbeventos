@@ -9,21 +9,22 @@ use Illuminate\Support\Facades\Hash;
 
 class CoordinatorController extends Controller
 {
+    // Lista todos os coordenadores com seus dados de usuário relacionados
     public function index()
     {
-        // Carrega todos os coordenadores com os dados do usuário relacionados
         $coordinators = Coordinator::with('userAccount')->get();
         return view('admin.coordinators.index', compact('coordinators'));
     }
 
+    // Exibe o formulário para criar um novo coordenador
     public function create()
     {
         return view('admin.coordinators.create');
     }
 
+    // Armazena um novo coordenador e o usuário associado após validar os dados
     public function store(Request $request)
     {
-        // Validação básica dos dados do formulário
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
@@ -31,14 +32,15 @@ class CoordinatorController extends Controller
             'coordinator_type' => 'required|in:general,course',
         ]);
 
-        // Cria o usuário e associa como coordenador
+        // Cria o usuário coordenador com senha criptografada
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), // Criptografa a senha
+            'password' => Hash::make($request->password),
             'user_type' => 'coordinator',
         ]);
 
+        // Cria o coordenador vinculando ao usuário criado
         Coordinator::create([
             'user_id' => $user->id,
             'coordinator_type' => $request->coordinator_type,
@@ -47,19 +49,21 @@ class CoordinatorController extends Controller
         return redirect()->route('coordinators.index')->with('success', 'Coordenador criado com sucesso!');
     }
 
+    // Exibe os detalhes de um coordenador específico
     public function show(string $id)
     {
-        // Busca coordenador com dados do usuário ou lança erro 404
         $coordinator = Coordinator::with('userAccount')->findOrFail($id);
         return view('admin.coordinators.show', compact('coordinator'));
     }
 
+    // Exibe o formulário para editar um coordenador existente
     public function edit(string $id)
     {
         $coordinator = Coordinator::with('userAccount')->findOrFail($id);
         return view('admin.coordinators.edit', compact('coordinator'));
     }
 
+    // Atualiza o tipo do coordenador após validação
     public function update(Request $request, string $id)
     {
         $coordinator = Coordinator::findOrFail($id);
@@ -75,12 +79,12 @@ class CoordinatorController extends Controller
         return redirect()->route('coordinators.index')->with('success', 'Coordenador atualizado com sucesso!');
     }
 
+    // Remove o coordenador e o usuário relacionado do banco
     public function destroy(string $id)
     {
         $coordinator = Coordinator::findOrFail($id);
         $user = $coordinator->userAccount;
 
-        // Remove coordenador e o usuário associado
         $coordinator->delete();
 
         if ($user) {

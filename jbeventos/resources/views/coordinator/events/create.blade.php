@@ -3,23 +3,21 @@
 @section('content')
 
 <div class="container mt-5">
-    <h2 class="mb-4"> Cadastrar Evento</h2>
+    <h1 class="mb-4">Cadastrar Evento</h1>
 
-    <!-- Verifica se houveram erros de validação -->
-    <!-- $erros é uma variável que deve ser passada do controlador para a view -->
-    <!-- Se não for passado, assume-se que não há erros -->
-    @if($erros->any())
+    <!-- Exibe mensagens de erro de validação automaticamente fornecidas pelo Laravel -->
+    @if($errors->any())
         <div class="alert alert-danger">
             <strong>Erros!</strong> Corrija os seguintes erros antes de continuar:
             <ul>
-                @foreach($erros->all() as $erro)
+                @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
 
-    <!-- Passa o evento se existir, caso contrário, passa null para criar um novo evento -->
+    <!-- Inclui o formulário de evento, passando $event se existir -->
     @include('coordinator.events.form_events', ['event' => $event ?? null]) 
 
 </div>

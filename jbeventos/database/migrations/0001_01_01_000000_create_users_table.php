@@ -11,19 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela 'users' com dados básicos, autenticação e perfil
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->string('phone_number')->nullable()->unique();
-            $table->timestamp('phone_number_verified_at')->nullable();
-            $table->string('user_icon')->nullable();
-            $table->string('user_banner')->nullable();
-            $table->enum('user_type', ['admin', 'coordinator', 'user'])->default('user');
-            $table->rememberToken();
-            $table->timestamps();
+            $table->id(); // ID único do usuário
+
+            // Dados pessoais e contato
+            $table->string('name'); // Nome completo do usuário
+            $table->string('email')->unique(); // Email único para login e comunicação
+            $table->timestamp('email_verified_at')->nullable(); // Data de verificação do email
+            $table->string('phone_number')->nullable()->unique(); // Telefone opcional e único
+            $table->timestamp('phone_number_verified_at')->nullable(); // Verificação do telefone
+
+            // Dados de autenticação
+            $table->string('password'); // Senha criptografada
+            $table->rememberToken(); // Token para "lembrar" o login
+
+            // Personalização do perfil
+            $table->string('user_icon')->nullable(); // Avatar do usuário
+            $table->string('user_banner')->nullable(); // Banner do perfil
+
+            // Controle de tipo/perfil do usuário
+            $table->enum('user_type', ['admin', 'coordinator', 'user'])->default('user'); // Tipo do usuário
+
+            $table->timestamps(); // Controle de criação e atualização do registro
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

@@ -11,13 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Criação da tabela 'comments' para armazenar comentários dos usuários sobre eventos
         Schema::create('comments', function (Blueprint $table) {
-            $table->id();
-            $table->text('comment');
-            $table->boolean('visible_comment')->default(true);
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
-            $table->timestamps();
+            $table->id(); // ID único do comentário
+
+            $table->text('comment'); // Texto do comentário feito pelo usuário
+            $table->boolean('visible_comment')->default(true); // Flag para indicar se o comentário está visível
+
+            // Relacionamento com o usuário que fez o comentário
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Excluir comentário se usuário for deletado
+            // Relacionamento com o evento comentado
+            $table->foreignId('event_id')->constrained('events')->onDelete('cascade'); // Excluir comentário se evento for deletado
+
+            $table->timestamps(); // Controle de criação e atualização do registro
         });
     }
 

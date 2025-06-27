@@ -64,7 +64,8 @@ return [
     | is set to "UTC" by default as it is suitable for most use cases.
     |
     */
-
+    
+    // Define o fuso horário para São Paulo (Horário de Brasília)
     'timezone' => 'America/Sao_Paulo',
 
     /*
