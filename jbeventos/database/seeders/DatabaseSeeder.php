@@ -21,11 +21,12 @@ class DatabaseSeeder extends Seeder
     }
     */
 
-    // Chamada da seeder de categorias
+    // Chamada das Seeders
     public function run(): void
     {
         $this->call([
-            CategorySeeder::class,
+            CategorySeeder::class, // Seeder para as Categorias de Evento
+            AdminSeeder::class, // Seeder para os Admins
         ]);
     }
 }
