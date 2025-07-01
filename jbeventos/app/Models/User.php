@@ -29,6 +29,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number',
+        'user_icon',
+        'user_banner',
+        'user_type',
     ];
 
     /**
@@ -61,7 +65,37 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_number_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
+
+      // Cursos criados pelo usuário
+    public function createdCourses() {
+        return $this->hasMany(Course::class);
+    }
+
+    // Retorna o coordenador associado a este usuário
+    public function coordinatorRole() {
+        return $this->hasOne(Coordinator::class);
+    }
+
+    // Comentários feitos pelo usuário
+    public function userComments() {
+        return $this->hasMany(Comment::class);
+    }
+
+    // Cursos que o usuário está participando
+    // Relação muitos-para-muitos com a tabela pivot 'course_user_follow'
+    // withTimestamps() mantém os timestamps na tabela pivot atualizados automaticamente
+    public function participatingCourses() {
+        return $this->belongsToMany(Course::class, 'course_user_follow')->withTimestamps();
+    }
+
+    // Reações feitas pelo usuário em eventos
+    // Essa relação usa uma tabela pivot com atributos próprios (EventUserReaction)
+    public function eventReactions() {
+        return $this->hasMany(EventUserReaction::class);
+    }
 }
+
