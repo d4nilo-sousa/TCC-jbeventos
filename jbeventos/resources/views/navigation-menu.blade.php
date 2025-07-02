@@ -16,6 +16,42 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                 </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.index')">
+                        {{ __('Eventos') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('events.create') }}" :active="request()->routeIs('events.create')">
+                        {{ __('Criar Evento') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.index')">
+                        {{ __('Cursos') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('courses.create') }}" :active="request()->routeIs('courses.create')">
+                        {{ __('Criar Cursos') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('coordinators.index') }}" :active="request()->routeIs('coordinators.index')">
+                        {{ __('Coordenadores') }}
+                    </x-nav-link>
+                </div>
+
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <x-nav-link href="{{ route('coordinators.create') }}" :active="request()->routeIs('coordinators.create')">
+                        {{ __('Criar Coordenador') }}
+                    </x-nav-link>
+                </div>
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
