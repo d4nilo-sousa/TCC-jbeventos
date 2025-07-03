@@ -34,16 +34,10 @@
             <input type="email" name="email" value="{{ old('email') }}" class="form-control" required>
         </div>
 
-        <!-- Campo para senha -->
+        <!-- Campo para senha (provisória) -->
         <div class="mb-3">
-            <label for="password" class="form-label">Senha</label>
+            <label for="password" class="form-label">Senha Provisória</label>
             <input type="password" name="password" class="form-control" required>
-        </div>
-
-        <!-- Campo para confirmar a senha -->
-        <div class="mb-3">
-            <label for="password_confirmation" class="form-label">Confirmar Senha</label>
-            <input type="password" name="password_confirmation" class="form-control" required>
         </div>
 
         <!-- Select para escolher o tipo do coordenador -->
