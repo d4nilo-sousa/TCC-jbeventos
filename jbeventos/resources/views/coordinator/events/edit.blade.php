@@ -1,22 +1,26 @@
-@extends('layouts.layout')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Editar Evento
+        </h2>
+    </x-slot>
 
-@section('content')     
-    <div class="container mt-5">
-        <h1 class="mb-4">Editar Evento</h1>
+    <div class="py-6">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-md rounded p-6">
+                @if($errors->any())
+                    <div class="mb-4 text-red-600">
+                        <p class="font-semibold">Erros!</p>
+                        <ul class="list-disc pl-5">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
 
-        <!-- Exibe mensagens de erro de validação automaticamente fornecidas pelo Laravel -->
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <strong>Erros!</strong> Corrija os seguintes erros antes de continuar:
-                <ul>
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+                @include('coordinator.events.form_events', ['event' => $event])
             </div>
-        @endif
-
-        <!-- Passa o evento para o formulário -->
-        @include('coordinator.events.form_events', ['event' => $event])
+        </div>
     </div>
-@endsection
+</x-app-layout>

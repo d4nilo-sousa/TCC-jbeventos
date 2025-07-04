@@ -1,21 +1,33 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 
-//Rotas Públicas
+// Redireciona para login ao acessar a raiz
 Route::get('/', function () {
-    return view('home');
+    return redirect()->route('login');
 });
 
-//Rotas dos eventos
-Route::resource('events', EventController::class);
+// Grupo de rotas protegidas por autenticação
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
 
-//Rotas dos Cursos
-Route::resource('courses', CourseController::class);
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-//Rotas dos Coordenadores
-Route::resource('coordinators', CoordinatorController::class);
+    // Rotas dos eventos
+    Route::resource('events', EventController::class);
 
+    // Rotas dos cursos
+    Route::resource('courses', CourseController::class);
 
+    // Rotas dos coordenadores
+    Route::resource('coordinators', CoordinatorController::class);
+});

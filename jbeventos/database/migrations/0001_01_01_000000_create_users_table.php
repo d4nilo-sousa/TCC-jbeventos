@@ -29,11 +29,13 @@ return new class extends Migration
             // Personalização do perfil
             $table->string('user_icon')->nullable(); // Avatar do usuário
             $table->string('user_banner')->nullable(); // Banner do perfil
+            $table->string('profile_photo_path', 2048)->nullable();
 
             // Controle de tipo/perfil do usuário
             $table->enum('user_type', ['admin', 'coordinator', 'user'])->default('user'); // Tipo do usuário
 
-            $table->timestamps(); // Controle de criação e atualização do registro
+            $table->foreignId('current_team_id')->nullable();  // Referência opcional a equipe atual do usuário (usado se tiver sistema de times)
+            $table->timestamps();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

@@ -1,61 +1,54 @@
-@extends('layouts.layout') {{-- Usa o layout principal da aplicação --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Coordenadores
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="container mt-4">
-    <h1>Coordenadores</h1>
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-md rounded p-6">
+                <a href="{{ route('coordinators.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Novo Coordenador</a>
 
-    <!-- Botão para criar novo coordenador -->
-    <a href="{{ route('coordinators.create') }}" class="btn btn-primary mb-3">Novo Coordenador</a>
+                @if(session('success'))
+                    <div class="mt-4 text-green-600">{{ session('success') }}</div>
+                @endif
 
-    <!-- Exibe mensagem de sucesso, se houver -->
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <!-- Verifica se há coordenadores cadastrados -->
-    @if($coordinators->count())
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Tipo</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Itera sobre os coordenadores -->
-                @foreach($coordinators as $coordinator)
-                <tr>
-                    <!-- Exibe o nome e e-mail vinculados ao usuário -->
-                    <td>{{ $coordinator->userAccount->name }}</td>
-                    <td>{{ $coordinator->userAccount->email }}</td>
-
-                    <!-- Converte o tipo salvo ('general' ou 'course') em texto amigável -->
-                    <td>{{ ['general' => 'Geral', 'course' => 'Curso'][$coordinator->coordinator_type] }}</td>
-
-                    <!-- Ações: ver, editar e excluir -->
-                    <td>
-                        <!-- Ver detalhes -->
-                        <a href="{{ route('coordinators.show', $coordinator->id) }}" class="btn btn-info btn-sm">Ver</a>
-
-                        <!-- Editar coordenador -->
-                        <a href="{{ route('coordinators.edit', $coordinator->id) }}" class="btn btn-warning btn-sm">Editar</a>
-
-                        <!-- Formulário de exclusão -->
-                        <form action="{{ route('coordinators.destroy', $coordinator->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Confirma exclusão?')">
-                            @csrf <!-- Token CSRF obrigatório -->
-                            @method('DELETE') <!-- Método HTTP DELETE -->
-                            <button class="btn btn-danger btn-sm" type="submit">Excluir</button>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <!-- Mensagem caso não existam coordenadores -->
-        <p>Nenhum coordenador cadastrado.</p>
-    @endif
-</div>
-@endsection
+                @if($coordinators->count())
+                    <div class="overflow-x-auto mt-4">
+                        <table class="min-w-full bg-white border border-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-4 py-2 border">Nome</th>
+                                    <th class="px-4 py-2 border">Email</th>
+                                    <th class="px-4 py-2 border">Tipo</th>
+                                    <th class="px-4 py-2 border">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($coordinators as $coordinator)
+                                <tr>
+                                    <td class="px-4 py-2 border">{{ $coordinator->userAccount->name }}</td>
+                                    <td class="px-4 py-2 border">{{ $coordinator->userAccount->email }}</td>
+                                    <td class="px-4 py-2 border">{{ ['general' => 'Geral', 'course' => 'Curso'][$coordinator->coordinator_type] }}</td>
+                                    <td class="px-4 py-2 border space-x-1">
+                                        <a href="{{ route('coordinators.show', $coordinator->id) }}" class="bg-blue-500 text-white px-2 py-1 rounded text-sm">Ver</a>
+                                        <a href="{{ route('coordinators.edit', $coordinator->id) }}" class="bg-yellow-400 text-white px-2 py-1 rounded text-sm">Editar</a>
+                                        <form action="{{ route('coordinators.destroy', $coordinator->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Confirma exclusão?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded text-sm">Excluir</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="mt-4">Nenhum coordenador cadastrado.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+</x-app-layout>

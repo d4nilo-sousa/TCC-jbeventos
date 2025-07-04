@@ -22,7 +22,7 @@ class EventController extends Controller
     {
         $coordinators = Coordinator::with('coordinatedCourse')->get(); // Carregar coordenadores com curso associado
         $categories = Category::all(); // carrega as categorias
-        return view('coordinator.events.form_events', compact('coordinators', 'categories')); //compact é usado para passar variáveis para a view
+        return view('coordinator.events.create', compact('coordinators', 'categories')); //compact é usado para passar variáveis para a view
         
     }
 

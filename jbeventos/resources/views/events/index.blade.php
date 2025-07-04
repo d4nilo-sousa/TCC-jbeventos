@@ -1,60 +1,64 @@
-@extends('layouts.layout')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Meus Eventos') }}
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="container mt-5">
-    <h2 class="mb-4">Meus Eventos</h2>
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-    {{-- Mensagens de sucesso --}}
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+            {{-- Mensagens de sucesso --}}
+            @if (session('success'))
+                <div class="mb-4 rounded-lg bg-green-100 px-6 py-4 text-green-800">
+                    {{ session('success') }}
+                </div>
+            @endif
 
-    {{-- Botão para novo evento --}}
-    <div class="mb-4 text-end">
-        <a href="{{ route('events.create') }}" class="btn btn-primary">+ Novo Evento</a>
-    </div>
+            {{-- Botão para novo evento --}}
+            <div class="mb-4 text-right">
+                <a href="{{ route('events.create') }}" class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    + Novo Evento
+                </a>
+            </div>
 
-    <!-- Lista de eventos -->
-    @if($events->count() > 0)
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            @foreach($events as $event)
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        {{-- Imagem do evento --}}
-                        @if($event->event_image)
-                            <img src="{{ asset('storage/' . $event->event_image) }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Imagem do Evento">
-                        @endif
-
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ $event->event_name }}</h5>
-                            <p class="card-text">{{ Str::limit($event->event_description, 100) }}</p>
-                            <p class="text-muted small mb-1">
-                                📍 {{ $event->event_location }}<br>
-                                📅 {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
-                            </p>
-                            <p class="text-secondary small mb-2">
-                                Coordenador: {{ $event->eventCoordinator->name ?? 'Não informado' }}<br>
-                                Curso: {{ $event->eventCoordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
-                            </p>
-
-                            {{-- Botões --}}
-                            <div class="mt-auto">
-                                <a href="{{ route('events.show', $event->id) }}" class="btn btn-outline-primary btn-sm mb-2 w-100">Ver</a>
-                                <a href="{{ route('events.edit', $event->id) }}" class="btn btn-outline-warning btn-sm mb-2 w-100">Editar</a>
-
-                                <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este evento?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">Excluir</button>
-                                </form>
+            {{-- Lista de eventos --}}
+            @if($events->count() > 0)
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                    @foreach($events as $event)
+                        <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                            @if($event->event_image)
+                                <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento" class="h-48 w-full object-cover">
+                            @endif
+                            <div class="p-4 flex flex-col h-full">
+                                <h3 class="mb-2 text-lg font-semibold text-gray-900">{{ $event->event_name }}</h3>
+                                <p class="mb-2 flex-grow text-gray-700">{{ Str::limit($event->event_description, 100) }}</p>
+                                <p class="mb-1 text-sm text-gray-500">
+                                    📍 {{ $event->event_location }}<br>
+                                    📅 {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
+                                </p>
+                                <p class="mb-4 text-xs text-gray-400">
+                                    Coordenador: {{ $event->eventCoordinator?->userAccount?->name ?? 'Não informado' }}<br>
+                                    Curso: {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Evento Geral' }}
+                                </p>
+                                <div class="mt-auto flex flex-col space-y-2">
+                                    <a href="{{ route('events.show', $event->id) }}" class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">Ver</a>
+                                    <a href="{{ route('events.edit', $event->id) }}" class="rounded-md bg-yellow-100 px-3 py-1 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200">Editar</a>
+                                    <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este evento?')" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-full rounded-md bg-red-100 px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-200">
+                                            Excluir
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endforeach
                 </div>
-            @endforeach
+            @else
+                <p class="text-gray-500">Nenhum evento cadastrado até o momento.</p>
+            @endif
         </div>
-    @else
-        <p class="text-muted">Nenhum evento cadastrado até o momento.</p>
-    @endif
-</div>
-@endsection
+    </div>
+</x-app-layout>
