@@ -26,22 +26,29 @@
             @if($events->count() > 0)
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                     @foreach($events as $event)
-                        <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm">
+                        <div class="overflow-hidden rounded-lg border border-gray-200 shadow-sm flex flex-col"> {{-- Adicionado flex flex-col aqui --}}
                             @if($event->event_image)
                                 <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento" class="h-48 w-full object-cover">
+                            @else
+                                {{-- Adiciona um placeholder para manter a altura consistente se não houver imagem --}}
+                                <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                    Sem imagem
+                                </div>
                             @endif
-                            <div class="p-4 flex flex-col h-full">
+                            <div class="p-4 flex flex-col flex-grow"> {{-- Alterado h-full para flex-grow --}}
                                 <h3 class="mb-2 text-lg font-semibold text-gray-900">{{ $event->event_name }}</h3>
-                                <p class="mb-2 flex-grow text-gray-700">{{ Str::limit($event->event_description, 100) }}</p>
-                                <p class="mb-1 text-sm text-gray-500">
-                                    📍 {{ $event->event_location }}<br>
-                                    📅 {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
-                                </p>
-                                <p class="mb-4 text-xs text-gray-400">
-                                    Coordenador: {{ $event->eventCoordinator?->userAccount?->name ?? 'Não informado' }}<br>
-                                    Curso: {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Evento Geral' }}
-                                </p>
-                                <div class="mt-auto flex flex-col space-y-2">
+                                <p class="mb-2 text-gray-700 text-sm overflow-hidden text-ellipsis line-clamp-3">{{ Str::limit($event->event_description, 100) }}</p> {{-- Adicionado text-sm e line-clamp --}}
+                                <div class="mt-auto"> {{-- Garante que o bloco de localização/data e coordenador fique no final --}}
+                                    <p class="mb-1 text-sm text-gray-500">
+                                        📍 {{ $event->event_location }}<br>
+                                        📅 {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
+                                    </p>
+                                    <p class="mb-4 text-xs text-gray-400">
+                                        Coordenador: {{ $event->eventCoordinator?->userAccount?->name ?? 'Não informado' }}<br>
+                                        Curso: {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Evento Geral' }}
+                                    </p>
+                                </div>
+                                <div class="mt-auto flex flex-col space-y-2"> {{-- Mantido mt-auto para os botões --}}
                                     <a href="{{ route('events.show', $event->id) }}" class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">Ver</a>
                                     <a href="{{ route('events.edit', $event->id) }}" class="rounded-md bg-yellow-100 px-3 py-1 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200">Editar</a>
                                     <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este evento?')" class="inline">
