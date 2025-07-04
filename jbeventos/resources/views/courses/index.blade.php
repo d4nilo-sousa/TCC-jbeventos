@@ -1,84 +1,74 @@
-@extends('layouts.layout')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Lista de Cursos
+        </h2>
+    </x-slot>
 
-@section('content')
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-md rounded p-6">
+                <a href="{{ route('courses.create') }}" class="mb-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Criar Novo Curso</a>
 
-<div class="container">
-    <h1>Cursos</h1>
+                @if(session('success'))
+                    <div class="mb-4 text-green-600">{{ session('success') }}</div>
+                @endif
 
-    <!-- Botão para criar um novo curso -->
-    <a href="{{ route('courses.create') }}" class="btn btn-primary mb-3">Criar Novo Curso</a>
-
-    <!-- Exibe mensagem de sucesso se existir na sessão -->
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <!-- Verifica se há cursos para listar -->
-    @if($courses->count())
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Ícone</th>
-                    <th>Banner</th>
-                    <th>Nome</th>
-                    <th>Coordenador</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Loop para listar todos os cursos -->
-                @foreach($courses as $course)
-                    <tr>
-                        <td>
-                            <!-- Verifica se o curso possui ícone, se sim exibe a imagem -->
-                            @if($course->course_icon)
-                                <img src="{{ asset('storage/' . $course->course_icon) }}" alt="Ícone" width="50">
-                            @else
-                                <!-- Caso não possua ícone, exibe traço -->
-                                ---
-                            @endif
-                        </td>
-                        <td>
-                            <!-- Verifica se o curso possui banner, se sim exibe a imagem -->
-                            @if($course->course_banner)
-                                <img src="{{ asset('storage/' . $course->course_banner) }}" alt="Banner" width="100">
-                            @else
-                                <!-- Caso não possua banner, exibe traço -->
-                                ---
-                            @endif
-                        </td>
-                        <td>
-                            <!-- Link para a página de detalhes do curso -->
-                            <a href="{{ route('courses.show', $course->id) }}">
-                                {{ $course->course_name }}
-                            </a>
-                        </td>
-                        <td>
-                            <!-- Exibe o nome do coordenador do curso, se existir -->
-                            {{ $course->courseCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}
-                        </td>
-                        <td>
-                            <!-- Botão para editar o curso -->
-                            <a href="{{ route('courses.edit', $course->id) }}" class="btn btn-sm btn-warning">Editar</a>
-
-                            <!-- Botão para visualizar detalhes do curso -->
-                            <a href="{{ route('courses.show', $course->id) }}" class="btn btn-info btn-sm">Ver</a>
-
-                            <!-- Formulário para excluir o curso com confirmação -->
-                            <form action="{{ route('courses.destroy', $course->id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Tem certeza que deseja excluir?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-danger" type="submit">Excluir</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @else
-        <!-- Mensagem exibida caso não existam cursos -->
-        <p>Nenhum curso cadastrado.</p>
-    @endif
-</div>
-
-@endsection
+                @if($courses->count())
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm text-left">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-2">Ícone</th>
+                                    <th class="p-2">Banner</th>
+                                    <th class="p-2">Nome</th>
+                                    <th class="p-2">Coordenador</th>
+                                    <th class="p-2">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($courses as $course)
+                                    <tr class="border-b">
+                                        <td class="p-2">
+                                            @if($course->course_icon)
+                                                <img src="{{ asset('storage/' . $course->course_icon) }}" alt="Ícone" class="w-12 h-auto">
+                                            @else
+                                                ---
+                                            @endif
+                                        </td>
+                                        <td class="p-2">
+                                            @if($course->course_banner)
+                                                <img src="{{ asset('storage/' . $course->course_banner) }}" alt="Banner" class="w-24 h-auto">
+                                            @else
+                                                ---
+                                            @endif
+                                        </td>
+                                        <td class="p-2">
+                                            <a href="{{ route('courses.show', $course->id) }}" class="text-blue-600 hover:underline">
+                                                {{ $course->course_name }}
+                                            </a>
+                                        </td>
+                                        <td class="p-2">
+                                            {{ $course->courseCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}
+                                        </td>
+                                        <td class="p-2 space-x-1">
+                                            <a href="{{ route('courses.edit', $course->id) }}" class="text-yellow-600 hover:underline">Editar</a>
+                                            <a href="{{ route('courses.show', $course->id) }}" class="text-blue-600 hover:underline">Ver</a>
+                                            <form action="{{ route('courses.destroy', $course->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Tem certeza que deseja excluir?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-red-600 hover:underline">Excluir</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <p class="text-gray-600">Nenhum curso cadastrado.</p>
+                @endif
+            </div>
+        </div>
+    </div>
+</x-app-layout>

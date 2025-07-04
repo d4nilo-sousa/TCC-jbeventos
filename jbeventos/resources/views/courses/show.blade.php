@@ -1,41 +1,47 @@
-@extends('layouts.layout')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ $course->course_name }}
+        </h2>
+    </x-slot>
 
-@section('content')
+    <div class="py-6">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-md rounded p-6">
+                @if($course->course_icon)
+                    <div class="mb-4">
+                        <strong class="block">Ícone do Curso:</strong>
+                        <img src="{{ asset('storage/' . $course->course_icon) }}" alt="Ícone do Curso" class="w-24 mt-1">
+                    </div>
+                @endif
 
-<div class="container">
-    <!-- Título com o nome do curso -->
-    <h1>{{ $course->course_name }}</h1>
+                @if($course->course_banner)
+                    <div class="mb-4">
+                        <img src="{{ asset('storage/' . $course->course_banner) }}" alt="Banner do Curso" class="w-full max-h-64 object-cover rounded">
+                    </div>
+                @endif
 
-    <!-- Exibe o ícone do curso, se existir -->
-    @if($course->course_icon)
-        <p><strong>Ícone do Curso:</strong><br>
-        <img src="{{ asset('storage/' . $course->course_icon) }}" alt="Ícone do Curso" width="100"></p>
-    @endif
+                <div class="mb-4 text-gray-700">
+                    {{ $course->course_description }}
+                </div>
 
-    <!-- Exibe o banner do curso, se existir -->
-    @if($course->course_banner)
-        <img src="{{ asset('storage/' . $course->course_banner) }}" alt="Banner do Curso" style="max-width:100%; height:auto; margin-bottom:20px;">
-    @endif
+                <div class="mb-4">
+                    <strong>Coordenador:</strong> {{ $course->courseCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}
+                </div>
 
-    <!-- Descrição do curso -->
-    <p>{{ $course->course_description }}</p>
+                <dl class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                    <div>
+                        <dt class="font-medium text-gray-600">Criado em</dt>
+                        <dd>{{ $course->created_at->format('d/m/Y H:i') }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-medium text-gray-600">Atualizado em</dt>
+                        <dd>{{ $course->updated_at->format('d/m/Y H:i') }}</dd>
+                    </div>
+                </dl>
 
-    <!-- Nome do coordenador do curso, ou texto padrão se não definido -->
-    <p><strong>Coordenador:</strong> {{ $course->courseCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}</p>
-
-    <div class="mt-4">
-        <!-- Lista de datas de criação e atualização formatadas -->
-        <dl class="row">
-            <dt class="col-sm-3">Criado em</dt>
-            <dd class="col-sm-9">{{ $course->created_at->format('d/m/Y H:i') }}</dd>
-
-            <dt class="col-sm-3">Atualizado em</dt>
-            <dd class="col-sm-9">{{ $course->updated_at->format('d/m/Y H:i') }}</dd>
-        </dl>
-
-        <!-- Botão para voltar à lista de cursos -->
-        <a href="{{ route('courses.index') }}" class="btn btn-secondary">Voltar para lista</a>
+                <a href="{{ route('courses.index') }}" class="inline-block bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Voltar para lista</a>
+            </div>
+        </div>
     </div>
-</div>
-
-@endsection
+</x-app-layout>
