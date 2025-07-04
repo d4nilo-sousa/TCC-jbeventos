@@ -1,111 +1,103 @@
-@extends('layouts.layout') {{-- Extende o layout principal da aplicação --}}
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ isset($event) ? 'Editar Evento' : 'Criar Evento' }}
+        </h2>
+    </x-slot>
 
-@section('content')
-
-<div class="container">
-    <h1>Criar Curso</h1>
-
-    {{-- Exibe mensagens de erro, caso existam --}}
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    {{-- Formulário para criação ou edição de evento --}}
-    <form action="{{ isset($event) ? route('events.update', $event->id) : route('events.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf {{-- Proteção contra CSRF --}}
-        @if(isset($event))
-            @method('PUT') {{-- Método PUT para atualização --}}
-        @endif
-
-        {{-- Upload de Imagem --}}
-        <div class="mb-4">
-            <label for="event_image" class="form-label">Imagem de Capa</label>
-            <input type="file" class="form-control" id="event_image" name="event_image" accept="image/*">
-
-            @if(isset($event) && $event->event_image)
-                <div class="mt-3">
-                    <strong>Imagem atual:</strong>
-                    <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem atual" class="img-fluid rounded mt-2" style="max-height: 300px;">
-                </div>
-            @endif
-        </div>
-
-        {{-- Nome do Evento --}}
-        <div class="mb-3">
-            <label for="event_name" class="form-label">Nome do Evento</label>
-            <input type="text" name="event_name" class="form-control" id="event_name" value="{{ old('event_name', $event->event_name ?? '') }}" required>
-        </div>
-
-        {{-- Descrição do Evento --}}
-        <div class="mb-3">
-            <label for="event_description" class="form-label">Descrição</label>
-            <textarea name="event_description" class="form-control" rows="4" required>{{ old('event_description', $event->event_description ?? '') }}</textarea>
-        </div>
-
-        {{-- Local do Evento --}}
-        <div class="mb-3">
-            <label for="event_location" class="form-label">Local</label>
-            <input type="text" name="event_location" class="form-control" value="{{ old('event_location', $event->event_location ?? '') }}" required>
-        </div>
-
-        {{-- Categorias do Evento --}}
-        <div class="mb-3">
-            <label class="form-label">Categorias do Evento</label>
-            <div class="d-flex flex-wrap gap-3">
-                @foreach($categories as $category)
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="categories[]" value="{{ $category->id }}" id="category_{{ $category->id }}"
-                            {{ in_array($category->id, old('categories', isset($event) ? $event->eventCategories->pluck('id')->toArray() : [])) ? 'checked' : '' }}>
-                        <label class="form-check-label" for="category_{{ $category->id }}">
-                            {{ $category->category_name }}
-                        </label>
+    <div class="py-6">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-md rounded p-6">
+                @if ($errors->any())
+                    <div class="mb-4 text-red-600">
+                        <ul class="list-disc pl-5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
-                @endforeach
+                @endif
+
+                <form action="{{ isset($event) ? route('events.update', $event->id) : route('events.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    @if(isset($event))
+                        @method('PUT')
+                    @endif
+
+                    <div>
+                        <label for="event_image" class="block font-medium">Imagem de Capa</label>
+                        <input type="file" name="event_image" id="event_image" accept="image/*" class="w-full border-gray-300 rounded shadow-sm">
+
+                        @if(isset($event) && $event->event_image)
+                            <div class="mt-2">
+                                <strong>Imagem atual:</strong>
+                                <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem atual" class="mt-1 rounded max-h-72">
+                            </div>
+                        @endif
+                    </div>
+
+                    <div>
+                        <label for="event_name" class="block font-medium">Nome do Evento</label>
+                        <input type="text" name="event_name" id="event_name" value="{{ old('event_name', $event->event_name ?? '') }}" class="w-full border-gray-300 rounded shadow-sm" required>
+                    </div>
+
+                    <div>
+                        <label for="event_description" class="block font-medium">Descrição</label>
+                        <textarea name="event_description" id="event_description" rows="4" class="w-full border-gray-300 rounded shadow-sm" required>{{ old('event_description', $event->event_description ?? '') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label for="event_location" class="block font-medium">Local</label>
+                        <input type="text" name="event_location" id="event_location" value="{{ old('event_location', $event->event_location ?? '') }}" class="w-full border-gray-300 rounded shadow-sm" required>
+                    </div>
+
+                    <div>
+                        <label class="block font-medium mb-1">Categorias do Evento</label>
+                        <div class="flex flex-wrap gap-4">
+                            @foreach($categories as $category)
+                                <label class="inline-flex items-center space-x-2">
+                                    <input type="checkbox" name="categories[]" value="{{ $category->id }}" class="rounded"
+                                        {{ in_array($category->id, old('categories', isset($event) ? $event->eventCategories->pluck('id')->toArray() : [])) ? 'checked' : '' }}>
+                                    <span>{{ $category->category_name }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('categories')
+                            <div class="text-red-600 mt-2">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="event_scheduled_at" class="block font-medium">Data e Hora do Evento</label>
+                            <input type="datetime-local" name="event_scheduled_at" id="event_scheduled_at" class="w-full border-gray-300 rounded shadow-sm" value="{{ old('event_scheduled_at', isset($event) ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}" required>
+                        </div>
+                        <div>
+                            <label for="event_expired_at" class="block font-medium">Data/Hora de Encerramento (opcional)</label>
+                            <input type="datetime-local" name="event_expired_at" id="event_expired_at" class="w-full border-gray-300 rounded shadow-sm" value="{{ old('event_expired_at', isset($event) && $event->event_expired_at ? \Carbon\Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') : '') }}">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="coordinator_id" class="block font-medium">Coordenador Responsável</label>
+                        <select name="coordinator_id" id="coordinator_id" class="w-full border-gray-300 rounded shadow-sm" required>
+                            <option value="">Selecione</option>
+                            @foreach($coordinators as $coordinator)
+                                <option value="{{ $coordinator->id }}" {{ old('coordinator_id', $event->coordinator_id ?? '') == $coordinator->id ? 'selected' : '' }}>
+                                    {{ $coordinator->userAccount->name ?? 'Coordenador Sem Nome' }} — {{ $coordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex justify-between mt-4">
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                            {{ isset($event) ? 'Atualizar Evento' : 'Criar Evento' }}
+                        </button>
+                        <a href="{{ route('events.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</a>
+                    </div>
+                </form>
             </div>
-            @error('categories')
-                <div class="text-danger mt-2">{{ $message }}</div>
-            @enderror
         </div>
-
-        {{-- Datas do Evento --}}
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <label for="event_scheduled_at" class="form-label">Data e Hora do Evento</label>
-                <input type="datetime-local" name="event_scheduled_at" class="form-control" value="{{ old('event_scheduled_at', isset($event) ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}" required>
-            </div>
-            <div class="col-md-6">
-                <label for="event_expired_at" class="form-label">Data/Hora de Encerramento (opcional)</label>
-                <input type="datetime-local" name="event_expired_at" class="form-control" value="{{ old('event_expired_at', isset($event) && $event->event_expired_at ? \Carbon\Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') : '') }}">
-            </div>
-        </div>
-
-        {{-- Coordenador Responsável --}}
-        <div class="mb-3">
-            <label for="coordinator_id" class="form-label">Coordenador Responsável</label>
-            <select name="coordinator_id" class="form-select" required>
-                <option value="">Selecione</option>
-                @foreach($coordinators as $coordinator)
-                    <option value="{{ $coordinator->id }}" {{ old('coordinator_id', $event->coordinator_id ?? '') == $coordinator->id ? 'selected' : '' }}>
-                        {{ $coordinator->userAccount->name ?? 'Coordenador Sem Nome' }} — {{ $coordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        {{-- Botões de Ação --}}
-        <div class="d-flex justify-content-between mt-4">
-            <button type="submit" class="btn btn-success">
-                {{ isset($event) ? 'Atualizar Evento' : 'Criar Evento' }}
-            </button>
-            <a href="{{ route('events.index') }}" class="btn btn-secondary">Cancelar</a>
-        </div>
-    </form>
-</div>
-
-@endsection
+    </div>
+</x-app-layout>
