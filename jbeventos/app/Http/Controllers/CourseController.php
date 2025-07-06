@@ -47,6 +47,9 @@ class CourseController extends Controller
             $data['course_banner'] = $request->file('course_banner')->store('course_banners', 'public');
         }
 
+        // Adiciona o ID do admin logado ao curso criado
+        $data['user_id'] = auth()->id();
+
         // Cria o curso com os dados validados e arquivos armazenados
         Course::create($data);
 
