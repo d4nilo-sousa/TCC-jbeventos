@@ -4,16 +4,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
+use App\Http\Controllers\CoordinatorPasswordController;
 
-// Redireciona para a rota de login ao acessar a raiz do site
+// Ao acessar a raiz do site, redireciona para a rota de login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Grupo de rotas protegidas por autenticação e verificação
+// Grupo de rotas protegidas por autenticação, sessão ativa e e-mail verificado
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
 
-    // Redireciona o usuário autenticado para o dashboard correspondente ao seu tipo de conta
+    // Redireciona o usuário autenticado para o dashboard conforme seu tipo de usuário
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
@@ -21,49 +22,54 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             'admin' => redirect()->route('admin.dashboard'),
             'coordinator' => redirect()->route('coordinator.dashboard'),
             'user' => redirect()->route('user.dashboard'),
-            default => abort(403), // Retorna erro 403 se o tipo de usuário for inválido
+            default => abort(403), // Se o tipo de usuário não for válido, retorna erro 403
         };
     })->name('dashboard');
 
-    // Rotas exclusivas do painel do Administrador
+    // Rotas para o painel do Administrador
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
 
-        // Exibe a view do dashboard do administrador
+        // Exibe o dashboard do administrador
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
         })->name('admin.dashboard');
 
-        // CRUD dos Coordenadores (somente para admin)
+        // CRUD completo para gerenciar coordenadores (só admin pode acessar)
         Route::resource('coordinators', CoordinatorController::class);
 
-        // CRUD dos Cursos (somente para admin)
+        // CRUD completo para gerenciar cursos (só admin pode acessar)
         Route::resource('courses', CourseController::class);
     });
 
-    // Rotas exclusivas do painel do Coordenador
-    Route::prefix('coordinator')->middleware('checkUserType:coordinator')->group(function () {
+    // Rotas para o painel do Coordenador
+    Route::prefix('coordinator')->middleware('checkUserType:coordinator', 'forcePasswordChange:true')->group(function () {
 
-        // Exibe a view do dashboard do coordenador
+        // Exibe o dashboard do coordenador
         Route::get('/dashboard', function () {
             return view('coordinator.dashboard');
         })->name('coordinator.dashboard');
 
-        // CRUD dos Eventos (somente para coordenador)
+        // CRUD completo para gerenciar eventos (só coordenador pode acessar)
         Route::resource('events', EventController::class);
+
+        // Rotas para editar e atualizar a senha do coordenador
+        // Note que não há parâmetro na URL para estas rotas
+        Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
+        Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
     });
 
-    // Rotas exclusivas do painel do Usuário comum
+    // Rotas para o painel do Usuário comum
     Route::prefix('user')->middleware('checkUserType:user')->group(function () {
 
-        // Exibe a view do dashboard do usuário
+        // Exibe o dashboard do usuário comum
         Route::get('/dashboard', function () {
             return view('user.dashboard');
         })->name('user.dashboard');
     });
 
-    // Rotas públicas para cursos: apenas exibição de lista e detalhes
+    // Rotas públicas para cursos, permitindo apenas listagem e detalhes
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
 
-    // Rotas públicas para eventos: apenas exibição de lista e detalhes
+    // Rotas públicas para eventos, permitindo apenas listagem e detalhes
     Route::resource('events', EventController::class)->only(['index', 'show']);
 });

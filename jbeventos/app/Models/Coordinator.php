@@ -12,7 +12,8 @@ class Coordinator extends Model
     // Campos que podem ser preenchidos em massa
     protected $fillable = [
         'coordinator_type',
-        'user_id'
+        'temporary_password',
+        'user_id',
     ];
 
     // Define que o atributo 'temporary_password' deve ser tratado como booleano
