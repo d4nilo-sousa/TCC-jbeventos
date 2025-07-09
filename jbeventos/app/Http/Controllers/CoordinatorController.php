@@ -32,10 +32,11 @@ class CoordinatorController extends Controller
             'coordinator_type' => 'required|in:general,course',
         ]);
 
-        // Cria o usuário coordenador com senha criptografada
+        // Cria o usuário coordenador com senha criptografada e verificação de email
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'email_verified_at' => now(),
             'password' => Hash::make($request->password),
             'user_type' => 'coordinator',
         ]);

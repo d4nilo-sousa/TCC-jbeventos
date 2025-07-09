@@ -16,6 +16,7 @@ class Course extends Model
         'course_icon',
         'course_banner',
         'coordinator_id',
+        'user_id',
     ];
 
     // Relação com o modelo Coordinator

@@ -4,30 +4,72 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
+use App\Http\Controllers\CoordinatorPasswordController;
 
-// Redireciona para login ao acessar a raiz
+// Ao acessar a raiz do site, redireciona para a rota de login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Grupo de rotas protegidas por autenticação
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
+// Grupo de rotas protegidas por autenticação, sessão ativa e e-mail verificado
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
 
-    // Dashboard
+    // Redireciona o usuário autenticado para o dashboard conforme seu tipo de usuário
     Route::get('/dashboard', function () {
-        return view('dashboard');
+        $user = auth()->user();
+
+        return match ($user->user_type) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'coordinator' => redirect()->route('coordinator.dashboard'),
+            'user' => redirect()->route('user.dashboard'),
+            default => abort(403), // Se o tipo de usuário não for válido, retorna erro 403
+        };
     })->name('dashboard');
 
-    // Rotas dos eventos
-    Route::resource('events', EventController::class);
+    // Rotas para o painel do Administrador
+    Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
 
-    // Rotas dos cursos
-    Route::resource('courses', CourseController::class);
+        // Exibe o dashboard do administrador
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('admin.dashboard');
 
-    // Rotas dos coordenadores
-    Route::resource('coordinators', CoordinatorController::class);
+        // CRUD completo para gerenciar coordenadores (só admin pode acessar)
+        Route::resource('coordinators', CoordinatorController::class);
+
+        // CRUD completo para gerenciar cursos (só admin pode acessar)
+        Route::resource('courses', CourseController::class);
+    });
+
+    // Rotas para o painel do Coordenador
+    Route::prefix('coordinator')->middleware('checkUserType:coordinator', 'forcePasswordChange:true')->group(function () {
+
+        // Exibe o dashboard do coordenador
+        Route::get('/dashboard', function () {
+            return view('coordinator.dashboard');
+        })->name('coordinator.dashboard');
+
+        // CRUD completo para gerenciar eventos (só coordenador pode acessar)
+        Route::resource('events', EventController::class);
+
+        // Rotas para editar e atualizar a senha do coordenador
+        // Note que não há parâmetro na URL para estas rotas
+        Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
+        Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
+    });
+
+    // Rotas para o painel do Usuário comum
+    Route::prefix('user')->middleware('checkUserType:user')->group(function () {
+
+        // Exibe o dashboard do usuário comum
+        Route::get('/dashboard', function () {
+            return view('user.dashboard');
+        })->name('user.dashboard');
+    });
+
+    // Rotas públicas para cursos, permitindo apenas listagem e detalhes
+    Route::resource('courses', CourseController::class)->only(['index', 'show']);
+
+    // Rotas públicas para eventos, permitindo apenas listagem e detalhes
+    Route::resource('events', EventController::class)->only(['index', 'show']);
 });

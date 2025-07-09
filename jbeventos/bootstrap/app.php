@@ -11,8 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    // Importando o Middleware para filtrar os tipos de usúario
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'checkUserType' => \App\Http\Middleware\CheckUserType::class,
+            'forcePasswordChange' => \App\Http\Middleware\ForcePasswordChange::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
