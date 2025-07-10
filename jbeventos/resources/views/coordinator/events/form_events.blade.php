@@ -73,19 +73,15 @@
         </div>
     </div>
 
-    {{-- Coordenador --}}
+    {{-- Coordenador atual (somente leitura) --}}
     <div class="mt-4">
-        <x-input-label for="coordinator_id" value="Coordenador Responsável" />
-        <select name="coordinator_id" id="coordinator_id" class="form-select w-full mt-1 rounded-md shadow-sm border-gray-300">
-            <option value="">Selecione</option>
-            @foreach($coordinators as $coordinator)
-                <option value="{{ $coordinator->id }}"
-                    {{ old('coordinator_id', $event->coordinator_id ?? '') == $coordinator->id ? 'selected' : '' }}>
-                    {{ $coordinator->userAccount->name ?? 'Coordenador Sem Nome' }} — {{ $coordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
-                </option>
-            @endforeach
-        </select>
+        <x-input-label value="Coordenador Responsável" />
+        <p class="text-gray-700 text-sm mt-1">
+            {{ auth()->user()->name }} — 
+            {{ auth()->user()->coordinator?->coordinatedCourse?->course_name ?? 'Evento Geral' }}
+        </p>
     </div>
+
 
     {{-- Botões --}}
     <div class="mt-6 flex justify-between">

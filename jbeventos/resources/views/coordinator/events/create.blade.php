@@ -78,17 +78,14 @@
                         </div>
                     </div>
 
-                    <div>
-                        <label for="coordinator_id" class="block font-medium">Coordenador Responsável</label>
-                        <select name="coordinator_id" id="coordinator_id" class="w-full border-gray-300 rounded shadow-sm" required>
-                            <option value="">Selecione</option>
-                            @foreach($coordinators as $coordinator)
-                                <option value="{{ $coordinator->id }}" {{ old('coordinator_id', $event->coordinator_id ?? '') == $coordinator->id ? 'selected' : '' }}>
-                                    {{ $coordinator->userAccount->name ?? 'Coordenador Sem Nome' }} — {{ $coordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                   <div>
+                    <label class="block font-medium mb-1">Coordenador Responsável</label>
+                    <p class="text-gray-600">
+                       {{ auth()->user()->name }} -  
+                       {{ auth()->coordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
+                    </p>
+
+                   </div
 
                     <div class="flex justify-between mt-4">
                         <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">

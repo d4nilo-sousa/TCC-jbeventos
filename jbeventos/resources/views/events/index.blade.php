@@ -62,22 +62,28 @@
                                     </p>
                                 </div>
 
-                                {{-- Botões de ação: Ver, Editar e Excluir (editar/excluir só para o coordenador responsável) --}}
-                                <div class="mt-auto flex flex-col space-y-2">
-                                    <a href="{{ route('events.show', $event->id) }}" class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">Ver</a>
+                             {{-- Botões de ação: Ver, Editar e Excluir --}}
+                        <div class="mt-auto flex flex-col space-y-2">
+                            <a href="{{ route('events.show', $event->id) }}" class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">Ver</a>
 
-                                    @if(auth()->user()->id === $event->eventCoordinator?->userAccount?->id)
-                                        <a href="{{ route('events.edit', $event->id) }}" class="rounded-md bg-yellow-100 px-3 py-1 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200">Editar</a>
+                        @if(auth()->check() && auth()->user()->user_type === 'coordinator')
+                         @php
+                            $loggedCoordinator = auth()->user()->coordinator;
+                        @endphp
 
-                                        <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este evento?')" class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="w-full rounded-md bg-red-100 px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-200">
-                                                Excluir
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
+                    @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
+                        <a href="{{ route('events.edit', $event->id) }}" class="rounded-md bg-yellow-100 px-3 py-1 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200">Editar</a>
+
+                        <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este evento?')" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-full rounded-md bg-red-100 px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-200">
+                                Excluir
+                            </button>
+                        </form>
+                    @endif
+                    @endif
+                        </div>
                             </div>
                         </div>
                     @endforeach
