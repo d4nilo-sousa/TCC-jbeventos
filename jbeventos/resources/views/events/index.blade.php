@@ -56,13 +56,7 @@
                                         📍 {{ $event->event_location }}<br>
                                         📅 {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
                                     </p>
-
-                                    {{-- Coordenador e curso relacionados --}}
-                                    <p class="mb-4 text-xs text-gray-400">
-                                        Coordenador: {{ $event->eventCoordinator?->userAccount?->name ?? 'Não informado' }}<br>
-                                        Curso:
-                                        {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Evento Geral' }}
-                                    </p>
+                                    
                                 </div>
 
                                 {{-- Botões de ação: Ver, Editar e Excluir --}}

@@ -39,7 +39,7 @@ class Event extends Model
 
     // Retorna o coordenador responsável pelo evento
     public function eventCoordinator() {
-        return $this->belongsTo(Coordinator::class);
+        return $this->belongsTo(Coordinator::class ,'coordinator_id');
     }
 
     // Relação muitos-para-muitos com Category usando tabela pivot 'category_event'

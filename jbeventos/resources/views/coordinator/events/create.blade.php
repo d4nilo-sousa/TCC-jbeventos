@@ -1,4 +1,5 @@
 <x-app-layout>
+    {{-- Cabeçalho da Página --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ isset($event) ? 'Editar Evento' : 'Criar Evento' }}
@@ -8,6 +9,8 @@
     <div class="py-6">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-md rounded p-6">
+                
+                {{-- Exibição de erros de validação --}}
                 @if ($errors->any())
                     <div class="mb-4 text-red-600">
                         <ul class="list-disc pl-5">
@@ -18,12 +21,18 @@
                     </div>
                 @endif
 
-                <form action="{{ isset($event) ? route('events.update', $event->id) : route('events.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                {{-- Formulário de criação/edição de evento --}}
+                <form action="{{ isset($event) ? route('events.update', $event->id) : route('events.store') }}"
+                      method="POST"
+                      enctype="multipart/form-data"
+                      class="space-y-4">
+
                     @csrf
                     @if(isset($event))
                         @method('PUT')
                     @endif
 
+                    {{-- Campo: Imagem de Capa --}}
                     <div>
                         <label for="event_image" class="block font-medium">Imagem de Capa</label>
                         <input type="file" name="event_image" id="event_image" accept="image/*" class="w-full border-gray-300 rounded shadow-sm">
@@ -36,21 +45,30 @@
                         @endif
                     </div>
 
+                    {{-- Campo: Nome do Evento --}}
                     <div>
                         <label for="event_name" class="block font-medium">Nome do Evento</label>
-                        <input type="text" name="event_name" id="event_name" value="{{ old('event_name', $event->event_name ?? '') }}" class="w-full border-gray-300 rounded shadow-sm" required>
+                        <input type="text" name="event_name" id="event_name"
+                               value="{{ old('event_name', $event->event_name ?? '') }}"
+                               class="w-full border-gray-300 rounded shadow-sm" required>
                     </div>
 
+                    {{-- Campo: Descrição do Evento --}}
                     <div>
                         <label for="event_description" class="block font-medium">Descrição</label>
-                        <textarea name="event_description" id="event_description" rows="4" class="w-full border-gray-300 rounded shadow-sm" required>{{ old('event_description', $event->event_description ?? '') }}</textarea>
+                        <textarea name="event_description" id="event_description" rows="4"
+                                  class="w-full border-gray-300 rounded shadow-sm" required>{{ old('event_description', $event->event_description ?? '') }}</textarea>
                     </div>
 
+                    {{-- Campo: Local do Evento --}}
                     <div>
                         <label for="event_location" class="block font-medium">Local</label>
-                        <input type="text" name="event_location" id="event_location" value="{{ old('event_location', $event->event_location ?? '') }}" class="w-full border-gray-300 rounded shadow-sm" required>
+                        <input type="text" name="event_location" id="event_location"
+                               value="{{ old('event_location', $event->event_location ?? '') }}"
+                               class="w-full border-gray-300 rounded shadow-sm" required>
                     </div>
 
+                    {{-- Campo: Categorias do Evento (Checkbox) --}}
                     <div>
                         <label class="block font-medium mb-1">Categorias do Evento</label>
                         <div class="flex flex-wrap gap-4">
@@ -67,26 +85,56 @@
                         @enderror
                     </div>
 
+                    {{-- Campos: Data/Hora de Início e Encerramento --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="event_scheduled_at" class="block font-medium">Data e Hora do Evento</label>
-                            <input type="datetime-local" name="event_scheduled_at" id="event_scheduled_at" class="w-full border-gray-300 rounded shadow-sm" value="{{ old('event_scheduled_at', isset($event) ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}" required>
+                            <input type="datetime-local" name="event_scheduled_at" id="event_scheduled_at"
+                                   class="w-full border-gray-300 rounded shadow-sm"
+                                   value="{{ old('event_scheduled_at', isset($event) ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}"
+                                   required>
                         </div>
+
                         <div>
                             <label for="event_expired_at" class="block font-medium">Data/Hora de Encerramento (opcional)</label>
-                            <input type="datetime-local" name="event_expired_at" id="event_expired_at" class="w-full border-gray-300 rounded shadow-sm" value="{{ old('event_expired_at', isset($event) && $event->event_expired_at ? \Carbon\Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') : '') }}">
+                            <input type="datetime-local" name="event_expired_at" id="event_expired_at"
+                                   class="w-full border-gray-300 rounded shadow-sm"
+                                   value="{{ old('event_expired_at', isset($event) && $event->event_expired_at ? \Carbon\Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') : '') }}">
                         </div>
                     </div>
 
-                   <div>
-                    <label class="block font-medium mb-1">Coordenador Responsável</label>
-                    <p class="text-gray-600">
-                       {{ auth()->user()->name }} -  
-                       {{ auth()->coordinator->coordinatedCourse->course_name ?? 'Evento Geral' }}
-                    </p>
+                    {{-- Campo: Coordenador Responsável (Somente leitura) --}}
+                    <div class="mb-4">
+                        <x-input-label for="coordinator_name" value="Coordenador Responsável" />
+                        <x-text-input id="coordinator_name" type="text" class="block mt-1 w-full bg-gray-100"
+                                      value="{{ auth()->user()->name }}" readonly disabled />
+                        <input type="hidden" name="coordinator_id" value="{{ auth()->user()->coordinator->id }}">
+                    </div>
 
-                   </div
+                    {{-- Campo: Tipo do Evento (Curso ou Geral) --}}
+                    @php
+                        $coordinatorType = auth()->user()->coordinator->coordinator_type;
+                        $eventoTipoLabel = $coordinatorType === 'course' ? 'Evento de Curso' : 'Evento Geral';
+                    @endphp
 
+                    <div class="mb-4">
+                        <x-input-label for="event_type" value="Tipo do Evento" />
+                        <x-text-input id="coordinator_type" type="text" class="block mt-1 w-full bg-gray-100"
+                                      value="{{ $eventoTipoLabel }}" readonly disabled />
+                        <input type="hidden" name="coordinator_type" value="{{ $coordinatorType }}">
+                    </div>
+
+                    {{-- Campo: Curso do Evento (se for do tipo 'course') --}}
+                    @if(auth()->user()->coordinator->coordinator_type === 'course')
+                        <div class="mb-4">
+                            <x-input-label for="event_course" value="Curso" />
+                            <x-text-input id="course_name" type="text" class="block mt-1 w-full bg-gray-100"
+                                          value="{{ auth()->user()->coordinator->coordinatedCourse->course_name ?? 'Sem curso' }}" readonly disabled />
+                            <input type="hidden" name="course_id" value="{{ auth()->user()->coordinator->coordinatedCourse->id ?? '' }}">
+                        </div>
+                    @endif
+
+                    {{-- Botões de Ação --}}
                     <div class="flex justify-between mt-4">
                         <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                             {{ isset($event) ? 'Atualizar Evento' : 'Criar Evento' }}
@@ -94,6 +142,7 @@
                         <a href="{{ route('events.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</a>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
