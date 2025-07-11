@@ -35,10 +35,15 @@
                         </div>
                     </div>
 
-                    {{-- Coordenador responsável e curso relacionado --}}
+                    {{-- Coordenador responsável, tipo e curso relacionado --}}
                     <div class="mb-4 text-gray-600">
                         <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}<br>
-                        <strong>🎓 Curso:</strong> {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Evento Geral' }}
+                        @if ($event->eventCoordinator?->coordinator_type === 'general')
+                            <strong>📌 Tipo do evento:</strong> Evento Geral
+                        @elseif ($event->eventCoordinator?->coordinator_type === 'course')
+                            <strong>📌 Tipo do evento:</strong> Evento de Curso<br>
+                            <strong>🎓 Curso:</strong> {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Sem Curso' }}
+                        @endif
                     </div>
 
                     {{-- Categorias associadas ao evento --}}

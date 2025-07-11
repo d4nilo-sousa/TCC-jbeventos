@@ -77,6 +77,11 @@ class User extends Authenticatable
     }
 
     // Retorna o coordenador associado a este usuário
+    public function coordinator() {
+        return $this->hasOne(Coordinator::class);
+    }
+
+    // Retorna o coordenador associado a este usuário
     public function coordinatorRole() {
         return $this->hasOne(Coordinator::class);
     }

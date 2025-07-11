@@ -20,9 +20,8 @@ class EventController extends Controller
     // Formulário para criar evento
     public function create()
     {
-        $coordinators = Coordinator::with('coordinatedCourse')->get(); // Carregar coordenadores com curso associado
         $categories = Category::all(); // carrega as categorias
-        return view('coordinator.events.create', compact('coordinators', 'categories')); //compact é usado para passar variáveis para a view
+        return view('coordinator.events.create', compact('categories')); //compact é usado para passar variáveis para a view
         
     }
 
@@ -36,12 +35,15 @@ class EventController extends Controller
             'event_scheduled_at' => 'required|date',
             'event_expired_at' => 'nullable|date|after:event_scheduled_at',
             'event_image' => 'nullable|image|max:2048',
-            'coordinator_id' => 'required|exists:coordinators,id',
             'categories' => 'array',
             'categories.*' => 'exists:categories,id', // Valida se as categorias existem
         ]);
 
-        $coordinator = Coordinator::findOrFail($request->coordinator_id);
+        // Pega o coordenador autenticado
+        $coordinator = auth()->user()->coordinator;
+        if (!$coordinator) {
+        abort(403, 'Usuário não está vinculado a um coordenador.');
+        }
 
         $data = $request->only([
             'event_name',
@@ -88,9 +90,14 @@ class EventController extends Controller
     public function edit($id)
     {
         $event = Event::findOrFail($id);
-        $coordinators = Coordinator::with('coordinatedCourse')->get();
+        // Verifica se o usuário autenticado é o dono(coordenador) do evento
+        $authCoordinator = auth()->user()->coordinator;
+        if(!$authCoordinator || $authCoordinator->id !== $event->coordinator_id) {
+            abort(403, "Usuário não está vinculado a um coordenador");
+        }
+
         $categories = Category::all();
-        return view('coordinator.events.edit', compact('event', 'coordinators', 'categories')); //passando as variáveis para a view
+        return view('coordinator.events.edit', compact('event', 'categories')); //passando as variáveis para a view
     }
 
     // Atualizar evento
@@ -105,12 +112,16 @@ class EventController extends Controller
             'event_scheduled_at' => 'required|date',
             'event_expired_at' => 'nullable|date|after:event_scheduled_at',
             'event_image' => 'nullable|image|max:2048',
-            'coordinator_id' => 'required|exists:coordinators,id',
             'categories' => 'array',
             'categories.*' => 'exists:categories,id', // Valida se as categorias existem
         ]);
 
-        $coordinator = Coordinator::findOrFail($request->coordinator_id);
+        // Pega o coordenador autenticado
+        $coordinator = auth()->user()->coordinator;
+        if(!$coordinator || $event->coordinator_id !== $coordinator->id) {
+            abort(403, "Usuário não está vinculado a um coordenador");
+        }
+        
 
         $data = $request->only([
             'event_name',
@@ -148,6 +159,12 @@ class EventController extends Controller
     public function destroy($id)
     {
         $event = Event::findOrFail($id);
+        $coordinator = auth()->user()->coordinator;
+
+        // Verifica se o usuário autenticado é o dono(coordenador) do evento
+        if (!$coordinator || $event->coordinator_id !== $coordinator->id) {
+            abort(403, "Você não tem permissão para excluir este evento.");
+        }
 
         if ($event->event_image) {
             Storage::disk('public')->delete($event->event_image);
