@@ -33,6 +33,7 @@ class User extends Authenticatable
         'phone_number',
         'user_icon',
         'user_banner',
+        'bio',
         'user_type',
     ];
 
@@ -103,5 +104,21 @@ class User extends Authenticatable
     public function eventReactions() {
         return $this->hasMany(EventUserReaction::class);
     }
+
+    // Atributos personalizados
+    public function getUserIconUrlAttribute()
+    {
+    return $this->user_icon
+        ? asset('storage/profile_photos/' . $this->user_icon)
+        : asset('default-avatar.png');
+    }
+
+    public function getUserBannerUrlAttribute()
+    {
+    return $this->user_banner
+        ? asset('storage/banners/' . $this->user_banner)
+        : asset('default-banner.jpg');
+    }       
+
 }
 

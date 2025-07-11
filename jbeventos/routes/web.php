@@ -5,6 +5,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
+use App\Http\Controllers\ProfileController;
 
 // Ao acessar a raiz do site, redireciona para a rota de login
 Route::get('/', function () {
@@ -26,6 +27,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         };
     })->name('dashboard');
 
+
     // Rotas para o painel do Administrador
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
 
@@ -44,16 +46,15 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // Rotas para o painel do Coordenador
     Route::prefix('coordinator')->middleware('checkUserType:coordinator', 'forcePasswordChange:true')->group(function () {
 
-        // Exibe o dashboard do coordenador
+        //dashboard do coordenador
         Route::get('/dashboard', function () {
             return view('coordinator.dashboard');
         })->name('coordinator.dashboard');
 
-        // CRUD completo para gerenciar eventos (só coordenador pode acessar)
+        // CRUD completo para gerenciar eventos
         Route::resource('events', EventController::class);
 
         // Rotas para editar e atualizar a senha do coordenador
-        // Note que não há parâmetro na URL para estas rotas
         Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
         Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
     });
@@ -72,4 +73,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     // Rotas públicas para eventos, permitindo apenas listagem e detalhes
     Route::resource('events', EventController::class)->only(['index', 'show']);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::post('/perfil/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
+    Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
+    Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');
 });
