@@ -16,21 +16,21 @@ class ProfileController extends Controller
 
     public function updatePhoto(Request $request)
     {
+        $user = auth()->user();
+
         // Valida a imagem
         $request->validate([
             'user_icon' => 'required|image|max:2048',
         ]);
 
-        $user = auth()->user();
-
-        // Deleta a imagem antiga
-        if ($user->user_icon) {
-            Storage::delete('public/profile_photos/' . $user->user_icon);
+        //apagar imagem antiga se existir
+        if($user->user_icon && Storage::disk('public')->exists($user->user_icon)){
+            Storage::disk('public')->delete($user->user_icon);
         }
 
         // Salva a nova imagem
-        $path = $request->file('user_icon')->store('public/profile_photos');
-        $user->user_icon = basename($path); // Armazena apenas o nome da imagem
+        $path = $request->file('user_icon')->store('profile_photos', 'public');
+        $user->user_icon = $path; // Salva "profile_photos/abc.jpg"
         $user->save();
 
         return back()->with('success', 'Foto de perfil atualizada!'); // Redireciona de volta para a tela de perfil
@@ -38,21 +38,21 @@ class ProfileController extends Controller
 
     public function updateBanner(Request $request)
     {
+        $user = auth()->user();
+
         // Valida a imagem
         $request->validate([
             'user_banner' => 'required|image|max:4096',
         ]);
 
-        $user = auth()->user();
-
-        // Deleta o banner antigo
-        if ($user->user_banner) {
-            Storage::delete('public/banners/' . $user->user_banner);
+        // Apaga o banner antigo se existir
+        if ($user->user_banner && Storage::disk('public')->exists($user->user_banner)) {
+            Storage::disk('public')->delete($user->user_banner);
         }
 
         // Salva o novo banner
-        $path = $request->file('user_banner')->store('public/banners');
-        $user->user_banner = basename($path); // Armazena apenas o nome do banner
+        $path = $request->file('user_banner')->store('banners', 'public');
+        $user->user_banner = $path;
         $user->save();
 
         return back()->with('success', 'Banner atualizado!');
