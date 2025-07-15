@@ -27,10 +27,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         };
     })->name('dashboard');
 
-
     // Rotas para o painel do Administrador
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
-
         // Exibe o dashboard do administrador
         Route::get('/dashboard', function () {
             return view('admin.dashboard');
@@ -45,8 +43,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     // Rotas para o painel do Coordenador
     Route::prefix('coordinator')->middleware('checkUserType:coordinator', 'forcePasswordChange:true')->group(function () {
-
-        //dashboard do coordenador
+        // Dashboard do coordenador
         Route::get('/dashboard', function () {
             return view('coordinator.dashboard');
         })->name('coordinator.dashboard');
@@ -61,20 +58,25 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     // Rotas para o painel do Usuário comum
     Route::prefix('user')->middleware('checkUserType:user')->group(function () {
-
         // Exibe o dashboard do usuário comum
         Route::get('/dashboard', function () {
             return view('user.dashboard');
         })->name('user.dashboard');
     });
 
-    // Rotas públicas para cursos, permitindo apenas listagem e detalhes
+    // Rotas públicas para cursos (somente listagem e detalhes)
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
 
-    // Rotas públicas para eventos, permitindo apenas listagem e detalhes
+    // Rotas públicas para eventos (somente listagem e detalhes)
     Route::resource('events', EventController::class)->only(['index', 'show']);
+
+    // ✅ Nova rota para o painel de Configurações (aproveitando os forms do Jetstream)
+    Route::get('/settings', function () {
+        return view('settings');
+    })->name('settings');
 });
 
+// Rotas do Perfil personalizado (foto, banner, bio)
 Route::middleware(['auth'])->group(function () {
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/perfil/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
