@@ -25,14 +25,24 @@
                     </button>
                 </form>
             </div>
-            <div>
-                <h2 class="text-xl font-bold">{{ $user->name }}</h2>
-                <p class="text-sm text-gray-500">{{ ucfirst($user->user_type) }}</p>
-            </div>
+        
+           <div>
+    <h2 class="text-xl font-bold">{{ $user->name }}</h2>
+    <p class="text-sm text-gray-500">
+        @php
+            $userTypes = [
+                'coordinator' => 'Coordenador',
+                'user' => 'Usuário',
+                'admin' => 'Administrador',
+            ];
+        @endphp
+        {{ $userTypes[$user->user_type] ?? ucfirst($user->user_type) }}
+    </p>
+</div>
         </div>
 
        {{-- Biografia --}}
-<div class="px-6 py-4" x-data="{ editing: false, bio: @js(old('bio', $user->bio)), original: @js($user->bio) }">
+    <div class="px-6 py-4" x-data="{ editing: false, bio: @js(old('bio', $user->bio)), original: @js($user->bio) }">
     <h3 class="text-sm font-semibold mb-1">Biografia</h3>
 
     {{-- Modo de exibição --}}
