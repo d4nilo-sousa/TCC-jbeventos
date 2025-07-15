@@ -10,7 +10,6 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     */
     public function run(): void
     {
         // User::factory(10)->create();
@@ -18,6 +17,16 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
+        ]);
+    }
+    */
+
+    // Chamada das Seeders
+    public function run(): void
+    {
+        $this->call([
+            CategorySeeder::class, // Seeder para as Categorias de Evento
+            AdminSeeder::class, // Seeder para os Admins
         ]);
     }
 }
