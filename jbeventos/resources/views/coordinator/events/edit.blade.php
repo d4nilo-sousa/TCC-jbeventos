@@ -87,7 +87,7 @@
                             </div>
 
                             <div>
-                                <label for="event_expired_at" class="block font-medium">Encerramento Autómatico (opcional)</label>
+                                <label for="event_expired_at" class="block font-medium">Exclusão Automática (opcional)</label>
                                 <input type="datetime-local" name="event_expired_at" id="event_expired_at"
                                        min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
                                        class="w-full border-gray-300 rounded shadow-sm"

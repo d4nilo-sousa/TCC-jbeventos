@@ -27,10 +27,16 @@
                             <strong>📍 Local:</strong> {{ $event->event_location }}
                         </div>
                         <div>
-                            <strong>📅 Início:</strong> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
-                            {{-- Mostra a data de término, se estiver definida --}}
-                            @if($event->event_expired_at)
-                                <br><strong>⏱ Fim:</strong> {{ \Carbon\Carbon::parse($event->event_expired_at)->format('d/m/Y H:i') }}
+                            <strong>📅 Irá ocorrem em:</strong> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
+                            {{-- Mostra a data de término, se estiver definida (Apenas para o coordenador que criou) --}}
+                            @if(auth()->check() && auth()->user()->user_type === 'coordinator')
+                                @php
+                                    $loggedCoordinator = auth()->user()->coordinator;
+                                @endphp
+
+                                @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
+                                    <br><strong>⏱ Exclusão Automática:</strong> {{ \Carbon\Carbon::parse($event->event_expired_at)->format('d/m/Y H:i') }}
+                                @endif
                             @endif
                         </div>
                     </div>
