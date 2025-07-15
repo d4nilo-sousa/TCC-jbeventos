@@ -1,4 +1,5 @@
 <x-app-layout>
+    {{-- Slot do cabeçalho da página --}}
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Editar Evento
@@ -8,7 +9,7 @@
     <div class="py-6">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-md rounded p-6">
-
+                
                 {{-- Exibição de erros de validação --}}
                 @if ($errors->any())
                     <div class="mb-4 text-red-600">
@@ -20,12 +21,12 @@
                     </div>
                 @endif
 
-                {{-- Formulário de edição do evento --}}
+                {{-- Formulário para editar evento --}}
                 <form action="{{ route('events.update', $event->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     @method('PUT')
 
-                    {{-- Imagem de capa do evento --}}
+                    {{-- Imagem de capa --}}
                     <div>
                         <label for="event_image" class="block font-medium">Imagem de Capa</label>
                         <input type="file" name="event_image" id="event_image" accept="image/*" class="w-full border-gray-300 rounded shadow-sm">
@@ -74,27 +75,30 @@
                         @enderror
                     </div>
 
-                    {{-- Datas do evento --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {{-- Data e hora de início --}}
-                        <div>
-                            <label for="event_scheduled_at" class="block font-medium">Data e Hora do Evento</label>
-                            <input type="datetime-local" name="event_scheduled_at" id="event_scheduled_at" class="w-full border-gray-300 rounded shadow-sm" 
-                                   value="{{ old('event_scheduled_at', \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i')) }}" required>
-                        </div>
+                     {{-- Datas: início e encerramento --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="event_scheduled_at" class="block font-medium">Data e Hora do Evento</label>
+                                <input type="datetime-local" name="event_scheduled_at" id="event_scheduled_at"
+                                       min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
+                                       class="w-full border-gray-300 rounded shadow-sm"
+                                       value="{{ old('event_scheduled_at', isset($event) ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}"
+                                       required>
+                            </div>
 
-                        {{-- Data e hora de encerramento (opcional) --}}
-                        <div>
-                            <label for="event_expired_at" class="block font-medium">Data/Hora de Encerramento (opcional)</label>
-                            <input type="datetime-local" name="event_expired_at" id="event_expired_at" class="w-full border-gray-300 rounded shadow-sm" 
-                                   value="{{ old('event_expired_at', $event->event_expired_at ? \Carbon\Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') : '') }}">
+                            <div>
+                                <label for="event_expired_at" class="block font-medium">Encerramento Autómatico (opcional)</label>
+                                <input type="datetime-local" name="event_expired_at" id="event_expired_at"
+                                       min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
+                                       class="w-full border-gray-300 rounded shadow-sm"
+                                       value="{{ old('event_expired_at', isset($event) && $event->event_expired_at ? \Carbon\Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') : '') }}">
+                            </div>
                         </div>
-                    </div>
 
                     {{-- Coordenador responsável (leitura e hidden) --}}
                     <div class="mb-4">
                         <x-input-label for="coordinator_name" value="Coordenador Responsável" />
-                        <x-text-input id="coordinator_name" type="text" class="block mt-1 w-full bg-gray-100" 
+                        <x-text-input id="coordinator_name" type="text" class="block mt-1 w-full bg-gray-100"
                                       value="{{ auth()->user()->name }}" readonly disabled />
                         <input type="hidden" name="coordinator_id" value="{{ auth()->user()->coordinator->id }}">
                     </div>
@@ -102,12 +106,12 @@
                     {{-- Tipo do evento (leitura e hidden) --}}
                     <div class="mb-4">
                         <x-input-label for="event_type" value="Tipo do Evento" />
-                        <x-text-input id="coordinator_type" type="text" class="block mt-1 w-full bg-gray-100" 
+                        <x-text-input id="coordinator_type" type="text" class="block mt-1 w-full bg-gray-100"
                                       value="{{ auth()->user()->coordinator->coordinator_type === 'course' ? 'Evento de Curso' : 'Evento Geral' }}" readonly disabled />
                         <input type="hidden" name="coordinator_type" value="{{ auth()->user()->coordinator->coordinator_type }}">
                     </div>
 
-                    {{-- Curso do evento (somente se for do tipo 'course') --}}
+                    {{-- Curso do evento (apenas se for do tipo curso) --}}
                     @if(auth()->user()->coordinator->coordinator_type === 'course')
                         <div class="mb-4">
                             <x-input-label for="event_course" value="Curso" />
@@ -132,3 +136,7 @@
         </div>
     </div>
 </x-app-layout>
+
+{{-- Script para garantir que a data de encerramento seja posterior à de início --}}
+@vite('resources/js/datetime-validation.js')
+

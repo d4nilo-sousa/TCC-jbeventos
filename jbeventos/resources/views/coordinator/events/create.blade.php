@@ -9,7 +9,7 @@
     <div class="py-6">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-md rounded p-6">
-                
+
                 {{-- Exibição de erros de validação --}}
                 @if ($errors->any())
                     <div class="mb-4 text-red-600">
@@ -21,30 +21,32 @@
                     </div>
                 @endif
 
-                {{-- Verifica se o usuário é coordenador de curso sem curso vinculado --}}
+                {{-- Verifica se o coordenador está vinculado a algum curso --}}
                 @if(auth()->user()->coordinator->coordinator_type === 'course' && !auth()->user()->coordinator->coordinatedCourse)
                     <div class="p-4 bg-red-100 text-red-700 rounded">
-                        Você é coordenador de curso, mas ainda não está vinculado a nenhum curso. Portanto, não é possível criar eventos até que um curso seja atribuído a você.
+                        Você é coordenador de curso, mas ainda não está vinculado a nenhum curso.
+                        Portanto, não é possível criar eventos até que um curso seja atribuído a você.
                     </div>
                 @else
-                    {{-- Formulário de criação ou edição do evento --}}
+                    {{-- Formulário de criação ou edição de evento --}}
                     <form action="{{ isset($event) ? route('events.update', $event->id) : route('events.store') }}"
                           method="POST"
                           enctype="multipart/form-data"
                           class="space-y-4">
 
                         @csrf
-                        {{-- Se estiver editando, usa método PUT --}}
+
+                        {{-- Caso seja edição, define o método como PUT --}}
                         @if(isset($event))
                             @method('PUT')
                         @endif
 
-                        {{-- Campo: Imagem de Capa --}}
+                        {{-- Imagem de capa do evento --}}
                         <div>
                             <label for="event_image" class="block font-medium">Imagem de Capa</label>
                             <input type="file" name="event_image" id="event_image" accept="image/*" class="w-full border-gray-300 rounded shadow-sm">
-
-                            {{-- Exibe imagem atual, se houver --}}
+                            
+                            {{-- Exibe a imagem atual se houver --}}
                             @if(isset($event) && $event->event_image)
                                 <div class="mt-2">
                                     <strong>Imagem atual:</strong>
@@ -53,7 +55,7 @@
                             @endif
                         </div>
 
-                        {{-- Campo: Nome do Evento --}}
+                        {{-- Nome do evento --}}
                         <div>
                             <label for="event_name" class="block font-medium">Nome do Evento</label>
                             <input type="text" name="event_name" id="event_name"
@@ -61,14 +63,14 @@
                                    class="w-full border-gray-300 rounded shadow-sm" required>
                         </div>
 
-                        {{-- Campo: Descrição do Evento --}}
+                        {{-- Descrição do evento --}}
                         <div>
                             <label for="event_description" class="block font-medium">Descrição</label>
                             <textarea name="event_description" id="event_description" rows="4"
                                       class="w-full border-gray-300 rounded shadow-sm" required>{{ old('event_description', $event->event_description ?? '') }}</textarea>
                         </div>
 
-                        {{-- Campo: Local do Evento --}}
+                        {{-- Local do evento --}}
                         <div>
                             <label for="event_location" class="block font-medium">Local</label>
                             <input type="text" name="event_location" id="event_location"
@@ -76,7 +78,7 @@
                                    class="w-full border-gray-300 rounded shadow-sm" required>
                         </div>
 
-                        {{-- Campo: Categorias do Evento (checkboxes) --}}
+                        {{-- Categorias (checkboxes) --}}
                         <div>
                             <label class="block font-medium mb-1">Categorias do Evento</label>
                             <div class="flex flex-wrap gap-4">
@@ -93,25 +95,27 @@
                             @enderror
                         </div>
 
-                        {{-- Campos: Data/Hora de início e encerramento --}}
+                        {{-- Datas: início e encerramento --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="event_scheduled_at" class="block font-medium">Data e Hora do Evento</label>
                                 <input type="datetime-local" name="event_scheduled_at" id="event_scheduled_at"
+                                       min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
                                        class="w-full border-gray-300 rounded shadow-sm"
                                        value="{{ old('event_scheduled_at', isset($event) ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}"
                                        required>
                             </div>
 
                             <div>
-                                <label for="event_expired_at" class="block font-medium">Data/Hora de Encerramento (opcional)</label>
+                                <label for="event_expired_at" class="block font-medium">Encerramento Autómatico (opcional)</label>
                                 <input type="datetime-local" name="event_expired_at" id="event_expired_at"
+                                       min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
                                        class="w-full border-gray-300 rounded shadow-sm"
                                        value="{{ old('event_expired_at', isset($event) && $event->event_expired_at ? \Carbon\Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') : '') }}">
                             </div>
                         </div>
 
-                        {{-- Campo: Coordenador responsável (somente leitura) --}}
+                        {{-- Coordenador responsável (somente leitura) --}}
                         <div class="mb-4">
                             <x-input-label for="coordinator_name" value="Coordenador Responsável" />
                             <x-text-input id="coordinator_name" type="text" class="block mt-1 w-full bg-gray-100"
@@ -119,7 +123,7 @@
                             <input type="hidden" name="coordinator_id" value="{{ auth()->user()->coordinator->id }}">
                         </div>
 
-                        {{-- Campo: Tipo do Evento (curso ou geral) --}}
+                        {{-- Tipo do evento: curso ou geral --}}
                         @php
                             $coordinatorType = auth()->user()->coordinator->coordinator_type;
                             $eventoTipoLabel = $coordinatorType === 'course' ? 'Evento de Curso' : 'Evento Geral';
@@ -132,7 +136,7 @@
                             <input type="hidden" name="coordinator_type" value="{{ $coordinatorType }}">
                         </div>
 
-                        {{-- Campo: Curso do Evento (se for do tipo 'course') --}}
+                        {{-- Curso vinculado (se aplicável) --}}
                         @if(auth()->user()->coordinator->coordinator_type === 'course')
                             <div class="mb-4">
                                 <x-input-label for="event_course" value="Curso" />
@@ -151,8 +155,11 @@
                         </div>
                     </form>
                 @endif
-
             </div>
         </div>
     </div>
 </x-app-layout>
+
+{{-- Script para garantir que a data de encerramento seja posterior à de início --}}
+@vite('resources/js/datetime-validation.js')
+
