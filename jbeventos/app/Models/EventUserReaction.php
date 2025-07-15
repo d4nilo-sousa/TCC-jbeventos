@@ -9,10 +9,15 @@ class EventUserReaction extends Model
 {
     use HasFactory;
 
+    protected $table = 'event_user_reaction';
+
     // Campos que podem ser preenchidos em massa
     protected $fillable = [
         'reaction_type',  // Tipo da reação (ex: like, love, etc)
+        'user_id',
+        'event_id',
     ];
+
 
     // Retorna o evento ao qual esta reação pertence
     public function reactedEvent() {

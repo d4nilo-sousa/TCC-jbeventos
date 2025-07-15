@@ -63,6 +63,23 @@
                             <span class="text-gray-400">Nenhuma categoria atribuída.</span>
                         @endforelse
                     </div>
+                    
+                    {{-- Reações ao evento --}}
+<div class="mb-6">
+    <strong>💬 Reações:</strong>
+    <div class="mt-2 space-x-2 flex flex-wrap">
+        @foreach (['like' => '👍 Curtir', 'dislike' => '👎 Não curtir', 'save' => '💾 Salvar', 'notify' => '🔔 Notificar'] as $type => $label)
+            <form action="{{ route('events.react', $event->id) }}" method="POST" class="inline-block">
+                @csrf
+                <input type="hidden" name="reaction_type" value="{{ $type }}">
+                <button type="submit" 
+                    class="px-3 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200">
+                    {{ $label }}
+                </button>
+            </form>
+        @endforeach
+    </div>
+</div>
 
                     {{-- Botões de navegação e ações do coordenador --}}
                     <div class="flex justify-between">

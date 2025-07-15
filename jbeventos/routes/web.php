@@ -6,6 +6,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EventReactionController;
 
 // Ao acessar a raiz do site, redireciona para a rota de login
 Route::get('/', function () {
@@ -74,12 +75,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/settings', function () {
         return view('settings');
     })->name('settings');
-});
 
-// Rotas do Perfil personalizado (foto, banner, bio)
-Route::middleware(['auth'])->group(function () {
+    // Rotas do Perfil personalizado (foto, banner, bio)
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/perfil/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
     Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');
+
+    Route::post('/events/{event}/react', [EventReactionController::class, 'react'])->name('events.react');
 });
