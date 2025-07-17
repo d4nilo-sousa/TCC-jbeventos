@@ -7,35 +7,66 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Comment extends Model
 {
-    use HasFactory; 
+    use HasFactory;
 
-    // Campos que podem ser preenchidos em massa
     protected $fillable = [
-        'coordinator_type',
+        'comment',
+        'visible_comment',
+        'edited_at',
+        'parent_id',
+        'media_path',
         'user_id',
+        'event_id',
     ];
 
-    // Define casts para atributos específicos
-    // 'temporary_password' será tratado como booleano
-    protected function casts(): array
+    protected $casts = [
+        'visible_comment' => 'boolean',
+        'edited_at' => 'datetime',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONAMENTOS
+    |--------------------------------------------------------------------------
+    */
+
+    public function user()
     {
-        return [
-            'temporary_password' => 'boolean',
-        ];
+        return $this->belongsTo(User::class);
     }
 
-    // Retorna os eventos gerenciados por este coordenador
-    public function managedEvents() {
-        return $this->hasMany(Event::class);
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
     }
 
-    // Retorna o usuário associado a este coordenador
-    public function userAccount() {
-        return $this->belongsTo(User::class, 'user_id');
+    public function parent()
+    {
+        return $this->belongsTo(Comment::class, 'parent_id');
     }
 
-    // Retorna o curso coordenado por este coordenador
-    public function coordinatedCourse() {
-        return $this->hasOne(Course::class);
+    public function replies()
+    {
+        return $this->hasMany(Comment::class, 'parent_id');
+    }
+
+    public function mentions()
+    {
+        return $this->hasMany(CommentMention::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | MÉTODOS ÚTEIS
+    |--------------------------------------------------------------------------
+    */
+    public function isParent(): bool
+    {
+        return $this->parent_id === null;
+    }
+
+    public function isEdited(): bool
+    {
+        return $this->edited_at !== null;
     }
 }
