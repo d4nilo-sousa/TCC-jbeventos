@@ -94,9 +94,20 @@ class EventController extends Controller
     // Exibe os detalhes de um evento específico
     public function show($id)
     {
+        // Obtem o usuário autenticado
+        $user = auth()->user();
+
         // Carrega o evento com coordenador, curso e categorias
         $event = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse', 'eventCategories'])->findOrFail($id);
-        return view('events.show', compact('event'));
+
+
+        // Busca todas as reações desse usuário para esse evento
+        $userReactions = \App\Models\EventUserReaction::where('event_id', $id)
+                        ->where('user_id', $user)
+                        ->pluck('reaction_type')
+                        ->toArray();
+
+        return view('events.show', compact('event', 'userReactions', 'user'));
     }
 
     // Exibe o formulário para edição de um evento

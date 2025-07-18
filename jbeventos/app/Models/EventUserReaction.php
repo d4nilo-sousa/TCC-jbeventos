@@ -13,9 +13,9 @@ class EventUserReaction extends Model
 
     // Campos que podem ser preenchidos em massa
     protected $fillable = [
-        'reaction_type',  // Tipo da reação (ex: like, love, etc)
-        'user_id',
-        'event_id',
+        'reaction_type',  // Tipo da reação (ex: like, dislike, etc)
+        'user_id', // Id do Usuário que está reagindo
+        'event_id', // Id do Evento que usuário está reagindo
     ];
 
 

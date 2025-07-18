@@ -82,5 +82,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');
 
+    // Rota para a reação de usuários ao evento
     Route::post('/events/{event}/react', [EventReactionController::class, 'react'])->name('events.react');
 });

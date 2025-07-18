@@ -27,7 +27,7 @@
                             <strong>📍 Local:</strong> {{ $event->event_location }}
                         </div>
                         <div>
-                            <strong>📅 Irá ocorrem em:</strong> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
+                            <strong>📅 Irá ocorrer em:</strong> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
                             {{-- Mostra a data de término, se estiver definida (Apenas para o coordenador que criou) --}}
                             @if(auth()->check() && auth()->user()->user_type === 'coordinator')
                                 @php
@@ -63,23 +63,28 @@
                             <span class="text-gray-400">Nenhuma categoria atribuída.</span>
                         @endforelse
                     </div>
-                    
+
                     {{-- Reações ao evento --}}
-<div class="mb-6">
-    <strong>💬 Reações:</strong>
-    <div class="mt-2 space-x-2 flex flex-wrap">
-        @foreach (['like' => '👍 Curtir', 'dislike' => '👎 Não curtir', 'save' => '💾 Salvar', 'notify' => '🔔 Notificar'] as $type => $label)
-            <form action="{{ route('events.react', $event->id) }}" method="POST" class="inline-block">
-                @csrf
-                <input type="hidden" name="reaction_type" value="{{ $type }}">
-                <button type="submit" 
-                    class="px-3 py-1 rounded bg-blue-100 text-blue-800 hover:bg-blue-200">
-                    {{ $label }}
-                </button>
-            </form>
-        @endforeach
-    </div>
-</div>
+                    <div class="mb-6">
+                        <strong>💬 Reações:</strong>
+                        <div id="reactions" class="mt-2 space-x-2 flex flex-wrap">
+                            @foreach (['like' => '👍 Curtir', 'dislike' => '👎 Não Gostei', 'save' => '💾 Salvar', 'notify' => '🔔 Notificar'] as $type => $label)
+                                @php
+                                    $isActive = in_array($type, $userReactions);  // Verifica se o usuário já reagiu com esse tipo
+                                    $baseClasses = 'reaction-btn px-3 py-1 rounded border border-blue-500';  // Classes base para os botões
+                                    $activeClasses = 'bg-blue-600 text-white'; // Classes para botão ativo
+                                    $inactiveClasses = 'bg-white text-blue-600 hover:bg-blue-100'; // Classes para botão inativo
+                                @endphp
+                                <form action="{{ route('events.react', $event->id) }}" method="POST" class="inline-block reaction-form">
+                                    @csrf
+                                    <input type="hidden" name="reaction_type" value="{{ $type }}">
+                                    <button type="submit" data-type="{{ $type }}" class="{{ $baseClasses }} {{ $isActive ? $activeClasses : $inactiveClasses }}">
+                                        {{ $label }}
+                                    </button>
+                                </form>
+                            @endforeach
+                        </div>
+                    </div>
 
                     {{-- Botões de navegação e ações do coordenador --}}
                     <div class="flex justify-between">
@@ -113,3 +118,6 @@
         </div>
     </div>
 </x-app-layout>
+
+{{-- Importa o script JavaScript responsável pelo controle das reações ao evento usando Vite --}}
+@vite('resources/js/event-reactions.js')
