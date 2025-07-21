@@ -79,6 +79,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 // Rotas do Perfil personalizado (foto, banner, bio)
 Route::middleware(['auth'])->group(function () {
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/perfil/{user}',[ProfileController::class, 'viewPublicProfile'])->name('profile.view'); //perfil de outro user
     Route::post('/perfil/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
     Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');

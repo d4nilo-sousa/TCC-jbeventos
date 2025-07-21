@@ -31,6 +31,9 @@
 
     {{-- Listagem de comentários --}}
     @forelse($comments as $comment)
+        @php
+            $profileRoute = ($comment->user_id === auth()->id()) ? 'profile.show' : 'profile.view';
+        @endphp
         <div class="p-4 bg-white shadow-sm rounded-lg border">
             <div class="flex items-start gap-3">
 
@@ -39,7 +42,7 @@
                      x-data="{ open:false }" 
                      @mouseenter="open=true" @mouseleave="open=false">
                     
-                    <a href="{{ route('profile.show', $comment->user->id) }}">
+                    <a href="{{ route($profileRoute, $comment->user->id) }}">
                         <img src="{{ $comment->user->user_icon_url }}" 
                              class="w-10 h-10 rounded-full shadow-sm cursor-pointer">
                     </a>
@@ -61,7 +64,7 @@
                         <p class="text-sm text-gray-600 mt-2 line-clamp-3">
                             {{ $comment->user->bio ?? 'Este usuário ainda não escreveu uma biografia.' }}
                         </p>
-                        <a href="{{ route('profile.show', $comment->user->id) }}"
+                        <a href="{{ route($profileRoute, $comment->user->id) }}"
                            class="block mt-2 text-center text-sm bg-blue-500 hover:bg-blue-600 text-white py-1 rounded">
                             Ver perfil completo
                         </a>
@@ -71,7 +74,7 @@
                 {{-- Conteúdo do comentário --}}
                 <div class="flex-1">
                     <div class="flex items-center gap-2">
-                        <a href="{{ route('profile.show', $comment->user->id) }}"
+                        <a href="{{ route($profileRoute, $comment->user->id) }}"
                            class="font-semibold text-blue-600 hover:underline">
                             {{ $comment->user->name }}
                         </a>
@@ -116,6 +119,9 @@
 
                     {{-- Respostas --}}
                     @foreach($comment->replies as $reply)
+                        @php
+                            $replyProfileRoute = ($reply->user_id === auth()->id()) ? 'profile.show' : 'profile.view';
+                        @endphp
                         <div class="mt-4 ml-6 p-3 rounded-md bg-gray-50 border-l-4 border-blue-100 flex gap-2">
 
                             {{-- Foto com popover --}}
@@ -123,7 +129,7 @@
                                  x-data="{ open:false }" 
                                  @mouseenter="open=true" @mouseleave="open=false">
                                 
-                                <a href="{{ route('profile.show', $reply->user->id) }}">
+                                <a href="{{ route($replyProfileRoute, $reply->user->id) }}">
                                     <img src="{{ $reply->user->user_icon_url }}" class="w-8 h-8 rounded-full cursor-pointer">
                                 </a>
 
@@ -142,7 +148,7 @@
                                     <p class="text-sm text-gray-600 mt-2 line-clamp-3">
                                         {{ $reply->user->bio ?? 'Este usuário ainda não escreveu uma biografia.' }}
                                     </p>
-                                    <a href="{{ route('profile.show', $reply->user->id) }}"
+                                    <a href="{{ route($replyProfileRoute, $reply->user->id) }}"
                                        class="block mt-2 text-center text-sm bg-blue-500 hover:bg-blue-600 text-white py-1 rounded">
                                         Ver perfil completo
                                     </a>
@@ -151,7 +157,7 @@
 
                             {{-- Conteúdo da resposta --}}
                             <div>
-                                <a href="{{ route('profile.show', $reply->user->id) }}"
+                                <a href="{{ route($replyProfileRoute, $reply->user->id) }}"
                                    class="font-semibold text-blue-600 hover:underline text-sm">
                                     {{ $reply->user->name }}
                                 </a>

@@ -22,7 +22,7 @@
         {{-- Avatar e Nome --}}
         <div class="px-6 -mt-12 flex items-end space-x-4">
             <div class="relative">
-                <img src="{{ $user->profile_photo_url }}" alt="Avatar"
+                <img src="{{ $user->user_icon_url }}" alt="Avatar"
                      class="w-24 h-24 rounded-full border-4 border-white object-cover bg-gray-300">
                 @if(auth()->id() === $user->id)
                     <form method="POST" action="{{ route('profile.updatePhoto') }}" enctype="multipart/form-data"

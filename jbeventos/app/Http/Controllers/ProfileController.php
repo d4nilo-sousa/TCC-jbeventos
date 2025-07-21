@@ -14,6 +14,11 @@ class ProfileController extends Controller
         return view('profile.show', compact('user'));
     }
 
+    public function viewPublicProfile(User $user)
+    {
+        return view('profile.public', compact('user'));
+    }
+
     public function updatePhoto(Request $request)
     {
         $user = auth()->user();
