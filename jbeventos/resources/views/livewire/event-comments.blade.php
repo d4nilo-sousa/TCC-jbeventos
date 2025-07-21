@@ -34,16 +34,16 @@
         @php
             $profileRoute = ($comment->user_id === auth()->id()) ? 'profile.show' : 'profile.view';
         @endphp
-        <div class="p-4 bg-white shadow-sm rounded-lg border">
+        <div class="p-4 bg-white shadow-sm rounded-lg border" x-data="{ showReplies:false }">
             <div class="flex items-start gap-3">
 
                 {{-- Foto com popover --}}
-                <div class="relative" 
-                     x-data="{ open:false }" 
+                <div class="relative"
+                     x-data="{ open:false }"
                      @mouseenter="open=true" @mouseleave="open=false">
-                    
+
                     <a href="{{ route($profileRoute, $comment->user->id) }}">
-                        <img src="{{ $comment->user->user_icon_url }}" 
+                        <img src="{{ $comment->user->user_icon_url }}"
                              class="w-10 h-10 rounded-full shadow-sm cursor-pointer">
                     </a>
 
@@ -56,9 +56,7 @@
                             <img src="{{ $comment->user->user_icon_url }}" class="w-10 h-10 rounded-full">
                             <div>
                                 <p class="font-semibold text-gray-800">{{ $comment->user->name }}</p>
-                                <p class="text-xs text-gray-500">
-                                    {{ $comment->user->email }}
-                                </p>
+                                <p class="text-xs text-gray-500">{{ $comment->user->email }}</p>
                             </div>
                         </div>
                         <p class="text-sm text-gray-600 mt-2 line-clamp-3">
@@ -105,9 +103,27 @@
                     @endif
 
                     {{-- Botões --}}
-                    <div class="text-sm text-gray-600 mt-2 flex gap-3">
-                        <button wire:click="setReply({{ $comment->id }})"
-                                class="hover:underline">Responder</button>
+                    <div class="text-sm text-gray-600 mt-2 flex gap-4 items-center">
+                        {{-- Likes e Dislikes --}}
+                        <div class="flex items-center gap-3">
+                            <button wire:click="reactToComment({{ $comment->id }}, 'like')"
+                                    class="flex items-center gap-1 hover:underline text-green-600">
+                                👍 <span>{{ $comment->reactions->where('type', 'like')->count() }}</span>
+                            </button>
+                            <button wire:click="reactToComment({{ $comment->id }}, 'dislike')"
+                                    class="flex items-center gap-1 hover:underline text-red-600">
+                                👎 <span>{{ $comment->reactions->where('type', 'dislike')->count() }}</span>
+                            </button>
+                        </div>
+
+                        <button wire:click="setReply({{ $comment->id }})" class="hover:underline">Responder</button>
+
+                        {{-- Contador de respostas --}}
+                        @if($comment->replies->count())
+                            <button @click="showReplies=!showReplies" class="hover:underline text-blue-600">
+                                💬 {{ $comment->replies->count() }} resposta{{ $comment->replies->count()>1?'s':'' }}
+                            </button>
+                        @endif
 
                         @if($comment->user_id === auth()->id())
                             <button wire:click="editComment({{ $comment->id }})"
@@ -117,54 +133,12 @@
                         @endif
                     </div>
 
-                    {{-- Respostas --}}
-                    @foreach($comment->replies as $reply)
-                        @php
-                            $replyProfileRoute = ($reply->user_id === auth()->id()) ? 'profile.show' : 'profile.view';
-                        @endphp
-                        <div class="mt-4 ml-6 p-3 rounded-md bg-gray-50 border-l-4 border-blue-100 flex gap-2">
-
-                            {{-- Foto com popover --}}
-                            <div class="relative" 
-                                 x-data="{ open:false }" 
-                                 @mouseenter="open=true" @mouseleave="open=false">
-                                
-                                <a href="{{ route($replyProfileRoute, $reply->user->id) }}">
-                                    <img src="{{ $reply->user->user_icon_url }}" class="w-8 h-8 rounded-full cursor-pointer">
-                                </a>
-
-                                {{-- Popover --}}
-                                <div x-show="open"
-                                     x-transition
-                                     class="absolute top-10 left-0 bg-white border rounded-lg shadow-lg p-3 w-56 z-10"
-                                     @mouseenter="open=true" @mouseleave="open=false">
-                                    <div class="flex items-center gap-2">
-                                        <img src="{{ $reply->user->user_icon_url }}" class="w-10 h-10 rounded-full">
-                                        <div>
-                                            <p class="font-semibold text-gray-800">{{ $reply->user->name }}</p>
-                                            <p class="text-xs text-gray-500">{{ $reply->user->email }}</p>
-                                        </div>
-                                    </div>
-                                    <p class="text-sm text-gray-600 mt-2 line-clamp-3">
-                                        {{ $reply->user->bio ?? 'Este usuário ainda não escreveu uma biografia.' }}
-                                    </p>
-                                    <a href="{{ route($replyProfileRoute, $reply->user->id) }}"
-                                       class="block mt-2 text-center text-sm bg-blue-500 hover:bg-blue-600 text-white py-1 rounded">
-                                        Ver perfil completo
-                                    </a>
-                                </div>
-                            </div>
-
-                            {{-- Conteúdo da resposta --}}
-                            <div>
-                                <a href="{{ route($replyProfileRoute, $reply->user->id) }}"
-                                   class="font-semibold text-blue-600 hover:underline text-sm">
-                                    {{ $reply->user->name }}
-                                </a>
-                                <p class="text-sm text-gray-700">{{ $reply->comment }}</p>
-                            </div>
-                        </div>
-                    @endforeach
+                    {{-- Respostas (collapse) --}}
+                    <div x-show="showReplies" x-transition>
+                        @foreach($comment->replies as $reply)
+                            @include('partials.comment-reply', ['reply' => $reply])
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>

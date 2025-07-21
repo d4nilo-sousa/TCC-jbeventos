@@ -55,11 +55,17 @@ class Comment extends Model
         return $this->hasMany(CommentMention::class);
     }
 
+    public function reactions()
+    {
+        return $this->hasMany(CommentReaction::class);
+    }
+
     /*
     |--------------------------------------------------------------------------
     | MÉTODOS ÚTEIS
     |--------------------------------------------------------------------------
     */
+
     public function isParent(): bool
     {
         return $this->parent_id === null;
@@ -68,5 +74,20 @@ class Comment extends Model
     public function isEdited(): bool
     {
         return $this->edited_at !== null;
+    }
+
+    public function likesCount(): int
+    {
+        return $this->reactions()->where('type', 'like')->count();
+    }
+
+    public function dislikesCount(): int
+    {
+        return $this->reactions()->where('type', 'dislike')->count();
+    }
+
+    public function repliesCount(): int
+    {
+        return $this->replies()->count();
     }
 }

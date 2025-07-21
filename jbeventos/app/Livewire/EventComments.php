@@ -6,91 +6,96 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Auth;
+use App\Models\CommentReaction;
 
 class EventComments extends Component
 {
-    use WithFileUploads; // Permite subir arquivos
+    use WithFileUploads;
 
-    // Propriedades
     public $event;
     public $commentText = '';
     public $media;
     public $replyTo = null;
     public $editingCommentId = null;
+    public $comments = [];
 
-    // Validações
     protected $rules = [
         'commentText' => 'required|string|max:1000',
         'media' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,webp,mp4,pdf'
     ];
 
-    // Renderiza o componente
+    public function mount($event)
+    {
+        $this->event = $event;
+        $this->loadComments();
+    }
+
     public function render()
     {
-        $comments = Comment::with(['user', 'replies.user']) // Carrega os relacionamentos
-            ->where('event_id', $this->event->id) // Filtra pelo ID do evento
-            ->whereNull('parent_id') // Filtra os comentários principais
-            ->orderBy('created_at', 'desc') // Ordena os comentários por data de criação
-            ->get();
-
-        return view('livewire.event-comments', compact('comments'));
+        return view('livewire.event-comments', [
+            'comments' => $this->comments
+        ]);
     }
 
-    // Adiciona um comentário
+    public function loadComments()
+    {
+        $this->comments = Comment::with(['user', 'replies.user', 'reactions'])
+            ->withCount([
+                'reactions as likes_count' => function ($q) {
+                    $q->where('type', 'like');
+                },
+                'reactions as dislikes_count' => function ($q) {
+                    $q->where('type', 'dislike');
+                },
+            ])
+            ->where('event_id', $this->event->id)
+            ->whereNull('parent_id')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
     public function addComment()
     {
-        $this->validate(); // Valida as regras
+        $this->validate();
 
-        // Armazena o caminho do arquivo
-        $mediaPath = $this->media ? $this->media->store('comments', 'public') : null; 
+        $mediaPath = $this->media ? $this->media->store('comments', 'public') : null;
 
-        // Cria o comentário
         Comment::create([
-            'comment' => $this->commentText, // Armazena o comentário
-            'user_id' => Auth::id(), // Armazena o ID do usuário
-            'event_id' => $this->event->id, // Armazena o ID do evento
-            'parent_id' => $this->replyTo, // Armazena o ID do comentário de resposta
-            'media_path' => $mediaPath, // Armazena o caminho do arquivo
+            'comment' => $this->commentText,
+            'user_id' => Auth::id(),
+            'event_id' => $this->event->id,
+            'parent_id' => $this->replyTo,
+            'media_path' => $mediaPath,
         ]);
 
-        // Limpa as propriedades
         $this->reset(['commentText', 'media', 'replyTo']);
-        session()->flash('message', 'Comentário adicionado!'); // Exibe uma mensagem
+        $this->loadComments();
     }
 
-    // Define o comentário de resposta
     public function setReply($commentId)
     {
-        // Armazena o ID do comentário de resposta
         $this->replyTo = $commentId;
     }
 
-    // Cancela a resposta
     public function cancelReply()
     {
-        $this->reset('replyTo'); // Limpa o ID do comentário de resposta
+        $this->reset('replyTo');
     }
 
-    // Edita um comentário
     public function editComment($id)
     {
-        $comment = Comment::find($id); // Busca o comentário
-
-        // Verifica se o comentário existe e se o usuário logado é o dono
+        $comment = Comment::find($id);
         if ($comment && $comment->user_id === Auth::id()) {
             $this->editingCommentId = $id;
             $this->commentText = $comment->comment;
         }
     }
 
-    // Atualiza um comentário
     public function updateComment()
     {
         $this->validate();
+        $comment = Comment::find($this->editingCommentId);
 
-        $comment = Comment::find($this->editingCommentId); // Busca o comentário
-
-        // Verifica se o comentário existe e se o usuário logado é o dono
         if ($comment && $comment->user_id === Auth::id()) {
             $comment->update([
                 'comment' => $this->commentText,
@@ -98,17 +103,40 @@ class EventComments extends Component
             ]);
         }
 
-        $this->reset(['commentText', 'editingCommentId']); // Limpa as propriedades
+        $this->reset(['commentText', 'editingCommentId']);
+        $this->loadComments();
     }
 
-    // Exclui um comentário
     public function deleteComment($id)
     {
-        $comment = Comment::find($id); // Busca o comentário
-
-        // Verifica se o comentário existe e se o usuário logado é o dono
+        $comment = Comment::find($id);
         if ($comment && $comment->user_id === Auth::id()) {
             $comment->delete();
         }
+        $this->loadComments();
+    }
+
+    public function reactToComment($commentId, $type)
+    {
+        $userId = auth()->id();
+        $reaction = CommentReaction::where('comment_id', $commentId)
+            ->where('user_id', $userId)
+            ->first();
+
+        if ($reaction) {
+            if ($reaction->type === $type) {
+                $reaction->delete();
+            } else {
+                $reaction->update(['type' => $type]);
+            }
+        } else {
+            CommentReaction::create([
+                'user_id' => $userId,
+                'comment_id' => $commentId,
+                'type' => $type,
+            ]);
+        }
+
+        $this->loadComments();
     }
 }
