@@ -68,16 +68,24 @@
                     <div class="mb-6">
                         <strong>💬 Reações:</strong>
                         <div id="reactions" class="mt-2 space-x-2 flex flex-wrap">
+                            {{-- Loop pelas reações disponíveis com seus labels --}}
                             @foreach (['like' => '👍 Curtir', 'dislike' => '👎 Não Gostei', 'save' => '💾 Salvar', 'notify' => '🔔 Notificar'] as $type => $label)
                                 @php
-                                    $isActive = in_array($type, $userReactions);  // Verifica se o usuário já reagiu com esse tipo
-                                    $baseClasses = 'reaction-btn px-3 py-1 rounded border border-blue-500';  // Classes base para os botões
-                                    $activeClasses = 'bg-blue-600 text-white'; // Classes para botão ativo
-                                    $inactiveClasses = 'bg-white text-blue-600 hover:bg-blue-100'; // Classes para botão inativo
+                                    // Verifica se o usuário já reagiu com esse tipo
+                                    $isActive = in_array($type, $userReactions);
+                                    // Classes base para todos os botões
+                                    $baseClasses = 'reaction-btn px-3 py-1 rounded border border-blue-500';
+                                    // Classes para botão ativo
+                                    $activeClasses = 'bg-blue-600 text-white';
+                                    // Classes para botão inativo
+                                    $inactiveClasses = 'bg-white text-blue-600 hover:bg-blue-100';
                                 @endphp
-                                <form action="{{ route('events.react', $event->id) }}" method="POST" class="inline-block reaction-form">
+                                {{-- Formulário para enviar a reação --}}
+                                <form action="{{ route('events.react', ['event' => $event->id]) }}" method="POST" class="inline-block reaction-form">
                                     @csrf
+                                    {{-- Tipo da reação enviada --}}
                                     <input type="hidden" name="reaction_type" value="{{ $type }}">
+                                    {{-- Botão de reação com classes dinâmicas --}}
                                     <button type="submit" data-type="{{ $type }}" class="{{ $baseClasses }} {{ $isActive ? $activeClasses : $inactiveClasses }}">
                                         {{ $label }}
                                     </button>
@@ -85,6 +93,7 @@
                             @endforeach
                         </div>
                     </div>
+
 
                     {{-- Botões de navegação e ações do coordenador --}}
                     <div class="flex justify-between">

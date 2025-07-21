@@ -103,7 +103,7 @@ class EventController extends Controller
 
         // Busca todas as reações desse usuário para esse evento
         $userReactions = \App\Models\EventUserReaction::where('event_id', $id)
-                        ->where('user_id', $user)
+                        ->where('user_id', $user->id)
                         ->pluck('reaction_type')
                         ->toArray();
 

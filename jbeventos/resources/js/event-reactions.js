@@ -1,55 +1,71 @@
 document.addEventListener('DOMContentLoaded', () => {
   // Seleciona todos os botões com a classe 'reaction-btn'
   const buttons = document.querySelectorAll('button.reaction-btn');
-  // Variável para armazenar a reação ativa ('like', 'dislike' ou null)
-  let activeReaction = null;
 
-  // Para cada botão, adiciona um listener de clique
   buttons.forEach(button => {
+    // Adiciona listener de clique para cada botão
     button.addEventListener('click', e => {
-      e.preventDefault(); // Evita o comportamento padrão do botão (ex: envio imediato)
+      e.preventDefault(); // Previne comportamento padrão do botão (submit)
 
-      // Obtém o tipo da reação (like, dislike, save, notify, etc.) via data-attribute
+      // Obtém o tipo de reação do atributo data-type do botão
       const type = button.dataset.type;
+      // Busca o formulário pai mais próximo do botão
+      const form = button.closest('form');
+      // Cria um FormData com os dados do formulário
+      const formData = new FormData(form);
 
-      // Se o tipo for 'like' ou 'dislike'
-      if (type === 'like' || type === 'dislike') {
-        // Se o botão clicado já estiver ativo, desativa ambos (like e dislike)
-        if (activeReaction === type) {
-          // Desmarca todos os botões 'like' e 'dislike'
-          buttons.forEach(btn => {
-            if (btn.dataset.type === 'like' || btn.dataset.type === 'dislike') {
-              btn.style.backgroundColor = 'white';
-              btn.style.color = '#2563eb';
-            }
-          });
-          activeReaction = null; // Nenhuma reação ativa
-        } else {
-          // Se não estiver ativo, primeiro desmarca ambos os botões
-          buttons.forEach(btn => {
-            if (btn.dataset.type === 'like' || btn.dataset.type === 'dislike') {
-              btn.style.backgroundColor = 'white';
-              btn.style.color = '#2563eb';
-            }
-          });
-          // Depois ativa o botão clicado
-          button.style.backgroundColor = '#2563eb';
-          button.style.color = 'white';
-          activeReaction = type; // Atualiza a reação ativa
-        }
+      // Verifica se o botão já está ativo (tem a classe bg-blue-600)
+      const isActive = button.classList.contains('bg-blue-600');
+
+      // Define grupos mutuamente exclusivos (like <-> dislike)
+      const mutuallyExclusive = {
+        like: 'dislike',
+        dislike: 'like',
+      };
+
+      // --- Estilo visual: toggle atual ---
+      if (isActive) {
+        // Se ativo, desmarca o botão atual (remove cor azul, adiciona branco)
+        button.classList.remove('bg-blue-600', 'text-white');
+        button.classList.add('bg-white', 'text-blue-600');
       } else {
-        // Para outros tipos (ex: 'save' e 'notify'), faz toggle simples de cor
-        if (button.style.backgroundColor === 'rgb(37, 99, 235)') {
-          button.style.backgroundColor = 'white';
-          button.style.color = '#2563eb';
-        } else {
-          button.style.backgroundColor = '#2563eb';
-          button.style.color = 'white';
+        // Se não ativo, marca o botão atual (cor azul)
+        button.classList.add('bg-blue-600', 'text-white');
+        button.classList.remove('bg-white', 'text-blue-600');
+
+        // Se for 'like' ou 'dislike', desmarca o botão oposto
+        if (mutuallyExclusive[type]) {
+          const opposite = mutuallyExclusive[type];
+          buttons.forEach(btn => {
+            if (btn.dataset.type === opposite) {
+              btn.classList.remove('bg-blue-600', 'text-white');
+              btn.classList.add('bg-white', 'text-blue-600');
+            }
+          });
         }
       }
 
-      // Submete o formulário pai mais próximo do botão clicado
-      button.closest('form').submit();
+      // --- Envio por fetch ---
+      fetch(form.action, {
+        method: form.method,
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Caso receba erro indicando que telefone é necessário, alerta e redireciona
+        if (data.error === 'phone_required') {
+          alert('Você precisa cadastrar seu número de celular para ser notificado.');
+          window.location.href = '/phone/edit'; // ajuste essa URL se precisar
+        }
+      })
+      .catch(error => {
+        // Loga erro no console caso falhe o fetch
+        console.error('Erro ao processar a reação:', error);
+      });
     });
   });
 });

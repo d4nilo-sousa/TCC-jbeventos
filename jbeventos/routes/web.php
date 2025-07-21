@@ -7,6 +7,8 @@ use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EventReactionController;
+use App\Http\Controllers\UserPhoneController;
+
 
 // Ao acessar a raiz do site, redireciona para a rota de login
 Route::get('/', function () {
@@ -82,6 +84,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');
 
-    // Rota para a reação de usuários ao evento
+    // Rotas para a reação de usuários ao evento
     Route::post('/events/{event}/react', [EventReactionController::class, 'react'])->name('events.react');
+
+    // Rotas para o usuário inserir o seu telefone(caso não tenha), para conseguir liberar a funcionalidade de notificação.
+    Route::get('phone/edit', [UserPhoneController::class, 'edit'])->name('user.phone.edit');
+    Route::put('phone', [UserPhoneController::class, 'update'])->name('user.phone.update');
 });
