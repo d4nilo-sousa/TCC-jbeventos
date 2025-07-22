@@ -23,7 +23,7 @@
                     {{-- Label para o campo telefone --}}
                     <x-label for="phone_number" value="Telefone" />
                     {{-- Input para telefone, com valor antigo ou atual --}}
-                    <x-input id="phone_number" name="phone_number" type="text" class="mt-1 block w-full" value="{{ old('phone_number', $user->phone_number ?? '') }}" required />
+                    <x-input id="phone_number" name="phone_number" type="tel" class="mt-1 block w-full" value="{{ old('phone_number', $user->phone_number ?? '') }}" required autocomplete="tel" />
                     {{-- Exibe erro de validação para telefone --}}
                     @error('phone_number')
                         <span class="text-sm text-red-600">{{ $message }}</span>

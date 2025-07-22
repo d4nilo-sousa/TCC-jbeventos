@@ -36,8 +36,6 @@ class UserPhoneController extends Controller
 
         // Atualiza o telefone e marca como verificado
         $user->phone_number = $request->phone_number;
-        $user->phone_number_verified_at = now();
-        $user->phone_number_verified = true; 
         $user->save();
 
         // Redireciona para rota dashboard com mensagem de sucesso

@@ -29,6 +29,12 @@
                 <x-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
             </div>
 
+            <!-- Número de Telefone -->
+            <div class="mt-4">
+                <x-label for="phone_number" value="{{ __('Phone Number (Optional)') }}" />
+                <x-input id="phone_number" class="block mt-1 w-full" type="tel" name="phone_number" required autocomplete="tel" />
+            </div>
+
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                 <div class="mt-4">
                     <x-label for="terms">
