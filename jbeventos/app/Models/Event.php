@@ -53,4 +53,9 @@ class Event extends Model
     public function reactions() {
         return $this->hasMany(EventUserReaction::class);
     }
+
+    // Relação com o modelo Course
+    public function course() {
+        return $this->belongsTo(Course::class);
+    }
 }

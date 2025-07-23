@@ -1,68 +1,149 @@
 <x-app-layout>
-    <!-- Cabeçalho da página com o nome do curso -->
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $course->course_name }}
-        </h2>
-    </x-slot>
+    <div class="relative bg-white shadow rounded-lg overflow-hidden">
 
-    <div class="py-6">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-md rounded p-6">
-                <!-- Exibe o ícone do curso se existir -->
-                @if($course->course_icon)
-                    <div class="mb-4">
-                        <strong class="block">Ícone do Curso:</strong>
-                        <img src="{{ asset('storage/' . $course->course_icon) }}" alt="Ícone do Curso" class="w-24 mt-1">
-                    </div>
+        {{-- Banner do curso --}}
+        <div class="relative h-48 bg-gray-200">
+            <img src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
+                 alt="Banner do Curso" class="object-cover w-full h-full">
+
+            @if(auth()->user()->user_type === 'admin')
+                <form method="POST" action="{{ route('courses.updateBanner', $course->id) }}" enctype="multipart/form-data"
+                      class="absolute top-2 right-2">
+                    @csrf
+                    @method('PUT')
+                    <input type="file" name="course_banner" id="bannerUpload" class="hidden"
+                           onchange="this.form.submit()">
+                    <button type="button"
+                            onclick="document.getElementById('bannerUpload').click()"
+                            class="bg-white px-3 py-1 text-sm rounded shadow">
+                        Trocar Banner
+                    </button>
+                </form>
+            @endif
+        </div>
+
+        {{-- Ícone e nome do curso + coordenador --}}
+        <div class="px-6 -mt-12 flex items-end space-x-4">
+            <div class="relative">
+                <img src="{{ $course->course_icon ? asset('storage/' . $course->course_icon) : asset('images/default-icon.png') }}"
+                     alt="Ícone do Curso"
+                     class="w-24 h-24 rounded-full border-4 border-white object-cover bg-gray-300">
+
+                @if(auth()->user()->user_type === 'admin')
+                    <form method="POST" action="{{ route('courses.updateIcon', $course->id) }}" enctype="multipart/form-data"
+                          class="absolute bottom-0 right-0">
+                        @csrf
+                        @method('PUT')
+                        <input type="file" name="course_icon" id="iconUpload" class="hidden"
+                               onchange="this.form.submit()">
+                        <button type="button"
+                                onclick="document.getElementById('iconUpload').click()"
+                                class="bg-white text-xs px-2 py-1 rounded shadow">
+                            Editar
+                        </button>
+                    </form>
                 @endif
+            </div>
 
-                <!-- Exibe o banner do curso se existir -->
-                @if($course->course_banner)
-                    <div class="mb-4">
-                        <img src="{{ asset('storage/' . $course->course_banner) }}" alt="Banner do Curso" class="w-full max-h-64 object-cover rounded">
-                    </div>
-                @endif
-
-                <!-- Descrição do curso -->
-                <div class="mb-4 text-gray-700">
-                    {{ $course->course_description }}
-                </div>
-
-                <!-- Nome do coordenador, ou texto padrão se não definido -->
-                <div class="mb-4">
-                    <strong>Coordenador:</strong> {{ $course->courseCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}
-                </div>
-
-                <!-- Exibe datas de criação e atualização somente se o usuário for admin -->
-                @if(auth()->user()->is_admin)
-                    <dl class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-x-8">
-                        <div>
-                            <dt class="font-medium text-gray-600">Criado em</dt>
-                            <dd>{{ $course->created_at->format('d/m/Y H:i') }}</dd>
-                        </div>
-                        <div>
-                            <dt class="font-medium text-gray-600">Atualizado em</dt>
-                            <dd>{{ $course->updated_at->format('d/m/Y H:i') }}</dd>
-                        </div>
-                    </dl>
-                @endif
-
-                <!-- Botões para voltar à lista, editar e excluir (editar e excluir só para admin) -->
-                <div class="flex items-center gap-2 mt-4">
-                    <a href="{{ route('courses.index') }}" class="inline-block bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Voltar para lista</a>
-
-                    @if(auth()->user()->is_admin)
-                        <a href="{{ route('courses.edit', $course->id) }}" class="inline-block bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">Editar</a>
-
-                        <form action="{{ route('courses.destroy', $course->id) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este curso?')" class="inline-block">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Excluir</button>
-                        </form>
-                    @endif
-                </div>
+            <div>
+                <h2 class="text-xl font-bold">{{ $course->course_name }}</h2>
+                <p class="text-sm text-gray-500">
+                    Coordenador:
+                      @if($course->courseCoordinator?->userAccount)
+                        <a href="{{ route('profile.view', $course->courseCoordinator->userAccount->id) }}"
+                        class="text-blue-500 hover:underline">
+                        {{ $course->courseCoordinator->userAccount->name }}
+                     </a>
+                     @else
+                     Nenhum coordenador definido
+                     @endif
+                </p>
             </div>
         </div>
+
+        {{-- Descrição (Edição inline igual à bio do usuário) --}}
+        <div class="px-6 py-4 text-gray-700"
+             x-data="{ editing: false, description: @js(old('course_description', $course->course_description)), original: @js($course->course_description) }">
+            <h3 class="text-sm font-semibold mb-1">Descrição do Curso</h3>
+
+            <div x-show="!editing"
+                 @click="editing = {{ auth()->user()->user_type === 'admin' ? 'true' : 'false' }}"
+                 class="cursor-pointer text-sm text-gray-700 min-h-[3rem] whitespace-pre-line">
+                <span x-text="description || 'Clique para adicionar uma descrição...'"></span>
+            </div>
+
+            @if(auth()->user()->user_type === 'admin')
+                <form method="POST" action="{{ route('courses.updateDescription', $course->id) }}"
+                      x-show="editing" @click.away="editing = false" x-transition>
+                    @csrf
+                    @method('PUT')
+                    <textarea name="course_description" rows="4"
+                              x-model="description"
+                              class="w-full border rounded p-2 text-sm"
+                              placeholder="Digite a descrição do curso..."></textarea>
+                    <div class="mt-2 text-right" x-show="description !== original">
+                        <button type="submit"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm rounded">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            @endif
+        </div>
+
+        {{-- Listagem de eventos do curso --}}
+        <div class="px-6 py-6 border-t mt-4">
+            <h3 class="text-lg font-semibold mb-4">Eventos deste curso</h3>
+
+            @if($course->events->isNotEmpty())
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($course->events as $event)
+                <div class="bg-white rounded-lg shadow hover:shadow-md transition p-0 overflow-hidden">
+                    {{-- Imagem do evento --}}
+                    <div class="h-32 bg-gray-200">
+                        <img src="{{ $event->event_image ? asset('storage/' . $event->event_image) : asset('images/default-event.jpg') }}"
+                        alt="Imagem do evento"
+                        class="w-full h-full object-cover">
+                    </div>
+
+            {{-- Conteúdo do card --}}
+            <div class="p-4">
+                <h4 class="text-md font-bold truncate">{{ $event->event_name }}</h4>
+                <p class="text-sm text-gray-600 line-clamp-2">{{ $event->event_description }}</p>
+
+                @isset($event->event_scheduled_at)
+                    <p class="text-xs text-gray-500 mt-1">
+                        Data: {{ $event->event_scheduled_at->format('d/m/Y') }}
+                    </p>
+                @endisset
+
+                <a href="{{ route('events.show', $event->id) }}"
+                    class="mt-3 inline-block text-blue-500 hover:underline text-sm">
+                    Ver detalhes →
+                </a>
+                </div>
+            </div>
+                @endforeach
+            </div>
+
+            @else
+                <p class="text-gray-500">Nenhum evento cadastrado para este curso.</p>
+            @endif
+        </div>
+
+        {{-- Botão excluir (só admin) --}}
+        @if(auth()->user()->user_type === 'admin')
+            <div class="px-6 py-4">
+                <form action="{{ route('courses.destroy', $course->id) }}" method="POST"
+                      onsubmit="return confirm('Tem certeza que deseja excluir este curso?')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit"
+                            class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        Excluir Curso
+                    </button>
+                </form>
+            </div>
+        @endif
     </div>
 </x-app-layout>

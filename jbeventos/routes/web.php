@@ -7,15 +7,27 @@ use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\ProfileController;
 
-// Ao acessar a raiz do site, redireciona para a rota de login
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+/*
+|--------------------------------------------------------------------------
+| Rotas Públicas
+|--------------------------------------------------------------------------
+*/
 
-// Grupo de rotas protegidas por autenticação, sessão ativa e e-mail verificado
+// Ao acessar a raiz, redireciona para login
+Route::get('/', fn() => redirect()->route('login'));
+
+/*
+|--------------------------------------------------------------------------
+| Rotas Protegidas (usuário autenticado + sessão ativa + e-mail verificado)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
 
-    // Redireciona o usuário autenticado para o dashboard conforme seu tipo de usuário
+    /*
+    |----------------------------------------------------------------------
+    | Redirecionamento para o dashboard correto baseado no tipo de usuário
+    |----------------------------------------------------------------------
+    */
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
@@ -23,63 +35,80 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
             'admin' => redirect()->route('admin.dashboard'),
             'coordinator' => redirect()->route('coordinator.dashboard'),
             'user' => redirect()->route('user.dashboard'),
-            default => abort(403), // Se o tipo de usuário não for válido, retorna erro 403
+            default => abort(403),
         };
     })->name('dashboard');
 
-    // Rotas para o painel do Administrador
+    /*
+    |--------------------------------------------------------------------------
+    | Painel do Administrador
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
-        // Exibe o dashboard do administrador
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+        Route::get('/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
 
-        // CRUD completo para gerenciar coordenadores (só admin pode acessar)
+        // CRUD de coordenadores
         Route::resource('coordinators', CoordinatorController::class);
 
-        // CRUD completo para gerenciar cursos (só admin pode acessar)
+        // CRUD de cursos
         Route::resource('courses', CourseController::class);
+
+        // ✅ Atualizações rápidas de cursos (somente admin)
+        Route::put('/courses/{course}/update-banner', [CourseController::class, 'updateBanner'])->name('courses.updateBanner');
+        Route::put('/courses/{course}/update-icon', [CourseController::class, 'updateIcon'])->name('courses.updateIcon');
+        Route::put('/courses/{course}/update-description', [CourseController::class, 'updateDescription'])->name('courses.updateDescription');
     });
 
-    // Rotas para o painel do Coordenador
-    Route::prefix('coordinator')->middleware('checkUserType:coordinator', 'forcePasswordChange:true')->group(function () {
-        // Dashboard do coordenador
-        Route::get('/dashboard', function () {
-            return view('coordinator.dashboard');
-        })->name('coordinator.dashboard');
+    /*
+    |--------------------------------------------------------------------------
+    | Painel do Coordenador
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('coordinator')->middleware(['checkUserType:coordinator', 'forcePasswordChange:true'])->group(function () {
+        Route::get('/dashboard', fn() => view('coordinator.dashboard'))->name('coordinator.dashboard');
 
-        // CRUD completo para gerenciar eventos
+        // CRUD de eventos
         Route::resource('events', EventController::class);
 
-        // Rotas para editar e atualizar a senha do coordenador
+        // Alterar senha
         Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
         Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
     });
 
-    // Rotas para o painel do Usuário comum
+    /*
+    |--------------------------------------------------------------------------
+    | Painel do Usuário Comum
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('user')->middleware('checkUserType:user')->group(function () {
-        // Exibe o dashboard do usuário comum
-        Route::get('/dashboard', function () {
-            return view('user.dashboard');
-        })->name('user.dashboard');
+        Route::get('/dashboard', fn() => view('user.dashboard'))->name('user.dashboard');
     });
 
-    // Rotas públicas para cursos (somente listagem e detalhes)
+    /*
+    |--------------------------------------------------------------------------
+    | Cursos e Eventos (Acesso Público para todos usuários autenticados)
+    |--------------------------------------------------------------------------
+    */
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
-
-    // Rotas públicas para eventos (somente listagem e detalhes)
     Route::resource('events', EventController::class)->only(['index', 'show']);
 
-    // ✅ Nova rota para o painel de Configurações (aproveitando os forms do Jetstream)
-    Route::get('/settings', function () {
-        return view('settings');
-    })->name('settings');
+    /*
+    |--------------------------------------------------------------------------
+    | Configurações (opcional - Jetstream)
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/settings', fn() => view('settings'))->name('settings');
 });
 
-// Rotas do Perfil personalizado (foto, banner, bio)
+/*
+|--------------------------------------------------------------------------
+| Rotas do Perfil do Usuário (Foto, Banner, Bio)
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
-    Route::get('/perfil/{user}',[ProfileController::class, 'viewPublicProfile'])->name('profile.view'); //perfil de outro user
+    Route::get('/perfil/{user}', [ProfileController::class, 'viewPublicProfile'])->name('profile.view');
+
     Route::post('/perfil/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
     Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');

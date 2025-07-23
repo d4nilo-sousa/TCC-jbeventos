@@ -34,4 +34,9 @@ class Course extends Model
     public function courseParticipants() {
         return $this->belongsToMany(User::class, 'course_user_follow')->withTimestamps();
     }
+
+    // Relação muitos-para-muitos com Event
+    public function events() {
+        return $this->hasMany(Event::class);
+    }
 }
