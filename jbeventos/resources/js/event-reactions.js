@@ -1,39 +1,65 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Seleciona todos os botões com a classe 'reaction-btn'
   const buttons = document.querySelectorAll('button.reaction-btn');
+  const phoneModal = document.getElementById('phoneModal');
+  const cancelPhoneModal = document.getElementById('cancelPhoneModal');
+  const phoneForm = document.getElementById('phoneForm');
+  const phoneInput = phoneForm.querySelector('input[name="phone_number"]');
+
+  let pendingReaction = null;
+
+  // Máscara simples para telefone (formato (99) 99999-9999)
+  function maskPhone(value) {
+    value = value.replace(/\D/g, '');
+
+    if (value.length > 11) {
+      value = value.slice(0, 11);
+    }
+
+    if (value.length > 6) {
+      return `(${value.slice(0,2)}) ${value.slice(2,7)}-${value.slice(7,11)}`;
+    } else if (value.length > 2) {
+      return `(${value.slice(0,2)}) ${value.slice(2)}`;
+    } else if (value.length > 0) {
+      return `(${value}`;
+    }
+    return '';
+  }
+
+  phoneInput.addEventListener('input', e => {
+    const cursorPosition = phoneInput.selectionStart;
+    const originalLength = phoneInput.value.length;
+
+    phoneInput.value = maskPhone(phoneInput.value);
+
+    const newLength = phoneInput.value.length;
+    const diff = newLength - originalLength;
+
+    phoneInput.selectionStart = phoneInput.selectionEnd = cursorPosition + diff;
+  });
 
   buttons.forEach(button => {
-    // Adiciona listener de clique para cada botão
     button.addEventListener('click', e => {
-      e.preventDefault(); // Previne comportamento padrão do botão (submit)
+      e.preventDefault();
 
-      // Obtém o tipo de reação do atributo data-type do botão
       const type = button.dataset.type;
-      // Busca o formulário pai mais próximo do botão
       const form = button.closest('form');
-      // Cria um FormData com os dados do formulário
       const formData = new FormData(form);
 
-      // Verifica se o botão já está ativo (tem a classe bg-blue-600)
       const isActive = button.classList.contains('bg-blue-600');
 
-      // Define grupos mutuamente exclusivos (like <-> dislike)
       const mutuallyExclusive = {
         like: 'dislike',
         dislike: 'like',
       };
 
-      // --- Estilo visual: toggle atual ---
+      // Toggle visual
       if (isActive) {
-        // Se ativo, desmarca o botão atual (remove cor azul, adiciona branco)
         button.classList.remove('bg-blue-600', 'text-white');
         button.classList.add('bg-white', 'text-blue-600');
       } else {
-        // Se não ativo, marca o botão atual (cor azul)
         button.classList.add('bg-blue-600', 'text-white');
         button.classList.remove('bg-white', 'text-blue-600');
 
-        // Se for 'like' ou 'dislike', desmarca o botão oposto
         if (mutuallyExclusive[type]) {
           const opposite = mutuallyExclusive[type];
           buttons.forEach(btn => {
@@ -45,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // --- Envio por fetch ---
       fetch(form.action, {
         method: form.method,
         body: formData,
@@ -54,18 +79,90 @@ document.addEventListener('DOMContentLoaded', () => {
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(data => { throw data; });
+        }
+        return response.json();
+      })
       .then(data => {
-        // Caso receba erro indicando que telefone é necessário, alerta e redireciona
-        if (data.error === 'phone_required') {
-          alert('Você precisa cadastrar seu número de celular para ser notificado.');
-          window.location.href = '/phone/edit'; // ajuste essa URL se precisar
+        // Toast para reações notify adicionadas ou removidas
+        if (data.type === 'notify') {
+          if (data.status === 'added') {
+            showToast('🔔 Você receberá notificações deste evento!');
+          } else if (data.status === 'removed') {
+            showToast('🚫 Você não receberá mais notificações deste evento.');
+          }
         }
       })
-      .catch(error => {
-        // Loga erro no console caso falhe o fetch
-        console.error('Erro ao processar a reação:', error);
+      .catch(data => {
+        if (data.error === 'phone_required' && !isActive && type === 'notify') {
+          pendingReaction = { form, formData };
+          phoneModal.classList.remove('hidden');
+        } else {
+          console.error('Erro ao processar a reação:', data);
+        }
       });
     });
   });
+
+  cancelPhoneModal.addEventListener('click', () => {
+    phoneModal.classList.add('hidden');
+  });
+
+  phoneForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const formData = new FormData(phoneForm);
+    fetch('/phone', {
+      method: 'PUT',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(data => { throw data; });
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        phoneModal.classList.add('hidden');
+        showToast('📱 Telefone atualizado com sucesso! Você receberá notificações deste evento!');
+
+        if (pendingReaction) {
+          fetch(pendingReaction.form.action, {
+            method: pendingReaction.form.method,
+            body: pendingReaction.formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+          });
+          pendingReaction = null;
+        }
+      } else {
+        alert('Erro ao salvar o telefone.');
+      }
+    })
+    .catch(error => {
+      alert('Erro ao salvar o telefone.');
+      console.error('Erro ao salvar telefone:', error);
+    });
+  });
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    const toastMessage = document.getElementById('toast-message');
+
+    toastMessage.textContent = message;
+    toast.classList.remove('hidden');
+
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 3000);
+  }
 });

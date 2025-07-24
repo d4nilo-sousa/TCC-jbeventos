@@ -28,7 +28,6 @@
                         </div>
                         <div>
                             <strong>📅 Irá ocorrer em:</strong> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
-                            {{-- Mostra a data de término, se estiver definida (Apenas para o coordenador que criou) --}}
                             @if(auth()->check() && auth()->user()->user_type === 'coordinator')
                                 @php
                                     $loggedCoordinator = auth()->user()->coordinator;
@@ -68,24 +67,16 @@
                     <div class="mb-6">
                         <strong>💬 Reações:</strong>
                         <div id="reactions" class="mt-2 space-x-2 flex flex-wrap">
-                            {{-- Loop pelas reações disponíveis com seus labels --}}
                             @foreach (['like' => '👍 Curtir', 'dislike' => '👎 Não Gostei', 'save' => '💾 Salvar', 'notify' => '🔔 Notificar'] as $type => $label)
                                 @php
-                                    // Verifica se o usuário já reagiu com esse tipo
                                     $isActive = in_array($type, $userReactions);
-                                    // Classes base para todos os botões
                                     $baseClasses = 'reaction-btn px-3 py-1 rounded border border-blue-500';
-                                    // Classes para botão ativo
                                     $activeClasses = 'bg-blue-600 text-white';
-                                    // Classes para botão inativo
                                     $inactiveClasses = 'bg-white text-blue-600 hover:bg-blue-100';
                                 @endphp
-                                {{-- Formulário para enviar a reação --}}
                                 <form action="{{ route('events.react', ['event' => $event->id]) }}" method="POST" class="inline-block reaction-form">
                                     @csrf
-                                    {{-- Tipo da reação enviada --}}
                                     <input type="hidden" name="reaction_type" value="{{ $type }}">
-                                    {{-- Botão de reação com classes dinâmicas --}}
                                     <button type="submit" data-type="{{ $type }}" class="{{ $baseClasses }} {{ $isActive ? $activeClasses : $inactiveClasses }}">
                                         {{ $label }}
                                     </button>
@@ -94,23 +85,17 @@
                         </div>
                     </div>
 
-
                     {{-- Botões de navegação e ações do coordenador --}}
                     <div class="flex justify-between">
-                        {{-- Botão para voltar à lista de eventos --}}
                         <a href="{{ route('events.index') }}" class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
                             ← Voltar
                         </a>
 
-                        {{-- Botões de editar e excluir, visíveis apenas para o coordenador responsável --}}
                         @if(auth()->user()->id === ($event->eventCoordinator?->userAccount?->id ?? 0))
                             <div class="flex space-x-2">
-                                {{-- Editar evento --}}
                                 <a href="{{ route('events.edit', $event->id) }}" class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
                                     Editar
                                 </a>
-
-                                {{-- Formulário para excluir o evento com confirmação --}}
                                 <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir este evento?')">
                                     @csrf
                                     @method('DELETE')
@@ -121,12 +106,33 @@
                             </div>
                         @endif
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
 </x-app-layout>
 
-{{-- Importa o script JavaScript responsável pelo controle das reações ao evento usando Vite --}}
+{{-- Modal para cadastrar telefone --}}
+<div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+    <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
+    <form id="phoneForm" class="space-y-4">
+      @csrf
+      @method('PUT')
+      <input type="text" name="phone_number" placeholder="(99) 99999-9999" pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2" required>
+      <div class="flex justify-end space-x-2">
+        <button type="button" id="cancelPhoneModal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{{-- Toast simples --}}
+<div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
+  <span id="toast-message"></span>
+</div>
+
+
+{{-- Scripts --}}
 @vite('resources/js/event-reactions.js')
