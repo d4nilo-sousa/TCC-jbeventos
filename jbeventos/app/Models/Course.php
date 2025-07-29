@@ -31,7 +31,7 @@ class Course extends Model
 
     // Relação muitos-para-muitos com User usando a tabela pivot 'course_user_follow'
     // withTimestamps() adiciona timestamps na tabela pivot automaticamente
-    public function courseParticipants() {
+    public function followers() {
         return $this->belongsToMany(User::class, 'course_user_follow')->withTimestamps();
     }
 
@@ -39,4 +39,6 @@ class Course extends Model
     public function events() {
         return $this->hasMany(Event::class);
     }
+
+   
 }
