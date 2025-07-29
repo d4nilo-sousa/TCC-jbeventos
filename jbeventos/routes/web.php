@@ -6,6 +6,9 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EventReactionController;
+use App\Http\Controllers\UserPhoneController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -92,24 +95,23 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
     Route::resource('events', EventController::class)->only(['index', 'show']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Configurações (opcional - Jetstream)
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/settings', fn() => view('settings'))->name('settings');
-});
+    // ✅ Nova rota para o painel de Configurações (aproveitando os forms do Jetstream)
+    Route::get('/settings', function () {
+        return view('settings');
+    })->name('settings');
 
-/*
-|--------------------------------------------------------------------------
-| Rotas do Perfil do Usuário (Foto, Banner, Bio)
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
+    // Rotas do Perfil personalizado (foto, banner, bio)
     Route::get('/perfil', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/perfil/{user}', [ProfileController::class, 'viewPublicProfile'])->name('profile.view');
 
     Route::post('/perfil/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
     Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');
+
+    // Rotas para a reação de usuários ao evento
+    Route::post('/events/{event}/react', [EventReactionController::class, 'react'])->name('events.react');
+
+    // Rotas para o usuário inserir o seu telefone(caso não tenha), para conseguir liberar a funcionalidade de notificação.
+    Route::get('phone/edit', [UserPhoneController::class, 'edit'])->name('user.phone.edit');
+    Route::put('phone', [UserPhoneController::class, 'update'])->name('user.phone.update');
 });

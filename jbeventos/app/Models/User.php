@@ -31,6 +31,7 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'phone_number',
+        'phone_number_verified_at',
         'user_icon',
         'user_banner',
         'bio',
