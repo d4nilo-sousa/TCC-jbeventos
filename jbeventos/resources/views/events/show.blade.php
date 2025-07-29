@@ -43,12 +43,14 @@
 
                     {{-- Coordenador responsável, tipo e curso relacionado --}}
                     <div class="mb-4 text-gray-600">
-                        <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}<br>
-                        @if ($event->eventCoordinator?->coordinator_type === 'general')
-                            <strong>📌 Tipo do evento:</strong> Evento Geral
-                        @elseif ($event->eventCoordinator?->coordinator_type === 'course')
-                            <strong>📌 Tipo do evento:</strong> Evento de Curso<br>
-                            <strong>🎓 Curso:</strong> {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Sem Curso' }}
+                        @if (!$event->eventCoordinator || $event->eventCoordinator->coordinator_type !== $event->event_type)
+                            <strong>👤 Coordenador:</strong> Nenhum coordenador definido<br>
+                        @else
+                            <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator?->userAccount?->name }}<br>
+                        @endif
+                        <strong>📌 Tipo do evento:</strong> {{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'Nenhum tipo definido') }}<br>
+                         @if($event->event_type === 'course')
+                            <strong>🎓 Curso:</strong> {{ $event->eventCourse->course_name ?? 'Sem Curso' }}
                         @endif
                     </div>
 

@@ -3,6 +3,11 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Models\Coordinator;
+use App\Models\Event;
+use App\Models\Course;
+use App\Observers\CoordinatorObserver;
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Chamando a observer do coordenador para funcionar
+        Coordinator::observe(CoordinatorObserver::class);
     }
 }
