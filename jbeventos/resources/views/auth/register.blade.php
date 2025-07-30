@@ -21,7 +21,15 @@
 
             <div class="mt-4">
                 <x-label for="password" value="{{ __('Password') }}" />
-                <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
+                <x-input id="password" class="block mt-1 w-full" type="password" name="password"  required autocomplete="new-password" />
+                
+                <!-- Lista de requisitos da senha, inicialmente oculta com a classe 'hidden' -->
+                <ul id="password-requirements" class="text-sm mt-2 hidden">
+                    <li id="req-length" class="text-red-500">Pelo menos 8 caracteres</li>
+                    <li id="req-uppercase" class="text-red-500">Uma letra maiúscula</li>
+                    <li id="req-number" class="text-red-500">Um número</li>
+                    <li id="req-special" class="text-red-500">Um caractere especial (!@#$%&*)</li>
+                </ul>
             </div>
 
             <div class="mt-4">
@@ -32,7 +40,7 @@
             <!-- Número de Telefone -->
             <div class="mt-4">
                 <x-label for="phone_number" value="{{ __('Phone Number (Optional)') }}" />
-                <x-input id="phone_number" class="block mt-1 w-full" type="tel" name="phone_number" autocomplete="tel" />
+                <x-input id="phone_number" class="block mt-1 w-full" type="tel" name="phone_number" :value="old('phone_number')" autocomplete="tel" />
             </div>
 
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
@@ -64,3 +72,5 @@
         </form>
     </x-authentication-card>
 </x-guest-layout>
+
+@vite('resources/js/password-validator.js')
