@@ -32,7 +32,7 @@
             <!-- Número de Telefone -->
             <div class="mt-4">
                 <x-label for="phone_number" value="{{ __('Phone Number (Optional)') }}" />
-                <x-input id="phone_number" class="block mt-1 w-full" type="tel" name="phone_number" required autocomplete="tel" />
+                <x-input id="phone_number" class="block mt-1 w-full" type="tel" name="phone_number" autocomplete="tel" />
             </div>
 
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
