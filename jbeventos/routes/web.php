@@ -6,9 +6,9 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CourseFollowController;
 use App\Http\Controllers\EventReactionController;
 use App\Http\Controllers\UserPhoneController;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -114,4 +114,14 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // Rotas para o usuário inserir o seu telefone(caso não tenha), para conseguir liberar a funcionalidade de notificação.
     Route::get('phone/edit', [UserPhoneController::class, 'edit'])->name('user.phone.edit');
     Route::put('phone', [UserPhoneController::class, 'update'])->name('user.phone.update');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rotas para seguir e deixar de seguir cursos
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::post('/courses/{course}/follow', [CourseFollowController::class, 'follow'])->name('courses.follow');
+    Route::delete('/courses/{course}/unfollow', [CourseFollowController::class, 'unfollow'])->name('courses.unfollow');
 });
