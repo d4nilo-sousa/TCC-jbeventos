@@ -6,6 +6,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CourseFollowController;
 
 /*
 |--------------------------------------------------------------------------
@@ -112,4 +113,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/perfil/update-photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
     Route::post('/perfil/update-banner', [ProfileController::class, 'updateBanner'])->name('profile.updateBanner');
     Route::post('/perfil/update-bio', [ProfileController::class, 'updateBio'])->name('profile.updateBio');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rotas para seguir e deixar de seguir cursos
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::post('/courses/{course}/follow', [CourseFollowController::class, 'follow'])->name('courses.follow');
+    Route::delete('/courses/{course}/unfollow', [CourseFollowController::class, 'unfollow'])->name('courses.unfollow');
 });
