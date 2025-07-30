@@ -23,21 +23,21 @@
             </div>
 
             <div class="mt-4">
-                <x-label for="password" value="{{ __('Password') }}" />
+                <x-label for="password" value="{{ __('Senha') }}" />
                 <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" />
             </div>
 
             <div class="block mt-4">
                 <label for="remember_me" class="flex items-center">
                     <x-checkbox id="remember_me" name="remember" />
-                    <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+                    <span class="ms-2 text-sm text-gray-600">{{ __('Lembre-me') }}</span>
                 </label>
             </div>
 
             <div class="flex items-center justify-center mt-4 space-x-4">
                 @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+                    {{ __('Esqueceu sua senha?') }}
                 </a>
                 @endif
 
@@ -45,7 +45,7 @@
 
             <div class="flex items-center justify-center mt-3">
                 <x-button class="bg-red-600 hover:bg-red-700 w-60 h-10">
-                    {{ __('Log in') }}
+                    {{ __('Login') }}
                 </x-button>
             </div>
         </form>
