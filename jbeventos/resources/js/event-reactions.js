@@ -11,14 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function maskPhone(value) {
     value = value.replace(/\D/g, '');
 
-    if (value.length > 11) {
-      value = value.slice(0, 11);
-    }
+    if (value.length > 11) value = value.slice(0, 11);
 
     if (value.length > 6) {
-      return `(${value.slice(0,2)}) ${value.slice(2,7)}-${value.slice(7,11)}`;
+      return `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
     } else if (value.length > 2) {
-      return `(${value.slice(0,2)}) ${value.slice(2)}`;
+      return `(${value.slice(0, 2)}) ${value.slice(2)}`;
     } else if (value.length > 0) {
       return `(${value}`;
     }
@@ -52,7 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dislike: 'like',
       };
 
-      // Toggle visual
       if (isActive) {
         button.classList.remove('bg-blue-600', 'text-white');
         button.classList.add('bg-white', 'text-blue-600');
@@ -71,6 +68,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      // Lógica para notificação: se já tem telefone, não abrir modal
+      if (type === 'notify' && !window.userPhoneNumber && !isActive) {
+        pendingReaction = { form, formData };
+        phoneModal.classList.remove('hidden');
+        return;
+      }
+
       fetch(form.action, {
         method: form.method,
         body: formData,
@@ -86,22 +90,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.json();
       })
       .then(data => {
-        // Toast para reações notify adicionadas ou removidas
         if (data.type === 'notify') {
           if (data.status === 'added') {
-            showToast('🔔 Você receberá notificações deste evento!');
+            showToast(`🔔 Olá ${window.authUserName}, você receberá notificações deste evento!`);
           } else if (data.status === 'removed') {
             showToast('🚫 Você não receberá mais notificações deste evento.');
           }
         }
       })
-      .catch(data => {
-        if (data.error === 'phone_required' && !isActive && type === 'notify') {
-          pendingReaction = { form, formData };
-          phoneModal.classList.remove('hidden');
-        } else {
-          console.error('Erro ao processar a reação:', data);
-        }
+      .catch(error => {
+        console.error('Erro ao processar reação:', error);
       });
     });
   });
@@ -113,14 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
   phoneForm.addEventListener('submit', e => {
     e.preventDefault();
 
-    const formData = new FormData(phoneForm);
+    const phoneNumber = phoneInput.value;
+
     fetch('/phone', {
       method: 'PUT',
-      body: formData,
       headers: {
+        'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      }
+      },
+      body: JSON.stringify({ phone_number: phoneNumber })
     })
     .then(response => {
       if (!response.ok) {
@@ -131,8 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(data => {
       if (data.success) {
         phoneModal.classList.add('hidden');
-        showToast('📱 Telefone atualizado com sucesso! Você receberá notificações deste evento!');
+        window.userPhoneNumber = phoneNumber;
+        showToast(`📱 Telefone salvo! Você receberá notificações deste evento.`);
 
+        // Tenta novamente a reação pendente (notify)
         if (pendingReaction) {
           fetch(pendingReaction.form.action, {
             method: pendingReaction.form.method,
@@ -145,20 +147,20 @@ document.addEventListener('DOMContentLoaded', () => {
           pendingReaction = null;
         }
       } else {
-        alert('Erro ao salvar o telefone.');
+        alert('Erro ao salvar telefone.');
       }
     })
     .catch(error => {
-      alert('Erro ao salvar o telefone.');
+      alert('Erro ao salvar telefone.');
       console.error('Erro ao salvar telefone:', error);
     });
   });
 
   function showToast(message) {
     const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
+    const toastMsg = document.getElementById('toast-message');
 
-    toastMessage.textContent = message;
+    toastMsg.textContent = message;
     toast.classList.remove('hidden');
 
     setTimeout(() => {

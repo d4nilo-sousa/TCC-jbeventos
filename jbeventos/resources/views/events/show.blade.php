@@ -171,6 +171,11 @@
   <span id="toast-message"></span>
 </div>
 
+<script>
+  window.authUserName = @json(auth()->user()->name);
+  window.userPhoneNumber = @json(auth()->user()->phone_number);
+</script>
+
 
 {{-- Scripts --}}
 @vite('resources/js/event-reactions.js')
