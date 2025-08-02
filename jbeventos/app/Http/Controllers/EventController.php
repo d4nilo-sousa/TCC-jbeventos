@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\Coordinator;
 use App\Models\Category;
+use App\Models\User;
+use App\Notifications\NewEventNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
 use Carbon\Carbon;
 
 class EventController extends Controller
@@ -77,6 +80,16 @@ class EventController extends Controller
             $event->eventCategories()->sync($request->input('categories'));
         } else {
             $event->eventCategories()->detach();
+        }
+
+        // Envia notificações por e-mail aos seguidores do curso
+        if($event->course && $event->course->followers) {
+            Notification::send($event->course->followers, new NewEventNotification($event));
+        }
+
+        // Envia notifiações para os users que ativaram alertas para esse evento
+        if($event->notifiableUsers->isNotEmpty()) {
+            Notification::send($event->notifiableUsers, new NewEventNotification($event));
         }
 
         // Formata datas, se estiverem presentes
