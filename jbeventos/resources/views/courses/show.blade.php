@@ -127,6 +127,16 @@
                 <span x-text="description || 'Clique para adicionar uma descrição...'"></span>
             </div>
 
+            {{-- Botão de criar eventos --}}
+            @if($course->courseCoordinator && auth()->user()->id === $course->courseCoordinator->userAccount->id)
+                <div class="mt-2 text-right">
+                    <a href="{{ route('events.create', $course->id) }}"
+                       class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 text-sm rounded">
+                        Criar Evento
+                    </a>
+                </div>
+            @endif
+
             @if(auth()->user()->user_type === 'admin')
                 <form method="POST" action="{{ route('courses.updateDescription', $course->id) }}"
                       x-show="editing" @click.away="editing = false" x-transition>
