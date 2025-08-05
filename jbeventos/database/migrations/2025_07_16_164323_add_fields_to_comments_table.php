@@ -4,10 +4,22 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration para adicionar campos de edição, respostas e mídia na tabela 'comments'.
+ */
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa as migrações.
+     *
+     * Adiciona as colunas:
+     * - 'edited_at' para registrar quando o comentário foi editado.
+     * - 'parent_id' para permitir respostas vinculadas a outro comentário.
+     * - 'media_path' para anexar arquivos de mídia ao comentário.
+     *
+     * Define chave estrangeira 'parent_id' referenciando 'comments.id' com exclusão em cascata.
+     *
+     * @return void
      */
     public function up(): void
     {
@@ -27,14 +39,18 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte as migrações.
+     *
+     * Remove as colunas 'edited_at', 'media_path' e a foreign key 'parent_id' da tabela 'comments'.
+     *
+     * @return void
      */
     public function down(): void
     {
         Schema::table('comments', function (Blueprint $table) {
             $table->dropColumn(['edited_at', 'media_path']);
             
-            // Para remover a foreign key corretamente
+            // Remove a foreign key e depois a coluna 'parent_id'
             $table->dropForeign(['parent_id']);
             $table->dropColumn('parent_id');
         });

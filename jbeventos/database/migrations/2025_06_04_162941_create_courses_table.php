@@ -4,31 +4,43 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration para criação da tabela 'courses'.
+ * Esta tabela armazena os cursos, seus detalhes e relacionamentos com usuários e coordenadores.
+ */
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa a migration, criando a tabela 'courses'.
+     *
+     * @return void
      */
     public function up(): void
     {
-        // Criação da tabela 'courses' com informações do curso e relacionamentos
         Schema::create('courses', function (Blueprint $table) {
             $table->id(); // ID único do curso
 
-            $table->string('course_name')->unique(); // Nome único do curso
-            $table->text('course_description')->nullable(); // Descrição detalhada (opcional)
+            $table->string('course_name')->unique(); // Nome do curso, único
+            $table->text('course_description')->nullable(); // Descrição detalhada do curso (opcional)
             $table->string('course_icon')->nullable(); // Ícone do curso (opcional)
             $table->string('course_banner')->nullable(); // Banner do curso (opcional)
 
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null'); // Criador do curso, pode ser nulo, se usuário deletado, seta null
-            $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null'); // Coordenador responsável, pode ser nulo, se deletado seta null
+            // Chave estrangeira para o usuário criador do curso
+            // Pode ser nulo e, se o usuário for deletado, seta a coluna como null
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
 
-            $table->timestamps(); // Controle de criação e atualização
+            // Chave estrangeira para o coordenador do curso
+            // Pode ser nulo e, se o coordenador for deletado, seta a coluna como null
+            $table->foreignId('coordinator_id')->nullable()->constrained('coordinators')->onDelete('set null');
+
+            $table->timestamps(); // Campos created_at e updated_at
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte a migration, removendo a tabela 'courses'.
+     *
+     * @return void
      */
     public function down(): void
     {

@@ -4,32 +4,41 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration para criação da tabela 'coordinators'.
+ * Essa tabela armazena os coordenadores do sistema,
+ * indicando o tipo de coordenador e a associação com o usuário.
+ */
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa as migrations, criando a tabela 'coordinators'.
+     *
+     * @return void
      */
     public function up(): void
     {
-        // Criação da tabela 'coordinators' para armazenar coordenadores do sistema
         Schema::create('coordinators', function (Blueprint $table) {
-            $table->id(); // ID único do coordenador
+            $table->id(); // ID único auto-incrementado do coordenador
 
-            // Tipo de coordenador: 'general' (geral) ou 'course' (curso)
+            // Define o tipo de coordenador: geral ou de curso
             $table->enum('coordinator_type', ['general', 'course']);
 
-            // Flag para indicar se o coordenador será cadastrado com uma senha provisória
+            // Indica se o coordenador possui senha temporária (default: true)
             $table->boolean('temporary_password')->default(true);
 
-            // Chave estrangeira referenciando o usuário associado, com exclusão em cascata
+            // FK para o usuário associado; ao deletar usuário, o coordenador é removido em cascata
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-            $table->timestamps(); // Controle automático de criação e atualização
+            // Campos timestamps (created_at, updated_at)
+            $table->timestamps();
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte as migrations, removendo a tabela 'coordinators'.
+     *
+     * @return void
      */
     public function down(): void
     {

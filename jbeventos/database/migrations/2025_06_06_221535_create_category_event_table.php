@@ -4,10 +4,19 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration para criação da tabela pivot 'category_event',
+ * que associa categorias a eventos (relacionamento muitos-para-muitos).
+ */
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa as migrações.
+     *
+     * Cria a tabela 'category_event' com os campos necessários para armazenar
+     * a associação entre categorias e eventos.
+     *
+     * @return void
      */
     public function up(): void
     {
@@ -25,7 +34,11 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte as migrações.
+     *
+     * Remove a tabela 'category_event' caso exista.
+     *
+     * @return void
      */
     public function down(): void
     {

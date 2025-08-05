@@ -4,10 +4,19 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration para criação da tabela pivot 'course_user_follow',
+ * que registra quais usuários seguem quais cursos.
+ */
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa as migrações.
+     *
+     * Cria a tabela 'course_user_follow' com os campos necessários para armazenar
+     * o relacionamento muitos-para-muitos entre usuários e cursos que seguem.
+     *
+     * @return void
      */
     public function up(): void
     {
@@ -25,7 +34,11 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte as migrações.
+     *
+     * Remove a tabela 'course_user_follow' caso exista.
+     *
+     * @return void
      */
     public function down(): void
     {

@@ -7,28 +7,27 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa a migration para criar a tabela 'comments'.
      */
     public function up(): void
     {
-        // Criação da tabela 'comments' para armazenar comentários dos usuários sobre eventos
         Schema::create('comments', function (Blueprint $table) {
             $table->id(); // ID único do comentário
 
-            $table->text('comment'); // Texto do comentário feito pelo usuário
-            $table->boolean('visible_comment')->default(true); // Flag para indicar se o comentário está visível
+            $table->text('comment'); // Conteúdo textual do comentário
+            $table->boolean('visible_comment')->default(true); // Indica se o comentário está visível
 
-            // Relacionamento com o usuário que fez o comentário
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Excluir comentário se usuário for deletado
-            // Relacionamento com o evento comentado
-            $table->foreignId('event_id')->constrained('events')->onDelete('cascade'); // Excluir comentário se evento for deletado
+            // Relacionamento com o usuário que realizou o comentário
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            // Relacionamento com o evento ao qual o comentário pertence
+            $table->foreignId('event_id')->constrained('events')->onDelete('cascade');
 
-            $table->timestamps(); // Controle de criação e atualização do registro
+            $table->timestamps(); // created_at e updated_at
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte a migration, removendo a tabela 'comments'.
      */
     public function down(): void
     {

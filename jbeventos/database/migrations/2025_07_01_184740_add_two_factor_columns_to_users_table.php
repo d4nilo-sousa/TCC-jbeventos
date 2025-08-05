@@ -4,10 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration para adicionar colunas relacionadas à autenticação de dois fatores na tabela 'users'.
+ */
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa as migrações.
+     *
+     * Adiciona as colunas 'two_factor_secret', 'two_factor_recovery_codes' e 'two_factor_confirmed_at' 
+     * na tabela 'users' para armazenar dados da autenticação de dois fatores.
+     *
+     * @return void
      */
     public function up(): void
     {
@@ -27,7 +35,11 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte as migrações.
+     *
+     * Remove as colunas relacionadas à autenticação de dois fatores da tabela 'users'.
+     *
+     * @return void
      */
     public function down(): void
     {

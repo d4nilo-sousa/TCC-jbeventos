@@ -4,10 +4,21 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Migration para criar a tabela 'event_user_alerts' que registra alertas de usuários para eventos.
+ */
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Executa as migrações.
+     *
+     * Cria a tabela 'event_user_alerts' com as colunas:
+     * - id: identificador único do alerta.
+     * - event_id: referência ao evento que gerou o alerta, com exclusão em cascata.
+     * - user_id: referência ao usuário que recebeu o alerta, com exclusão em cascata.
+     * - timestamps: para controle de criação e atualização do registro.
+     *
+     * @return void
      */
     public function up(): void
     {
@@ -20,7 +31,11 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * Reverte as migrações.
+     *
+     * Remove a tabela 'event_user_alerts'.
+     *
+     * @return void
      */
     public function down(): void
     {
