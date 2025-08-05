@@ -9,7 +9,11 @@ class Event extends Model
 {
     use HasFactory;
 
-    // Campos que podem ser preenchidos em massa
+    /**
+     * Os atributos que podem ser preenchidos em massa.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'event_name',
         'event_description',
@@ -22,7 +26,11 @@ class Event extends Model
         'course_id',      // Relacionamento com Curso (opcional)
     ];
 
-    // Define o cast dos campos para tipos específicos
+    /**
+     * Define o cast dos atributos para tipos específicos.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -32,34 +40,69 @@ class Event extends Model
         ];
     }
 
-    // Retorna os comentários associados a este evento
-    public function eventComments() {
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONAMENTOS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Obtém os comentários relacionados a este evento.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function eventComments()
+    {
         return $this->hasMany(Comment::class);
     }
 
-    // Retorna o coordenador responsável pelo evento
-    public function eventCoordinator() {
-        return $this->belongsTo(Coordinator::class ,'coordinator_id');
+    /**
+     * Obtém o coordenador responsável por este evento.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function eventCoordinator()
+    {
+        return $this->belongsTo(Coordinator::class, 'coordinator_id');
     }
 
-    // Relação muitos-para-muitos com Category usando tabela pivot 'category_event'
-    // withTimestamps() adiciona timestamps na tabela pivot automaticamente
-    public function eventCategories() {
+    /**
+     * Relação muitos-para-muitos com categorias associadas ao evento.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function eventCategories()
+    {
         return $this->belongsToMany(Category::class, 'category_event')->withTimestamps();
     }
 
-    // Retorna as reações dos usuários ao evento
-    // Essa relação envolve uma tabela pivô com atributos próprios
-    public function reactions() {
+    /**
+     * Retorna as reações dos usuários para este evento.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function reactions()
+    {
         return $this->hasMany(EventUserReaction::class);
     }
 
-    public function notifiableUsers() {
+    /**
+     * Usuários que ativaram alertas para este evento.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function notifiableUsers()
+    {
         return $this->belongsToMany(User::class, 'event_user_alerts', 'event_id', 'user_id');
     }
 
-    // Relação com o modelo Course
-    public function course() {
+    /**
+     * Curso ao qual este evento pertence.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function course()
+    {
         return $this->belongsTo(Course::class);
     }
 }

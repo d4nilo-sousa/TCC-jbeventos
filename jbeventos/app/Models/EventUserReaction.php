@@ -9,23 +9,47 @@ class EventUserReaction extends Model
 {
     use HasFactory;
 
+    /**
+     * Nome da tabela associada ao modelo.
+     *
+     * @var string
+     */
     protected $table = 'event_user_reaction';
 
-    // Campos que podem ser preenchidos em massa
+    /**
+     * Os atributos que podem ser preenchidos em massa.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'reaction_type',  // Tipo da reação (ex: like, dislike, etc)
-        'user_id', // Id do Usuário que está reagindo
-        'event_id', // Id do Evento que usuário está reagindo
+        'user_id',        // Id do Usuário que está reagindo
+        'event_id',       // Id do Evento que usuário está reagindo
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONAMENTOS
+    |--------------------------------------------------------------------------
+    */
 
-    // Retorna o evento ao qual esta reação pertence
-    public function reactedEvent() {
+    /**
+     * Retorna o evento ao qual esta reação pertence.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function reactedEvent()
+    {
         return $this->belongsTo(Event::class);
     }
 
-    // Retorna o usuário que fez a reação
-    public function reactingUser() {
+    /**
+     * Retorna o usuário que fez a reação.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function reactingUser()
+    {
         return $this->belongsTo(User::class);
     }
 }

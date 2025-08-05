@@ -7,17 +7,26 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Category extends Model
 {
-    use HasFactory; 
+    use HasFactory;
 
-    // Define os campos que podem ser preenchidos em massa (mass assignment)
+    /**
+     * Os atributos que podem ser atribuídos em massa.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'category_name',
     ];
 
-    // Define relação muitos-para-muitos com o modelo Event
-    // A tabela pivot usada é 'category_event'
-    // withTimestamps() adiciona timestamps na tabela pivot automaticamente
-    public function relatedEvents() {
+    /**
+     * Relação muitos-para-muitos entre categorias e eventos.
+     *
+     * Utiliza a tabela pivot 'category_event' e mantém timestamps na pivot.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function relatedEvents()
+    {
         return $this->belongsToMany(Event::class, 'category_event')->withTimestamps();
     }
 }

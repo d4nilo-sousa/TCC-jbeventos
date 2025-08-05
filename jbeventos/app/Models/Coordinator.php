@@ -9,14 +9,22 @@ class Coordinator extends Model
 {
     use HasFactory;
 
-    // Campos que podem ser preenchidos em massa
+    /**
+     * Os atributos que podem ser preenchidos em massa.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'coordinator_type',
         'temporary_password',
         'user_id',
     ];
 
-    // Define que o atributo 'temporary_password' deve ser tratado como booleano
+    /**
+     * Define o casting dos atributos do modelo.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [
@@ -24,18 +32,39 @@ class Coordinator extends Model
         ];
     }
 
-    // Retorna os eventos gerenciados por este coordenador
-    public function managedEvents() {
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONAMENTOS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Retorna os eventos gerenciados por este coordenador.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function managedEvents()
+    {
         return $this->hasMany(Event::class);
     }
 
-    // Retorna o usuário relacionado a este coordenador
-    public function userAccount() {
+    /**
+     * Retorna o usuário associado a este coordenador.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function userAccount()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Retorna o curso coordenado por este coordenador
-    public function coordinatedCourse() {
+    /**
+     * Retorna o curso coordenado por este coordenador.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function coordinatedCourse()
+    {
         return $this->hasOne(Course::class);
     }
 }

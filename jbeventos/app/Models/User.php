@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -21,7 +20,7 @@ class User extends Authenticatable
     use TwoFactorAuthenticatable;
 
     /**
-     * The attributes that are mass assignable.
+     * Os atributos que podem ser preenchidos em massa.
      *
      * @var array<int, string>
      */
@@ -39,7 +38,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Os atributos que devem ser ocultados durante a serialização.
      *
      * @var array<int, string>
      */
@@ -51,7 +50,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The accessors to append to the model's array form.
+     * Atributos adicionais a serem adicionados ao array e JSON do modelo.
      *
      * @var array<int, string>
      */
@@ -60,7 +59,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Definição dos casts dos atributos para tipos nativos.
      *
      * @return array<string, string>
      */
@@ -73,53 +72,99 @@ class User extends Authenticatable
         ];
     }
 
-      // Cursos criados pelo usuário
-    public function createdCourses() {
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONAMENTOS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Cursos criados pelo usuário.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function createdCourses()
+    {
         return $this->hasMany(Course::class);
     }
 
-    // Retorna o coordenador associado a este usuário
-    public function coordinator() {
+    /**
+     * Coordenador associado a este usuário.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function coordinator()
+    {
         return $this->hasOne(Coordinator::class);
     }
 
-    // Retorna o coordenador associado a este usuário
-    public function coordinatorRole() {
+    /**
+     * Alias para o coordenador associado a este usuário.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function coordinatorRole()
+    {
         return $this->hasOne(Coordinator::class);
     }
 
-    // Comentários feitos pelo usuário
-    public function userComments() {
+    /**
+     * Comentários feitos pelo usuário.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function userComments()
+    {
         return $this->hasMany(Comment::class);
     }
 
-    // Cursos que o usuário está participando
-    // Relação muitos-para-muitos com a tabela pivot 'course_user_follow'
-    // withTimestamps() mantém os timestamps na tabela pivot atualizados automaticamente
-    public function followedCourses() {
+    /**
+     * Cursos que o usuário está seguindo (many-to-many).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function followedCourses()
+    {
         return $this->belongsToMany(Course::class, 'course_user_follow')->withTimestamps();
     }
 
-    // Reações feitas pelo usuário em eventos
-    // Essa relação usa uma tabela pivot com atributos próprios (EventUserReaction)
-    public function eventReactions() {
+    /**
+     * Reações feitas pelo usuário em eventos.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function eventReactions()
+    {
         return $this->hasMany(EventUserReaction::class);
     }
 
-    // Atributos personalizados
+    /*
+    |--------------------------------------------------------------------------
+    | ATRIBUTOS PERSONALIZADOS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Retorna a URL da foto do usuário (icone).
+     *
+     * @return string
+     */
     public function getUserIconUrlAttribute()
     {
-    return $this->user_icon
-        ? asset('storage/' . $this->user_icon)
-        : asset('default-avatar.png');
+        return $this->user_icon
+            ? asset('storage/' . $this->user_icon)
+            : asset('default-avatar.png');
     }
 
+    /**
+     * Retorna a URL do banner do usuário.
+     *
+     * @return string
+     */
     public function getUserBannerUrlAttribute()
     {
-    return $this->user_banner
-        ? asset('storage/' . $this->user_banner)
-        : asset('default-banner.jpg');
-    }       
-
+        return $this->user_banner
+            ? asset('storage/' . $this->user_banner)
+            : asset('default-banner.jpg');
+    }
 }
-

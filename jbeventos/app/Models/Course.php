@@ -9,7 +9,11 @@ class Course extends Model
 {
     use HasFactory;
 
-    // Campos que podem ser preenchidos em massa
+    /**
+     * Os atributos que podem ser preenchidos em massa.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'course_name',
         'course_description',
@@ -19,30 +23,59 @@ class Course extends Model
         'user_id',
     ];
 
-    // Relação com o modelo Coordinator
-    public function courseCoordinator() {
+    /*
+    |--------------------------------------------------------------------------
+    | RELACIONAMENTOS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Relação de pertencimento com o coordenador do curso.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function courseCoordinator()
+    {
         return $this->belongsTo(Coordinator::class, 'coordinator_id');
     }
 
-    // Relação com o modelo User para o criador do curso
-    public function courseCreator() {
+    /**
+     * Relação de pertencimento com o usuário criador do curso.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function courseCreator()
+    {
         return $this->belongsTo(User::class);
     }
 
-    // Relação muitos-para-muitos com User usando a tabela pivot 'course_user_follow'
-    // withTimestamps() adiciona timestamps na tabela pivot automaticamente
-    public function followers() {
+    /**
+     * Relação muitos-para-muitos com usuários que seguem o curso.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function followers()
+    {
         return $this->belongsToMany(User::class, 'course_user_follow')->withTimestamps();
     }
 
-    public function followersCount() {
+    /**
+     * Retorna a contagem de seguidores do curso.
+     *
+     * @return int
+     */
+    public function followersCount()
+    {
         return $this->followers()->count();
     }
 
-    // Relação muitos-para-muitos com Event
-    public function events() {
+    /**
+     * Relação de um-para-muitos com eventos associados ao curso.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function events()
+    {
         return $this->hasMany(Event::class);
     }
-
-   
 }
