@@ -114,12 +114,26 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
 
     const formData = new FormData(phoneForm);
-    fetch('/phone', {
-      method: 'PUT',
+    
+    // Pega o token CSRF do meta tag, já que ele pode não estar no formData
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Adiciona o token CSRF ao formData para a requisição
+    if (!formData.get('_token')) {
+      formData.append('_token', csrfToken);
+    }
+
+    // Adiciona o método PUT ao formData para simular a requisição
+    if (!formData.get('_method')) {
+      formData.append('_method', 'PUT');
+    }
+
+    fetch(phoneForm.action, {
+      method: 'POST', // O método precisa ser POST para enviar o _method
       body: formData,
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        'X-CSRF-TOKEN': csrfToken
       }
     })
     .then(response => {
@@ -139,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body: pendingReaction.formData,
             headers: {
               'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+              'X-CSRF-TOKEN': csrfToken
             }
           });
           pendingReaction = null;
