@@ -7,6 +7,14 @@ use App\Models\Course;
 use App\Models\Coordinator;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Class CourseController
+ *
+ * Controlador responsável por gerenciar cursos, incluindo listagem, criação, atualização, exclusão
+ * e atualizações rápidas de banner, ícone e descrição.
+ *
+ * @package App\Http\Controllers
+ */
 class CourseController extends Controller
 {
     /*
@@ -14,94 +22,119 @@ class CourseController extends Controller
     | LISTAGEM E DETALHES
     |--------------------------------------------------------------------------
     */
-   public function index(Request $request)
-{
-    $search = $request->input('search');
 
-    $courses = Course::with(['courseCoordinator', 'events'])
-        ->when($search, function ($query, $search) {
-            $query->where('course_name', 'like', "%{$search}%")
-                  ->orWhereHas('courseCoordinator.userAccount', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
-        })
-        ->paginate(6) // Mostra 6 cursos por página (pode alterar para 9, 12, etc)
-        ->appends(['search' => $search]); // Mantém o parâmetro de pesquisa ao mudar de página
+    /**
+     * Exibe a listagem paginada de cursos, com opção de busca por nome do curso ou nome do coordenador.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
+     */
+    public function index(Request $request)
+    {
+        $search = $request->input('search');
 
-    return view('courses.index', [
-        'courses' => $courses,
-        'search' => $search,
-    ]);
-}
+        $courses = Course::with(['courseCoordinator', 'events'])
+            ->when($search, function ($query, $search) {
+                $query->where('course_name', 'like', "%{$search}%")
+                      ->orWhereHas('courseCoordinator.userAccount', function ($q) use ($search) {
+                          $q->where('name', 'like', "%{$search}%");
+                      });
+            })
+            ->paginate(6)
+            ->appends(['search' => $search]);
 
+        return view('courses.index', [
+            'courses' => $courses,
+            'search' => $search,
+        ]);
+    }
 
+    /**
+     * Exibe o formulário para criação de um novo curso, carregando os coordenadores para seleção.
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
-        // Busca todos os coordenadores para preencher o select no formulário de criação do curso
         $coordinators = Coordinator::all();
         return view('admin.courses.create', compact('coordinators'));
     }
 
-     /*
+    /*
     |--------------------------------------------------------------------------
     | CRUD ADMINISTRATIVO
     |--------------------------------------------------------------------------
     */
+
+    /**
+     * Armazena um novo curso após validação dos dados e upload dos arquivos de ícone e banner.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
-        // Validação dos dados enviados no formulário de criação
         $request->validate([
             'course_name' => 'required|unique:courses,course_name|max:255',
             'course_description' => 'nullable|string|max:1000',
-            'course_icon' => 'nullable|image|max:2048',  // Imagem opcional, até 2MB
-            'course_banner' => 'nullable|image|max:2048', // Imagem opcional, até 2MB
-            'coordinator_id' => 'nullable|exists:coordinators,id', // Verifica se coordenador existe
+            'course_icon' => 'nullable|image|max:2048',
+            'course_banner' => 'nullable|image|max:2048',
+            'coordinator_id' => 'nullable|exists:coordinators,id',
         ]);
 
-        // Pega apenas os campos necessários para salvar no banco
         $data = $request->only(['course_name', 'course_description', 'coordinator_id']);
 
-        // Se um ícone for enviado, armazena na pasta 'course_icons' no disco público
         if ($request->hasFile('course_icon')) {
             $data['course_icon'] = $request->file('course_icon')->store('course_icons', 'public');
         }
 
-        // Se um banner for enviado, armazena na pasta 'course_banners' no disco público
         if ($request->hasFile('course_banner')) {
             $data['course_banner'] = $request->file('course_banner')->store('course_banners', 'public');
         }
 
-        // Adiciona o ID do admin logado ao curso criado
         $data['user_id'] = auth()->id();
 
-        // Cria o curso com os dados validados e arquivos armazenados
         Course::create($data);
 
-        // Redireciona para a lista de cursos com mensagem de sucesso
         return redirect()->route('courses.index')->with('success', 'Curso criado com sucesso');
     }
 
+    /**
+     * Exibe os detalhes de um curso específico, incluindo coordenador e eventos relacionados.
+     *
+     * @param  string  $id
+     * @return \Illuminate\View\View
+     */
     public function show(string $id)
     {
-        // Busca o curso pelo ID junto com o coordenador; se não existir, retorna erro 404
         $course = Course::with('courseCoordinator', 'events')->findOrFail($id);
         return view('courses.show', compact('course'));
     }
 
+    /**
+     * Exibe o formulário de edição de um curso, carregando o curso e os coordenadores disponíveis.
+     *
+     * @param  string  $id
+     * @return \Illuminate\View\View
+     */
     public function edit(string $id)
     {
-        // Busca o curso para edição e todos os coordenadores para o select do formulário
         $course = Course::findOrFail($id);
         $coordinators = Coordinator::all();
         return view('admin.courses.edit', compact('course', 'coordinators'));
     }
 
+    /**
+     * Atualiza um curso existente com novos dados validados e possíveis arquivos enviados.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request, string $id)
     {
-        // Busca o curso a ser atualizado
         $course = Course::findOrFail($id);
 
-        // Validação semelhante à criação, mas ignora o próprio registro na regra unique
         $request->validate([
             'course_name' => 'required|unique:courses,course_name,' . $id . '|max:255',
             'course_description' => 'nullable|string|max:1000',
@@ -110,93 +143,112 @@ class CourseController extends Controller
             'coordinator_id' => 'nullable|exists:coordinators,id',
         ]);
 
-        // Pega os campos para atualizar
         $data = $request->only(['course_name', 'course_description', 'coordinator_id']);
 
-        // Se novo ícone for enviado, armazena e atualiza a referência
         if ($request->hasFile('course_icon')) {
             $data['course_icon'] = $request->file('course_icon')->store('course_icons', 'public');
         }
 
-        // Se novo banner for enviado, armazena e atualiza a referência
         if ($request->hasFile('course_banner')) {
             $data['course_banner'] = $request->file('course_banner')->store('course_banners', 'public');
         }
 
-        // Atualiza o curso com os novos dados
         $course->update($data);
 
-        // Redireciona para a lista com mensagem de sucesso
         return redirect()->route('courses.index')->with('success', 'Curso atualizado com sucesso');
     }
 
+    /**
+     * Remove um curso, apagando também os arquivos de ícone e banner relacionados.
+     *
+     * @param  string  $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(string $id)
     {
-        // Busca o curso para exclusão
         $course = Course::findOrFail($id);
 
-        // Deleta os arquivos de imagem do storage se existirem para evitar lixo no servidor
         if ($course->course_icon) {
             Storage::disk('public')->delete($course->course_icon);
         }
+
         if ($course->course_banner) {
             Storage::disk('public')->delete($course->course_banner);
         }
 
-        // Deleta o registro do curso no banco
         $course->delete();
 
-        // Redireciona para a lista com mensagem de sucesso
         return redirect()->route('courses.index')->with('success', 'Curso excluído com sucesso');
     }
 
-
-      /*
+    /*
     |--------------------------------------------------------------------------
     | ATUALIZAÇÕES RÁPIDAS (BANNER, ÍCONE, DESCRIÇÃO)
     | Usadas na view estilo "perfil"
     |--------------------------------------------------------------------------
     */
+
+    /**
+     * Atualiza o banner do curso, removendo o antigo e salvando o novo.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Course  $course
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function updateBanner(Request $request, Course $course)
     {
         $request->validate([
             'course_banner' => 'nullable|image|max:2048',
         ]);
 
-        //apaga o banner antigo
         if ($course->course_banner) {
-            Storage::disk('public')->delete($course->course_banner); // Armazena o arquivo no disco publico e deleta
+            Storage::disk('public')->delete($course->course_banner);
         }
 
-        $path = $request->file('course_banner')->store('course_banners', 'public'); // Armazena o arquivo no disco publico
-        $course->update(['course_banner' => $path]); // Atualiza o caminho do arquivo no banco
+        $path = $request->file('course_banner')->store('course_banners', 'public');
+        $course->update(['course_banner' => $path]);
 
-        return back()->with('success', 'Banner atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+        return back()->with('success', 'Banner atualizado com sucesso');
     }
 
-    public function updateIcon(Request $request, Course $course){
-
+    /**
+     * Atualiza o ícone do curso, removendo o antigo e salvando o novo.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Course  $course
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateIcon(Request $request, Course $course)
+    {
         $request->validate([
             'course_icon' => 'nullable|image|max:2048',
         ]);
 
-        if($course->course_icon){
+        if ($course->course_icon) {
             Storage::disk('public')->delete($course->course_icon);
         }
 
-        $path = $request->file('course_icon')->store('course_icons', 'public'); // Armazena o arquivo no disco publico
-        $course->update(['course_icon' => $path]); // Atualiza o caminho do arquivo no banco
+        $path = $request->file('course_icon')->store('course_icons', 'public');
+        $course->update(['course_icon' => $path]);
 
-        return back()->with('success', 'Ícone atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+        return back()->with('success', 'Ícone atualizado com sucesso');
     }
 
-    public function updateDescription(Request $request, Course $course){
+    /**
+     * Atualiza a descrição do curso.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Course  $course
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateDescription(Request $request, Course $course)
+    {
         $request->validate([
             'course_description' => 'nullable|string|max:1000',
         ]);
 
         $course->update(['course_description' => $request->course_description]);
 
-        return back()->with('success', 'Descrição atualizada com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+        return back()->with('success', 'Descrição atualizada com sucesso');
     }
 }

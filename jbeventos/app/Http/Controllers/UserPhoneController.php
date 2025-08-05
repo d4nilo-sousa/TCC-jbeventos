@@ -8,7 +8,10 @@ use Illuminate\Support\Facades\Auth;
 class UserPhoneController extends Controller
 {
     /**
-     * Exibe o formulário de atualização de telefone.
+     * Exibe o formulário para o usuário atualizar seu telefone.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View
      */
     public function edit(Request $request)
     {
@@ -17,7 +20,14 @@ class UserPhoneController extends Controller
     }
 
     /**
-     * Atualiza o telefone do usuário.
+     * Atualiza o número de telefone do usuário autenticado.
+     *
+     * Valida o formato do telefone (ex: (99) 99999-9999) e verifica
+     * se o número é único entre os usuários, exceto o próprio usuário.
+     * Retorna uma resposta JSON, compatível com requisições AJAX.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function update(Request $request)
     {
