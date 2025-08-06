@@ -9,7 +9,7 @@ use App\Models\User;
 class AdminSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Executa o seeder para popular a tabela de admins.
      */
     public function run(): void
     {

@@ -10,10 +10,11 @@ use App\Models\Coordinator;
 class CoordinatorSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Executa o seeder para popular a tabela de coordenadores.
      */
     public function run(): void
     {
+        // Dados dos coordenadores a serem criados
         $coordinators = [
             [
                 'name' => 'Coordenador Geral',
@@ -27,8 +28,10 @@ class CoordinatorSeeder extends Seeder
             ],
         ];
 
+        // Itera sobre os dados e cria usuários e registros de coordenadores
         foreach ($coordinators as $coordinatorData) {
 
+            // Cria um usuário com senha padrão e tipo 'coordinator'
             $user = User::create([
                 'name' => $coordinatorData['name'], 
                 'email' => $coordinatorData['email'], 
@@ -36,6 +39,7 @@ class CoordinatorSeeder extends Seeder
                 'user_type' => 'coordinator'
             ]);
 
+            // Cria o registro de coordenador vinculado ao usuário
             Coordinator::create([
                 'coordinator_type' => $coordinatorData['type'],
                 'temporary_password' => true,

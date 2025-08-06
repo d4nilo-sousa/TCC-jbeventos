@@ -32,7 +32,7 @@ class EventSeeder extends Seeder
             })->first();
 
         if ($courseCoordinator && $course && $categories->count() >= 2) {
-            $eventGeneral = Event::create([
+            $eventCourse = Event::create([
                 'event_name' => 'Evento de Curso (Teste)',
                 'event_description' => 'Este evento foi criado apenas para testes',
                 'event_location' => 'Local Teste',
@@ -44,10 +44,14 @@ class EventSeeder extends Seeder
                 'coordinator_id' => $courseCoordinator->id,
                 'course_id' => $course->id,
             ]);
+
+            // Associa duas categorias ao evento criado
+            $eventCourse->EventCategories()->attach($categories->pluck('id')->take(2));
+
         }
 
         if ($generalCoordinator && $categories->count() >= 2) {
-            $eventCourse = Event::create([
+            $eventGeneral = Event::create([
                 'event_name' => 'Evento Geral (Teste)',
                 'event_description' => 'Este evento foi criado apenas para testes',
                 'event_location' => 'Local Teste',
@@ -59,9 +63,9 @@ class EventSeeder extends Seeder
                 'coordinator_id' => $generalCoordinator->id,
                 'course_id' => null,
             ]);
+            
+             // Associa duas categorias ao evento criado
+            $eventGeneral->EventCategories()->attach($categories->pluck('id')->take(2));
         }
-
-        $eventCourse->EventCategories()->attach($categories->pluck('id')->take(2));
-        $eventGeneral->EventCategories()->attach($categories->pluck('id')->take(2));
     }
 }

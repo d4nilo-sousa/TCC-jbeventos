@@ -8,7 +8,7 @@ use App\Models\Category;
 class CategorySeeder extends Seeder
 {
     /**
-     * Run the database seeds
+     * Executa o seeder para popular a tabela de categorias.
      */
     public function run(): void
     {
