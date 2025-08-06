@@ -45,4 +45,8 @@ class Course extends Model
     }
 
    
+    // Relação com o modelo Event para os eventos associados a um curso
+    public function courseEvents() {
+         return $this->hasMany(Event::class);
+    }
 }

@@ -18,8 +18,9 @@ class Event extends Model
         'event_expired_at',
         'event_image',
         'visible_event',
+        'event_type',
         'coordinator_id', // Relacionamento com Coordenador
-        'course_id',      // Relacionamento com Curso (opcional)
+        'course_id', // Relacionamento com Curso
     ];
 
     // Define o cast dos campos para tipos específicos
@@ -57,5 +58,8 @@ class Event extends Model
     // Relação com o modelo Course
     public function course() {
         return $this->belongsTo(Course::class);
+    // Retorna o curso que está assossiado ao evento
+    public function eventCourse() {
+        return $this->belongsTo(Course::class, 'course_id');
     }
 }

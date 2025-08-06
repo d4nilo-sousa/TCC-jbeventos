@@ -44,13 +44,21 @@
                         <label for="coordinator_id" class="block font-medium">Coordenador (opcional)</label>
                         <select name="coordinator_id" id="coordinator_id" class="w-full border-gray-300 rounded shadow-sm">
                             <option value="">-- Nenhum --</option>
-                            @foreach($coordinators as $coordinator)
-                                @if($coordinator->coordinator_type === 'course')
-                                    <option value="{{ $coordinator->id }}" {{ old('coordinator_id') == $coordinator->id ? 'selected' : '' }}>
-                                        {{ $coordinator->userAccount->name ?? 'Sem nome' }}
-                                    </option>
-                                @endif
-                            @endforeach
+                                @foreach($coordinators as $coordinator)
+                                    @if($coordinator->coordinator_type === 'course')
+                                        @php
+                                            $isSelected = old('coordinator_id', $course->coordinator_id) == $coordinator->id;
+                                            $isDisabled = $coordinator->coordinatedCourse && $coordinator->coordinatedCourse->id != $course->id;
+                                        @endphp
+
+                                        <option value="{{ $coordinator->id }}" {{ $isSelected ? 'selected' : '' }} {{ $isDisabled ? 'disabled' : '' }}>
+                                            {{ $coordinator->userAccount->name ?? 'Sem nome' }}
+                                            @if($coordinator->coordinatedCourse && $coordinator->coordinatedCourse->id != $course->id)
+                                                ({{ $coordinator->coordinatedCourse->course_name }})
+                                            @endif
+                                        </option>
+                                    @endif
+                                @endforeach
                         </select>
                     </div>
 

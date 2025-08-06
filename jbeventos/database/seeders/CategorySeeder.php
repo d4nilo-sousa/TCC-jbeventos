@@ -8,22 +8,14 @@ use App\Models\Category;
 class CategorySeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Executa o seeder para popular a tabela de categorias.
      */
     public function run(): void
     {
         // Lista de categorias iniciais para popular a tabela 'categories'
         $categories = [
-            'Cultural',
-            'Educacional / Acadêmico',
-            'Esportivo',
-            'Social / Solidário',
-            'Tecnológico / Inovação',
-            'Profissionalizante / Vocacional',
-            'Ambiental / Sustentável',
-            'Comemorativo / Datas Especiais',
-            'Cidadania e Ética',
-            'Recreativo / Lazer'
+            'Teste1',
+            'Teste2',
         ];
 
         // Cria cada categoria no banco de dados

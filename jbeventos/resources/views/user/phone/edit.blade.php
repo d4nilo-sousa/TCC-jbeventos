@@ -40,3 +40,6 @@
         </div>
     </div>
 </x-app-layout>
+
+// Importa o script responsável por aplicar a máscara no formato de telefone, exemplo: (19) 99999-9999
+@vite('resources/js/phone-mask.js')

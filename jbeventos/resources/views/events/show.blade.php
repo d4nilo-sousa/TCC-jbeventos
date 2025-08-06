@@ -46,32 +46,16 @@
                         </div>
                     </div>
 
-                    {{-- Exclusão automática (visível apenas para o coordenador responsável) --}}
-                    @if(auth()->check() && auth()->user()->user_type === 'coordinator')
-                        @php
-                            $loggedCoordinator = auth()->user()->coordinator;
-                        @endphp
-                        @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                            <p class="text-sm text-red-600 font-semibold">
-                                ⏱ Exclusão Automática: 
-                                {{ \Carbon\Carbon::parse($event->event_expired_at)->format('d/m/Y H:i') }}
-                            </p>
+                    {{-- Coordenador responsável, tipo e curso relacionado --}}
+                    <div class="mb-4 text-gray-600">
+                        @if (!$event->eventCoordinator || $event->eventCoordinator->coordinator_type !== $event->event_type)
+                            <strong>👤 Coordenador:</strong> Nenhum coordenador definido<br>
+                        @else
+                            <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator?->userAccount?->name }}<br>
                         @endif
-                    @endif
-
-                    {{-- Coordenador e tipo do evento --}}
-                    <div class="space-y-1 text-gray-700">
-                        <p>
-                            👤 <strong>Coordenador:</strong> 
-                            {{ $event->eventCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}
-                        </p>
-                        @if ($event->eventCoordinator?->coordinator_type === 'general')
-                            <p>📌 <strong>Tipo:</strong> Evento Geral</p>
-                        @elseif ($event->eventCoordinator?->coordinator_type === 'course')
-                            <p>📌 <strong>Tipo:</strong> Evento de Curso</p>
-                            <p>🎓 <strong>Curso:</strong> 
-                                {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Sem Curso' }}
-                            </p>
+                        <strong>📌 Tipo do evento:</strong> {{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'Nenhum tipo definido') }}<br>
+                         @if($event->event_type === 'course')
+                            <strong>🎓 Curso:</strong> {{ $event->eventCourse->course_name ?? 'Sem Curso' }}
                         @endif
                     </div>
 

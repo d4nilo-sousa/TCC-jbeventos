@@ -32,13 +32,11 @@
                     </div>
 
                     <div>
-                        <label for="password" class="block font-medium">Senha</label>
-                        <input type="password" name="password" class="w-full border-gray-300 rounded shadow-sm" required>
-                    </div>
-
-                    <div>
-                        <label for="password_confirmation" class="block font-medium">Confirmar Senha</label>
-                        <input type="password" name="password_confirmation" class="w-full border-gray-300 rounded shadow-sm" required>
+                        <label for="generated_password" class="block font-medium">Senha Provisória</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="generated_password" name="password" class="w-full border-gray-300 rounded shadow-sm bg-gray-100" readonly required>
+                            <button type="button" onclick="generatePassword()" class="px-3 py-1 bg-blue-500 text-white rounded">Gerar</button>
+                        </div>
                     </div>
 
                     <div>
@@ -59,3 +57,5 @@
         </div>
     </div>
 </x-app-layout>
+
+@vite('resources/js/password-generator.js')
