@@ -11,7 +11,7 @@
                 <!-- Logo do sistema -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-mark class="block h-9 w-auto" />
+                       <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[7rem] h-auto mx-auto">
                     </a>
                 </div>
 
@@ -62,11 +62,6 @@
 
                 <!-- Links exclusivos para admin -->
                 @if (Auth::user()->user_type === 'admin')
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link href="{{ route('courses.create') }}" :active="request()->routeIs('courses.create')">
-                            {{ __('Criar Cursos') }}
-                        </x-nav-link>
-                    </div>
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('coordinators.index') }}" :active="request()->routeIs('coordinators.index')">
                             {{ __('Coordenadores') }}

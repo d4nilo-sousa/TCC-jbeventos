@@ -1,14 +1,14 @@
 <x-app-layout>
     <!-- Cabeçalho da página -->
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Meus Eventos') }}
-        </h2>
-    </x-slot>
+   
 
     <div class="py-12">
         <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-[70rem] h-[40rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
+            <div class="w-[100rem] h-[45rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
+                <div class="w-100% grid place-items-center mb-5">
+                    <p class="text-[2rem] text-stone-900">Eventos</p>
+                    <hr class="border-t-1 border-gray-100">
+                </div>
 
                 {{-- Exibe mensagem de sucesso, se houver --}}
                 @if (session('success'))
@@ -93,13 +93,14 @@
                         @endforeach
                     </div>
                 @else
+                <br>
                     <div class="w-100% flex justify-center">
                         {{-- Caso não existam eventos --}}
-                        <p class="text-gray-500 mt-5 text-lg">Nenhum evento cadastrado . . .</p>
+                        <p class="text-gray-500 mt-6 text-lg">Nenhum evento cadastrado . . .</p>
                     </div>
 
                     <div class="w-100% flex justify-center mt-10 mb-20">
-                        <img src="{{ asset('imgs/notFound2.png') }}" class="w-1/3">
+                        <img src="{{ asset('imgs/notFound3.png') }}" class="w-1/5">
                     </div>
                 @endif
             </div>

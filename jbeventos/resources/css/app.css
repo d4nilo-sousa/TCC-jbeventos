@@ -7,6 +7,11 @@
     display: none;
 }
 
+hr{
+    width: 90rem;
+    margin: 1rem;
+}
+
 /* 
 input:-webkit-autofill {
     box-shadow: 0 0 0px 1000px #fdfdfd inset !important;

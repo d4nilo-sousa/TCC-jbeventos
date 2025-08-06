@@ -1,14 +1,11 @@
 <x-app-layout>
-    <!-- Slot para o cabeçalho da página -->
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Lista de Cursos
-        </h2>
-    </x-slot>
-
     <div class="py-12">
         <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-[70rem] h-[40rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
+            <div class="w-[100rem] h-[45rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
+                <div class="w-100% grid place-items-center mb-5">
+                    <p class="text-[2rem] text-stone-900">Cursos</p>
+                    <hr class="border-t-1 border-gray-100">
+                </div>
 
                 <!-- Mensagem de sucesso da sessão -->
                 @if (session('success'))
@@ -95,13 +92,14 @@
                         </table>
                     </div>
                 @else
+                <br>
                     <div class="w-100% flex justify-center">
                         <!-- Caso não tenha cursos cadastrados -->
                         <p class="text-gray-500 mt-5 text-lg">Nenhum curso cadastrado . . .</p>
                     </div>
 
                     <div class="w-100% flex justify-center mt-10 mb-20">
-                        <img src="{{ asset('imgs/notFound.png') }}" class="w-1/3">
+                        <img src="{{ asset('imgs/notFound.png') }}" class="w-1/5">
                     </div>
 
                 @endif
