@@ -94,7 +94,7 @@
                                 onchange="updateFileName('course_icon_input', 'course_icon_name')">
 
                             <!-- Parágrafo para exibir o nome do arquivo ou mensagem padrão -->
-                            <p id="course_icon_name" class="text-gray-600">Nenhuma imagem escolhida</p>
+                            <p id="course_icon_name" class="text-gray-600">Nenhum ícone escolhido</p>
                         </div>
                     </div>
 
@@ -114,7 +114,7 @@
                                 onchange="updateFileName('course_banner_input', 'course_banner_name')">
 
                             <!-- Parágrafo para exibir o nome do arquivo ou mensagem padrão -->
-                            <p id="course_banner_name" class="text-gray-600">Nenhuma imagem escolhida</p>
+                            <p id="course_banner_name" class="text-gray-600">Nenhum Banner escolhido</p>
                         </div>
                     </div>
 

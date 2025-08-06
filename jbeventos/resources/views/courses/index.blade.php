@@ -7,8 +7,8 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify content-center">
-            <div class="w-[70rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
+        <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify-center">
+            <div class="w-[70rem] h-[40rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
 
                 <!-- Mensagem de sucesso da sessão -->
                 @if (session('success'))
