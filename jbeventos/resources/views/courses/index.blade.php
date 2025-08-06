@@ -7,8 +7,8 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-md rounded-2xl p-9">
+        <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify content-center">
+            <div class="w-[70rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
 
                 <!-- Mensagem de sucesso da sessão -->
                 @if (session('success'))
@@ -99,29 +99,13 @@
                         <!-- Caso não tenha cursos cadastrados -->
                         <p class="text-gray-500 mt-5 text-lg">Nenhum curso cadastrado . . .</p>
                     </div>
+
+                    <div class="w-100% flex justify-center mt-10 mb-20">
+                        <img src="{{ asset('imgs/notFound.png') }}" class="w-1/3">
+                    </div>
+
                 @endif
-                <div class="w-100% flex justify-center mt-10">
-                    <img src="{{ asset('imgs/notFound.png') }}" class="w-1/3">
-                </div>
-                @auth
-                    <!-- Se o usuário for admin, mostra o botão para criar novo curso -->
-                    @if (auth()->user()->user_type === 'admin')
-                        <div class="w-100% flex justify-center mt-20">
-                            <div class="grid grid-cols">
-                                <p class="text-gray-600 text-lg">Deseja criar um novo curso?</p>
-
-                                <a href="{{ route('courses.create') }}"
-                                    class="transition-all duration-300 ease-in-out mb-4 inline-block bg-stone-900 text-white px-12 py-2 rounded mx-auto mt-5 hover:bg-stone-600">
-                                    Criar Novo Curso
-                                </a>
-                            </div>
-
-                        </div>
-                    @endif
-                @endauth
             </div>
-
-
         </div>
     </div>
     </div>

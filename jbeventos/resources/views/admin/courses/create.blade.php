@@ -8,9 +8,9 @@
 
     <div class="py-3">
         <!-- Container centralizado com largura máxima -->
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify-center">
             <!-- Caixa branca com sombra e bordas arredondadas para o formulário -->
-            <div class="bg-white shadow-md rounded-2xl p-10 mt-10">
+            <div class="bg-white shadow-md rounded-2xl p-10 mt-10 w-[70rem] mx-auto">
                 <!-- -->
                 <div class="m-5 mb-16">
                     <img src="{{ asset('imgs/create.png') }}" class="w-32 mx-auto mt-4">
@@ -36,11 +36,13 @@
                     <div class="flex w-full gap-4 mt">
                         <!-- Campo Nome -->
                         <div class="flex flex-col flex-1">
-                            <label for="nome" class="block font-medium mb-1">Nome</label>
-                            <input type="text" id="nome" name="nome" placeholder="Digite o nome do curso"
+                            <label for="course_name" class="block font-medium mb-1">Nome do Curso</label>
+                            <input type="text" name="course_name" id="course_name" autocomplete="off"
+                                value="{{ old('course_name') }}"
+                                placeholder="Digite o nome do curso"
                                 class="w-full border border-gray-300 focus:border-stone-600 focus:ring-stone-600 
-                                   focus:bg-white hover:bg-neutral-50 transition-colors duration-100 rounded p-2"
-                                value="{{ old('nome') }}" />
+                                    focus:bg-white rounded p-2"
+                                required>
                         </div>
 
                         <!-- Campo Coordenador -->
@@ -49,8 +51,8 @@
                                 Coordenador (opcional)
                             </label>
                             <select name="coordinator_id" id="coordinator_id"
-                                class="w-full border border-gray-300 rounded focus:bg-white hover:bg-neutral-50 transition-colors duration-100 cursor-pointer p-2">
-                                <option value="">-- Nenhum --</option>
+                                class="w-full border border-gray-300 rounded focus:bg-white focus:border-stone-600 focus:ring-stone-600 cursor-pointer p-2">
+                                <option value="">Nenhum</option>
                                 @foreach ($coordinators as $coordinator)
                                     @if ($coordinator->coordinator_type === 'course')
                                         @php $isDisabled = $coordinator->coordinatedCourse !== null; @endphp
@@ -73,71 +75,63 @@
                         <label for="course_description" class="block font-medium">Descrição</label>
                         <textarea name="course_description" id="course_description" placeholder="Digite a descrição do curso"
                             class="w-full border-gray-300 focus:border-stone-600 focus:ring-stone-600
-                                        focus:bg-white hover:bg-neutral-100 transition-colors duration-100 rounded shadow-sm">{{ old('course_description') }}</textarea>
+                                        focus:bg-white rounded shadow-sm">{{ old('course_description') }}</textarea>
                     </div>
 
                     <!-- Upload do ícone do curso -->
                     <div>
-                        <label for="course_icon" class="block font-medium">Ícone do Curso (imagem)</label>
+                        <label for="course_icon_input" class="block font-medium">Ícone do Curso (imagem)</label>
                         <!-- Contêiner flex para organizar o botão e a mensagem -->
                         <div class="flex items-center space-x-4">
                             <!-- Label para o botão de upload de arquivo -->
-                            <label for="file-upload1"
+                            <label for="course_icon_input"
                                 class="bg-blue-500 text-white py-1 px-3 rounded-md cursor-pointer hover:bg-blue-600">
                                 Selecionar imagem
                             </label>
 
                             <!-- Input de arquivo escondido -->
-                            <input id="file-upload1" type="file" class="hidden" onchange="updateFileName()">
+                            <input id="course_icon_input" type="file" class="hidden"
+                                onchange="updateFileName('course_icon_input', 'course_icon_name')">
 
                             <!-- Parágrafo para exibir o nome do arquivo ou mensagem padrão -->
-                            <p id="file-name1" class="text-gray-600">Nenhuma imagem escolhida</p>
+                            <p id="course_icon_name" class="text-gray-600">Nenhuma imagem escolhida</p>
                         </div>
-
-                        <script>
-                            function updateFileName() {
-                                var fileInput = document.getElementById('file-upload1');
-                                var fileName = document.getElementById('file-name1');
-                                if (fileInput.files.length > 0) {
-                                    fileName.textContent = fileInput.files[0].name;
-                                } else {
-                                    fileName.textContent = "Nenhuma imagem escolhida";
-                                }
-                            }
-                        </script>
                     </div>
 
                     <!-- Upload do banner do curso -->
                     <div>
-                        <label for="course_banner" class="block font-medium">Banner do Curso (imagem)</label>
+                        <label for="course_banner_input" class="block font-medium">Banner do Curso (imagem)</label>
                         <!-- Contêiner flex para organizar o botão e a mensagem -->
                         <div class="flex items-center space-x-4">
                             <!-- Label para o botão de upload de arquivo -->
-                            <label for="file-upload2"
+                            <label for="course_banner_input"
                                 class="bg-blue-500 text-white py-1 px-3 rounded-md cursor-pointer hover:bg-blue-600">
                                 Selecionar imagem
                             </label>
 
                             <!-- Input de arquivo escondido -->
-                            <input id="file-upload2" type="file" class="hidden" onchange="updateFileName()">
+                            <input id="course_banner_input" type="file" class="hidden"
+                                onchange="updateFileName('course_banner_input', 'course_banner_name')">
 
                             <!-- Parágrafo para exibir o nome do arquivo ou mensagem padrão -->
-                            <p id="file-name2" class="text-gray-600">Nenhuma imagem escolhida</p>
+                            <p id="course_banner_name" class="text-gray-600">Nenhuma imagem escolhida</p>
                         </div>
-
-                        <script>
-                            function updateFileName() {
-                                var fileInput = document.getElementById('file-upload2');
-                                var fileName = document.getElementById('file-name2');
-                                if (fileInput.files.length > 0) {
-                                    fileName.textContent = fileInput.files[0].name;
-                                } else {
-                                    fileName.textContent = "Nenhuma imagem escolhida";
-                                }
-                            }
-                        </script>
-
                     </div>
+
+                    <script>
+                        // Função para atualizar o nome do arquivo baseado no input e no parágrafo associados
+                        function updateFileName(inputId, paragraphId) {
+                            var fileInput = document.getElementById(inputId);
+                            var fileName = document.getElementById(paragraphId);
+                            if (fileInput.files.length > 0) {
+                                fileName.textContent = fileInput.files[0].name;
+                            } else {
+                                fileName.textContent = "Nenhuma imagem escolhida";
+                            }
+                        }
+                    </script>
+
+
 
                     <!-- Botões para enviar ou cancelar -->
                     <div class="w-100% flex justify-end space-x-2">
