@@ -190,8 +190,28 @@ class EventController extends Controller
         $data['coordinator_id'] = $coordinator->id;
         $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
 
+        // Detecta mudanças ANTES de salvar
+        $originalData = $event->getOriginal(); // Obtem os dados originais
+        $event->fill($data);
+        $changed = array_diff_assoc($event->getAttributes(), $originalData);
+
         // Atualiza o evento
         $event->update($data);
+
+        // Remove campos irrelevantes
+        unset($changed['updated_at'], $changed['created_at']);
+
+        // Se houve mudanças relevantes, envia notificações
+        if (!empty($changed)) {
+            if ($event->course && $event->course->followers->isNotEmpty()) {
+            Notification::send($event->course->followers, new EventUpdatedNotification($event, $changed));
+        }
+
+        if ($event->notifiableUsers->isNotEmpty()) {
+            Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $changed));
+        }
+    }
+
 
         // Atualiza as categorias associadas
         if ($request->has('categories')) {
