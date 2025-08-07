@@ -6,49 +6,49 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Collection;
+use Carbon\Carbon;
 
-class WeeklyEventsSumaryNotification extends Notification
+class WeeklyEventsSummaryNotification extends Notification
 {
     use Queueable;
 
-    /**
-     * Create a new notification instance.
-     */
-    public function __construct()
+    protected $events;
+
+    public function __construct(Collection $events)
     {
-        //
+        $this->events = $events;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return ['mail'];
     }
 
-    /**
-     * Get the mail representation of the notification.
-     */
-    public function toMail(object $notifiable): MailMessage
+   public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+        $mail = (new MailMessage)
+            ->subject('Confira os eventos da semana')
+            ->greeting('Olá, ' . $notifiable->name . '!')
+            ->line('Aqui estão os eventos desta semana nos cursos que você segue:');
+
+        foreach ($this->events as $event) {
+            $startDate = Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i');
+            $mail->line("**{$event->event_name}** – {$startDate}");
+            $mail->line($event->event_description);
+            $mail->line("[Ver evento](" . route('events.show', $event->id) . ")");
+            $mail->line(''); // linha em branco para espaçamento
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
+        $mail->line('Não perca nenhuma oportunidade!');
+
+        return $mail;
+    }
+
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'events_count' => $this->events->count(),
         ];
     }
 }
