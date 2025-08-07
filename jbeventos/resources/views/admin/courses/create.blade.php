@@ -1,17 +1,12 @@
 <x-app-layout>
     <!-- Slot para o cabeçalho da página -->
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Criar Curso
-        </h2>
-    </x-slot>
-
-    <div class="py-3">
-        <!-- Container centralizado com largura máxima -->
+    <div class="py-12">
         <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify-center">
-            <!-- Caixa branca com sombra e bordas arredondadas para o formulário -->
-            <div class="bg-white shadow-md rounded-2xl p-10 mt-10 w-[70rem] mx-auto">
-                <!-- -->
+            <div class="w-[70rem] h-[46rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
+                <div class="w-100% flex justify-center grid place-items-center mb-5">
+                    <p class="text-[2rem] text-stone-900">Criar Curso</p>
+                    <hr class="border-t-1 border-gray-100">
+                </div>
                 <div class="m-5 mb-16">
                     <img src="{{ asset('imgs/create.png') }}" class="w-32 mx-auto mt-4">
                 </div>
@@ -38,8 +33,7 @@
                         <div class="flex flex-col flex-1">
                             <label for="course_name" class="block font-medium mb-1">Nome do Curso</label>
                             <input type="text" name="course_name" id="course_name" autocomplete="off"
-                                value="{{ old('course_name') }}"
-                                placeholder="Digite o nome do curso"
+                                value="{{ old('course_name') }}" placeholder="Digite o nome do curso"
                                 class="w-full border border-gray-300 focus:border-stone-600 focus:ring-stone-600 
                                     focus:bg-white rounded p-2"
                                 required>
