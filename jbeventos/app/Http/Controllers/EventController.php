@@ -7,6 +7,9 @@ use App\Models\Coordinator;
 use App\Models\Category;
 use App\Models\User;
 use App\Notifications\NewEventNotification;
+use App\Notifications\EventReminderNotification;
+use App\Notifications\WeeklyEventsSumaryNotification;
+use App\Notifications\EventUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
@@ -198,6 +201,7 @@ class EventController extends Controller
         // Atualiza o evento
         $event->update($data);
 
+        $changed = $event->getChanges();
         // Remove campos irrelevantes
         unset($changed['updated_at'], $changed['created_at']);
 
