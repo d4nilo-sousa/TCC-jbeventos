@@ -29,6 +29,14 @@ class EventUpdatedNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        // Lista de nomes técnicos para amigáveis
+        $fieldNames = [
+            'event_name'         => 'Nome',
+            'event_description'  => 'Descrição',
+            'event_scheduled_at' => 'Data',
+            'event_location'     => 'Local',
+        ]; // ← Faltava o ponto e vírgula aqui
+
         $startDate = Carbon::parse($this->event->event_scheduled_at);
 
         $message = (new MailMessage)
@@ -38,10 +46,12 @@ class EventUpdatedNotification extends Notification
             ->line('**' . $this->event->event_name . '**')
             ->line($this->event->event_description);
 
-        if (!empty($this->changedFields)) { // Se houver campos alterados
-            $message->line('Alterações recentes:'); // Adiciona uma linha
-            foreach ($this->changedFields as $field => $value) { // Para cada campo alterado 
-                $message->line("• **{$field}**: {$value}"); // Adiciona uma linha com o campo e o novo valor
+        if (!empty($this->changedFields)) {
+            $message->line('Alterações recentes:');
+            foreach ($this->changedFields as $field => $value) {
+                // Usa o nome amigável se existir, senão gera automaticamente
+                $label = $fieldNames[$field] ?? ucfirst(str_replace('_', ' ', $field));
+                $message->line("• **{$label}**: {$value}");
             }
         }
 
@@ -54,8 +64,8 @@ class EventUpdatedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'event_id' => $this->event->id,
-            'changed_fields' => $this->changedFields,
+            'event_id'        => $this->event->id,
+            'changed_fields'  => $this->changedFields,
         ];
     }
 }
