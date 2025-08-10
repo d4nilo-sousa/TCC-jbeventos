@@ -111,16 +111,29 @@ document.addEventListener('DOMContentLoaded', () => {
   phoneForm.addEventListener('submit', e => {
     e.preventDefault();
 
-    const phoneNumber = phoneInput.value;
+    const formData = new FormData(phoneForm);
+    
+    // Pega o token CSRF do meta tag, já que ele pode não estar no formData
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Adiciona o token CSRF ao formData para a requisição
+    if (!formData.get('_token')) {
+      formData.append('_token', csrfToken);
+    }
 
-    fetch('/phone', {
-      method: 'PUT',
+    // Adiciona o método PUT ao formData para simular a requisição
+    if (!formData.get('_method')) {
+      formData.append('_method', 'PUT');
+    }
+
+    fetch(phoneForm.action, {
+      method: 'POST', // O método precisa ser POST para enviar o _method
+      body: formData,
       headers: {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      },
-      body: JSON.stringify({ phone_number: phoneNumber })
+        'X-CSRF-TOKEN': csrfToken
+      }
     })
     .then(response => {
       if (!response.ok) {
@@ -141,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             body: pendingReaction.formData,
             headers: {
               'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+              'X-CSRF-TOKEN': csrfToken
             }
           });
           pendingReaction = null;

@@ -16,7 +16,7 @@
                 {{-- Imagem do evento --}}
                 @if($event->event_image)
                     <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
-                         class="w-full object-cover max-h-96">
+                             class="w-full object-cover max-h-96">
                 @endif
 
                 {{-- Informações do evento --}}
@@ -111,8 +111,8 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit"
-                                            class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 
-                                                   text-red-900 hover:bg-red-400">
+                                                 class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 
+                                                        text-red-900 hover:bg-red-400">
                                         🗑 Excluir
                                     </button>
                                 </form>
@@ -138,10 +138,10 @@
 <div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
   <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
     <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
-    <form id="phoneForm" class="space-y-4">
+    <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
       @csrf
       @method('PUT')
-      <input type="text" name="phone_number" placeholder="(99) 99999-9999" pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2" required>
+      <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999" pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2" required>
       <div class="flex justify-end space-x-2">
         <button type="button" id="cancelPhoneModal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>

@@ -5,8 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\Coordinator;
 use App\Models\Category;
+use App\Models\User;
+use App\Notifications\NewEventNotification;
+use App\Notifications\EventReminderNotification;
+use App\Notifications\WeeklyEventsSumaryNotification;
+use App\Notifications\EventUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Notification;
 use Carbon\Carbon;
 
 class EventController extends Controller
@@ -82,6 +88,16 @@ class EventController extends Controller
             $event->eventCategories()->sync($request->input('categories'));
         } else {
             $event->eventCategories()->detach();
+        }
+
+        // Envia notificações por e-mail aos seguidores do curso
+        if($event->course && $event->course->followers) {
+            Notification::send($event->course->followers, new NewEventNotification($event));
+        }
+
+        // Envia notifiações para os users que ativaram alertas para esse evento
+        if($event->notifiableUsers->isNotEmpty()) {
+            Notification::send($event->notifiableUsers, new NewEventNotification($event));
         }
 
         // Formata datas, se estiverem presentes
@@ -178,8 +194,33 @@ class EventController extends Controller
             $data['event_image'] = $request->file('event_image')->store('event_images', 'public');
         }
 
+        // Atualiza coordenador e curso
+        $data['coordinator_id'] = $coordinator->id;
+        $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
+
+        // Detecta mudanças ANTES de salvar
+        $originalData = $event->getOriginal(); // Obtem os dados originais
+        $event->fill($data);
+        $changed = array_diff_assoc($event->getAttributes(), $originalData);
+
         // Atualiza o evento
         $event->update($data);
+
+        $changed = $event->getChanges();
+        // Remove campos irrelevantes
+        unset($changed['updated_at'], $changed['created_at']);
+
+        // Se houve mudanças relevantes, envia notificações
+        if (!empty($changed)) {
+            if ($event->course && $event->course->followers->isNotEmpty()) {
+            Notification::send($event->course->followers, new EventUpdatedNotification($event, $changed));
+        }
+
+        if ($event->notifiableUsers->isNotEmpty()) {
+            Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $changed));
+        }
+    }
+
 
         // Atualiza as categorias associadas
         if ($request->has('categories')) {
