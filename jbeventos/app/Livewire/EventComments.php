@@ -38,21 +38,29 @@ class EventComments extends Component
     }
 
     public function loadComments()
-    {
-        $this->comments = Comment::with(['user', 'replies.user', 'reactions'])
-            ->withCount([
-                'reactions as likes_count' => function ($q) {
-                    $q->where('type', 'like');
-                },
-                'reactions as dislikes_count' => function ($q) {
-                    $q->where('type', 'dislike');
-                },
-            ])
-            ->where('event_id', $this->event->id)
-            ->whereNull('parent_id')
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
+{
+    $this->comments = Comment::with([
+            'user',
+            'replies' => function($query) {
+                $query->where('visible_comment', true)
+                      ->with('user'); // já traz o usuário das respostas
+            },
+            'reactions'
+        ])
+        ->withCount([
+            'reactions as likes_count' => function ($q) {
+                $q->where('type', 'like');
+            },
+            'reactions as dislikes_count' => function ($q) {
+                $q->where('type', 'dislike');
+            },
+        ])
+        ->where('event_id', $this->event->id)
+        ->where('visible_comment', true) // Só comentários visíveis
+        ->whereNull('parent_id') // Comentários principais
+        ->orderBy('created_at', 'desc')
+        ->get();
+}
 
     public function addComment()
     {

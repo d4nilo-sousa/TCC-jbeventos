@@ -2,7 +2,7 @@
     <!-- Cabeçalho da página -->
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Meus Eventos') }}
+            {{ __('Lista de Eventos') }}
         </h2>
     </x-slot>
 
@@ -59,26 +59,50 @@
                                     
                                 </div>
 
-                                {{-- Botões de ação: Ver, Editar e Excluir --}}
+                                {{-- Botões de ação: Ver, Editar, Ocultar e Excluir --}}
                                 <div class="mt-auto flex flex-col space-y-2">
-                                    <a href="{{ route('events.show', $event->id) }}"
-                                        class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">Ver</a>
 
-                                    @if(auth()->check() && auth()->user()->user_type === 'coordinator')
+                                    {{-- Botão para visualizar o evento --}}
+                                    <a href="{{ route('events.show', $event->id) }}"
+                                    class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">
+                                        Ver
+                                    </a>
+
+                                    @if(auth()->check() && auth()->user()->user_type === 'coordinator') 
+                                        {{-- Só exibe as opções abaixo se o usuário estiver logado e for coordenador --}}
+
                                         @php
                                             $loggedCoordinator = auth()->user()->coordinator;
+                                            // Obtém o coordenador vinculado ao usuário logado
                                         @endphp
 
                                         @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                                            <a href="{{ route('events.edit', $event->id) }}"
-                                                class="rounded-md bg-yellow-100 px-3 py-1 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200">Editar</a>
+                                            {{-- Garante que o coordenador logado é o responsável pelo evento --}}
 
+                                            {{-- Botão para editar o evento --}}
+                                            <a href="{{ route('events.edit', $event->id) }}" 
+                                            class="rounded-md bg-yellow-100 px-3 py-1 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200">
+                                                Editar
+                                            </a>
+            
+                                            {{-- Botão para ocultar ou exibir o evento --}}
+                                            <form action="{{ route('events.updateEvent', $event->id) }}" method="POST"
+                                            onsubmit="return confirm('Tem certeza que deseja ocultar este evento?')" class="inline">
+                                                @csrf {{-- Proteção contra CSRF --}}
+                                                @method('PATCH') {{-- Requisição do tipo PATCH --}}
+                                                <button type="submit" 
+                                                class="w-full rounded-md bg-green-100 px-3 py-1 text-sm font-medium text-green-700 hover:bg-green-200">
+                                                    Ocultar
+                                                </button>
+                                            </form>
+
+                                            {{-- Botão para excluir o evento --}}
                                             <form action="{{ route('events.destroy', $event->id) }}" method="POST"
-                                                onsubmit="return confirm('Tem certeza que deseja excluir este evento?')" class="inline">
-                                                @csrf
-                                                @method('DELETE')
+                                            onsubmit="return confirm('Tem certeza que deseja excluir este evento?')" class="inline">
+                                                @csrf {{-- Proteção contra CSRF --}}
+                                                @method('DELETE') {{-- Requisição do tipo DELETE --}}
                                                 <button type="submit"
-                                                    class="w-full rounded-md bg-red-100 px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-200">
+                                                class="w-full rounded-md bg-red-100 px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-200">
                                                     Excluir
                                                 </button>
                                             </form>

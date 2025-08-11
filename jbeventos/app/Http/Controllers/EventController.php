@@ -14,7 +14,7 @@ class EventController extends Controller
     // Lista todos os eventos com seus coordenadores e cursos associados
     public function index()
     {
-        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->get();
+        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->where('visible_event', true)->get(); // Uso do Where pra listar apenas eventos que não foram ocultos
         return view('events.index', compact('events'));
     }
 

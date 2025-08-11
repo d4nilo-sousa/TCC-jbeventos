@@ -102,21 +102,37 @@
                             ← Voltar
                         </a>
 
-                        @if(auth()->user()->id === ($event->eventCoordinator?->userAccount?->id ?? 0))
-                            <div class="flex space-x-2">
-                                <a href="{{ route('events.edit', $event->id) }}" class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
-                                    Editar
-                                </a>
-                                <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir este evento?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                            class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 
-                                                   text-red-900 hover:bg-red-400">
-                                        🗑 Excluir
-                                    </button>
-                                </form>
-                            </div>
+                        @if(auth()->check() && auth()->user()->user_type === 'coordinator') 
+                        {{-- Só executa se o usuário estiver logado e for coordenador --}}
+
+                            @php
+                                $loggedCoordinator = auth()->user()->coordinator;
+                                // Pega o coordenador vinculado ao usuário logado
+                            @endphp
+
+                            @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
+                            {{-- Garante que o coordenador logado é o responsável pelo evento --}}
+
+                                <div class="flex space-x-2">
+                                    {{-- Botão para editar o evento --}}
+                                    <a href="{{ route('events.edit', $event->id) }}" 
+                                    class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
+                                        Editar
+                                    </a>
+
+                                    {{-- Formulário para excluir o evento --}}
+                                    <form action="{{ route('events.destroy', $event->id) }}" method="POST" 
+                                    onsubmit="return confirm('Deseja realmente excluir este evento?')">
+                                        @csrf {{-- Proteção contra CSRF --}}
+                                        @method('DELETE') {{-- Requisição do tipo DELETE --}}
+                                        <button type="submit"
+                                        class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 
+                                        text-red-900 hover:bg-red-400">
+                                            🗑 Excluir
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
                         @endif
                     </div>
                 </div>
