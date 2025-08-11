@@ -25,32 +25,35 @@
                             <tbody>
                                 @foreach ($coordinators as $coordinator)
                                     <tr>
-                                        <td class="px-4 py-2 border">{{ $coordinator->userAccount->name }}</td>
-                                        <td class="px-4 py-2 border">{{ $coordinator->userAccount->email }}</td>
-                                        <td class="px-4 py-2 border">
+                                        <td class="px-4 py-5 border text-center">{{ $coordinator->userAccount->name }}
+                                        </td>
+                                        <td class="px-4 py-2 border text-center">{{ $coordinator->userAccount->email }}
+                                        </td>
+                                        <td class="px-4 py-2 border text-center">
                                             {{ ['general' => 'Geral', 'course' => 'Curso'][$coordinator->coordinator_type] }}
                                         </td>
-                                        <td class="px-4 py-2 border space-x-1">
+                                        <td class="px-4 py-2 border text-center">
                                             <a href="{{ route('coordinators.show', $coordinator->id) }}"
-                                                class="bg-blue-500 text-white px-2 py-1 rounded text-sm">Ver</a>
+                                                class="bg-blue-500 text-white px-6 py-2 rounded text-base m-2">Ver</a>
                                             <a href="{{ route('coordinators.edit', $coordinator->id) }}"
-                                                class="bg-yellow-400 text-white px-2 py-1 rounded text-sm">Editar</a>
+                                                class="bg-stone-700 text-white px-4 py-2 rounded text-base m-2">Editar</a>
                                             <form action="{{ route('coordinators.destroy', $coordinator->id) }}"
                                                 method="POST" class="inline-block"
                                                 onsubmit="return confirm('Confirma exclusão?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
-                                                    class="bg-red-500 text-white px-2 py-1 rounded text-sm">Excluir</button>
+                                                    class="bg-red-500 text-white px-4 py-1.5 rounded text-base m-2">Excluir</button>
                                             </form>
                                         </td>
+
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
                 @else
-                <br>
+                    <br>
                     <div class="w-100% flex justify-center">
                         <p class="text-gray-500 mt-5 text-lg">Nenhum Coordenador cadastrado . . .</p>
                     </div>
