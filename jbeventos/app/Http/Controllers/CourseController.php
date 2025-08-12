@@ -9,12 +9,31 @@ use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
-    public function index()
-    {
-        // Busca todos os cursos com os dados do coordenador relacionados para evitar consultas extras (eager loading)
-        $courses = Course::with('courseCoordinator')->get();
-        return view('courses.index', compact('courses'));
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | LISTAGEM E DETALHES
+    |--------------------------------------------------------------------------
+    */
+   public function index(Request $request)
+{
+    $search = $request->input('search');
+
+    $courses = Course::with(['courseCoordinator', 'events'])
+        ->when($search, function ($query, $search) {
+            $query->where('course_name', 'like', "%{$search}%")
+                  ->orWhereHas('courseCoordinator.userAccount', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+        })
+        ->paginate(6) // Mostra 6 cursos por página (pode alterar para 9, 12, etc)
+        ->appends(['search' => $search]); // Mantém o parâmetro de pesquisa ao mudar de página
+
+    return view('courses.index', [
+        'courses' => $courses,
+        'search' => $search,
+    ]);
+}
+
 
     public function create()
     {
@@ -23,6 +42,11 @@ class CourseController extends Controller
         return view('admin.courses.create', compact('coordinators'));
     }
 
+     /*
+    |--------------------------------------------------------------------------
+    | CRUD ADMINISTRATIVO
+    |--------------------------------------------------------------------------
+    */
     public function store(Request $request)
     {
         // Validação dos dados enviados no formulário de criação
@@ -60,7 +84,7 @@ class CourseController extends Controller
     public function show(string $id)
     {
         // Busca o curso pelo ID junto com o coordenador; se não existir, retorna erro 404
-        $course = Course::with('courseCoordinator')->findOrFail($id);
+        $course = Course::with('courseCoordinator', 'events')->findOrFail($id);
         return view('courses.show', compact('course'));
     }
 
@@ -124,5 +148,55 @@ class CourseController extends Controller
 
         // Redireciona para a lista com mensagem de sucesso
         return redirect()->route('courses.index')->with('success', 'Curso excluído com sucesso');
+    }
+
+
+      /*
+    |--------------------------------------------------------------------------
+    | ATUALIZAÇÕES RÁPIDAS (BANNER, ÍCONE, DESCRIÇÃO)
+    | Usadas na view estilo "perfil"
+    |--------------------------------------------------------------------------
+    */
+    public function updateBanner(Request $request, Course $course)
+    {
+        $request->validate([
+            'course_banner' => 'nullable|image|max:2048',
+        ]);
+
+        //apaga o banner antigo
+        if ($course->course_banner) {
+            Storage::disk('public')->delete($course->course_banner); // Armazena o arquivo no disco publico e deleta
+        }
+
+        $path = $request->file('course_banner')->store('course_banners', 'public'); // Armazena o arquivo no disco publico
+        $course->update(['course_banner' => $path]); // Atualiza o caminho do arquivo no banco
+
+        return back()->with('success', 'Banner atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+    }
+
+    public function updateIcon(Request $request, Course $course){
+
+        $request->validate([
+            'course_icon' => 'nullable|image|max:2048',
+        ]);
+
+        if($course->course_icon){
+            Storage::disk('public')->delete($course->course_icon);
+        }
+
+        $path = $request->file('course_icon')->store('course_icons', 'public'); // Armazena o arquivo no disco publico
+        $course->update(['course_icon' => $path]); // Atualiza o caminho do arquivo no banco
+
+        return back()->with('success', 'Ícone atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+    }
+
+    public function updateDescription(Request $request, Course $course){
+        $request->validate([
+            'course_description' => 'nullable|string|max:1000',
+        ]);
+
+        $course->update(['course_description' => $request->course_description]);
+
+        return back()->with('success', 'Descrição atualizada com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
     }
 }

@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     // Registra middlewares personalizados
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'checkUserType' => \App\Http\Middleware\CheckUserType::class,           // Middleware para verificar o tipo de usuário
+            'checkUserType' => \App\Http\Middleware\CheckUserType::class, // Middleware para verificar o tipo de usuário
             'forcePasswordChange' => \App\Http\Middleware\ForcePasswordChange::class, // Middleware para forçar troca de senha
         ]);
     })

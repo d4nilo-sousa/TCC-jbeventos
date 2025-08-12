@@ -51,11 +51,21 @@
                             class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base">
                             <option value="">-- Nenhum --</option>
                             @foreach($coordinators as $coordinator)
-                            @if($coordinator->coordinator_type === 'course')
-                            <option value="{{ $coordinator->id }}" {{ old('coordinator_id', $course->coordinator_id) == $coordinator->id ? 'selected' : '' }}>
-                                {{ $coordinator->userAccount->name ?? 'Sem nome' }}
-                            </option>
-                            @endif
+                                @if($coordinator->coordinator_type === 'course')
+                                    @php
+                                        $isSelected = old('coordinator_id', $course->coordinator_id) == $coordinator->id;
+                                        $isDisabled = $coordinator->coordinatedCourse && $coordinator->coordinatedCourse->id != $course->id;
+                                    @endphp
+
+                                    <option value="{{ $coordinator->id }}" 
+                                            {{ $isSelected ? 'selected' : '' }} 
+                                            {{ $isDisabled ? 'disabled' : '' }}>
+                                        {{ $coordinator->userAccount->name ?? 'Sem nome' }}
+                                        @if($isDisabled)
+                                            ({{ $coordinator->coordinatedCourse->course_name }})
+                                        @endif
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
                     </div>

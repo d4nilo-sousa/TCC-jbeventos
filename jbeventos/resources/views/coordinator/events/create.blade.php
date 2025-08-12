@@ -117,10 +117,10 @@
 
                         {{-- Coordenador responsável (somente leitura) --}}
                         <div class="mb-4">
-                            <x-input-label for="coordinator_name" value="Coordenador Responsável" />
+                            <x-input-label for="event_coordinator" value="Coordenador Responsável" />
                             <x-text-input id="coordinator_name" type="text" class="block mt-1 w-full bg-gray-100"
                                           value="{{ auth()->user()->name }}" readonly disabled />
-                            <input type="hidden" name="coordinator_id" value="{{ auth()->user()->coordinator->id }}">
+                            <input type="hidden" name="coordinator_name" value="{{ auth()->user()->coordinator->id }}">
                         </div>
 
                         {{-- Tipo do evento: curso ou geral --}}
@@ -142,7 +142,7 @@
                                 <x-input-label for="event_course" value="Curso" />
                                 <x-text-input id="course_name" type="text" class="block mt-1 w-full bg-gray-100"
                                               value="{{ auth()->user()->coordinator->coordinatedCourse->course_name ?? 'Sem curso' }}" readonly disabled />
-                                <input type="hidden" name="course_id" value="{{ auth()->user()->coordinator->coordinatedCourse->id ?? '' }}">
+                                <input type="hidden" name="coordinator_course" value="{{ auth()->user()->coordinator->coordinatedCourse->id ?? '' }}">
                             </div>
                         @endif
 

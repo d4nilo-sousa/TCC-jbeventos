@@ -14,7 +14,7 @@ class EventController extends Controller
     // Lista todos os eventos com seus coordenadores e cursos associados
     public function index()
     {
-        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->get();
+        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->where('visible_event', true)->get(); // Uso do Where pra listar apenas eventos que não foram ocultos
         return view('events.index', compact('events'));
     }
 
@@ -65,9 +65,14 @@ class EventController extends Controller
             $data['event_image'] = $request->file('event_image')->store('event_images', 'public');
         }
 
-        // Define coordenador e curso (se houver)
+        // Armazena o Id e o Tipo do Coordenador
         $data['coordinator_id'] = $coordinator->id;
-        $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
+        $data['event_type'] = $coordinator->coordinator_type;
+        
+        // Verifica se o coordenador é de curso e se ele coordena algum, se for verdadeiro armazena o id do curso
+        if ($coordinator->coordinator_type === 'course' && $coordinator->coordinatedCourse) {
+            $data['course_id'] = $coordinator->coordinatedCourse->id;
+        }
 
         // Cria o evento
         $event = Event::create($data);
@@ -94,9 +99,20 @@ class EventController extends Controller
     // Exibe os detalhes de um evento específico
     public function show($id)
     {
-        // Carrega o evento com coordenador, curso e categorias
-        $event = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse', 'eventCategories'])->findOrFail($id);
-        return view('events.show', compact('event'));
+        // Obtem o usuário autenticado
+        $user = auth()->user();
+
+        // Carrega o evento com coordenador, categorias e curso
+        $event = Event::with(['eventCoordinator.userAccount', 'eventCategories', 'eventCourse'])->findOrFail($id);
+
+
+        // Busca todas as reações desse usuário para esse evento
+        $userReactions = \App\Models\EventUserReaction::where('event_id', $id)
+                        ->where('user_id', $user->id)
+                        ->pluck('reaction_type')
+                        ->toArray();
+
+        return view('events.show', compact('event', 'userReactions', 'user'));
     }
 
     // Exibe o formulário para edição de um evento
@@ -161,10 +177,6 @@ class EventController extends Controller
             }
             $data['event_image'] = $request->file('event_image')->store('event_images', 'public');
         }
-
-        // Atualiza coordenador e curso
-        $data['coordinator_id'] = $coordinator->id;
-        $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
 
         // Atualiza o evento
         $event->update($data);

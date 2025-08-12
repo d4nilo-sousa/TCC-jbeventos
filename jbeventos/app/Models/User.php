@@ -31,6 +31,7 @@ class User extends Authenticatable
         'email_verified_at',
         'password',
         'phone_number',
+        'phone_number_verified_at',
         'user_icon',
         'user_banner',
         'bio',
@@ -95,7 +96,7 @@ class User extends Authenticatable
     // Cursos que o usuário está participando
     // Relação muitos-para-muitos com a tabela pivot 'course_user_follow'
     // withTimestamps() mantém os timestamps na tabela pivot atualizados automaticamente
-    public function participatingCourses() {
+    public function followedCourses() {
         return $this->belongsToMany(Course::class, 'course_user_follow')->withTimestamps();
     }
 

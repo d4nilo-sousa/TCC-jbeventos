@@ -6,13 +6,10 @@ use Illuminate\Validation\Rules\Password;
 
 trait PasswordValidationRules
 {
-    /**
-     * Get the validation rules used to validate passwords.
-     *
-     * @return array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string>
-     */
+    // Define as regras de validação para a senha:
     protected function passwordRules(): array
     {
-        return ['required', 'string', Password::default(), 'confirmed'];
+        // - 'regex': exige pelo menos uma letra maiúscula, um número e um caractere especial entre !@#$%&*;
+        return ['required', 'string', 'regex:/^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%&*])[A-Za-z0-9!@#$%&*]+$/', 'min:8', 'confirmed'];
     }
 }

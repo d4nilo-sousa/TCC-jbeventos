@@ -24,7 +24,12 @@
 
             <div class="mt-4">
                 <x-label for="password" value="{{ __('Senha') }}" />
-                <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" />
+                <div class="relative">
+                    <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" />
+                    <button type="button" class="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500 toggle-password" data-target="#password">
+                        👁️
+                    </button>
+                </div>
             </div>
 
             <div class="block mt-4">
@@ -36,11 +41,10 @@
 
             <div class="flex items-center justify-center mt-4 space-x-4">
                 @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Esqueceu sua senha?') }}
-                </a>
+                    <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
+                        {{ __('Esqueceu sua senha?') }}
+                    </a>
                 @endif
-
             </div>
 
             <div class="flex items-center justify-center mt-3">
@@ -50,7 +54,7 @@
             </div>
         </form>
 
-        {{-- Link para registrar, separado e centralizado --}}
+        {{-- Link para registrar --}}
         <div class="mt-6 text-center">
             <p class="text-sm text-gray-600">
                 Não tem uma conta?
@@ -61,3 +65,5 @@
         </div>
     </x-authentication-card>
 </x-guest-layout>
+
+@vite('resources/js/password-validator.js')

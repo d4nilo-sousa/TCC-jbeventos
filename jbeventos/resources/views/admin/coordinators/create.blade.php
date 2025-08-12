@@ -59,16 +59,29 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 sm:mt-0 px-2">
-                        <label for="coordinator_type" class="block font-medium mt-4 px-3">Tipo de Coordenador</label>
+                    {{-- Campo de senha provisória --}}
+                    <div class="mt-4 sm:mt-0 px-3">
+                        <label for="generated_password" class="block font-medium px-2">Senha Provisória</label>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="generated_password" name="password" 
+                                class="w-full border border-gray-300 focus:border-stone-600 focus:ring-stone-600 bg-gray-100 rounded p-3" 
+                                readonly required>
+                            <button type="button" onclick="generatePassword()" 
+                                class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                Gerar
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Campo de tipo de coordenador --}}
+                    <div class="mt-4 sm:mt-0 px-3">
+                        <label for="coordinator_type" class="block font-medium px-2">Tipo de Coordenador</label>
                         <select name="coordinator_type" id="coordinator_type"
-                            class="w-full border border-gray-300 rounded focus:bg-white focus:border-stone-600 focus:ring-stone-600 cursor-pointer p-3"
+                            class="w-full border border-gray-300 rounded p-3 focus:bg-white focus:border-stone-600 focus:ring-stone-600 cursor-pointer"
                             required>
                             <option value="">Selecione...</option>
-                            <option value="general" {{ old('coordinator_type') == 'general' ? 'selected' : '' }}>Geral
-                            </option>
-                            <option value="course" {{ old('coordinator_type') == 'course' ? 'selected' : '' }}>Curso
-                            </option>
+                            <option value="general" {{ old('coordinator_type') == 'general' ? 'selected' : '' }}>Geral</option>
+                            <option value="course" {{ old('coordinator_type') == 'course' ? 'selected' : '' }}>Curso</option>
                         </select>
                     </div>
 
@@ -87,3 +100,5 @@
         </div>
     </div>
 </x-app-layout>
+
+@vite('resources/js/password-generator.js')
