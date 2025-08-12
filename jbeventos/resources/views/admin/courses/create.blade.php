@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-12">
         <div class="w-full mx-auto sm:px-10 lg:px-20 flex justify-center">
-            <div class="w-full max-w-7xl bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-2">
+            <div class="w-full max-w-7xl bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-10 h-[90vh]">
 
                 <div class="w-full flex justify-center grid place-items-center mb-5">
                     <p class="text-2xl sm:text-3xl text-stone-900 font-semibold">Criar Curso</p>

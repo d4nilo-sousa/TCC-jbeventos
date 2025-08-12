@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="py-12">
         <div class="w-full max-w-7xl mx-auto sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-2">
+            <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-10 h-[65vh]">
 
                 <!-- Título -->
                 <div class="w-full grid place-items-center mb-5 text-center">
@@ -91,7 +91,7 @@
                     @endforeach
                 </div>
                 @else
-                <div class="w-full flex flex-col items-center">
+                <div class="w-full flex flex-col items-center mt-16">
                     <p class="text-gray-500 mt-5 text-base sm:text-lg">Nenhum evento cadastrado . . .</p>
                     <img src="{{ asset('imgs/notFound3.png') }}" class="w-2/3 sm:w-1/3 lg:w-1/5 mt-6">
                 </div>
