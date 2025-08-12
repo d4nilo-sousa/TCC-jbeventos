@@ -68,7 +68,7 @@ class EventController extends Controller
         // Armazena o Id e o Tipo do Coordenador
         $data['coordinator_id'] = $coordinator->id;
         $data['event_type'] = $coordinator->coordinator_type;
-        
+
         // Verifica se o coordenador é de curso e se ele coordena algum, se for verdadeiro armazena o id do curso
         if ($coordinator->coordinator_type === 'course' && $coordinator->coordinatedCourse) {
             $data['course_id'] = $coordinator->coordinatedCourse->id;
@@ -108,9 +108,9 @@ class EventController extends Controller
 
         // Busca todas as reações desse usuário para esse evento
         $userReactions = \App\Models\EventUserReaction::where('event_id', $id)
-                        ->where('user_id', $user->id)
-                        ->pluck('reaction_type')
-                        ->toArray();
+            ->where('user_id', $user->id)
+            ->pluck('reaction_type')
+            ->toArray();
 
         return view('events.show', compact('event', 'userReactions', 'user'));
     }
@@ -122,8 +122,8 @@ class EventController extends Controller
         $minExpiredAt = Carbon::now()->format('Y-m-d\TH:i');
 
         // Converte a data de expiração para o formato aceito pelo input type="datetime-local"
-        $eventExpiredAt = $event->event_expired_at 
-            ? Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i') 
+        $eventExpiredAt = $event->event_expired_at
+            ? Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
             : '';
 
         // Verifica se o usuário autenticado é o coordenador do evento
