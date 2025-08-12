@@ -1,14 +1,7 @@
 <x-app-layout>
-    <!-- Cabeçalho da página -->
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Lista de Eventos') }}
-        </h2>
-    </x-slot>
-
     <div class="py-12">
         <div class="w-full max-w-7xl mx-auto sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-10 h-[65vh]">
+            <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-10 min-h-[70vh]">
 
                 <!-- Título -->
                 <div class="w-full grid place-items-center mb-5 text-center">

@@ -42,23 +42,6 @@
                         </div>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row w-full px-3 gap-5">
-                        <div class="flex flex-col flex-1">
-                            <label for="password" class="block font-medium px-2">Senha</label>
-                            <input type="password" name="password" autocomplete="off"
-                                placeholder="Digite a senha do Coordenador"
-                                class="w-full border border-gray-300 focus:border-stone-600 focus:ring-stone-600 focus:bg-white rounded p-3"
-                                required>
-                        </div>
-                        <div class="flex flex-col flex-1 mt-4 sm:mt-0">
-                            <label for="password_confirmation" class="block font-medium px-2">Confirmar Senha</label>
-                            <input type="password" name="password_confirmation" autocomplete="off"
-                                placeholder="Confirme a senha do Coordenador"
-                                class="w-full border border-gray-300 focus:border-stone-600 focus:ring-stone-600 focus:bg-white rounded p-3"
-                                required>
-                        </div>
-                    </div>
-
                     {{-- Campo de senha provisória --}}
                     <div class="mt-4 sm:mt-0 px-3">
                         <label for="generated_password" class="block font-medium px-2">Senha Provisória</label>
