@@ -98,7 +98,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
-    Route::resource('events', EventController::class)->only(['index', 'show']);
+    Route::get('events', [EventController::class, 'index'])->name('events.index');
+
+    // Show com middleware
+    Route::get('events/{event}', [EventController::class, 'show'])
+        ->middleware('checkEventVisibility')
+        ->name('events.show');
 
     // ✅ Nova rota para o painel de Configurações (aproveitando os forms do Jetstream)
     Route::get('/settings', function () {
