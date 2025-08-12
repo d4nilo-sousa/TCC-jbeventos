@@ -105,7 +105,6 @@ class EventController extends Controller
         // Carrega o evento com coordenador, categorias e curso
         $event->load(['eventCoordinator.userAccount', 'eventCategories', 'eventCourse']);
 
-
         // Busca todas as reações desse usuário para esse evento
         $userReactions = \App\Models\EventUserReaction::where('event_id', $event->id)
             ->where('user_id', $user->id)
