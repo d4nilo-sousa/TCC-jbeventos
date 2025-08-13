@@ -65,18 +65,27 @@
                                 </option>
                             </select>
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Curso</label>
-                            <select name="course_id" class="w-full rounded-md border-gray-300 text-sm mb-3">
-                                <option value="">Todos</option>
-                                @foreach ($courses as $course)
-                                    <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
-                                        {{$course->course_name}}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div id="courseSelectWrapper" style="display:none;">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Curso</label>
+                                <select name="course_id" class="w-full rounded-md border-gray-300 text-sm mb-3">
+                                    <option value="">Todos</option>
+                                    @foreach ($courses as $course)
+                                        <option value="{{ $course->id }}"
+                                            {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                            {{ $course->course_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             <button type="submit"
                                 class="w-full bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm">
                                 Aplicar Filtros
+                            </button>
+
+                            <button id="resetFiltres" type="submit"
+                                class="w-full bg-gray-500 text-white px-3 py-1 mt-1 rounded-md hover:bg-gray-600 text-sm">
+                                Resetar Filtros
                             </button>
                         </form>
                     </div>
