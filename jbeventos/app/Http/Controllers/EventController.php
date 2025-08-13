@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\Coordinator;
 use App\Models\Category;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
@@ -12,10 +13,29 @@ use Carbon\Carbon;
 class EventController extends Controller
 {
     // Lista todos os eventos com seus coordenadores e cursos associados
-    public function index()
+    public function index(Request $request)
     {
-        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])->where('visible_event', true)->get(); // Uso do Where pra listar apenas eventos que não foram ocultos
-        return view('events.index', compact('events'));
+        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
+        $courses = Course::all();
+
+        if ($request->status === 'visible') {
+            $events->where('visible_event', true);
+        }
+        else if ($request->status === 'hidden') {
+            $events->where('visible_event', false);
+        }
+
+        if ($request->filled('course_id')) {
+            $events->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('event_type')) {
+            $events->where('event_type', $request->event_type);
+        }
+
+        $events = $events->get();
+
+        return view('events.index', compact('events', 'courses'));
     }
 
     // Exibe o formulário para criação de um novo evento
@@ -80,7 +100,8 @@ class EventController extends Controller
         // Associa categorias ao evento
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        } else {
+        }
+        else {
             $event->eventCategories()->detach();
         }
 
@@ -122,7 +143,7 @@ class EventController extends Controller
 
         // Converte a data de expiração para o formato aceito pelo input type="datetime-local"
         $eventExpiredAt = $event->event_expired_at
-            ? Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
+            ?Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
             : '';
 
         // Verifica se o usuário autenticado é o coordenador do evento
@@ -183,7 +204,8 @@ class EventController extends Controller
         // Atualiza as categorias associadas
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        } else {
+        }
+        else {
             $event->eventCategories()->detach();
         }
 

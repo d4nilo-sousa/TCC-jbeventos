@@ -41,6 +41,7 @@
                     <div id="filterMenu" style="display:none;"
                         class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg p-3 z-10">
                         <form method="GET" action="{{ route('events.index') }}">
+
                             {{-- Filtro de visibilidade --}}
                             <label class="block text-sm font-medium text-gray-700 mb-1">Visibilidade</label>
                             <select name="status" class="w-full rounded-md border-gray-300 text-sm mb-3">
@@ -51,6 +52,27 @@
                                 <option value="hidden" {{ request('status') === 'hidden' ? 'selected' : '' }}>
                                     Ocultos
                                 </option>
+                            </select>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo do Evento</label>
+                            <select name="event_type" class="w-full rounded-md border-gray-300 text-sm mb-3">
+                                <option value="">Todos</option>
+                                <option value="general" {{ request('event_type') === 'general' ? 'selected' : '' }}>
+                                    Geral
+                                </option>
+                                <option value="course" {{ request('event_type') === 'course' ? 'selected' : '' }}>
+                                    Curso
+                                </option>
+                            </select>
+
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Curso</label>
+                            <select name="course_id" class="w-full rounded-md border-gray-300 text-sm mb-3">
+                                <option value="">Todos</option>
+                                @foreach ($courses as $course)
+                                    <option value="{{ $course->id }}" {{ request('course_id') == $course->id ? 'selected' : '' }}>
+                                        {{$course->course_name}}
+                                    </option>
+                                @endforeach
                             </select>
                             <button type="submit"
                                 class="w-full bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm">
@@ -127,10 +149,18 @@
                                                 class="inline">
                                                 @csrf {{-- Proteção contra CSRF --}}
                                                 @method('PATCH') {{-- Requisição do tipo PATCH --}}
-                                                <button type="submit"
-                                                    class="w-full rounded-md bg-green-100 px-3 py-1 text-sm font-medium text-green-700 hover:bg-green-200">
-                                                    Ocultar
-                                                </button>
+                                                @if ($event->visible_event)
+                                                    <button type="submit"
+                                                        class="w-full rounded-md bg-green-100 px-3 py-1 text-sm font-medium text-green-700 hover:bg-green-200">
+                                                        Ocultar
+                                                    </button>
+                                                @endif
+                                                @if (!$event->visible_event)
+                                                    <button type="submit"
+                                                        class="w-full rounded-md bg-green-100 px-3 py-1 text-sm font-medium text-green-700 hover:bg-green-200">
+                                                        Tornar Visível
+                                                    </button>
+                                                @endif
                                             </form>
 
                                             {{-- Botão para excluir o evento --}}
