@@ -1,32 +1,38 @@
 <x-app-layout>
     <div class="py-12">
-        <div class="w-full max-w-7xl mx-auto sm:px-6 lg:px-8 flex justify-center">
+        <div class="w-full max-w-[100rem] mx-auto sm:px-6 lg:px-5 flex justify-center">
             <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-10 min-h-[70vh]">
 
                 {{-- Barra de pesquisa e botão --}}
-                <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-6 px-3">
+
                     <form action="{{ route('courses.index') }}" method="GET"
                         class="flex items-center w-full sm:w-auto mb-4 sm:mb-0">
-                        <input type="text" name="search" value="{{ request('search') }}"
-                            placeholder="Pesquisar cursos..."
-                            class="border border-gray-300 rounded-l-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64">
-                        <button type="submit"
-                            class="flex justify-center items-center bg-stone-900 py-1 text-white px-4 rounded-r-lg">
-                            <img src="{{ asset('imgs/lupaBranca.png') }}" class="w-10">
-                        </button>
+                        <div class="flex items-center bg-transparent rounded-full overflow-hidden shadow-md border-2">
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Pesquisar cursos..."
+                                autocomplete="off"
+                                class="px-6 py-3 w-full sm:w-96 text-gray-800 placeholder-gray-500
+                   border-none outline-none focus:ring-0 focus:outline-none
+                   appearance-none bg-white shadow-none">
+                            <button type="submit"
+                                class="flex items-center justify-center bg-stone-900 hover:bg-stone-800 transition-colors px-6 py-3">
+                                <img src="{{ asset('imgs/lupaBranca.png') }}" class="w-7 h-7">
+                            </button>
+                        </div>
                     </form>
 
-                    <div class="flex justify-center gap-1">
+                    <div class="flex justify-center gap-1 border-2 
+                                 rounded-full overflow-hidden shadow-md transition-colors duration-200">
                         <a href="{{ route('courses.create') }}"
-                            class="border-2 border-blue-500 text-black gap-2 px-5 py-2 rounded-lg flex items-center justify-center
+                            class="text-blue-700 gap-2 px-5 py-2 rounded-lg flex items-center justify-center
                                    hover:bg-blue-500 hover:text-white transition-colors duration-200">
                             <img src="{{ asset('imgs/add-button.png') }}" class="w-8">
                             Criar Curso
                         </a>
                     </div>
-
-
                 </div>
+                <hr class="flex mx-auto w-full">
 
                 {{-- Mensagens de sucesso --}}
                 @if (session('success'))
@@ -36,8 +42,9 @@
                 @endif
 
                 {{-- Lista de cursos --}}
+                
                 @if ($courses->count())
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         @foreach ($courses as $course)
                             <div class="border rounded-lg shadow hover:shadow-lg transition overflow-hidden">
                                 <img src="{{ $course->image ? asset('storage/' . $course->image) : asset('imgs/placeholder.png') }}"
