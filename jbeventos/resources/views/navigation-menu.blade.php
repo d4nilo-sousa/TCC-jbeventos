@@ -80,6 +80,31 @@
                 @endif
             </div>
 
+        <!-- Botão de conversas -->
+        <div class="relative mt-4">
+            <x-dropdown align="right" width="80">
+                <x-slot name="trigger">
+                    <button class="flex items-center p-2 rounded-full hover:bg-gray-100 transition">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-3.6A7.95 7.95 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </button>
+                </x-slot>
+
+                <x-slot name="content">
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div class="p-3 border-b border-gray-100">
+                            <h2 class="text-sm font-semibold text-gray-700">Suas conversas</h2>
+                        </div>
+                        @livewire('conversation-list')
+                    </div>
+                </x-slot>
+            </x-dropdown>
+        </div>
+
+
             <!-- Área da direita: dropdowns -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 
