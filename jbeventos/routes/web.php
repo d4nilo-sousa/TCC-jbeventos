@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CourseFollowController;
 use App\Http\Controllers\EventReactionController;
 use App\Http\Controllers\UserPhoneController;
+use App\Http\Controllers\ChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +115,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // Rotas para o usuário inserir o seu telefone(caso não tenha), para conseguir liberar a funcionalidade de notificação.
     Route::get('phone/edit', [UserPhoneController::class, 'edit'])->name('user.phone.edit');
     Route::put('phone', [UserPhoneController::class, 'update'])->name('user.phone.update');
+
+    Route::get('/chat/{user}', [ChatController::class, 'show'])->name('chat.show'); // Rota para exibir a tela de chat
 });
 
 /*
