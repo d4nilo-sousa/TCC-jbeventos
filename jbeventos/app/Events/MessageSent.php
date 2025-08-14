@@ -3,7 +3,6 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -26,7 +25,6 @@ class MessageSent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        // Canal privado para os dois usuários
         $ids = [$this->user->id, $this->receiverId];
         sort($ids);
         return new PrivateChannel('chat.' . implode('.', $ids));

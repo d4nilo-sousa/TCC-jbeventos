@@ -6,7 +6,6 @@ use Livewire\Component;
 use App\Events\MessageSent;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use function event;
 use App\Models\Message;
 
 class Chat extends Component
@@ -21,18 +20,20 @@ class Chat extends Component
     {
         $this->otherUser = $otherUser;
 
-         $this->messages = Message::where(function($query) {
-        $query->where('sender_id', auth()->id())
-              ->where('receiver_id', $this->otherUser->id);
-    })->orWhere(function($query) {
-        $query->where('receiver_id', auth()->id())
-              ->where('sender_id', $this->otherUser->id);
-    })->orderBy('created_at')->get()->map(function($msg) {
-        return [
-            'user' => $msg->sender->name,
-            'message' => $msg->message,
-        ];
-    })->toArray();
+        // Carregar histórico de mensagens entre os dois usuários
+        $this->messages = Message::where(function($query) {
+            $query->where('sender_id', auth()->id())
+                  ->where('receiver_id', $this->otherUser->id);
+        })->orWhere(function($query) {
+            $query->where('receiver_id', auth()->id())
+                  ->where('sender_id', $this->otherUser->id);
+        })->orderBy('created_at')->get()->map(function($msg) {
+            return [
+                'user_id' => $msg->sender->id,
+                'user_name' => $msg->sender->name,
+                'message' => $msg->message,
+            ];
+        })->toArray();
     }
 
     public function sendMessage()
@@ -43,14 +44,22 @@ class Chat extends Component
 
         $user = Auth::user();
 
-        //salvar no banco
-        Message::create([
+        // Salvar mensagem no banco
+        $msg = Message::create([
             'sender_id' => $user->id,
             'receiver_id' => $this->otherUser->id,
             'message' => $this->message,
         ]);
 
+        // Broadcast para Pusher
         event(new MessageSent($user, $this->message, $this->otherUser->id));
+
+        // Adicionar a mensagem localmente sem recarregar
+        $this->addMessage([
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'message' => $this->message,
+        ]);
 
         $this->message = '';
     }
