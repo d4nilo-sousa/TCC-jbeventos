@@ -13,14 +13,19 @@ class Chat extends Component
     public User $otherUser;
     public $message = '';
     public $messages = [];
+    public $selectedMessage = null;
+    public $showDeleteModal = false;
 
     protected $listeners = ['messageReceived' => 'addMessage'];
 
     public function mount(User $otherUser)
     {
         $this->otherUser = $otherUser;
+        $this->loadMessages();
+    }
 
-        // Carregar histórico de mensagens entre os dois usuários
+    public function loadMessages()
+    {
         $this->messages = Message::where(function($query) {
             $query->where('sender_id', auth()->id())
                   ->where('receiver_id', $this->otherUser->id);
@@ -29,8 +34,8 @@ class Chat extends Component
                   ->where('sender_id', $this->otherUser->id);
         })->orderBy('created_at')->get()->map(function($msg) {
             return [
-                'user_id' => $msg->sender->id,
-                'user_name' => $msg->sender->name,
+                'id' => $msg->id,
+                'sender_id' => $msg->sender_id,
                 'message' => $msg->message,
             ];
         })->toArray();
@@ -44,20 +49,17 @@ class Chat extends Component
 
         $user = Auth::user();
 
-        // Salvar mensagem no banco
         $msg = Message::create([
             'sender_id' => $user->id,
             'receiver_id' => $this->otherUser->id,
             'message' => $this->message,
         ]);
 
-        // Broadcast para Pusher
         event(new MessageSent($user, $this->message, $this->otherUser->id));
 
-        // Adicionar a mensagem localmente sem recarregar
         $this->addMessage([
-            'user_id' => $user->id,
-            'user_name' => $user->name,
+            'id' => $msg->id,
+            'sender_id' => $user->id,
             'message' => $this->message,
         ]);
 
@@ -69,8 +71,41 @@ class Chat extends Component
         $this->messages[] = $messageData;
     }
 
+    public function selectMessage($id)
+    {
+        $this->selectedMessage = $id;
+    }
+
+    public function clearSelection()
+    {
+        $this->selectedMessage = null;
+    }
+
+    public function confirmDelete()
+    {
+        $this->showDeleteModal = true;
+    }
+
+    public function cancelDelete()
+    {
+        $this->showDeleteModal = false;
+    }
+
+    public function deleteSelectedMessage()
+    {
+        $message = Message::find($this->selectedMessage);
+
+        if ($message && $message->sender_id == auth()->id()) {
+            $message->delete();
+        }
+
+        $this->selectedMessage = null;
+        $this->showDeleteModal = false;
+        $this->loadMessages();
+    }
+
     public function render()
     {
-        return view('livewire.chat');
+        return view('livewire.chat', ['receiver' => $this->otherUser]);
     }
 }
