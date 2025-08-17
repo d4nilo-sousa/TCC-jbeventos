@@ -103,6 +103,13 @@ class Chat extends Component
         $this->showDeleteModal = false;
         $this->loadMessages();
     }
+    
+    public function copyMessage($message)
+    {
+        $this->dispatch('copy-message', message: $message);
+        $this->clearSelection();
+    }
+
 
     public function render()
     {
