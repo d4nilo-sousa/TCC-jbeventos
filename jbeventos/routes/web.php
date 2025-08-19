@@ -9,6 +9,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CourseFollowController;
 use App\Http\Controllers\EventReactionController;
 use App\Http\Controllers\UserPhoneController;
+use App\Http\Controllers\VisibilityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -76,6 +77,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Alterar senha
         Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
         Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
+
+        // Ocultar Eventos e Comentários
+        Route::patch('/events/{event}/visibility', [VisibilityController::class, 'updateEvent'])->name('events.updateEvent');
+        Route::patch('/comments/{comment}/visibility', [VisibilityController::class, 'updateComment'])->name('events.updateComment');
     });
 
     /*
@@ -93,7 +98,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
-    Route::resource('events', EventController::class)->only(['index', 'show']);
+    Route::get('events', [EventController::class, 'index'])->name('events.index');
+
+    // Show com middleware
+    Route::get('events/{event}', [EventController::class, 'show'])
+        ->middleware('checkEventVisibility')
+        ->name('events.show');
 
     // ✅ Nova rota para o painel de Configurações (aproveitando os forms do Jetstream)
     Route::get('/settings', function () {
@@ -114,14 +124,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // Rotas para o usuário inserir o seu telefone(caso não tenha), para conseguir liberar a funcionalidade de notificação.
     Route::get('phone/edit', [UserPhoneController::class, 'edit'])->name('user.phone.edit');
     Route::put('phone', [UserPhoneController::class, 'update'])->name('user.phone.update');
-});
 
-/*
-|--------------------------------------------------------------------------
-| Rotas para seguir e deixar de seguir cursos
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Rotas para seguir e deixar de seguir cursos
+    |--------------------------------------------------------------------------
+    */
     Route::post('/courses/{course}/follow', [CourseFollowController::class, 'follow'])->name('courses.follow');
     Route::delete('/courses/{course}/unfollow', [CourseFollowController::class, 'unfollow'])->name('courses.unfollow');
 });

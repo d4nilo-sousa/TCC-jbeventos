@@ -42,7 +42,7 @@ class CoordinatorSeeder extends Seeder
             // Cria o registro de coordenador vinculado ao usuário
             Coordinator::create([
                 'coordinator_type' => $coordinatorData['type'],
-                'temporary_password' => true,
+                'temporary_password' => false, // Para não ter que cadastrar uma nova senha
                 'user_id' => $user->id,
             ]);
         }

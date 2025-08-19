@@ -13,22 +13,32 @@ class ForcePasswordChange
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next) 
     {
         $user = auth()->user();
 
-        // Verifica se o usuário está logado, tem função de coordenador e está com senha temporária
-        if ($user && $user->coordinatorRole && $user->coordinatorRole->temporary_password) {
-            // Permite acesso somente para as rotas de editar e atualizar a senha
-            if ($request->routeIs('coordinator.password.edit') || $request->routeIs('coordinator.password.update')) {
-                return $next($request);
+        // Se o usuário está logado e possui função de coordenador
+        if ($user && $user->coordinatorRole) {
+            $hasTemporaryPassword = $user->coordinatorRole->temporary_password;
+
+            // Se o coordenador tem senha temporária
+            if ($hasTemporaryPassword) {
+                // Permite acessar apenas as rotas de alteração de senha
+                if ($request->routeIs('coordinator.password.edit') || $request->routeIs('coordinator.password.update')) {
+                    return $next($request);
+                }
+
+                // Caso acesse qualquer outra rota, redireciona para a tela de alteração de senha
+                return redirect()->route('coordinator.password.edit');
             }
 
-            // Caso o usuário tente acessar outra rota, redireciona para a página de editar senha
-            return redirect()->route('coordinator.password.edit');
+            // Se não tem senha temporária, mas tenta acessar a tela de alteração de senha, redireciona para o dashboard
+            if (!$hasTemporaryPassword && ($request->routeIs('coordinator.password.edit') || $request->routeIs('coordinator.password.update'))) {
+                return redirect()->route('coordinator.dashboard');
+            }
         }
 
-        // Se não tiver senha temporária, deixa a requisição seguir normalmente
+        // Caso não se enquadre nas condições acima, continua o fluxo normalmente
         return $next($request);
     }
 }
