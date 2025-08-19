@@ -34,34 +34,40 @@ class Event extends Model
     }
 
     // Retorna os comentários associados a este evento
-    public function eventComments() {
+    public function eventComments()
+    {
         return $this->hasMany(Comment::class);
     }
 
     // Retorna o coordenador responsável pelo evento
-    public function eventCoordinator() {
-        return $this->belongsTo(Coordinator::class ,'coordinator_id');
+    public function eventCoordinator()
+    {
+        return $this->belongsTo(Coordinator::class, 'coordinator_id');
     }
 
     // Relação muitos-para-muitos com Category usando tabela pivot 'category_event'
     // withTimestamps() adiciona timestamps na tabela pivot automaticamente
-    public function eventCategories() {
+    public function eventCategories()
+    {
         return $this->belongsToMany(Category::class, 'category_event')->withTimestamps();
     }
 
     // Retorna as reações dos usuários ao evento
     // Essa relação envolve uma tabela pivô com atributos próprios
-    public function reactions() {
+    public function reactions()
+    {
         return $this->hasMany(EventUserReaction::class);
     }
 
     // Relação com o modelo Course
-    public function course() {
+    public function course()
+    {
         return $this->belongsTo(Course::class);
     }
-    
+
     // Retorna o curso que está assossiado ao evento
-    public function eventCourse() {
+    public function eventCourse()
+    {
         return $this->belongsTo(Course::class, 'course_id');
     }
 }

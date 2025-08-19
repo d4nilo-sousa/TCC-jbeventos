@@ -15,27 +15,81 @@ class EventController extends Controller
     // Lista todos os eventos com seus coordenadores e cursos associados
     public function index(Request $request)
     {
+        // Busca eventos já trazendo coordenador e curso relacionado
         $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
-        $courses = Course::all();
+        $courses = Course::all(); // Todos os cursos
+        $categories = Category::all(); // Todas as categorias
+        $loggedCoordinator = auth()->user()->coordinator; // Coordenador logado (se existir)
 
+        // Filtra por status de visibilidade
         if ($request->status === 'visible') {
-            $events->where('visible_event', true);
-        }
-        else if ($request->status === 'hidden') {
-            $events->where('visible_event', false);
+            $events->where('visible_event', true); // Apenas eventos visíveis
+        } elseif ($request->status === 'hidden' && $loggedCoordinator) {
+            // Apenas os eventos ocultos do coordenador logado
+            $events->where('visible_event', false)
+                ->where('coordinator_id', $loggedCoordinator->id);
+        } else {
+            // Padrão: eventos visíveis + eventos ocultos do coordenador logado
+            if ($loggedCoordinator) {
+                $events->where(function ($query) use ($loggedCoordinator) {
+                    $query->where('visible_event', true) // visíveis
+                        ->orWhere(function ($q) use ($loggedCoordinator) {
+                            $q->where('visible_event', false) // ocultos
+                                ->where('coordinator_id', $loggedCoordinator->id);
+                        });
+                });
+            } else {
+                $events->where('visible_event', true); // Se não for coordenador, mostra só visíveis
+            }
         }
 
-        if ($request->filled('course_id')) {
-            $events->where('course_id', $request->course_id);
-        }
-
+        // Filtro por tipo de evento
         if ($request->filled('event_type')) {
             $events->where('event_type', $request->event_type);
         }
 
+        // Filtro por curso
+        if ($request->filled('course_id')) {
+            $events->whereIn('course_id', $request->course_id);
+        }
+
+        // Filtro por categoria
+        if ($request->filled('category_id')) {
+            $events->whereHas('eventCategories', function ($q) use ($request) {
+                $q->whereIn('categories.id', $request->category_id);
+            });
+        }
+
+        // Filtro por data inicial
+        if ($request->filled('start_date')) {
+            $events->whereDate('event_scheduled_at', '>=', $request->start_date);
+        }
+
+        // Filtro por data final
+        if ($request->filled('end_date')) {
+            $events->whereDate('event_scheduled_at', '<=', $request->end_date);
+        }
+
+        // Ordenação por quantidade de curtidas
+        if ($request->filled('likes_order')) {
+            $events->withCount([
+                'reactions as likes_count' => function ($query) {
+                    $query->where('reaction_type', 'like'); // Conta apenas "likes"
+                }
+            ]);
+
+            if ($request->likes_order === 'most') {
+                $events->orderBy('likes_count', 'desc'); // Mais curtidos primeiro
+            } elseif ($request->likes_order === 'least') {
+                $events->orderBy('likes_count', 'asc'); // Menos curtidos primeiro
+            }
+        }
+
+        // Executa a query e traz os resultados
         $events = $events->get();
 
-        return view('events.index', compact('events', 'courses'));
+        // Retorna a view com os dados necessários
+        return view('events.index', compact('events', 'courses', 'categories'));
     }
 
     // Exibe o formulário para criação de um novo evento
@@ -100,8 +154,7 @@ class EventController extends Controller
         // Associa categorias ao evento
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        }
-        else {
+        } else {
             $event->eventCategories()->detach();
         }
 
@@ -143,7 +196,7 @@ class EventController extends Controller
 
         // Converte a data de expiração para o formato aceito pelo input type="datetime-local"
         $eventExpiredAt = $event->event_expired_at
-            ?Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
+            ? Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
             : '';
 
         // Verifica se o usuário autenticado é o coordenador do evento
@@ -204,8 +257,7 @@ class EventController extends Controller
         // Atualiza as categorias associadas
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        }
-        else {
+        } else {
             $event->eventCategories()->detach();
         }
 
