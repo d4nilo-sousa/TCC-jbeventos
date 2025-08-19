@@ -46,10 +46,33 @@
                                 @endif
                             </div>
 
-                            <span class="inline-block p-3 rounded-2xl max-w-xs break-words shadow
-                                        {{ $msg['sender_id'] === auth()->id() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
-                                {{ $msg['message'] }}
-                            </span>
+                            <div class="flex flex-col space-y-1">
+                                {{-- Condição para exibir o anexo --}}
+                                @if(isset($msg['attachment_path']))
+                                    <a href="{{ asset('storage/' . $msg['attachment_path']) }}" target="_blank" class="block rounded-xl overflow-hidden shadow">
+                                        @if (Str::startsWith($msg['attachment_mime'], 'image'))
+                                            <img src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" alt="Anexo de imagem">
+                                        @elseif (Str::startsWith($msg['attachment_mime'], 'video'))
+                                            <video src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" controls></video>
+                                        @else
+                                            <div class="bg-white p-4 flex items-center space-x-2 text-sm text-gray-700">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                <span>{{ $msg['attachment_name'] }}</span>
+                                            </div>
+                                        @endif
+                                    </a>
+                                @endif
+
+                                {{-- O balão da mensagem de texto original --}}
+                                @if(isset($msg['message']) && !empty($msg['message']))
+                                    <span class="inline-block p-3 rounded-2xl max-w-xs break-words shadow
+                                                {{ $msg['sender_id'] === auth()->id() ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+                                        {{ $msg['message'] }}
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                         <div class="text-xs text-gray-400 mt-1 flex items-center space-x-1">
                             <span>{{ $time }}</span>
@@ -64,17 +87,45 @@
             @endforeach
         </div>
 
-        {{-- Input de envio --}}
-        <div class="flex items-center border-t bg-white p-3 rounded-b-xl">
-            <input type="text" wire:model.defer="message" wire:keydown.enter="sendMessage"
-                   placeholder="Digite sua mensagem..."
-                   class="flex-1 border border-gray-300 rounded-full px-4 py-2 mr-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
-            <button wire:click="sendMessage"
-                    class="bg-blue-500 text-white px-5 py-2 rounded-full hover:bg-blue-600 transition shadow">
-                Enviar
+       {{-- Input de envio --}}
+<form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-3 rounded-b-xl">
+    {{-- Pré-visualização do anexo --}}
+    @if ($attachment)
+        <div class="flex items-center space-x-2 p-2 rounded-lg bg-gray-100 mb-2">
+            @if (Str::startsWith($attachment->getMimeType(), 'image'))
+                <img src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" alt="Pré-visualização da imagem">
+            @elseif (Str::startsWith($attachment->getMimeType(), 'video'))
+                <video src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" controls></video>
+            @else
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            @endif
+            <span class="text-sm font-medium text-gray-600 truncate">{{ $attachment->getClientOriginalName() }}</span>
+            <button wire:click="$set('attachment', null)" class="text-red-500 hover:text-red-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
         </div>
+    @endif
+
+    <div class="flex items-center">
+        <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-blue-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.415a2 2 0 102.828 2.828l6.414-6.414"/>
+            </svg>
+        </label>
+        <input id="attachment-input" type="file" wire:model="attachment" class="hidden">
+
+        <input type="text" wire:model.defer="message" placeholder="Digite sua mensagem..."
+               class="flex-1 border border-gray-300 rounded-full px-4 py-2 mr-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
+        <button type="submit"
+                class="bg-blue-500 text-white px-5 py-2 rounded-full hover:bg-blue-600 transition shadow">
+            Enviar
+        </button>
     </div>
+</form>
 
     {{-- O modal agora está DENTRO da div principal controlada pelo Livewire --}}
     @if ($showDeleteModal)
