@@ -104,9 +104,14 @@ class Chat extends Component
         $this->loadMessages();
     }
     
-    public function copyMessage($message)
+    // Altere este método para receber o ID da mensagem, e buscar a mensagem no banco
+    public function copyMessage($id)
     {
-        $this->dispatch('copy-message', message: $message);
+        $message = Message::find($id);
+
+        if ($message) {
+            $this->dispatch('copy-message', message: $message->message);
+        }
         $this->clearSelection();
     }
 
