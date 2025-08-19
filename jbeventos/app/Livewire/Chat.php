@@ -52,7 +52,7 @@ class Chat extends Component
     {
         $this->validate([
             'message' => 'nullable|string|max:255',
-            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,mp4,mov,avi,doc,docx,pdf,txt',
+            'attachment' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,webp,mp4,mov,avi,doc,docx,pdf,txt,zip',
         ]);
 
         if (empty($this->message) && !$this->attachment) {
