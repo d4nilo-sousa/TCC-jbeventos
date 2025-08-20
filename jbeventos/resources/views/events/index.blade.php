@@ -1,7 +1,8 @@
+
 <x-app-layout>
     <div class="py-12">
         <div class="w-full max-w-7xl mx-auto sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto mt-10 min-h-[70vh]">
+            <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 
                 <!-- Título -->
                 <div class="w-full grid place-items-center mb-5 text-center">
