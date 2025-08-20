@@ -7,7 +7,7 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('chat.{userId1}.{userId2}', function ($user, $userId1, $userId2) {
-    $ids = [(int)$userId1, (int)$userId2];
-    sort($ids);
-    return in_array($user->id, $ids);
+    if ((int) $user->id === (int) $userId1 || (int) $user->id === (int) $userId2) {
+        return ['id' => $user->id, 'name' => $user->name, 'user_icon' => $user->user_icon];
+    }
 });

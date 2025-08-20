@@ -20,12 +20,62 @@ class Chat extends Component
     public $showDeleteModal = false;
     public $attachment;
 
+    public $isOnline = false; // Estado para rastrear se o outro usuário está online
+
     protected $listeners = ['messageReceived' => 'addMessage'];
 
     public function mount(User $otherUser)
     {
         $this->otherUser = $otherUser;
         $this->loadMessages();
+    }
+    
+    // Método para assinar o canal de presença e rastrear o status
+   // app/Livewire/Chat.php
+    public function getListeners()
+    {
+        // array de IDs
+        $ids = [auth()->id(), $this->otherUser->id];
+
+        //ordena os IDs
+        sort($ids);
+
+        // junta os IDs
+        $channelName = 'chat.' . implode('.', $ids);
+
+        return [
+            "echo-presence:{$channelName},here" => 'here',
+            "echo-presence:{$channelName},joining" => 'joining',
+            "echo-presence:{$channelName},leaving" => 'leaving',
+        ];
+    }
+    
+    // Alguém está no canal
+    public function here($users)
+    {
+        foreach ($users as $user) {
+            if ($user['id'] === $this->otherUser->id) {
+                $this->isOnline = true;
+                return;
+            }
+        }
+        $this->isOnline = false;
+    }
+    
+    // Alguém acabou de entrar
+    public function joining($user)
+    {
+        if ($user['id'] === $this->otherUser->id) {
+            $this->isOnline = true;
+        }
+    }
+
+    // Alguém acabou de sair
+    public function leaving($user)
+    {
+        if ($user['id'] === $this->otherUser->id) {
+            $this->isOnline = false;
+        }
     }
 
     public function loadMessages()
@@ -79,7 +129,8 @@ class Chat extends Component
             'attachment_mime' => $attachmentMime,
             'attachment_name' => $attachmentName,
         ]);
-
+        
+        // Passando os dados do anexo para o evento
         event(new MessageSent($user, $this->message, $this->otherUser->id, $attachmentPath, $attachmentMime, $attachmentName));
 
         $this->addMessage([

@@ -15,6 +15,9 @@ class MessageSent implements ShouldBroadcast
     public $user;
     public $message;
     public $receiverId;
+    public $attachmentPath;
+    public $attachmentMime;
+    public $attachmentName;
 
     public function __construct(User $user, string $message, int $receiverId)
     {
@@ -27,6 +30,6 @@ class MessageSent implements ShouldBroadcast
     {
         $ids = [$this->user->id, $this->receiverId];
         sort($ids);
-        return new PrivateChannel('chat.' . implode('.', $ids));
+        return new PresenceChannel('chat.' . implode('.', $ids));
     }
 }

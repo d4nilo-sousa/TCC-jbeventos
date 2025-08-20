@@ -1,8 +1,8 @@
 {{-- Container pai do chat --}}
-<div id="chat-container" class="flex justify-center items-center min-h-screen p-6 bg-gray-100">
+<div id="chat-container" class="flex justify-center min-h-screen p-6 bg-gray-100">
 
     {{-- Chat principal --}}
-    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-[95%] h-[90vh]">
+    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-[95%] h-[84vh]">
 
         {{-- Topo da conversa --}}
         <div class="flex items-center p-4 border-b bg-white rounded-t-xl">
@@ -12,21 +12,31 @@
                 class="w-12 h-12 rounded-full mr-4 border-2 border-red-500"></a>
             <div>
                 <span class="font-semibold text-gray-800 text-lg">{{ $receiver->name }}</span>
-                <p class="text-sm text-gray-500">Online</p>
+                {{-- ALTERAÇÃO: Usa o estado do Livewire para o status online --}}
+                <p class="text-sm text-gray-500">
+                    @if($isOnline)
+                        <span class="text-green-500">Online</span>
+                    @else
+                        <span>Offline</span>
+                    @endif
+                </p>
             </div>
         </div>
 
         {{-- Lista de mensagens --}}
-        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 scroll-smooth">
+        {{-- ADIÇÃO: z-10 para controle de sobreposição --}}
+        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 scroll-smooth z-10">
             @foreach ($messages as $msg)
                 @php
                     $time = isset($msg['created_at']) ? $msg['created_at'] : date('H:i');
                 @endphp
-                <div class="flex {{ $msg['sender_id'] === auth()->id() ? 'justify-end' : 'justify-start' }} relative group">
+                {{-- ALTERAÇÃO: z-0 e relative para posicionamento do menu --}}
+                <div class="flex {{ $msg['sender_id'] === auth()->id() ? 'justify-end' : 'justify-start' }} relative group z-0">
                     <div class="flex flex-col">
                         <div class="flex items-center">
                             {{-- Menu de ação da mensagem --}}
-                            <div class="relative inline-block text-left opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            {{-- ALTERAÇÃO: z-50 para garantir que o menu flutue sobre outros elementos --}}
+                            <div class="relative inline-block text-left opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
                                 <button wire:click="selectMessage({{ $msg['id'] }})"
                                         class="p-1 rounded-full hover:bg-gray-300 transition" title="Mais opções">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -34,7 +44,7 @@
                                     </svg>
                                 </button>
                                 @if($selectedMessage === $msg['id'])
-                                <div class="origin-top-right absolute {{ $msg['sender_id'] === auth()->id() ? 'right-0' : 'left-0' }} mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-20">
+                                <div class="origin-top-right absolute {{ $msg['sender_id'] === auth()->id() ? 'right-0' : 'left-0' }} mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                                     <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                                         <button wire:click="copyMessage({{ $msg['id'] }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Copiar</button>
                                         @if($msg['sender_id'] === auth()->id())
@@ -87,45 +97,47 @@
             @endforeach
         </div>
 
-       {{-- Input de envio --}}
-<form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-3 rounded-b-xl">
-    {{-- Pré-visualização do anexo --}}
-    @if ($attachment)
-        <div class="flex items-center space-x-2 p-2 rounded-lg bg-gray-100 mb-2">
-            @if (Str::startsWith($attachment->getMimeType(), 'image'))
-                <img src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" alt="Pré-visualização da imagem">
-            @elseif (Str::startsWith($attachment->getMimeType(), 'video'))
-                <video src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" controls></video>
-            @else
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+        {{-- Input de envio --}}
+        {{-- ADIÇÃO: z-20 para controle de sobreposição --}}
+        <form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-3 rounded-b-xl z-20">
+            {{-- Pré-visualização do anexo --}}
+            @if ($attachment)
+                <div class="flex items-center space-x-2 p-2 rounded-lg bg-gray-100 mb-2">
+                    @if (Str::startsWith($attachment->getMimeType(), 'image'))
+                        <img src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" alt="Pré-visualização da imagem">
+                    @elseif (Str::startsWith($attachment->getMimeType(), 'video'))
+                        <video src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" controls></video>
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>{{ $attachment->getClientOriginalName() }}</span>
+                    @endif
+                    <button wire:click="$set('attachment', null)" class="text-red-500 hover:text-red-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             @endif
-            <span class="text-sm font-medium text-gray-600 truncate">{{ $attachment->getClientOriginalName() }}</span>
-            <button wire:click="$set('attachment', null)" class="text-red-500 hover:text-red-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-    @endif
 
-    <div class="flex items-center">
-        <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-blue-500 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.415a2 2 0 102.828 2.828l6.414-6.414"/>
-            </svg>
-        </label>
-        <input id="attachment-input" type="file" wire:model="attachment" class="hidden">
+            <div class="flex items-center">
+                <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-blue-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.415a2 2 0 102.828 2.828l6.414-6.414"/>
+                    </svg>
+                </label>
+                <input id="attachment-input" type="file" wire:model="attachment" class="hidden">
 
-        <input type="text" wire:model.defer="message" placeholder="Digite sua mensagem..."
-               class="flex-1 border border-gray-300 rounded-full px-4 py-2 mr-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
-        <button type="submit"
-                class="bg-blue-500 text-white px-5 py-2 rounded-full hover:bg-blue-600 transition shadow">
-            Enviar
-        </button>
+                <input type="text" wire:model.defer="message" placeholder="Digite sua mensagem..."
+                    class="flex-1 border border-gray-300 rounded-full px-4 py-2 mr-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
+                <button type="submit"
+                        class="bg-blue-500 text-white px-5 py-2 rounded-full hover:bg-blue-600 transition shadow">
+                    Enviar
+                </button>
+            </div>
+        </form>
     </div>
-</form>
 
     {{-- O modal agora está DENTRO da div principal controlada pelo Livewire --}}
     @if ($showDeleteModal)
@@ -148,17 +160,22 @@
 
 <script>
     document.addEventListener("livewire:init", () => {
-        // Copiar mensagem para área de transferência
+        Livewire.hook("message.processed", (message, component) => {
+            const container = document.getElementById("messages");
+            if (container) {
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            }
+        });
+
+        const container = document.getElementById("messages");
+        if (container) {
+            container.scrollTo({ top: container.scrollHeight, behavior: 'auto' });
+        }
+        
         Livewire.on("copy-message", (data) => {
             navigator.clipboard.writeText(data.message)
                 .then(() => alert("Mensagem copiada!"))
                 .catch(err => console.error("Erro ao copiar: ", err));
-        });
-
-        // Scroll automático suave
-        Livewire.hook("message.processed", (message, component) => {
-            const container = document.getElementById("messages");
-            if (container) container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
         });
     });
 </script>
