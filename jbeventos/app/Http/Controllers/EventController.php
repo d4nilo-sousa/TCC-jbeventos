@@ -183,6 +183,8 @@ class EventController extends Controller
             $data['event_expired_at'] = Carbon::createFromFormat('Y-m-d\TH:i', $data['event_expired_at'])->format('Y-m-d H:i:s');
         }
 
+        broadcast(new EventCreated($event))->toOthers();
+
         return redirect()->route('events.index')->with('success', 'Evento criado com sucesso!');
     }
 
