@@ -20,9 +20,10 @@ class Chat extends Component
     public $showDeleteModal = false;
     public $attachment;
 
-    public $isOnline = false; // Estado para rastrear se o outro usuário está online
+    public $isOnline = false;
 
-    protected $listeners = ['messageReceived' => 'addMessage'];
+    // Remove a propriedade $listeners e a lógica do mount
+    // protected $listeners = [];
 
     public function mount(User $otherUser)
     {
@@ -30,27 +31,25 @@ class Chat extends Component
         $this->loadMessages();
     }
     
-    // Método para assinar o canal de presença e rastrear o status
-   // app/Livewire/Chat.php
+    // CORREÇÃO: Usamos getListeners() para listeners dinâmicos
     public function getListeners()
     {
-        // array de IDs
         $ids = [auth()->id(), $this->otherUser->id];
-
-        //ordena os IDs
         sort($ids);
-
-        // junta os IDs
         $channelName = 'chat.' . implode('.', $ids);
 
         return [
+            // Listener para o evento de presença (online/offline)
             "echo-presence:{$channelName},here" => 'here',
             "echo-presence:{$channelName},joining" => 'joining',
             "echo-presence:{$channelName},leaving" => 'leaving',
+            
+            // Listener para o evento de nova mensagem
+            // A sintaxe "echo-presence:channel-name,event-name" é a correta
+            "echo-presence:{$channelName},MessageSent" => 'addMessageFromBroadcast',
         ];
     }
-    
-    // Alguém está no canal
+
     public function here($users)
     {
         foreach ($users as $user) {
@@ -62,7 +61,6 @@ class Chat extends Component
         $this->isOnline = false;
     }
     
-    // Alguém acabou de entrar
     public function joining($user)
     {
         if ($user['id'] === $this->otherUser->id) {
@@ -70,7 +68,6 @@ class Chat extends Component
         }
     }
 
-    // Alguém acabou de sair
     public function leaving($user)
     {
         if ($user['id'] === $this->otherUser->id) {
@@ -94,6 +91,7 @@ class Chat extends Component
                 'attachment_path' => $msg->attachment_path,
                 'attachment_mime' => $msg->attachment_mime,
                 'attachment_name' => $msg->attachment_name,
+                'created_at' => $msg->created_at->format('H:i')
             ];
         })->toArray();
     }
@@ -130,8 +128,7 @@ class Chat extends Component
             'attachment_name' => $attachmentName,
         ]);
         
-        // Passando os dados do anexo para o evento
-        event(new MessageSent($user, $this->message, $this->otherUser->id, $attachmentPath, $attachmentMime, $attachmentName));
+        event(new MessageSent($msg));
 
         $this->addMessage([
             'id' => $msg->id,
@@ -140,10 +137,26 @@ class Chat extends Component
             'attachment_path' => $attachmentPath,
             'attachment_mime' => $attachmentMime,
             'attachment_name' => $attachmentName,
+            'created_at' => $msg->created_at->format('H:i')
         ]);
 
         $this->message = '';
         $this->attachment = null;
+    }
+
+    public function addMessageFromBroadcast($messageData)
+    {
+        if ($messageData['sender_id'] === $this->otherUser->id) {
+            $this->addMessage([
+                'id' => $messageData['id'],
+                'sender_id' => $messageData['sender_id'],
+                'message' => $messageData['message'],
+                'attachment_path' => $messageData['attachment_path'],
+                'attachment_mime' => $messageData['attachment_mime'],
+                'attachment_name' => $messageData['attachment_name'],
+                'created_at' => now()->format('H:i')
+            ]);
+        }
     }
 
     public function addMessage($messageData)
