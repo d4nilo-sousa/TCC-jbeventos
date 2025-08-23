@@ -86,7 +86,7 @@
                                         {{ $msg['message'] }}
                                     </span>
                                     @if(isset($msg['is_edited']) && $msg['is_edited'])
-                                        <span class="text-[10px] text-gray-500 mt-1 self-end">{{ $isSender ? 'Editada' : '' }}</span>
+                                        <span class="text-[10px] text-gray-500 mt-1 self-end">Editada</span>
                                     @endif
                                 </div>
                             @endif
