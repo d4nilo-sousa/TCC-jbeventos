@@ -20,7 +20,6 @@ class MessageEdited implements ShouldBroadcast
         $this->messageModel = $messageModel;
     }
 
-    // Apenas essa linha foi alterada para retornar um array
     public function broadcastOn(): array
     {
         $ids = [$this->messageModel->sender_id, $this->messageModel->receiver_id];
@@ -32,7 +31,8 @@ class MessageEdited implements ShouldBroadcast
     public function broadcastWith(){
         return [
             'id' => $this->messageModel->id,
-            'message' => $this->messageModel->message
+            'message' => $this->messageModel->message,
+            'is_edited' => true, // ADIÇÃO: Inclui a flag de edição no evento
         ];
     }
 }

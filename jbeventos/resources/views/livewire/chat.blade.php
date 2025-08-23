@@ -1,7 +1,6 @@
-{{-- Container pai do chat --}}
-<div id="chat-container" class="flex justify-center min-h-screen p-6 bg-gray-100">
-    {{-- Chat principal --}}
-    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-[95%] h-[84vh]">
+<div class="flex-1 flex justify-center items-center">
+    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-7xl h-[84vh] mt-8 overflow-hidden">
+        
         {{-- Topo da conversa --}}
         <div class="flex items-center p-4 border-b bg-white rounded-t-xl">
             <a href="{{ route('profile.view', $receiver->id) }}">
@@ -19,6 +18,7 @@
                 </p>
             </div>
         </div>
+        
         {{-- Lista de mensagens --}}
         <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 scroll-smooth">
             @foreach ($messages as $msg)
@@ -27,9 +27,7 @@
                     $isSender = $msg['sender_id'] === auth()->id();
                 @endphp
                 <div class="flex {{ $isSender ? 'justify-end' : 'justify-start' }} relative group">
-                    {{-- Container da mensagem e menu --}}
                     <div class="flex items-center space-x-1">
-                        {{-- NOVO: Mostra o menu de opções somente quando a mensagem é selecionada --}}
                         @if($isSender)
                             @if($selectedMessage === $msg['id'])
                                 <div class="relative inline-block text-left z-50">
@@ -45,7 +43,6 @@
                             @endif
                         @endif
                         
-                        {{-- Botão de opções --}}
                         @if($isSender)
                             <button wire:click="selectMessage({{ $msg['id'] }})" class="p-1 rounded-full hover:bg-gray-300 transition" title="Mais opções">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,13 +52,12 @@
                         @endif
                     
                         <div class="flex flex-col space-y-1">
-                            {{-- Condição para exibir o anexo --}}
                             @if(isset($msg['attachment_path']))
                                 <a href="{{ asset('storage/' . $msg['attachment_path']) }}" target="_blank" class="block rounded-xl overflow-hidden shadow">
                                     @if (Str::startsWith($msg['attachment_mime'], 'image'))
                                         <img src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" alt="Anexo de imagem">
                                     @elseif (Str::startsWith($msg['attachment_mime'], 'video'))
-                                        <video src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" controls></video>
+                                        <video src="{{ $attachment->temporaryUrl() }}" class="max-h-60 rounded-xl" controls></video>
                                     @else
                                         <div class="bg-white p-4 flex items-center space-x-2 text-sm text-gray-700">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -73,10 +69,9 @@
                                 </a>
                             @endif
                             
-                            {{-- Condição para mostrar o input de edição --}}
                             @if($isSender && $editingMessageId === $msg['id'])
                                 <div class="flex items-center space-x-2">
-                                    <input type="text" wire:model="editedMessageContent" 
+                                    <input type="text" wire:model.defer="editedMessageContent" 
                                            class="flex-1 rounded-lg px-3 py-2 border-gray-300 focus:ring-blue-400 focus:border-blue-400" />
                                     <button wire:click="saveEditedMessage" class="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -85,16 +80,20 @@
                                     </button>
                                 </div>
                             @elseif(isset($msg['message']) && !empty($msg['message']))
-                                {{-- O balão da mensagem de texto original --}}
-                                <span class="inline-block p-3 rounded-2xl max-w-xs break-words shadow
-                                             {{ $isSender ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
-                                    {{ $msg['message'] }}
-                                </span>
+                                <div class="flex flex-col">
+                                    <span class="inline-block p-3 rounded-2xl max-w-xs break-words shadow
+                                                {{ $isSender ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+                                        {{ $msg['message'] }}
+                                    </span>
+                                    @if(isset($msg['is_edited']) && $msg['is_edited'])
+                                        <span class="text-[10px] text-gray-500 mt-1 self-end">{{ $isSender ? 'Editada' : '' }}</span>
+                                    @endif
+                                </div>
                             @endif
                         </div>
                     </div>
                     <div class="text-xs text-gray-400 mt-1 flex items-center space-x-1">
-                        <span>{{ $time }}</span>
+                        <span class="ml-2">{{ $time }}</span>
                         @if($isSender)
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ isset($msg['read']) && $msg['read'] ? 'text-blue-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -104,6 +103,7 @@
                 </div>
             @endforeach
         </div>
+
         {{-- Input de envio --}}
         <form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-3 rounded-b-xl z-20">
             {{-- Pré-visualização do anexo --}}
@@ -142,6 +142,7 @@
             </div>
         </form>
     </div>
+
     {{-- Modal de exclusão de mensagem --}}
     @if ($showDeleteModal)
         <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
@@ -168,7 +169,6 @@
                 container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
             }
         });
-
         const container = document.getElementById("messages");
         if (container) {
             container.scrollTo({ top: container.scrollHeight, behavior: 'auto' });

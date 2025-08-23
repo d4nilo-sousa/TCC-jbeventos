@@ -5,8 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Events\MessageSent;
-use App\Events\MessageEdited; // NOVO: Evento de Edição
-use App\Events\MessageDeleted; // NOVO: Evento de Exclusão
+use App\Events\MessageEdited;
+use App\Events\MessageDeleted;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Message;
@@ -20,9 +20,9 @@ class Chat extends Component
     public $messages = [];
     public $selectedMessage = null;
     public $showDeleteModal = false;
-    public $showEditInput = false; // NOVO: Controla a exibição do input de edição
-    public $editingMessageId = null; // NOVO: ID da mensagem que está sendo editada
-    public $editedMessageContent = ''; // NOVO: Conteúdo da mensagem que está sendo editada
+    public $showEditInput = false;
+    public $editingMessageId = null;
+    public $editedMessageContent = '';
     public $attachment;
     public $isOnline = false;
 
@@ -43,8 +43,8 @@ class Chat extends Component
             "echo-presence:{$channelName},joining" => 'joining',
             "echo-presence:{$channelName},leaving" => 'leaving',
             "echo-presence:{$channelName},MessageSent" => 'addMessageFromBroadcast',
-            "echo-presence:{$channelName},MessageEdited" => 'updateMessageFromBroadcast', // NOVO: Listener para edição
-            "echo-presence:{$channelName},MessageDeleted" => 'removeMessageFromBroadcast', // NOVO: Listener para exclusão
+            "echo-presence:{$channelName},MessageEdited" => 'updateMessageFromBroadcast',
+            "echo-presence:{$channelName},MessageDeleted" => 'removeMessageFromBroadcast',
         ];
     }
 
@@ -142,7 +142,6 @@ class Chat extends Component
         $this->attachment = null;
     }
     
-    // NOVO MÉTODO: Inicia o modo de edição
     public function startEditing($id)
     {
         $messageToEdit = collect($this->messages)->firstWhere('id', $id);
@@ -151,11 +150,10 @@ class Chat extends Component
             $this->editingMessageId = $id;
             $this->editedMessageContent = $messageToEdit['message'];
             $this->showEditInput = true;
-            $this->selectedMessage = null; // Fecha o menu de opções
+            $this->selectedMessage = null;
         }
     }
     
-    // NOVO MÉTODO: Salva a mensagem editada
     public function saveEditedMessage()
     {
         $this->validate([
@@ -168,8 +166,10 @@ class Chat extends Component
             $message->update(['message' => $this->editedMessageContent]);
             event(new MessageEdited($message));
             
-            // Atualiza a visualização local para o usuário que editou
-            $this->updateMessageFromBroadcast($message->toArray());
+            // Atualiza a visualização local com a flag de edição
+            $messageArray = $message->toArray();
+            $messageArray['is_edited'] = true; // Adiciona a flag
+            $this->updateMessageFromBroadcast($messageArray);
         }
         
         $this->editingMessageId = null;
@@ -177,7 +177,6 @@ class Chat extends Component
         $this->showEditInput = false;
     }
 
-    // NOVO MÉTODO: Lida com a edição recebida por broadcast
     public function updateMessageFromBroadcast($messageData)
     {
         $index = collect($this->messages)->search(function($msg) use ($messageData) {
@@ -186,10 +185,11 @@ class Chat extends Component
         
         if ($index !== false) {
             $this->messages[$index]['message'] = $messageData['message'];
+            // Atualiza a flag local
+            $this->messages[$index]['is_edited'] = $messageData['is_edited'] ?? false;
         }
     }
 
-    // MÉTODO AJUSTADO: Agora dispara um evento de broadcast
     public function deleteSelectedMessage()
     {
         $message = Message::find($this->selectedMessage);
@@ -199,7 +199,6 @@ class Chat extends Component
             $message->delete();
             event(new MessageDeleted($id, $message->sender_id, $message->receiver_id));
             
-            // Lida com a exclusão na visualização local
             $this->removeMessageFromBroadcast(['id' => $id]);
         }
 
@@ -207,7 +206,6 @@ class Chat extends Component
         $this->showDeleteModal = false;
     }
     
-    // NOVO MÉTODO: Lida com a exclusão recebida por broadcast
     public function removeMessageFromBroadcast($messageData)
     {
         $this->messages = collect($this->messages)->filter(function($msg) use ($messageData) {
