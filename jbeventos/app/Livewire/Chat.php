@@ -5,6 +5,8 @@ namespace App\Livewire;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Events\MessageSent;
+use App\Events\MessageEdited; // NOVO: Evento de Edição
+use App\Events\MessageDeleted; // NOVO: Evento de Exclusão
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Message;
@@ -18,12 +20,11 @@ class Chat extends Component
     public $messages = [];
     public $selectedMessage = null;
     public $showDeleteModal = false;
+    public $showEditInput = false; // NOVO: Controla a exibição do input de edição
+    public $editingMessageId = null; // NOVO: ID da mensagem que está sendo editada
+    public $editedMessageContent = ''; // NOVO: Conteúdo da mensagem que está sendo editada
     public $attachment;
-
     public $isOnline = false;
-
-    // Remove a propriedade $listeners e a lógica do mount
-    // protected $listeners = [];
 
     public function mount(User $otherUser)
     {
@@ -31,7 +32,6 @@ class Chat extends Component
         $this->loadMessages();
     }
     
-    // CORREÇÃO: Usamos getListeners() para listeners dinâmicos
     public function getListeners()
     {
         $ids = [auth()->id(), $this->otherUser->id];
@@ -39,14 +39,12 @@ class Chat extends Component
         $channelName = 'chat.' . implode('.', $ids);
 
         return [
-            // Listener para o evento de presença (online/offline)
             "echo-presence:{$channelName},here" => 'here',
             "echo-presence:{$channelName},joining" => 'joining',
             "echo-presence:{$channelName},leaving" => 'leaving',
-            
-            // Listener para o evento de nova mensagem
-            // A sintaxe "echo-presence:channel-name,event-name" é a correta
             "echo-presence:{$channelName},MessageSent" => 'addMessageFromBroadcast',
+            "echo-presence:{$channelName},MessageEdited" => 'updateMessageFromBroadcast', // NOVO: Listener para edição
+            "echo-presence:{$channelName},MessageDeleted" => 'removeMessageFromBroadcast', // NOVO: Listener para exclusão
         ];
     }
 
@@ -143,6 +141,79 @@ class Chat extends Component
         $this->message = '';
         $this->attachment = null;
     }
+    
+    // NOVO MÉTODO: Inicia o modo de edição
+    public function startEditing($id)
+    {
+        $messageToEdit = collect($this->messages)->firstWhere('id', $id);
+        
+        if ($messageToEdit && $messageToEdit['sender_id'] === auth()->id()) {
+            $this->editingMessageId = $id;
+            $this->editedMessageContent = $messageToEdit['message'];
+            $this->showEditInput = true;
+            $this->selectedMessage = null; // Fecha o menu de opções
+        }
+    }
+    
+    // NOVO MÉTODO: Salva a mensagem editada
+    public function saveEditedMessage()
+    {
+        $this->validate([
+            'editedMessageContent' => 'required|string|max:255',
+        ]);
+        
+        $message = Message::find($this->editingMessageId);
+        
+        if ($message && $message->sender_id === auth()->id()) {
+            $message->update(['message' => $this->editedMessageContent]);
+            event(new MessageEdited($message));
+            
+            // Atualiza a visualização local para o usuário que editou
+            $this->updateMessageFromBroadcast($message->toArray());
+        }
+        
+        $this->editingMessageId = null;
+        $this->editedMessageContent = '';
+        $this->showEditInput = false;
+    }
+
+    // NOVO MÉTODO: Lida com a edição recebida por broadcast
+    public function updateMessageFromBroadcast($messageData)
+    {
+        $index = collect($this->messages)->search(function($msg) use ($messageData) {
+            return $msg['id'] === $messageData['id'];
+        });
+        
+        if ($index !== false) {
+            $this->messages[$index]['message'] = $messageData['message'];
+        }
+    }
+
+    // MÉTODO AJUSTADO: Agora dispara um evento de broadcast
+    public function deleteSelectedMessage()
+    {
+        $message = Message::find($this->selectedMessage);
+
+        if ($message && $message->sender_id == auth()->id()) {
+            $id = $message->id;
+            $message->delete();
+            event(new MessageDeleted($id, $message->sender_id, $message->receiver_id));
+            
+            // Lida com a exclusão na visualização local
+            $this->removeMessageFromBroadcast(['id' => $id]);
+        }
+
+        $this->selectedMessage = null;
+        $this->showDeleteModal = false;
+    }
+    
+    // NOVO MÉTODO: Lida com a exclusão recebida por broadcast
+    public function removeMessageFromBroadcast($messageData)
+    {
+        $this->messages = collect($this->messages)->filter(function($msg) use ($messageData) {
+            return $msg['id'] !== $messageData['id'];
+        })->values()->toArray();
+    }
 
     public function addMessageFromBroadcast($messageData)
     {
@@ -184,19 +255,6 @@ class Chat extends Component
         $this->showDeleteModal = false;
     }
 
-    public function deleteSelectedMessage()
-    {
-        $message = Message::find($this->selectedMessage);
-
-        if ($message && $message->sender_id == auth()->id()) {
-            $message->delete();
-        }
-
-        $this->selectedMessage = null;
-        $this->showDeleteModal = false;
-        $this->loadMessages();
-    }
-    
     public function copyMessage($id)
     {
         $message = Message::find($id);

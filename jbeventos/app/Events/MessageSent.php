@@ -31,7 +31,7 @@ class MessageSent implements ShouldBroadcast
         $ids = [$this->messageModel->sender_id, $this->messageModel->receiver_id];
         sort($ids);
 
-        return new PresenceChannel('chat.' . implode('.', $ids));
+        return [new PresenceChannel('chat.' . implode('.', $ids))];
     }
 
     /**
