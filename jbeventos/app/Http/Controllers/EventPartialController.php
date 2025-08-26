@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 
-class EventRealtimeController extends Controller
+class EventPartialController extends Controller
 {
     /**
      * Display a listing of the resource.

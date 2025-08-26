@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Notification;
 use Carbon\Carbon;
 use App\Events\EventCreated;
+use App\Events\EventDeleted;
+use App\Events\EventUpdated;
 
 class EventController extends Controller
 {
@@ -260,6 +262,8 @@ class EventController extends Controller
             $event->eventCategories()->detach();
         }
 
+        broadcast(new EventUpdated($event))->toOthers();
+
         return redirect()->route('events.index')->with('success', 'Evento atualizado com sucesso!');
     }
 
@@ -279,8 +283,13 @@ class EventController extends Controller
             Storage::disk('public')->delete($event->event_image);
         }
 
+        // Guarda o ID para o evento de broadcast
+        $eventId = $event->id;
+
         // Deleta o evento do banco
         $event = $event->delete();
+
+        broadcast(new EventDeleted($eventId))->toOthers();
 
         return redirect()->route('events.index')->with('success', 'Evento excluído com sucesso!');
     }
