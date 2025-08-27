@@ -1,13 +1,44 @@
-
 <x-app-layout>
     <div class="py-12">
-        <div class="w-full max-w-7xl mx-auto sm:px-6 lg:px-8 flex justify-center">
+        <div class="w-full max-w-[100rem] mx-auto sm:px-6 lg:px-5 flex justify-center">
             <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 
-                <!-- Título -->
-                <div class="w-full grid place-items-center mb-5 text-center">
-                    <p class="text-2xl sm:text-3xl text-stone-900 font-semibold">Eventos</p>
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 px-3 gap-5 w-full flex-wrap">
+                    <p class="text-stone-600 text-base font-bold sm:text-4xl m-0 sm:m-3">Lista de Eventos</p>
+
+                    <div
+                        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 w-full sm:w-auto flex-wrap">
+                        <!-- Botão Criar Curso -->
+                        <div
+                            class="flex justify-center gap-1 border-2 rounded-full overflow-hidden shadow-md transition-colors duration-200">
+                            <a href="{{ route('courses.create') }}"
+                                class="text-red-700 gap-2 px-5 py-2 rounded-lg flex items-center justify-center
+                               hover:bg-[#ff3131] hover:text-white transition-colors duration-200">
+                                <img src="{{ asset('imgs/addred.png') }}" class="w-8">
+                                Criar Evento
+                            </a>
+                        </div>
+
+                        <!-- Barra de pesquisa -->
+                        <form action="{{ route('events.index') }}" method="GET"
+                            class="flex items-center w-full sm:w-auto">
+                            <div
+                                class="flex items-center bg-white rounded-full overflow-hidden shadow-md border-2 w-full sm:w-auto">
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                    placeholder="Pesquisar cursos..." autocomplete="off"
+                                    class="px-6 py-3 flex-1 min-w-[200px] sm:min-w-[300px] lg:min-w-[400px] text-gray-800 placeholder-gray-500 border-none outline-none focus:ring-0 bg-white">
+                                <button type="submit"
+                                    class="flex items-center justify-center bg-stone-900 hover:bg-stone-800 transition-colors px-6 py-3">
+                                    <img src="{{ asset('imgs/lupaBranca.svg') }}" class="w-7 h-7">
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
                 </div>
+                <hr class="flex mx-auto w-full border-t-1 border-gray-100">
+                <br><br>
 
                 <!-- Mensagem de sucesso -->
                 @if (session('success'))
@@ -36,7 +67,8 @@
                                     <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
                                         class="h-48 w-full object-cover">
                                 @else
-                                    <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm sm:text-base">
+                                    <div
+                                        class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm sm:text-base">
                                         Sem imagem
                                     </div>
                                 @endif
@@ -53,14 +85,15 @@
 
                                     <div class="mt-auto text-sm text-gray-500">
                                         📍 {{ $event->event_location }}<br>
-                                        📅 {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
+                                        📅
+                                        {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
                                     </div>
 
                                     <!-- Ações -->
                                     <div class="mt-4 flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
                                         {{-- Botão para visualizar o evento --}}
                                         <a href="{{ route('events.show', $event->id) }}"
-                                            class="flex-1 rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">
+                                            class="flex-1 rounded-md bg-red-100 px-3 py-1 text-center text-sm font-medium text-red-700 hover:bg-red-200">
                                             Ver
                                         </a>
 
@@ -77,7 +110,8 @@
                                                 </a>
 
                                                 {{-- Botão para ocultar/exibir evento --}}
-                                                <form action="{{ route('events.updateEvent', $event->id) }}" method="POST"
+                                                <form action="{{ route('events.updateEvent', $event->id) }}"
+                                                    method="POST"
                                                     onsubmit="return confirm('Tem certeza que deseja ocultar este evento?')"
                                                     class="flex-1">
                                                     @csrf
@@ -115,5 +149,7 @@
 
             </div>
         </div>
+    </div>
+    </div>
     </div>
 </x-app-layout>
