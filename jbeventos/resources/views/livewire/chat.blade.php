@@ -72,7 +72,7 @@
                             @if($isSender && $editingMessageId === $msg['id'])
                                 <div class="flex items-center space-x-2">
                                     <input type="text" wire:model.defer="editedMessageContent" 
-                                           class="flex-1 rounded-lg px-3 py-2 border-gray-300 focus:ring-blue-400 focus:border-blue-400" />
+                                        class="flex-1 rounded-lg px-3 py-2 border-gray-300 focus:ring-blue-400 focus:border-blue-400" />
                                     <button wire:click="saveEditedMessage" class="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -102,6 +102,10 @@
                     </div>
                 </div>
             @endforeach
+            {{-- Status de digitação --}}
+            <div class="p-2 text-sm text-gray-500 {{ $isTyping ? '' : 'hidden' }}">
+                <span>{{ $receiver->name }} está digitando...</span>
+            </div>
         </div>
 
         {{-- Input de envio --}}
@@ -133,7 +137,12 @@
                     </svg>
                 </label>
                 <input id="attachment-input" type="file" wire:model="attachment" class="hidden">
-                <input type="text" wire:model.defer="message" placeholder="Digite sua mensagem..."
+                <input 
+                    type="text" 
+                    wire:model.live.debounce.500ms="message" 
+                    wire:keydown="typing" 
+                    wire:keyup.debounce.1000ms="stopTyping"
+                    placeholder="Digite sua mensagem..."
                     class="flex-1 border border-gray-300 rounded-full px-4 py-2 mr-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
                 <button type="submit"
                         class="bg-blue-500 text-white px-5 py-2 rounded-full hover:bg-blue-600 transition shadow">

@@ -7,6 +7,7 @@ use Livewire\WithFileUploads;
 use App\Events\MessageSent;
 use App\Events\MessageEdited;
 use App\Events\MessageDeleted;
+use App\Events\UserIsTyping; // Importe o evento de digitação
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Message;
@@ -25,6 +26,7 @@ class Chat extends Component
     public $editedMessageContent = '';
     public $attachment;
     public $isOnline = false;
+    public $isTyping = false; // Propriedade para rastrear o status de digitação do outro usuário
 
     public function mount(User $otherUser)
     {
@@ -45,6 +47,7 @@ class Chat extends Component
             "echo-presence:{$channelName},MessageSent" => 'addMessageFromBroadcast',
             "echo-presence:{$channelName},MessageEdited" => 'updateMessageFromBroadcast',
             "echo-presence:{$channelName},MessageDeleted" => 'removeMessageFromBroadcast',
+            "echo-presence:{$channelName},UserIsTyping" => 'handleUserIsTyping',
         ];
     }
 
@@ -73,6 +76,23 @@ class Chat extends Component
         }
     }
 
+    public function handleUserIsTyping($event)
+    {
+        if ($event['user_id'] === $this->otherUser->id) {
+            $this->isTyping = $event['isTyping'];
+        }
+    }
+
+    public function typing()
+    {
+        broadcast(new UserIsTyping(auth()->user()->id, $this->otherUser->id, true));
+    }
+
+    public function stopTyping()
+    {
+        broadcast(new UserIsTyping(auth()->user()->id, $this->otherUser->id, false));
+    }
+
     public function loadMessages()
     {
         $this->messages = Message::where(function($query) {
@@ -89,7 +109,8 @@ class Chat extends Component
                 'attachment_path' => $msg->attachment_path,
                 'attachment_mime' => $msg->attachment_mime,
                 'attachment_name' => $msg->attachment_name,
-                'created_at' => $msg->created_at->format('H:i')
+                'created_at' => $msg->created_at->format('H:i'),
+                'is_edited' => $msg->is_edited ?? false,
             ];
         })->toArray();
     }
@@ -140,6 +161,7 @@ class Chat extends Component
 
         $this->message = '';
         $this->attachment = null;
+        $this->stopTyping(); // Garante que o status de digitação seja removido ao enviar a mensagem
     }
     
     public function startEditing($id)
@@ -166,9 +188,8 @@ class Chat extends Component
             $message->update(['message' => $this->editedMessageContent]);
             event(new MessageEdited($message));
             
-            // Atualiza a visualização local com a flag de edição
             $messageArray = $message->toArray();
-            $messageArray['is_edited'] = true; // Adiciona a flag
+            $messageArray['is_edited'] = true;
             $this->updateMessageFromBroadcast($messageArray);
         }
         
@@ -185,7 +206,6 @@ class Chat extends Component
         
         if ($index !== false) {
             $this->messages[$index]['message'] = $messageData['message'];
-            // Atualiza a flag local
             $this->messages[$index]['is_edited'] = $messageData['is_edited'] ?? false;
         }
     }
@@ -225,6 +245,7 @@ class Chat extends Component
                 'attachment_name' => $messageData['attachment_name'],
                 'created_at' => now()->format('H:i')
             ]);
+            $this->stopTyping(); // Garante que o status de digitação pare quando a mensagem chegar
         }
     }
 
