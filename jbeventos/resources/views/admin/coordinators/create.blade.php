@@ -58,4 +58,4 @@
     </div>
 </x-app-layout>
 
-@vite('resources/js/password-generator.js')
+@vite('resources/js/app.js')

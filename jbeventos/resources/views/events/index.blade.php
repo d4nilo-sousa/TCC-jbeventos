@@ -202,7 +202,5 @@
     </div>
 </x-app-layout>
 
-@vite('resources/js/filter-menu.js')
-@vite('resources/js/order-menu.js')
-@vite('resources/js/event-realtime.js')
+@vite('resources/js/app.js')
 

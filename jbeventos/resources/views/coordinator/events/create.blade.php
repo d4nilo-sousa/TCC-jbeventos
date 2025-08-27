@@ -160,6 +160,4 @@
     </div>
 </x-app-layout>
 
-{{-- Script para garantir que a data de encerramento seja posterior à de início --}}
-@vite('resources/js/datetime-validation.js')
-
+@vite('resources/js/app.js')
