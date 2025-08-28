@@ -42,7 +42,7 @@
                                 </div>
                             @endif
                         @endif
-                        
+                    
                         @if($isSender)
                             <button wire:click="selectMessage({{ $msg['id'] }})" class="p-1 rounded-full hover:bg-gray-300 transition" title="Mais opções">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,11 +102,21 @@
                     </div>
                 </div>
             @endforeach
-            {{-- Status de digitação --}}
-            <div class="p-2 text-sm text-gray-500 {{ $isTyping ? '' : 'hidden' }}">
-                <span>{{ $receiver->name }} está digitando...</span>
+        </div>
+
+        {{-- Status de digitação (aparece só quando o outro user digita) --}}
+@if ($isTyping && $receiver->id !== auth()->id())
+    <div class="px-4 pb-2 flex {{ $receiver->id === auth()->id() ? 'justify-end' : 'justify-start' }}">
+        <div class="flex items-center space-x-2 bg-gray-100 px-3 py-1 rounded-2xl">
+            <span class="text-sm text-gray-500 italic">{{ $receiver->name }} está digitando</span>
+            <div class="flex space-x-1">
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
             </div>
         </div>
+    </div>
+@endif
 
         {{-- Input de envio --}}
         <form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-3 rounded-b-xl z-20">
@@ -130,6 +140,7 @@
                     </button>
                 </div>
             @endif
+            {{-- Input de digitação --}}
             <div class="flex items-center">
                 <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-blue-500 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

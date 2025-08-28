@@ -1,23 +1,17 @@
-<!-- Componente de navegação principal com Alpine.js para controle do menu responsivo -->
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    
-    <!-- Container principal da barra de navegação -->
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
 
-            <!-- Área da esquerda: logo e links -->
             <div class="flex">
 
-                <!-- Logo do sistema -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
                         <x-application-mark class="block h-9 w-auto" />
                     </a>
                 </div>
 
-                <!-- Links de navegação visíveis em telas médias/grandes -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <!-- Link de dashboard com base no tipo de usuário -->
                     @if (auth()->user()->user_type === 'admin')
                         <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('admin.dashboard')">
                             {{ __('Dashboard Admin') }}
@@ -33,7 +27,6 @@
                     @endif
                 </div>
 
-                <!-- Link "Eventos" -->
                 @if(auth()->check() && in_array(auth()->user()->user_type, ['user', 'admin', 'coordinator']))
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.index')">
@@ -42,7 +35,6 @@
                     </div>
                 @endif
 
-                <!-- Link "Criar Evento" apenas para coordinator -->
                 @if (Auth::user()->user_type === 'coordinator')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('events.create') }}" :active="request()->routeIs('events.create')">
@@ -51,7 +43,6 @@
                     </div>
                 @endif
 
-                <!-- Link "Cursos" -->
                 @if(auth()->check() && in_array(auth()->user()->user_type, ['user', 'admin', 'coordinator']))
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.index')">
@@ -60,7 +51,6 @@
                     </div>
                 @endif
 
-                <!-- Links exclusivos para admin -->
                 @if (Auth::user()->user_type === 'admin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('courses.create') }}" :active="request()->routeIs('courses.create')">
@@ -80,40 +70,35 @@
                 @endif
             </div>
 
-        <!-- Botão de conversas -->
-        <div class="relative mt-4">
-            <x-dropdown align="right" width="80">
-                <x-slot name="trigger">
-                    <button class="flex items-center p-2 rounded-full hover:bg-gray-100 transition">
-                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" stroke-width="2"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-3.6A7.95 7.95 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                    </button>
-                </x-slot>
+            <div class="relative mt-4">
+                <x-dropdown align="right" width="[37rem]">
+                    <x-slot name="trigger">
+                        <button class="flex items-center p-2 rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-3.6A7.95 7.95 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </button>
+                    </x-slot>
 
-                <x-slot name="content">
-                    <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div class="p-3 border-b border-gray-100">
-                            <h2 class="text-sm font-semibold text-gray-700">Suas conversas</h2>
+                    <x-slot name="content">
+                    <div class="bg-white rounded-xl shadow-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+                        <div class="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-center">
+                            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Suas Conversas</h2>
                         </div>
                         @livewire('conversation-list')
                     </div>
                 </x-slot>
-            </x-dropdown>
-        </div>
+                </x-dropdown>
+            </div>
 
 
-            <!-- Área da direita: dropdowns -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-                
-                <!-- Dropdown de times (Jetstream) -->
+
                 @if (Laravel\Jetstream\Jetstream::hasTeamFeatures())
                     @include('navigation-dropdown-team')
                 @endif
 
-                <!-- Dropdown da conta -->
                 <div class="ms-3 relative">
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
@@ -134,17 +119,14 @@
                         </x-slot>
 
                         <x-slot name="content">
-                            <!-- Opções de conta -->
                             <div class="block px-4 py-2 text-xs text-gray-400">
                                 {{ __('Manage Account') }}
                             </div>
 
-                            <!-- Perfil social -->
                             <x-dropdown-link href="{{ route('profile.show') }}">
                                 {{ __('Profile') }}
                             </x-dropdown-link>
 
-                            <!-- Configurações (NOVO) -->
                             <x-dropdown-link href="{{ route('settings') }}">
                                 {{ __('Configurações') }}
                             </x-dropdown-link>
@@ -157,7 +139,6 @@
 
                             <div class="border-t border-gray-200"></div>
 
-                            <!-- Logout -->
                             <form method="POST" action="{{ route('logout') }}" x-data>
                                 @csrf
                                 <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();">
@@ -169,7 +150,6 @@
                 </div>
             </div>
 
-            <!-- Botão mobile -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none">
                     <svg class="size-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
@@ -181,16 +161,13 @@
         </div>
     </div>
 
-    <!-- Menu mobile -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <!-- Dashboard -->
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
         </div>
 
-        <!-- Dados do usuário -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="flex items-center px-4">
                 @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
@@ -204,18 +181,15 @@
                 </div>
             </div>
 
-            <!-- Opções mobile -->
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 
-                <!-- Configurações (NOVO) -->
                 <x-responsive-nav-link href="{{ route('settings') }}" :active="request()->routeIs('settings')">
                     {{ __('Configurações') }}
                 </x-responsive-nav-link>
 
-                <!-- Logout -->
                 <form method="POST" action="{{ route('logout') }}" x-data>
                     @csrf
                     <x-responsive-nav-link href="{{ route('logout') }}" @click.prevent="$root.submit();">
