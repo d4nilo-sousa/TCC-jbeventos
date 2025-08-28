@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="py-12">
+    <div class="py-12 min-h-screen">
         <div class="w-full max-w-[100rem] mx-auto sm:px-6 lg:px-5 flex justify-center">
             <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 

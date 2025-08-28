@@ -20,7 +20,9 @@
     <body class="font-sans antialiased">
         <x-banner />
 
-        <div class="min-h-[130vh] bg-gray-100">
+        <!-- <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100"> -->
+        <div class="min-h-screen bg-gradient-to-br from-red-400 via-orange-100 to-red-100"> <!-- Cor mais forte (combina bem com o vermelho & Amarelo) -->
+
             @livewire('navigation-menu')
 
             <!-- Page Heading -->
