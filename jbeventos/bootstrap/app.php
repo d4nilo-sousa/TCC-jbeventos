@@ -10,7 +10,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Define os arquivos de rotas utilizados pela aplicação
         web: __DIR__.'/../routes/web.php',           // Rotas web (interface do usuário)
         api: __DIR__.'/../routes/api.php',           // Rotas da API
-        commands: __DIR__.'/../routes/console.php',  // Comandos Artisan personalizados
+        commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',  // Comandos Artisan personalizados
         health: '/up',                               // Rota de verificação de integridade (health check)
     )
 

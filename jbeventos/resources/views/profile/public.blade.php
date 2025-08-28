@@ -20,6 +20,20 @@
 
             <div>
                 <h2 class="text-xl font-bold">{{ $user->name }}</h2>
+
+                @if(auth()->check() && auth()->id() !== $user->id)
+        <a href="{{ route('chat.show', ['user' => $user->id]) }}"
+           class="inline-flex items-center mt-3 px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md
+                  hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M8 10h.01M12 10h.01M16 10h.01M21 16v-5a2 2 0 00-2-2H7a2 2 0 00-2 2v5a2 2 0 002 2h12a2 2 0 002-2zM7 16v3a1 1 0 001 1h8a1 1 0 001-1v-3" />
+            </svg>
+            Conversar
+        </a>
+            @endif
+
                 <p class="text-sm text-gray-500">
                     @php
                         $userTypes = [
