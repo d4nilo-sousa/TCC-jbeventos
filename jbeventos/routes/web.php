@@ -127,7 +127,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::put('phone', [UserPhoneController::class, 'update'])->name('user.phone.update');
 
     Route::get('/chat/{user}', [ChatController::class, 'show'])->name('chat.show'); // Rota para exibir a tela de chat
-});
+
 
     /*
     |--------------------------------------------------------------------------
