@@ -15,10 +15,12 @@ class EventCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    // A instância do evento (modelo) que será transmitida
     public $event;
 
     /**
-     * Create a new event instance.
+     * Construtor: recebe um objeto Event e guarda na propriedade pública
+     * para ser incluído automaticamente no broadcast.
      */
     public function __construct(Event $event)
     {
@@ -26,17 +28,20 @@ class EventCreated implements ShouldBroadcast
     }
 
     /**
-     * Get the channels the event should broadcast on.
-     *
-     * @return array<int, \Illuminate\Broadcasting\Channel>
+     * Define em qual canal o evento será transmitido.
+     * Aqui é um canal público chamado "events".
      */
     public function broadcastOn()
     {
-        return new Channel('events'); // nome do canal
+        return new Channel('events');
     }
 
+    /**
+     * Define o nome do evento transmitido.
+     * O front-end vai "escutar" esse nome.
+     */
     public function broadcastAs()
     {
-        return 'event.created'; // nome do evento
+        return 'event.created';
     }
 }
