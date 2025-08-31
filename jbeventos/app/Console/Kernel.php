@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
         // Agenda o comando para enviar o resumo semanal toda segunda-feira às 08:00
         $schedule->command('events:send-weekly-summary')->mondays()->at('08:00');
 
-        $schedule->command('events:send-event-reminders')->everyFifteenMinutes(); // Envia lembretes de eventos
+        // Envia lembretes de eventos
+        $schedule->command('events:send-event-reminders')->everyFifteenMinutes(); 
     }
 
     protected function commands()
