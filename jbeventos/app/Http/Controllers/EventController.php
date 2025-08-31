@@ -24,8 +24,7 @@ class EventController extends Controller
     // Lista todos os eventos com seus coordenadores e cursos associados
     public function index(Request $request)
     {
-        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse'])
-            ->orderBy('event_scheduled_at', 'asc');
+        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
         $courses = Course::all();
         $categories = Category::all();
         $loggedCoordinator = auth()->user()->coordinator;
@@ -85,6 +84,17 @@ class EventController extends Controller
                 $events->orderBy('likes_count', 'desc');
             } elseif ($request->likes_order === 'least') {
                 $events->orderBy('likes_count', 'asc');
+            }
+        }
+
+        // Ordenação por agendamento
+        if ($request->filled('schedule_order')) {
+            if ($request->schedule_order === 'soonest') {
+                $events = $events->orderBy('event_scheduled_at', 'asc');
+            } elseif ($request->schedule_order === 'latest') {
+                $events = $events->orderBy('event_scheduled_at', 'desc');
+            } else {
+                $events = $events->orderBy('created_at', 'desc');
             }
         }
 
@@ -261,8 +271,6 @@ class EventController extends Controller
         } else {
             $event->eventCategories()->detach();
         }
-
-        broadcast(new EventUpdated($event))->toOthers();
 
         return redirect()->route('events.index')->with('success', 'Evento atualizado com sucesso!');
     }

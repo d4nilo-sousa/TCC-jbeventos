@@ -177,6 +177,23 @@
                                     @endforeach
                                 </div>
 
+                                 {{-- Título do filtro --}}
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Ordenar por agendamento</label>
+
+                                {{-- Opções de ordenação (checkbox com seleção única) --}}
+                                <div class="mb-3 border rounded p-2 flex flex-col items-start space-y-2">
+                                    @foreach (['soonest' => 'Mais Próximo', 'latest' => 'Mais Distante'] as $value => $label)
+                                        <label class="flex items-center space-x-2 mb-1">
+                                            <input type="checkbox" name="schedule_order" value="{{ $value }}"
+                                                {{ request('schedule_order') === $value ? 'checked' : '' }}
+                                                {{-- Mantém selecionado após reload --}} class="rounded border-gray-300"
+                                                onclick="if(this.checked){document.querySelectorAll('input[name=schedule_order]').forEach(cb=>{if(cb!==this) cb.checked=false})}">
+                                            {{-- Garante seleção única --}}
+                                            <span>{{ $label }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+
                                 {{-- Botão aplicar --}}
                                 <button type="submit"
                                     class="w-full bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 text-sm">
