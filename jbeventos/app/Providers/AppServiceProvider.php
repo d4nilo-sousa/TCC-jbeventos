@@ -7,6 +7,8 @@ use App\Models\Coordinator;
 use App\Models\Event;
 use App\Models\Course;
 use App\Observers\CoordinatorObserver;
+use App\Observers\EventObserver;
+use App\Observers\CourseObserver;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -24,7 +26,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Chamando a observer do coordenador para funcionar
         Coordinator::observe(CoordinatorObserver::class);
+
+        Event::observe(EventObserver::class);
+
+        Course::observe(CourseObserver::class);
     }
 }
