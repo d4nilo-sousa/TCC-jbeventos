@@ -1,11 +1,17 @@
-<x-app-layout>
-    <div class="py-12 min-h-screen">
+<x-app-layout backgroundClass="bg-gradient-to-br from-red-400 via-orange-100 to-red-100">
+    <div class="py-[5rem] min-h-screen">
         <div class="w-full max-w-[100rem] mx-auto sm:px-6 lg:px-5 flex justify-center">
             <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 
                 <div
                     class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 px-3 gap-5 w-full flex-wrap">
-                    <p class="text-stone-600 text-base font-bold sm:text-4xl m-0 sm:m-3">Lista de Eventos</p>
+                    <div class="mt-1">
+                        <p
+                            class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
+                            Lista de Eventos
+                        </p>
+                        <div class="w-24 h-1 bg-red-500 mx-auto rounded-full mt-3 shadow-xl"></div>
+                    </div>
 
                     <div
                         class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 w-full sm:w-auto flex-wrap">
@@ -37,7 +43,7 @@
 
                     </div>
                 </div>
-                <hr class="flex mx-auto w-full border-t-1 border-gray-100">
+
                 <br><br>
 
                 <!-- Mensagem de sucesso -->

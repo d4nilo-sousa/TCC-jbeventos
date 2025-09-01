@@ -1,7 +1,7 @@
-<x-app-layout>
-    <div class="w-full min-h-screen py-12">
+<x-app-layout backgroundClass="bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200">
+    <div class="w-full min-h-screen py-[5rem]">
         <div class="w-full max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-full bg-white shadow-xl rounded-2xl p-6 sm:p-8 lg:p-10 mx-auto min-h-[75vh] border border-red-100">
+            <div class="w-full bg-white shadow-xl rounded-2xl p-6 sm:p-8 lg:p-10 mx-auto min-h-[65vh] border border-green-100">
                 <div class="flex flex-col lg:flex-row gap-8">
                     <!-- IMAGEM -->
                     <div class="w-full lg:w-1/2 h-[300px] lg:h-auto relative group">
@@ -29,10 +29,10 @@
                         <!-- TÍTULO DO FORMULÁRIO -->
                         <div class="mb-6">
                             <p
-                                class="text-center bg-gradient-to-r from-red-600 to-red-400 bg-clip-text text-transparent font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
+                                class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
                                 Criar Curso
                             </p>
-                            <div class="w-24 h-1 bg-red-500 mx-auto rounded-full mt-3 shadow"></div>
+                            <div class="w-24 h-1 bg-blue-500 mx-auto rounded-full mt-3 shadow"></div>
                         </div>
 
                         <form action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data"
@@ -87,7 +87,7 @@
                                 <label class="block font-semibold text-gray-700 mb-1">Ícone do Curso</label>
                                 <div class="flex items-center gap-4">
                                     <label for="course_icon_input"
-                                        class="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-red-700 transition">
+                                        class="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-blue-700 transition">
                                         Selecionar imagem
                                     </label>
                                     <input id="course_icon_input" name="course_icon" type="file" class="hidden"
@@ -101,7 +101,7 @@
                                 <label class="block font-semibold text-gray-700 mb-1">Banner do Curso</label>
                                 <div class="flex items-center gap-4">
                                     <label for="course_banner_input"
-                                        class="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-red-700 transition">
+                                        class="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-blue-700 transition">
                                         Selecionar imagem
                                     </label>
                                     <input id="course_banner_input" name="course_banner" type="file" class="hidden"

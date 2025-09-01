@@ -1,11 +1,19 @@
-<x-app-layout>
-    <div class="py-12 min-h-screen">
+<x-app-layout backgroundClass="bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200">
+    <div class="py-[5rem] min-h-screen">
         <div class="w-full max-w-[100rem] mx-auto sm:px-6 lg:px-5 flex justify-center">
             <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 
                 <div
                     class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 px-3 gap-5 w-full flex-wrap">
-                    <p class="text-stone-600 text-base font-bold sm:text-4xl m-0 sm:m-3">Lista de Cursos</p>
+                    <div class="mt-1">
+                        <p
+                            class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
+                            Lista de Cursos
+                        </p>
+                        <div class="w-24 h-1 bg-blue-500 mx-auto rounded-full mt-3 shadow-xl"></div>
+                    </div>
+
+
 
                     <div
                         class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 w-full sm:w-auto flex-wrap">
@@ -38,9 +46,6 @@
                     </div>
                 </div>
 
-
-                <hr class="flex mx-auto w-full border-t-1 border-gray-100">
-
                 {{-- Mensagens de sucesso --}}
                 @if (session('success'))
                     <div class="mb-4 p-4 text-green-800 bg-green-100 rounded-lg">
@@ -51,8 +56,7 @@
                 {{-- Lista de cursos --}}
 
                 @if ($courses->count())
-                    <div
-                        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 mt-20 p-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 mt-20 p-4">
                         @foreach ($courses as $course)
                             <div
                                 class="overflow-hidden border border-gray-200 rounded-2xl shadow hover:shadow-lg transition flex flex-col">
