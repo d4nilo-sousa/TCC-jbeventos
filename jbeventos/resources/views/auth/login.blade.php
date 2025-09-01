@@ -62,4 +62,4 @@
     </x-authentication-card>
 </x-guest-layout>
 
-@vite('resources/js/password-validator.js')
+@vite('resources/js/app.js')

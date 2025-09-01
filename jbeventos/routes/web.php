@@ -11,6 +11,7 @@ use App\Http\Controllers\EventReactionController;
 use App\Http\Controllers\UserPhoneController;
 use App\Http\Controllers\VisibilityController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\EventPartialController;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,6 +101,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     */
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
     Route::get('events', [EventController::class, 'index'])->name('events.index');
+
+    Route::get('/events/card/{id}', [EventPartialController::class, 'getPartial']);
 
     // Show com middleware
     Route::get('events/{event}', [EventController::class, 'show'])

@@ -87,8 +87,4 @@
     </x-authentication-card>
 </x-guest-layout>
 
-// Importa o script responsável por validar a senha (ex: requisitos mínimos e etc.)
-@vite('resources/js/password-validator.js')
-
-// Importa o script responsável por aplicar a máscara no formato de telefone, exemplo: (19) 99999-9999
-@vite('resources/js/phone-mask.js')
+@vite('resources/js/app.js')

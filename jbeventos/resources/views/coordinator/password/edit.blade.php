@@ -94,5 +94,4 @@
     });
 </script>
 
-// Importa o script responsável por validar a senha (ex: requisitos mínimos e etc.)
-@vite('resources/js/password-validator.js')
+@vite('resources/js/app.js')

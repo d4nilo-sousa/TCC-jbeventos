@@ -177,5 +177,4 @@
 </script>
 
 
-{{-- Scripts --}}
-@vite('resources/js/event-reactions.js')
+@vite('resources/js/app.js')
