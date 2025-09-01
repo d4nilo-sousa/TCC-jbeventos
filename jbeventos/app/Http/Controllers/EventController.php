@@ -96,6 +96,8 @@ class EventController extends Controller
             } else {
                 $events = $events->orderBy('created_at', 'desc');
             }
+        } else {
+            $events = $events->orderBy('created_at', 'desc');
         }
 
         $events = $events->get();
