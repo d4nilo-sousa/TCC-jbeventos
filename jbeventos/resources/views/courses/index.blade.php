@@ -1,111 +1,92 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Lista de Cursos
-        </h2>
-    </x-slot>
+<x-app-layout backgroundClass="bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200">
+    <div class="py-[5rem] min-h-screen">
+        <div class="w-full max-w-[100rem] mx-auto sm:px-6 lg:px-5 flex justify-center">
+            <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 px-3 gap-5 w-full flex-wrap">
+                    <div class="mt-1">
+                        <p
+                            class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
+                            Lista de Cursos
+                        </p>
+                        <div class="w-24 h-1 bg-blue-500 mx-auto rounded-full mt-3 shadow-xl"></div>
+                    </div>
 
-            {{-- Barra de pesquisa --}}
-            <div class="bg-white p-4 rounded shadow mb-4 flex justify-between items-center">
-                <form method="GET" action="{{ route('courses.index') }}" class="flex items-center space-x-2 w-full">
-                    <input type="text" name="search" value="{{ $search ?? '' }}"
-                        placeholder="Pesquisar por nome do curso ou coordenador..."
-                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300">
-                    <button type="submit"
-                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Buscar</button>
-                </form>
 
-                @if(auth()->user()?->user_type === 'admin')
-                    <a href="{{ route('courses.create') }}"
-                       class="ml-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                        + Criar Curso
-                    </a>
-                @endif
-            </div>
 
-            {{-- Mensagem de sucesso --}}
-            @if(session('success'))
-                <div class="mb-4 bg-green-100 text-green-800 p-3 rounded">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            {{-- Grid de cursos --}}
-                        @if($courses->count())
-                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($courses as $course)
-                        <div class="bg-white shadow rounded overflow-hidden hover:shadow-lg transition">
-                            {{-- Banner do curso --}}
-                            <a href="{{ route('courses.show', $course->id) }}">
-                                <img src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
-                                     class="w-full h-32 object-cover" alt="Banner do curso">
+                    <div
+                        class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 w-full sm:w-auto flex-wrap">
+                        <!-- Botão Criar Curso -->
+                        <div
+                            class="flex justify-center gap-1 border-2 rounded-full overflow-hidden shadow-md transition-colors duration-200">
+                            <a href="{{ route('courses.create') }}"
+                                class="text-blue-700 gap-2 px-5 py-2 rounded-lg flex items-center justify-center
+                               hover:bg-blue-500 hover:text-white transition-colors duration-200">
+                                <img src="{{ asset('imgs/add-button.png') }}" class="w-8">
+                                Criar Curso
                             </a>
+                        </div>
 
-                            <div class="p-4">
-                                {{-- Ícone e nome do curso --}}
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <img src="{{ $course->course_icon ? asset('storage/' . $course->course_icon) : asset('images/default-icon.png') }}"
-                                         class="w-12 h-12 rounded-full border object-cover">
-                                    <div>
-                                        <a href="{{ route('courses.show', $course->id) }}"
-                                           class="font-bold text-lg text-gray-800 hover:text-blue-600">
-                                            {{ $course->course_name }}
-                                        </a>
-                                        <p class="text-sm text-gray-500">
-                                            Coordenador:
-                                            @if($course->courseCoordinator?->userAccount)
-                                                <a href="{{ route('profile.view', $course->courseCoordinator->userAccount->id) }}"
-                                                   class="text-blue-600 hover:underline">
-                                                    {{ $course->courseCoordinator->userAccount->name }}
-                                                </a>
-                                            @else
-                                                <span class="text-gray-400">Não definido</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
+                        <!-- Barra de pesquisa -->
+                        <form action="{{ route('courses.index') }}" method="GET"
+                            class="flex items-center w-full sm:w-auto">
+                            <div
+                                class="flex items-center bg-white rounded-full overflow-hidden shadow-md border-2 w-full sm:w-auto">
+                                <input type="text" name="search" value="{{ request('search') }}"
+                                    placeholder="Pesquisar cursos..." autocomplete="off"
+                                    class="px-6 py-3 flex-1 min-w-[200px] sm:min-w-[300px] lg:min-w-[400px] text-gray-800 placeholder-gray-500 border-none outline-none focus:ring-0 bg-white">
+                                <button type="submit"
+                                    class="flex items-center justify-center bg-stone-900 hover:bg-stone-800 transition-colors px-6 py-3">
+                                    <img src="{{ asset('imgs/lupaBranca.svg') }}" class="w-7 h-7">
+                                </button>
+                            </div>
+                        </form>
 
-                                {{-- Contador de eventos --}}
-                                <p class="text-sm text-gray-600">
-                                    {{ $course->events->count() }} evento(s) disponível(is)
-                                </p>
+                    </div>
+                </div>
 
-                                {{-- Botões de ação --}}
-                                <div class="mt-3 flex justify-between items-center">
-                                    <a href="{{ route('courses.show', $course->id) }}"
-                                       class="text-blue-600 hover:underline text-sm">Ver detalhes</a>
+                {{-- Mensagens de sucesso --}}
+                @if (session('success'))
+                    <div class="mb-4 p-4 text-green-800 bg-green-100 rounded-lg">
+                        {{ session('success') }}
+                    </div>
+                @endif
 
-                                    @if(auth()->user()?->user_type === 'admin')
-                                        <div class="flex space-x-2">
-                                            <a href="{{ route('courses.edit', $course->id) }}"
-                                               class="text-yellow-600 hover:underline text-sm">Editar</a>
-                                            <form action="{{ route('courses.destroy', $course->id) }}" method="POST"
-                                                  onsubmit="return confirm('Tem certeza que deseja excluir?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:underline text-sm">
-                                                    Excluir
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @endif
+                {{-- Lista de cursos --}}
+
+                @if ($courses->count())
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 mt-20 p-4">
+                        @foreach ($courses as $course)
+                            <div
+                                class="overflow-hidden border border-gray-200 rounded-2xl shadow hover:shadow-lg transition flex flex-col">
+                                <img src="{{ $course->image ? asset('storage/' . $course->image) : asset('imgs/placeholder.png') }}"
+                                    alt="{{ $course->name }}" class="h-48 w-full object-cover">
+
+                                <div class="p-4 flex flex-col flex-grow">
+                                    <h3 class="font-bold text-2xl text-blue-500 mb-2">{{ $course->course_name }}</h3>
+                                    <p class="text-xs text-gray-500 mb-4">
+                                        Coordenador: {{ $course->coordinator->userAccount->name ?? 'Não definido' }}
+                                    </p>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
 
-                {{-- Paginação --}}
-                <div class="mt-6 flex justify-center">
-                    {{ $courses->links() }}
-                </div>
-            @else
-                <p class="text-gray-600 text-center mt-6">Nenhum curso cadastrado.</p>
-            @endif
 
+
+
+                    {{-- Paginação --}}
+                    <div class="mt-6">
+                        {{ $courses->links() }}
+                    </div>
+                @else
+                    <div class="w-full flex flex-col items-center mt-16">
+                        <p class="text-gray-500 mt-5 text-base sm:text-lg">Nenhum evento cadastrado . . .</p>
+                    </div>
+                @endif
+
+            </div>
         </div>
     </div>
 </x-app-layout>

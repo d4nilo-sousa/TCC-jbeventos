@@ -1,7 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@custom-variant hover (&:hover);
 
 [x-cloak] {
     display: none;
 }
+
+hr{
+    width: 90rem;
+    margin: 1rem;
+}
+
+/* 
+input:-webkit-autofill {
+    box-shadow: 0 0 0px 1000px #fdfdfd inset !important;
+    border: 1px solid #dc2626;
+    -webkit-text-fill-color: #000 !important;
+}
+*/

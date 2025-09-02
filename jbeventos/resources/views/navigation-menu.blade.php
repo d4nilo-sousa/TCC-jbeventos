@@ -1,13 +1,14 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+    
+    <!-- Container principal da barra de navegação -->
+    <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-[10vh] sm:h-[12vh] lg:h-[14vh]">
 
             <div class="flex">
 
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-mark class="block h-9 w-auto" />
+                       <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[7rem] h-auto mx-auto">
                     </a>
                 </div>
 
@@ -53,11 +54,6 @@
 
                 @if (Auth::user()->user_type === 'admin')
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                        <x-nav-link href="{{ route('courses.create') }}" :active="request()->routeIs('courses.create')">
-                            {{ __('Criar Cursos') }}
-                        </x-nav-link>
-                    </div>
-                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('coordinators.index') }}" :active="request()->routeIs('coordinators.index')">
                             {{ __('Coordenadores') }}
                         </x-nav-link>
@@ -65,6 +61,11 @@
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                         <x-nav-link href="{{ route('coordinators.create') }}" :active="request()->routeIs('coordinators.create')">
                             {{ __('Criar Coordenador') }}
+                        </x-nav-link>
+                    </div>
+                    <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                        <x-nav-link href="{{ route('courses.create') }}" :active="request()->routeIs('courses.create')">
+                            {{ __('Criar Curso') }}
                         </x-nav-link>
                     </div>
                 @endif
