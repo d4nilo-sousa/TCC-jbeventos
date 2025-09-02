@@ -16,15 +16,28 @@
                     <div
                         class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 w-full sm:w-auto flex-wrap">
                         <!-- Botão Criar Curso -->
-                        <div
-                            class="flex justify-center gap-1 border-2 rounded-full overflow-hidden shadow-md transition-colors duration-200">
-                            <a href="{{ route('courses.create') }}"
-                                class="text-red-700 gap-2 px-5 py-2 rounded-lg flex items-center justify-center
-                               hover:bg-[#ff3131] hover:text-white transition-colors duration-200">
-                                <img src="{{ asset('imgs/addred.png') }}" class="w-8">
-                                Criar Evento
-                            </a>
-                        </div>
+
+                        <!-- Mensagem de sucesso -->
+                        @if (session('success'))
+                            <div class="mb-4 rounded-lg bg-green-100 px-4 sm:px-6 py-3 text-green-800 text-sm sm:text-base">
+                                {{ session('success') }}
+                            </div>
+                        @endif
+
+                        <!-- Botão Novo Evento ORIGINAL -->
+                        @if (auth()->check() && auth()->user()->user_type === 'coordinator')
+                            <div
+                                class="flex justify-center gap-1 border-2 rounded-full overflow-hidden shadow-md transition-colors duration-200">
+                                    <a href="{{ route('events.create') }}"
+                                    class="text-red-700 gap-2 px-5 py-2 rounded-lg flex items-center justify-center
+                                    hover:bg-[#ff3131] hover:text-white transition-colors duration-200">
+                                        <img src="{{ asset('imgs/addred.png') }}" class="w-8">
+                                        Criar Evento
+                                    </a>
+                            </div>
+                         @endif
+
+                        
 
                         <!-- Barra de pesquisa -->
                         <form action="{{ route('events.index') }}" method="GET"
@@ -46,22 +59,7 @@
 
                 <br><br>
 
-                <!-- Mensagem de sucesso -->
-                @if (session('success'))
-                    <div class="mb-4 rounded-lg bg-green-100 px-4 sm:px-6 py-3 text-green-800 text-sm sm:text-base">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                <!-- Botão Novo Evento -->
-                @if (auth()->check() && auth()->user()->user_type === 'coordinator')
-                    <div class="mb-4 text-right">
-                        <a href="{{ route('events.create') }}"
-                            class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm sm:text-base">
-                            + Novo Evento
-                        </a>
-                    </div>
-                @endif
+                
 
                 <!-- Lista de eventos -->
                 @if ($events->count() > 0)
