@@ -4,15 +4,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const requirementsList = document.getElementById('password-requirements'); // Lista com os requisitos da senha
     const errorMessage = document.getElementById('password-mismatch-error'); // Mensagem de erro caso as senhas não coincidam
 
-    // Mostrar/ocultar senha com botão 👁️
     document.querySelectorAll('.toggle-password').forEach(button => {
-        const input = document.querySelector(button.dataset.target); // Identifica o input associado ao botão
+        const input = document.querySelector(button.dataset.target); // O input de senha
+        const img = button.querySelector('img'); // A imagem dentro do botão
+
         button.addEventListener('click', () => {
-            const isText = input.type === 'text'; // Verifica se o campo está visível
-            input.type = isText ? 'password' : 'text'; // Alterna entre texto e senha
-            button.textContent = isText ? '👁️' : '🙈'; // Alterna o ícone do botão
+            const isText = input.type === 'text';
+            input.type = isText ? 'password' : 'text';
+
+            // Caminhos corretos, relativos à raiz do projeto (public/)
+            img.src = isText
+                ? '/imgs/blind.png'
+                : '/imgs/open-eyes.png';
+
+            img.alt = isText ? 'Ocultar senha' : 'Mostrar senha';
         });
     });
+
+
 
     // Validação dos requisitos da senha
     function validatePassword(password) {

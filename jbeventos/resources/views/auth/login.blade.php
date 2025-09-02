@@ -25,12 +25,16 @@
             <div class="mt-4">
                 <x-label for="password" value="{{ __('Senha') }}" />
                 <div class="relative">
-                    <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" />
-                    <button type="button" class="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500 toggle-password" data-target="#password">
-                        👁️
+                    <x-input id="password" class="block mt-1 w-full pr-10" type="password" name="password" required autocomplete="current-password" />
+                    
+                    <button type="button" 
+                            class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 toggle-password" 
+                            data-target="#password">
+                        <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha" class="w-5 h-5 opacity-75 hover:opacity-100 transition">
                     </button>
                 </div>
             </div>
+            
 
             <div class="block mt-4">
                 <label for="remember_me" class="flex items-center">
@@ -67,3 +71,5 @@
 </x-guest-layout>
 
 @vite('resources/js/password-validator.js')
+
+
