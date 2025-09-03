@@ -34,18 +34,21 @@ class EventController extends Controller
                 // Eventos visíveis do coordenador logado
                 $events->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', true);
-            } elseif ($request->status === 'hidden') {
+            }
+            elseif ($request->status === 'hidden') {
                 // Eventos ocultos do coordenador logado
                 $events->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', false);
-            } else {
+            }
+            else {
                 // Sem filtro: eventos visíveis de todos + eventos do coordenador logado (ocultos ou visíveis)
                 $events->where(function ($query) use ($loggedCoordinator) {
                     $query->where('visible_event', true)
                         ->orWhere('coordinator_id', $loggedCoordinator->id);
                 });
             }
-        } else {
+        }
+        else {
             // Usuários que não são coordenadores veem apenas eventos visíveis
             $events->where('visible_event', true);
         }
@@ -77,13 +80,14 @@ class EventController extends Controller
         if ($request->filled('likes_order')) {
             $events->withCount([
                 'reactions as likes_count' => function ($query) {
-                    $query->where('reaction_type', 'like');
-                }
+                $query->where('reaction_type', 'like');
+            }
             ]);
 
             if ($request->likes_order === 'most') {
                 $events->orderBy('likes_count', 'desc');
-            } elseif ($request->likes_order === 'least') {
+            }
+            elseif ($request->likes_order === 'least') {
                 $events->orderBy('likes_count', 'asc');
             }
         }
@@ -92,17 +96,32 @@ class EventController extends Controller
         if ($request->filled('schedule_order')) {
             if ($request->schedule_order === 'soonest') {
                 $events->orderBy('event_scheduled_at', 'asc');
-            } elseif ($request->schedule_order === 'latest') {
+            }
+            elseif ($request->schedule_order === 'latest') {
                 $events->orderBy('event_scheduled_at', 'desc');
             }
-        } else {
+        }
+        else {
             $events->orderBy('created_at', 'desc');
         }
 
-        // Filtro por search
-        if ($search = $request->input('search')) {
-            $events->where('event_name', 'like', "%{$search}%"); // substitua 'name' pelo campo correto
-        }
+        $events->when($request->filled('search'), function ($query) use ($request) {
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+                    $q->where('event_name', 'like', "%{$search}%")
+                        ->orWhereHas('eventCoordinator.userAccount', function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'like', "%{$search}%");
+                }
+                )
+                    ->orWhereHas('eventCoordinator.coordinatedCourse', function ($subQuery) use ($search) {
+                    $subQuery->where('course_name', 'like', "%{$search}%");
+                }
+                );
+            }
+            );
+        });
+
 
         // Executa a query
         $events = $events->get();
@@ -168,7 +187,8 @@ class EventController extends Controller
 
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        } else {
+        }
+        else {
             $event->eventCategories()->detach();
         }
 
@@ -205,7 +225,7 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
         $minExpiredAt = Carbon::now()->format('Y-m-d\TH:i');
         $eventExpiredAt = $event->event_expired_at
-            ? Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
+            ?Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
             : '';
 
         $authCoordinator = auth()->user()->coordinator;
@@ -279,7 +299,8 @@ class EventController extends Controller
 
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        } else {
+        }
+        else {
             $event->eventCategories()->detach();
         }
 

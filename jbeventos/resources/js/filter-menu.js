@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggleCourseWrapper = () => {
         const courseChecked = Array.from(typeCheckboxes).some(cb => cb.value === 'course' && cb.checked);
         courseSelectWrapper.style.display = courseChecked ? 'block' : 'none';
+
+        if (!courseChecked) {
+            const courseSelect = form.querySelector('select[name="course"]');
+            if (courseSelect) {
+                courseSelect.selectedIndex = 0; // Reseta o curso selecionado
+            }
+        }
     };
 
     typeCheckboxes.forEach(cb => {
@@ -60,19 +67,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const currentParams = new URLSearchParams(window.location.search);
 
+        // Limpa os parâmetros que vamos atualizar para evitar duplicidade
+        ['status', 'event_type', 'likes_order', 'schedule_order', 'start_date', 'end_date'].forEach(name => {
+            currentParams.delete(name);
+        });
+        // Também limpa os arrays (course_id[], category_id[])
+        [...currentParams.keys()]
+            .filter(key => key.endsWith('[]'))
+            .forEach(key => currentParams.delete(key));
+
         form.querySelectorAll('input, select').forEach(input => {
             if (input.type === 'checkbox' && input.checked) {
-                currentParams.set(input.name, input.value);
-            } else if (input.type === 'checkbox' && !input.checked) {
-                currentParams.delete(input.name);
+                // Para os que só aceitam 1 valor (status, event_type, likes_order, schedule_order)
+                if (['status', 'event_type', 'likes_order', 'schedule_order'].includes(input.name)) {
+                    currentParams.set(input.name, input.value);
+                }
+                // Para os que aceitam múltiplos (course_id[], category_id[])
+                else if (input.name.endsWith('[]')) {
+                    currentParams.append(input.name, input.value);
+                }
             } else if (input.type !== 'checkbox' && input.value !== '') {
                 currentParams.set(input.name, input.value);
-            } else if (input.type !== 'checkbox' && input.value === '') {
-                currentParams.delete(input.name);
             }
         });
 
-        // Só adiciona '?' se houver parâmetros
+        // Remove course_id[] se 'course' não estiver marcado em event_type
+        const courseChecked = Array.from(typeCheckboxes).some(cb => cb.value === 'course' && cb.checked);
+        if (!courseChecked) {
+            currentParams.delete('course_id[]');
+        }
+
         const queryString = currentParams.toString();
         const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
 

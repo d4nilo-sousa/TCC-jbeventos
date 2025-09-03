@@ -10,29 +10,28 @@ use Illuminate\Support\Facades\Storage;
 class CourseController extends Controller
 {
     /*
-    |--------------------------------------------------------------------------
-    | LISTAGEM E DETALHES
-    |--------------------------------------------------------------------------
-    */
-   public function index(Request $request)
-{
-    $search = $request->input('search');
+     |--------------------------------------------------------------------------
+     | LISTAGEM E DETALHES
+     |--------------------------------------------------------------------------
+     */
+    public function index(Request $request)    {
+        $search = $request->input('search');
 
-    $courses = Course::with(['courseCoordinator', 'events'])
-        ->when($search, function ($query, $search) {
+        $courses = Course::with(['courseCoordinator', 'events'])
+            ->when($search, function ($query, $search) {
             $query->where('course_name', 'like', "%{$search}%")
-                  ->orWhereHas('courseCoordinator.userAccount', function ($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                ->orWhereHas('courseCoordinator.userAccount', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+            }
+            );
         })
-        ->paginate(6) // Mostra 6 cursos por página (pode alterar para 9, 12, etc)
-        ->appends(['search' => $search]); // Mantém o parâmetro de pesquisa ao mudar de página
+            ->paginate(6) // Mostra 6 cursos por página (pode alterar para 9, 12, etc)
+            ->appends(['search' => $search]); // Mantém o parâmetro de pesquisa ao mudar de página
 
-    return view('courses.index', [
-        'courses' => $courses,
-        'search' => $search,
-    ]);
-}
+        return view('courses.index', [
+            'courses' => $courses,
+            'search' => $search,
+        ]);    }
 
 
     public function create()
@@ -42,18 +41,18 @@ class CourseController extends Controller
         return view('admin.courses.create', compact('coordinators'));
     }
 
-     /*
-    |--------------------------------------------------------------------------
-    | CRUD ADMINISTRATIVO
-    |--------------------------------------------------------------------------
-    */
+    /*
+     |--------------------------------------------------------------------------
+     | CRUD ADMINISTRATIVO
+     |--------------------------------------------------------------------------
+     */
     public function store(Request $request)
     {
         // Validação dos dados enviados no formulário de criação
         $request->validate([
             'course_name' => 'required|unique:courses,course_name|max:255',
             'course_description' => 'nullable|string|max:1000',
-            'course_icon' => 'nullable|image|max:2048',  // Imagem opcional, até 2MB
+            'course_icon' => 'nullable|image|max:2048', // Imagem opcional, até 2MB
             'course_banner' => 'nullable|image|max:2048', // Imagem opcional, até 2MB
             'coordinator_id' => 'nullable|exists:coordinators,id', // Verifica se coordenador existe
         ]);
@@ -151,12 +150,12 @@ class CourseController extends Controller
     }
 
 
-      /*
-    |--------------------------------------------------------------------------
-    | ATUALIZAÇÕES RÁPIDAS (BANNER, ÍCONE, DESCRIÇÃO)
-    | Usadas na view estilo "perfil"
-    |--------------------------------------------------------------------------
-    */
+    /*
+     |--------------------------------------------------------------------------
+     | ATUALIZAÇÕES RÁPIDAS (BANNER, ÍCONE, DESCRIÇÃO)
+     | Usadas na view estilo "perfil"
+     |--------------------------------------------------------------------------
+     */
     public function updateBanner(Request $request, Course $course)
     {
         $request->validate([
@@ -174,13 +173,14 @@ class CourseController extends Controller
         return back()->with('success', 'Banner atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
     }
 
-    public function updateIcon(Request $request, Course $course){
+    public function updateIcon(Request $request, Course $course)
+    {
 
         $request->validate([
             'course_icon' => 'nullable|image|max:2048',
         ]);
 
-        if($course->course_icon){
+        if ($course->course_icon) {
             Storage::disk('public')->delete($course->course_icon);
         }
 
@@ -190,7 +190,8 @@ class CourseController extends Controller
         return back()->with('success', 'Ícone atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
     }
 
-    public function updateDescription(Request $request, Course $course){
+    public function updateDescription(Request $request, Course $course)
+    {
         $request->validate([
             'course_description' => 'nullable|string|max:1000',
         ]);
