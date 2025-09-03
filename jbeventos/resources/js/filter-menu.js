@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function () {
         courseSelectWrapper.style.display = courseChecked ? 'block' : 'none';
     };
 
-    // Garante seleção única entre os checkboxes de tipo
     typeCheckboxes.forEach(cb => {
         cb.addEventListener('change', function () {
             if (this.checked) {
@@ -35,9 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    toggleCourseWrapper(); // Executa no carregamento
+    toggleCourseWrapper();
 
-    // Botão de reset limpa todos os filtros e mantém o menu aberto
     if (resetButton && form) {
         resetButton.addEventListener('click', function (e) {
             e.preventDefault();
@@ -49,31 +47,35 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Submissão: valida datas e só envia filtros preenchidos
     form.addEventListener('submit', function (e) {
         e.preventDefault();
 
         const startInput = form.querySelector('input[name="start_date"]');
         const endInput = form.querySelector('input[name="end_date"]');
 
-        // Impede envio se a data final for menor que a inicial
         if (startInput.value && endInput.value && endInput.value < startInput.value) {
             alert('A data final não pode ser menor que a data inicial.');
             return;
         }
 
-        // Monta query string apenas com campos preenchidos
-        const params = new URLSearchParams();
+        const currentParams = new URLSearchParams(window.location.search);
+
         form.querySelectorAll('input, select').forEach(input => {
             if (input.type === 'checkbox' && input.checked) {
-                params.append(input.name, input.value);
-            } else if (input.value !== '' && input.type !== 'checkbox') {
-                params.append(input.name, input.value);
+                currentParams.set(input.name, input.value);
+            } else if (input.type === 'checkbox' && !input.checked) {
+                currentParams.delete(input.name);
+            } else if (input.type !== 'checkbox' && input.value !== '') {
+                currentParams.set(input.name, input.value);
+            } else if (input.type !== 'checkbox' && input.value === '') {
+                currentParams.delete(input.name);
             }
         });
 
-        // Redireciona para a rota limpa ou com filtros aplicados
-        const url = params.toString() ? `${form.action}?${params.toString()}` : form.action;
+        // Só adiciona '?' se houver parâmetros
+        const queryString = currentParams.toString();
+        const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+
         window.location.href = url;
     });
 });

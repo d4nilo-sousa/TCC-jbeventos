@@ -13,19 +13,23 @@
                         <div class="w-24 h-1 bg-blue-500 mx-auto rounded-full mt-3 shadow-xl"></div>
                     </div>
 
-
+                    @php
+                        $loggedAdmin = auth()->user()->admin;
+                    @endphp
 
                     <div
                         class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-5 w-full sm:w-auto flex-wrap">
                         <!-- Botão Criar Curso -->
                         <div
                             class="flex justify-center gap-1 border-2 rounded-full overflow-hidden shadow-md transition-colors duration-200">
-                            <a href="{{ route('courses.create') }}"
-                                class="text-blue-700 gap-2 px-5 py-2 rounded-lg flex items-center justify-center
-                               hover:bg-blue-500 hover:text-white transition-colors duration-200">
-                                <img src="{{ asset('imgs/add-button.png') }}" class="w-8">
-                                Criar Curso
-                            </a>
+                            @if ($loggedAdmin)
+                                <a href="{{ route('courses.create') }}"
+                                    class="text-blue-700 gap-2 px-5 py-2 rounded-lg flex items-center justify-center
+                                        hover:bg-blue-500 hover:text-white transition-colors duration-200">
+                                    <img src="{{ asset('imgs/add-button.png') }}" class="w-8">
+                                    Criar Curso
+                                </a>
+                            @endif
                         </div>
 
                         <!-- Barra de pesquisa -->

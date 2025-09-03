@@ -21,32 +21,33 @@ use App\Events\EventUpdated;
 
 class EventController extends Controller
 {
-    // Lista todos os eventos com seus coordenadores e cursos associados
     public function index(Request $request)
     {
-        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
-        $courses = Course::all();
-        $categories = Category::all();
         $loggedCoordinator = auth()->user()->coordinator;
 
-        // Filtra por status de visibilidade
-        if ($request->status === 'visible') {
-            $events->where('visible_event', true);
-        } elseif ($request->status === 'hidden' && $loggedCoordinator) {
-            $events->where('visible_event', false)
-                ->where('coordinator_id', $loggedCoordinator->id);
-        } else {
-            if ($loggedCoordinator) {
+        // Query base com relacionamentos
+        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
+
+
+        if ($loggedCoordinator) {
+            if ($request->status === 'visible') {
+                // Eventos visíveis do coordenador logado
+                $events->where('coordinator_id', $loggedCoordinator->id)
+                    ->where('visible_event', true);
+            } elseif ($request->status === 'hidden') {
+                // Eventos ocultos do coordenador logado
+                $events->where('coordinator_id', $loggedCoordinator->id)
+                    ->where('visible_event', false);
+            } else {
+                // Sem filtro: eventos visíveis de todos + eventos do coordenador logado (ocultos ou visíveis)
                 $events->where(function ($query) use ($loggedCoordinator) {
                     $query->where('visible_event', true)
-                        ->orWhere(function ($q) use ($loggedCoordinator) {
-                            $q->where('visible_event', false)
-                                ->where('coordinator_id', $loggedCoordinator->id);
-                        });
+                        ->orWhere('coordinator_id', $loggedCoordinator->id);
                 });
-            } else {
-                $events->where('visible_event', true);
             }
+        } else {
+            // Usuários que não são coordenadores veem apenas eventos visíveis
+            $events->where('visible_event', true);
         }
 
         // Filtros adicionais
@@ -90,19 +91,27 @@ class EventController extends Controller
         // Ordenação por agendamento
         if ($request->filled('schedule_order')) {
             if ($request->schedule_order === 'soonest') {
-                $events = $events->orderBy('event_scheduled_at', 'asc');
+                $events->orderBy('event_scheduled_at', 'asc');
             } elseif ($request->schedule_order === 'latest') {
-                $events = $events->orderBy('event_scheduled_at', 'desc');
-            } else {
-                $events = $events->orderBy('created_at', 'desc');
+                $events->orderBy('event_scheduled_at', 'desc');
             }
         } else {
-            $events = $events->orderBy('created_at', 'desc');
+            $events->orderBy('created_at', 'desc');
         }
 
+        // Filtro por search
+        if ($search = $request->input('search')) {
+            $events->where('event_name', 'like', "%{$search}%"); // substitua 'name' pelo campo correto
+        }
+
+        // Executa a query
         $events = $events->get();
 
-        return view('events.index', compact('events', 'courses', 'categories'));
+        // Busca cursos e categorias
+        $courses = Course::all();
+        $categories = Category::all();
+
+        return view('events.index', compact('events', 'courses', 'categories', 'loggedCoordinator'));
     }
 
     // Formulário de criação

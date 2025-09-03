@@ -21,9 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     likesOrderCheckboxes.forEach(cb => {
         cb.addEventListener('change', function () {
             if (this.checked) {
-                likesOrderCheckboxes.forEach(other => {
-                    if (other !== this) other.checked = false;
-                });
+                likesOrderCheckboxes.forEach(other => { if (other !== this) other.checked = false; });
             }
         });
     });
@@ -32,14 +30,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const form = orderMenu.querySelector('form');
     if (form) {
         form.addEventListener('submit', function (e) {
-            const formData = new FormData(form);
-            const params = new URLSearchParams(formData);
+            e.preventDefault();
 
-            // Se não houver parâmetros, redireciona para a rota "limpa"
-            if ([...params].length === 0) {
-                e.preventDefault();
-                window.location.href = form.action;
-            }
+            const formData = new FormData(form);
+            const newParams = new URLSearchParams(formData);
+            const currentParams = new URLSearchParams(window.location.search);
+
+            // Remove parâmetros de ordenação antigos
+            ['likes_order', 'schedule_order'].forEach(param => currentParams.delete(param));
+
+            // Adiciona novos parâmetros (se houver)
+            newParams.forEach((value, key) => {
+                currentParams.set(key, value);
+            });
+
+            // Só adiciona '?' se houver parâmetros
+            const queryString = currentParams.toString();
+            const url = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname;
+
+            window.location.href = url;
         });
     }
 });
