@@ -26,7 +26,7 @@
                             {{ request('status') === 'visible' ? __('Meus Eventos (Visíveis)') : (request('status') === 'hidden' ? __('Meus Eventos (Ocultos)') : __('Lista de Eventos')) }}
                         </p>
                         {{-- "hr" personalizado --}}
-                        <div class="w-[5rem] h-1 bg-red-500 rounded-full mt-3 shadow-xl"></div>
+                        <div class="w-[5rem] h-1 bg-red-400 rounded-full mt-3 shadow-xl"></div>
                     </div>
 
 
@@ -47,7 +47,7 @@
                             {{-- Botão Filtrar --}}
                             <div class="relative">
                                 <button id="filterBtn"
-                                    class="inline-flex items-center rounded-md bg-red-100 px-4 py-2 text-gray-700 hover:bg-red-200 transition ease-in-out">
+                                    class="inline-flex items-center rounded-md bg-red-200 px-4 py-2 text-gray-700 hover:bg-red-300 transition ease-in-out">
                                     Filtrar
                                     <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -151,7 +151,7 @@
                             {{-- Botão Ordenar --}}
                             <div class="relative">
                                 <button id="orderBtn"
-                                    class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
+                                    class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300 transition ease-in-out">
                                     Ordenar
                                     <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
                                         viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -209,12 +209,12 @@
                         <form action="{{ route('events.index') }}" method="GET"
                             class="items-center w-full sm:w-auto"> {{-- Adicionei mt-6 para espaçamento --}}
                             <div
-                                class="flex items-center bg-white rounded-full overflow-hidden shadow-md border-2 w-full sm:w-auto">
+                                class="flex items-center bg-white rounded-full overflow-hidden border-2 w-full sm:w-auto">
                                 <input type="text" name="search" value="{{ request('search') }}"
                                     placeholder="Pesquisar cursos..." autocomplete="off"
                                     class="px-6 flex-1 min-w-[200px] sm:min-w-[300px] lg:min-w-[350px] text-gray-800 placeholder-gray-500 border-none outline-none focus:ring-0 bg-white">
                                 <button type="submit"
-                                    class="flex items-center justify-center bg-stone-900 hover:bg-stone-800 transition-colors px-6 py-3">
+                                    class="flex items-center justify-center bg-stone-800 hover:bg-stone-900 transition-colors px-6 py-3">
                                     <img src="{{ asset('imgs/lupaBranca.svg') }}" class="w-7 h-7">
                                 </button>
                             </div>
@@ -223,33 +223,35 @@
 
                 </div>
 
-                <div
-                    class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100 w-full min-h-[75%]">
-                    <div class="flex justify-center items-center mb-10">
+                <div>
+                    <div
+                        class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100 min-h-[72%]">
+                        <div class="mb-10">
+                            {{-- Lista de eventos --}}
+                            @if ($events->count() > 0)
+                                <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
+                                    @foreach ($events as $event)
+                                        @include('partials.event-card', ['event' => $event])
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="flex flex-col items-center gap-5">
+                                    <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%] flex mx-auto"
+                                        alt="not-found">
+                                    <p class="text-gray-500">Nenhum evento encontrado...</p>
+                                </div>
 
-                    </div>
 
-                    {{-- Lista de eventos --}}
-                    @if ($events->count() > 0)
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-20">
-                            @foreach ($events as $event)
-                                @include('partials.event-card', ['event' => $event])
-                            @endforeach
+
+
+                            @endif
                         </div>
-                    @else
-                    <div class="flex flex-col items-center gap-5">
-                        <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%] flex mx-auto" alt="not-found">
-                        <p class="text-gray-500">Nenhum evento encontrado...</p>
+
+
                     </div>
-                        
-                        
-
-
-                    @endif
                 </div>
             </div>
         </div>
-    </div>
 </x-app-layout>
 
 {{-- Scripts compilados --}}

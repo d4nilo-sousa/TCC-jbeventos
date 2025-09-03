@@ -29,7 +29,7 @@
         <div class="mt-auto flex flex-col space-y-2">
 
             <a href="{{ route('events.show', $event->id) }}"
-                class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200">
+                class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200 transition ease-in-out">
                 Ver
             </a>
 

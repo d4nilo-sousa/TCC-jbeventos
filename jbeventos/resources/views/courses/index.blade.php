@@ -4,7 +4,7 @@
             <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 
                 <div
-                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-3 gap-5 w-full flex-wrap mb-20 mt-3">
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-3 gap-5 w-full flex-wrap mb-10 mt-3">
                     <div class="mt-1">
                         <p
                             class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
@@ -58,39 +58,56 @@
                     </div>
                 @endif
 
-                {{-- Lista de cursos --}}
 
-                <div class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100">
-                    @if ($courses->count())
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 p-4">
-                            @foreach ($courses as $course)
-                                <div
-                                    class="overflow-hidden bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition flex flex-col">
-                                    <img src="{{ $course->image ? asset('storage/' . $course->image) : asset('imgs/placeholder.png') }}"
-                                        alt="{{ $course->name }}" class="h-48 w-full object-cover">
 
-                                    <div class="p-4 flex flex-col flex-grow">
-                                        <h3 class="font-bold text-2xl text-stone-700 mb-2">{{ $course->course_name }}
-                                        </h3>
-                                        <p class="text-xs text-gray-500 mb-4">
-                                            Coordenador: {{ $course->coordinator->userAccount->name ?? 'Não definido' }}
-                                        </p>
+                <div
+                    class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100">
+                    <div class="mb-10 ">
+                        {{-- Lista de cursos --}}
+                        @if ($courses->count())
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-10 p-4 mt-10 w-full">
+                                @foreach ($courses as $course)
+                                    <div
+                                        class="overflow-hidden bg-white border border-gray-200 rounded-2xl shadow hover:shadow-lg transition flex flex-col">
+                                        {{-- Imagem do evento ou placeholder --}}
+                                        @if ($course->course_icon)
+                                            <img src="{{ $course->image ? asset('storage/' . $course->image) : asset('imgs/placeholder.png') }}"
+                                                alt="{{ $course->name }}" class="h-48 w-full object-cover">
+                                        @else
+                                            <div
+                                                class="h-48 w-full bg-blue-100 flex items-center justify-center text-gray-500">
+                                                Sem imagem
+                                            </div>
+                                        @endif
+
+
+                                        <div class="p-4 flex flex-col flex-grow">
+                                            <h3 class="font-bold text-2xl text-stone-700 mb-2">
+                                                {{ $course->course_name }}
+                                            </h3>
+                                            <p class="text-xs text-gray-500 mb-4">
+                                                Coordenador:
+                                                {{ $course->coordinator->userAccount->name ?? 'Não definido' }}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
+                                @endforeach
+                            </div>
+                    </div>
 
 
 
 
-                        {{-- Paginação --}}
-                        <div class="mt-6">
-                            {{ $courses->links() }}
-                        </div>
-                    @else
-                        <div class="w-full flex flex-col items-center mt-16">
-                            <p class="text-gray-500 mt-5 text-base sm:text-lg">Nenhum evento cadastrado . . .</p>
-                        </div>
+
+
+                    {{-- Paginação --}}
+                    <div class="mt-6">
+                        {{ $courses->links() }}
+                    </div>
+                @else
+                    <div class="w-full flex flex-col items-center mt-16">
+                        <p class="text-gray-500 mt-5 text-base sm:text-lg">Nenhum evento cadastrado . . .</p>
+                    </div>
                     @endif
                 </div>
 
