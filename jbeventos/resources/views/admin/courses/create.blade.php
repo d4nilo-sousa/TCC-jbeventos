@@ -1,4 +1,4 @@
-<x-app-layout backgroundClass="bg-gradient-to-br from-blue-400 via-blue-200 to-purple-200">
+<x-app-layout backgroundClass="bg-gradient-to-br from-blue-500 via-blue-200 to-blue-100">
     <div class="w-full min-h-screen py-[5rem]">
         <div class="w-full max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
             <div class="w-full bg-white shadow-xl rounded-2xl p-6 sm:p-8 lg:p-10 mx-auto min-h-[65vh] border border-green-100">
