@@ -13,6 +13,7 @@ class Message extends Model
         'attachment_name',
         'attachment_mime',
         'attachment_path',
+        'is_read',
     ];
 
     public function sender(){

@@ -1,11 +1,7 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    
-    <!-- Container principal da barra de navegação -->
     <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-[10vh] sm:h-[12vh] lg:h-[14vh]">
-
             <div class="flex">
-
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
                        <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[7rem] h-auto mx-auto">
@@ -71,31 +67,33 @@
                 @endif
             </div>
 
-            <div class="relative mt-4">
-                <x-dropdown align="right" width="[37rem]">
-                    <x-slot name="trigger">
-                        <button class="flex items-center p-2 rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-3.6A7.95 7.95 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                            </svg>
-                        </button>
-                    </x-slot>
+           <div class="relative">
+    <x-dropdown align="right" width="[37rem]">
+        <x-slot name="trigger">
+            <button class="flex items-center p-2 rounded-full text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition">
+                <div class="relative inline-flex items-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8l-4 1 1-3.6A7.95 7.95 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    @livewire('unread-messages')
+                </div>
+            </button>
+        </x-slot>
 
-                    <x-slot name="content">
-                    <div class="bg-white rounded-xl shadow-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
-                        <div class="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-center">
-                            <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Suas Conversas</h2>
-                        </div>
-                        @livewire('conversation-list')
-                    </div>
-                </x-slot>
-                </x-dropdown>
+        <x-slot name="content">
+            <div class="bg-white rounded-xl shadow-xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 overflow-hidden">
+                <div class="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-center">
+                    <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Suas Conversas</h2>
+                </div>
+                @livewire('conversation-list')
             </div>
+        </x-slot>
+    </x-dropdown>
+</div>
 
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">
-
                 @if (Laravel\Jetstream\Jetstream::hasTeamFeatures())
                     @include('navigation-dropdown-team')
                 @endif
