@@ -1,5 +1,5 @@
-<div class="flex-1 flex justify-center items-center">
-    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-7xl h-[84vh] mt-8 overflow-hidden">
+<div class="flex-1 flex justify-center items-center py-8">
+    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-7xl h-full overflow-hidden">
         
         {{-- Topo da conversa --}}
         <div class="flex items-center p-4 border-b bg-white rounded-t-xl">
@@ -82,7 +82,7 @@
                             @elseif(isset($msg['message']) && !empty($msg['message']))
                                 <div class="flex flex-col">
                                     <span class="inline-block p-3 rounded-2xl max-w-xs break-words shadow
-                                                {{ $isSender ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+                                            {{ $isSender ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
                                         {{ $msg['message'] }}
                                     </span>
                                     @if(isset($msg['is_edited']) && $msg['is_edited'])
