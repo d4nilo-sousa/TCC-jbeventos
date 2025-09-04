@@ -7,7 +7,7 @@ use Livewire\WithFileUploads;
 use App\Events\MessageSent;
 use App\Events\MessageEdited;
 use App\Events\MessageDeleted;
-use App\Events\UserIsTyping; // Importe o evento de digitação
+use App\Events\UserIsTyping;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Message;
@@ -26,12 +26,13 @@ class Chat extends Component
     public $editedMessageContent = '';
     public $attachment;
     public $isOnline = false;
-    public $isTyping = false; // Propriedade para rastrear o status de digitação do outro usuário
+    public $isTyping = false;
 
     public function mount(User $otherUser)
     {
         $this->otherUser = $otherUser;
         $this->loadMessages();
+        $this->markMessagesAsRead();
     }
     
     public function getListeners()
@@ -97,10 +98,10 @@ class Chat extends Component
     {
         $this->messages = Message::where(function($query) {
             $query->where('sender_id', auth()->id())
-                  ->where('receiver_id', $this->otherUser->id);
+                ->where('receiver_id', $this->otherUser->id);
         })->orWhere(function($query) {
             $query->where('receiver_id', auth()->id())
-                  ->where('sender_id', $this->otherUser->id);
+                ->where('sender_id', $this->otherUser->id);
         })->orderBy('created_at')->get()->map(function($msg) {
             return [
                 'id' => $msg->id,
@@ -114,6 +115,16 @@ class Chat extends Component
             ];
         })->toArray();
     }
+    
+    public function markMessagesAsRead()
+    {
+        Message::where('receiver_id', Auth::id())
+            ->where('sender_id', $this->otherUser->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        $this->dispatch('messageRead')->to('unread-messages');
+    }
 
     public function sendMessage()
     {
@@ -126,7 +137,7 @@ class Chat extends Component
             return;
         }
 
-        $user = Auth::user();
+        $user = auth()->user();
 
         $attachmentPath = null;
         $attachmentMime = null;
@@ -138,17 +149,16 @@ class Chat extends Component
             $attachmentName = $this->attachment->getClientOriginalName();
         }
 
-        $msg = Message::create([
+        $msg = \App\Models\Message::create([
             'sender_id' => $user->id,
             'receiver_id' => $this->otherUser->id,
             'message' => $this->message,
             'attachment_path' => $attachmentPath,
             'attachment_mime' => $attachmentMime,
             'attachment_name' => $attachmentName,
+            'is_read' => false,
         ]);
         
-        event(new MessageSent($msg));
-
         $this->addMessage([
             'id' => $msg->id,
             'sender_id' => $user->id,
@@ -159,9 +169,14 @@ class Chat extends Component
             'created_at' => $msg->created_at->format('H:i')
         ]);
 
+        broadcast(new \App\Events\MessageSent($msg));
+
+        // Evento para atualizar o contador do outro usuário.
+        $this->dispatch('messageReceived')->to('unread-messages');
+
         $this->message = '';
         $this->attachment = null;
-        $this->stopTyping(); // Garante que o status de digitação seja removido ao enviar a mensagem
+        $this->stopTyping();
     }
     
     public function startEditing($id)
@@ -185,7 +200,7 @@ class Chat extends Component
         $message = Message::find($this->editingMessageId);
         
         if ($message && $message->sender_id === auth()->id()) {
-            $message->update(['message' => $this->editedMessageContent]);
+            $message->update(['message' => $this->editedMessageContent, 'is_edited' => true]);
             event(new MessageEdited($message));
             
             $messageArray = $message->toArray();
@@ -206,7 +221,7 @@ class Chat extends Component
         
         if ($index !== false) {
             $this->messages[$index]['message'] = $messageData['message'];
-            $this->messages[$index]['is_edited'] = $messageData['is_edited'] ?? false;
+            $this->messages[$index]['is_edited'] = true;
         }
     }
 
@@ -235,7 +250,10 @@ class Chat extends Component
 
     public function addMessageFromBroadcast($messageData)
     {
-        if ($messageData['sender_id'] === $this->otherUser->id) {
+        if (
+            ($messageData['sender_id'] === $this->otherUser->id && $messageData['receiver_id'] === auth()->id()) ||
+            ($messageData['sender_id'] === auth()->id() && $messageData['receiver_id'] === $this->otherUser->id)
+        ) {
             $this->addMessage([
                 'id' => $messageData['id'],
                 'sender_id' => $messageData['sender_id'],
@@ -245,7 +263,7 @@ class Chat extends Component
                 'attachment_name' => $messageData['attachment_name'],
                 'created_at' => now()->format('H:i')
             ]);
-            $this->stopTyping(); // Garante que o status de digitação pare quando a mensagem chegar
+            $this->stopTyping();
         }
     }
 

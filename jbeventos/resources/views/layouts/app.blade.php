@@ -27,13 +27,13 @@
     @livewireStyles
 </head>
 
-<body class="font-sans antialiased">
+<body class="font-sans antialiased h-screen flex flex-col">
     <x-banner />
     @livewire('navigation-menu')
 
     @props(['backgroundClass' => 'bg-gradient-to-br from-red-400 via-orange-100 to-red-100'])
 
-    <div class="min-h-screen {{ $backgroundClass }}">
+    <div class="flex-1 bg-gray-100">
         @if (isset($header))
             <header class="bg-white shadow">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -42,7 +42,7 @@
             </header>
         @endif
 
-        <main>
+        <main class="flex-1">
             {{ $slot }}
         </main>
     </div>

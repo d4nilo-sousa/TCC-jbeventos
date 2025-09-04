@@ -1,5 +1,5 @@
-<div class="flex-1 flex justify-center items-center">
-    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-7xl h-[84vh] mt-8 overflow-hidden">
+<div class="flex-1 flex justify-center items-center py-8">
+    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-7xl h-full overflow-hidden">
         
         {{-- Topo da conversa --}}
         <div class="flex items-center p-4 border-b bg-white rounded-t-xl">
@@ -57,7 +57,7 @@
                                     @if (Str::startsWith($msg['attachment_mime'], 'image'))
                                         <img src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" alt="Anexo de imagem">
                                     @elseif (Str::startsWith($msg['attachment_mime'], 'video'))
-                                        <video src="{{ $attachment->temporaryUrl() }}" class="max-h-60 rounded-xl" controls></video>
+                                        <video src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" controls></video>
                                     @else
                                         <div class="bg-white p-4 flex items-center space-x-2 text-sm text-gray-700">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -82,7 +82,7 @@
                             @elseif(isset($msg['message']) && !empty($msg['message']))
                                 <div class="flex flex-col">
                                     <span class="inline-block p-3 rounded-2xl max-w-xs break-words shadow
-                                                {{ $isSender ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
+                                            {{ $isSender ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
                                         {{ $msg['message'] }}
                                     </span>
                                     @if(isset($msg['is_edited']) && $msg['is_edited'])
@@ -104,19 +104,19 @@
             @endforeach
         </div>
 
-        {{-- Status de digitação (aparece só quando o outro user digita) --}}
-@if ($isTyping && $receiver->id !== auth()->id())
-    <div class="px-4 pb-2 flex {{ $receiver->id === auth()->id() ? 'justify-end' : 'justify-start' }}">
-        <div class="flex items-center space-x-2 bg-gray-100 px-3 py-1 rounded-2xl">
-            <span class="text-sm text-gray-500 italic">{{ $receiver->name }} está digitando</span>
-            <div class="flex space-x-1">
-                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+        {{-- Status de digitação --}}
+        @if ($isTyping && $receiver->id !== auth()->id())
+            <div class="px-4 pb-2 flex {{ $receiver->id === auth()->id() ? 'justify-end' : 'justify-start' }}">
+                <div class="flex items-center space-x-2 bg-gray-100 px-3 py-1 rounded-2xl">
+                    <span class="text-sm text-gray-500 italic">{{ $receiver->name }} está digitando</span>
+                    <div class="flex space-x-1">
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-@endif
+        @endif
 
         {{-- Input de envio --}}
         <form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-3 rounded-b-xl z-20">
