@@ -5,6 +5,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
+use App\Http\Controllers\CoordinatorDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CourseFollowController;
 use App\Http\Controllers\EventReactionController;
@@ -71,7 +72,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::prefix('coordinator')->middleware(['checkUserType:coordinator', 'forcePasswordChange:true'])->group(function () {
-        Route::get('/dashboard', fn() => view('coordinator.dashboard'))->name('coordinator.dashboard');
+        Route::get('/dashboard', [CoordinatorDashboardController::class, 'index'])->name('coordinator.dashboard');
 
         // CRUD de eventos
         Route::resource('events', EventController::class);
