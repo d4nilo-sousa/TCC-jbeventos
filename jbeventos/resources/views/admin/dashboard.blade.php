@@ -34,7 +34,7 @@
                         @forelse ($topCoordinators as $coordinator)
                             @if($coordinator->eventCoordinator && $coordinator->eventCoordinator->userAccount)
                                 <li class="flex items-center space-x-4 p-2 bg-gray-50 rounded-lg">
-                                    <img class="h-12 w-12 rounded-full object-cover" src="{{ $coordinator->eventCoordinator->userAccount->profile_photo_url }}" alt="{{ $coordinator->eventCoordinator->userAccount->name }}" />
+                                    <img class="h-12 w-12 rounded-full object-cover" src="{{ $coordinator->eventCoordinator->userAccount->user_icon_url }}" alt="{{ $coordinator->eventCoordinator->userAccount->name }}" />
                                     <div class="flex-1">
                                         <h4 class="font-medium text-gray-900">{{ $coordinator->eventCoordinator->userAccount->name }}</h4>
                                         <p class="text-sm text-gray-500">{{ $coordinator->events_count }} eventos criados</p>
