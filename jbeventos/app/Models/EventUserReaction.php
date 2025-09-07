@@ -21,7 +21,7 @@ class EventUserReaction extends Model
 
     // Retorna o evento ao qual esta reação pertence
     public function reactedEvent() {
-        return $this->belongsTo(Event::class);
+        return $this->belongsTo(Event::class, 'event_id');
     }
 
     // Retorna o usuário que fez a reação

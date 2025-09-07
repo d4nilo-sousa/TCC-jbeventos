@@ -6,6 +6,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\CoordinatorDashboardController;
+use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CourseFollowController;
 use App\Http\Controllers\EventReactionController;
@@ -92,7 +93,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::prefix('user')->middleware('checkUserType:user')->group(function () {
-        Route::get('/dashboard', fn() => view('user.dashboard'))->name('user.dashboard');
+        Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
     });
 
     /*
