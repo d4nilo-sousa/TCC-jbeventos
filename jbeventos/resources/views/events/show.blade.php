@@ -13,10 +13,15 @@
             {{-- Card do evento --}}
             <div class="overflow-hidden rounded-lg bg-white shadow-lg border">
 
-                {{-- Imagem do evento --}}
-                @if($event->event_image)
-                    <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
-                             class="w-full object-cover max-h-96">
+                @if ($event->event_image)
+                    <div class="w-full aspect-[2/1] overflow-hidden">
+                        <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
+                            class="w-full h-full object-cover">
+                    </div>
+                @else
+                    <div class="w-full aspect-[2/1] flex items-center justify-center bg-gray-200 text-gray-500">
+                        📷 Nenhuma imagem enviada
+                    </div>
                 @endif
 
                 {{-- Informações do evento --}}
@@ -33,14 +38,16 @@
                             📍 <span class="font-semibold">Local:</span> {{ $event->event_location }}
                         </div>
                         <div>
-                            <strong>📅 Irá ocorrer em:</strong> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
-                            @if(auth()->check() && auth()->user()->user_type === 'coordinator')
+                            <strong>📅 Irá ocorrer em:</strong>
+                            {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
+                            @if (auth()->check() && auth()->user()->user_type === 'coordinator')
                                 @php
                                     $loggedCoordinator = auth()->user()->coordinator;
                                 @endphp
 
-                                @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                                    <br><strong>⏱ Exclusão Automática:</strong> {{ \Carbon\Carbon::parse($event->event_expired_at)->format('d/m/Y H:i') }}
+                                @if ($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
+                                    <br><strong>⏱ Exclusão Automática:</strong>
+                                    {{ \Carbon\Carbon::parse($event->event_expired_at)->format('d/m/Y H:i') }}
                                 @endif
                             @endif
                         </div>
@@ -53,8 +60,9 @@
                         @else
                             <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator?->userAccount?->name }}<br>
                         @endif
-                        <strong>📌 Tipo do evento:</strong> {{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'Nenhum tipo definido') }}<br>
-                         @if($event->event_type === 'course')
+                        <strong>📌 Tipo do evento:</strong>
+                        {{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'Nenhum tipo definido') }}<br>
+                        @if ($event->event_type === 'course')
                             <strong>🎓 Curso:</strong> {{ $event->eventCourse->course_name ?? 'Sem Curso' }}
                         @endif
                     </div>
@@ -64,7 +72,8 @@
                         <strong>🏷 Categorias:</strong>
                         <div class="mt-2 flex flex-wrap gap-2">
                             @forelse($event->eventCategories as $category)
-                                <span class="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm 
+                                <span
+                                    class="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm 
                                              font-semibold text-blue-800 shadow-sm">
                                     {{ $category->category_name }}
                                 </span>
@@ -85,10 +94,12 @@
                                     $activeClasses = 'bg-blue-600 text-white';
                                     $inactiveClasses = 'bg-white text-blue-600 hover:bg-blue-100';
                                 @endphp
-                                <form action="{{ route('events.react', ['event' => $event->id]) }}" method="POST" class="inline-block reaction-form">
+                                <form action="{{ route('events.react', ['event' => $event->id]) }}" method="POST"
+                                    class="inline-block reaction-form">
                                     @csrf
                                     <input type="hidden" name="reaction_type" value="{{ $type }}">
-                                    <button type="submit" data-type="{{ $type }}" class="{{ $baseClasses }} {{ $isActive ? $activeClasses : $inactiveClasses }}">
+                                    <button type="submit" data-type="{{ $type }}"
+                                        class="{{ $baseClasses }} {{ $isActive ? $activeClasses : $inactiveClasses }}">
                                         {{ $label }}
                                     </button>
                                 </form>
@@ -98,35 +109,36 @@
 
                     {{-- Botões de navegação e ações do coordenador --}}
                     <div class="flex justify-between">
-                        <a href="{{ route('events.index') }}" class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
+                        <a href="{{ route('events.index') }}"
+                            class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
                             ← Voltar
                         </a>
 
-                        @if(auth()->check() && auth()->user()->user_type === 'coordinator') 
-                        {{-- Só executa se o usuário estiver logado e for coordenador --}}
+                        @if (auth()->check() && auth()->user()->user_type === 'coordinator')
+                            {{-- Só executa se o usuário estiver logado e for coordenador --}}
 
                             @php
                                 $loggedCoordinator = auth()->user()->coordinator;
                                 // Pega o coordenador vinculado ao usuário logado
                             @endphp
 
-                            @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                            {{-- Garante que o coordenador logado é o responsável pelo evento --}}
+                            @if ($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
+                                {{-- Garante que o coordenador logado é o responsável pelo evento --}}
 
                                 <div class="flex space-x-2">
                                     {{-- Botão para editar o evento --}}
-                                    <a href="{{ route('events.edit', $event->id) }}" 
-                                    class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
+                                    <a href="{{ route('events.edit', $event->id) }}"
+                                        class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
                                         Editar
                                     </a>
 
                                     {{-- Formulário para excluir o evento --}}
-                                    <form action="{{ route('events.destroy', $event->id) }}" method="POST" 
-                                    onsubmit="return confirm('Deseja realmente excluir este evento?')">
+                                    <form action="{{ route('events.destroy', $event->id) }}" method="POST"
+                                        onsubmit="return confirm('Deseja realmente excluir este evento?')">
                                         @csrf {{-- Proteção contra CSRF --}}
                                         @method('DELETE') {{-- Requisição do tipo DELETE --}}
                                         <button type="submit"
-                                        class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 
+                                            class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 
                                         text-red-900 hover:bg-red-400">
                                             🗑 Excluir
                                         </button>
@@ -152,28 +164,32 @@
 
 {{-- Modal para cadastrar telefone --}}
 <div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-  <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
-    <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
-    <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
-      @csrf
-      @method('PUT')
-      <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999" pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2" required>
-      <div class="flex justify-end space-x-2">
-        <button type="button" id="cancelPhoneModal" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
-      </div>
-    </form>
-  </div>
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+        <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
+        <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999"
+                pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2"
+                required>
+            <div class="flex justify-end space-x-2">
+                <button type="button" id="cancelPhoneModal"
+                    class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 {{-- Toast simples --}}
 <div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
-  <span id="toast-message"></span>
+    <span id="toast-message"></span>
 </div>
 
 <script>
-  window.authUserName = @json(auth()->user()->name);
-  window.userPhoneNumber = @json(auth()->user()->phone_number);
+    window.authUserName = @json(auth()->user()->name);
+    window.userPhoneNumber = @json(auth()->user()->phone_number);
 </script>
 
 

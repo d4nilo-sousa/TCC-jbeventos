@@ -1,10 +1,13 @@
 <div id="event-card-{{ $event->id }}" class="overflow-hidden rounded-lg border border-gray-200 shadow-sm flex flex-col">
     {{-- Imagem do evento ou placeholder --}}
     @if ($event->event_image)
-        <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento" class="h-48 w-full object-cover">
+        <div class="w-full aspect-[2/1] overflow-hidden">
+            <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
+                 class="w-full h-full object-cover">
+        </div>
     @else
-        <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-500">
-            Sem imagem
+        <div class="w-full aspect-[2/1] flex items-center justify-center bg-gray-200 text-gray-500">
+            📷 Nenhuma imagem enviada
         </div>
     @endif
 
