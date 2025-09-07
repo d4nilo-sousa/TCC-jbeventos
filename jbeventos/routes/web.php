@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
 use App\Http\Controllers\CoordinatorDashboardController;
@@ -53,7 +54,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
-        Route::get('/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
         // CRUD de coordenadores
         Route::resource('coordinators', CoordinatorController::class);

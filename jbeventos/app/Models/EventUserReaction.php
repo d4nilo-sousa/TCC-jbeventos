@@ -26,6 +26,6 @@ class EventUserReaction extends Model
 
     // Retorna o usuário que fez a reação
     public function reactingUser() {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }
