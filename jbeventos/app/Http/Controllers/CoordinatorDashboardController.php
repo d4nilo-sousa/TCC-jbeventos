@@ -48,37 +48,83 @@ class CoordinatorDashboardController extends Controller
             $months->push($now->copy()->subMonths($i));
         }
 
-        // Inicializa array com 0 para cada mês
+        // Inicializa arrays com 0 para cada mês
         $engagementByMonthArr = [];
+        $likesByMonthArr = [];
+        $savesByMonthArr = [];
+        $commentsByMonthArr = [];
+        $eventsByMonthArr = [];
         foreach ($months as $m) {
-            $engagementByMonthArr[(int)$m->format('n')] = 0;
+            $monthNum = (int)$m->format('n');
+            $engagementByMonthArr[$monthNum] = 0;
+            $likesByMonthArr[$monthNum] = 0;
+            $savesByMonthArr[$monthNum] = 0;
+            $commentsByMonthArr[$monthNum] = 0;
+            $eventsByMonthArr[$monthNum] = 0;
         }
 
         if (! $eventIds->isEmpty()) {
             $startDate = $months->first()->copy()->startOfMonth();
 
-            $reactions = EventUserReaction::whereIn('event_id', $eventIds)
+            // Interações
+            $reactionsByMonth = EventUserReaction::whereIn('event_id', $eventIds)
+                ->where('created_at', '>=', $startDate)
+                ->selectRaw('MONTH(created_at) as month, reaction_type, COUNT(*) as total')
+                ->groupBy('month', 'reaction_type')
+                ->get();
+            
+            foreach ($reactionsByMonth as $reaction) {
+                if ($reaction->reaction_type == 'like') {
+                    $likesByMonthArr[(int)$reaction->month] = (int) $reaction->total;
+                } elseif ($reaction->reaction_type == 'save') {
+                    $savesByMonthArr[(int)$reaction->month] = (int) $reaction->total;
+                }
+                $engagementByMonthArr[(int)$reaction->month] += (int) $reaction->total;
+            }
+
+            // Comentários
+            $commentsByMonth = Comment::whereIn('event_id', $eventIds)
                 ->where('created_at', '>=', $startDate)
                 ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
                 ->groupBy('month')
                 ->pluck('total', 'month')
                 ->toArray();
 
-            foreach ($reactions as $month => $total) {
-                $engagementByMonthArr[(int)$month] = (int) $total;
+            foreach ($commentsByMonth as $month => $total) {
+                $commentsByMonthArr[(int)$month] = (int) $total;
+                $engagementByMonthArr[(int)$month] += (int) $total;
+            }
+            
+            // Eventos Criados
+            $eventsByMonth = Event::where('coordinator_id', $coordinator->id)
+                ->where('created_at', '>=', $startDate)
+                ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+                ->groupBy('month')
+                ->pluck('total', 'month')
+                ->toArray();
+            
+            foreach ($eventsByMonth as $month => $total) {
+                $eventsByMonthArr[(int)$month] = (int) $total;
             }
         }
-
+        
         // Transforma em Collection preservando a ordem dos meses
-        $engagementByMonth = collect();
+        $likesByMonth = collect();
+        $savesByMonth = collect();
+        $commentsByMonth = collect();
+        $eventsByMonth = collect();
+        $labels = collect();
+        $values = collect(); 
+        
         foreach ($months as $m) {
-            $num = (int)$m->format('n');
-            $engagementByMonth->put($num, $engagementByMonthArr[$num] ?? 0);
+            $monthNum = (int)$m->format('n');
+            $labels->push($m->format('M'));
+            $likesByMonth->push($likesByMonthArr[$monthNum] ?? 0);
+            $savesByMonth->push($savesByMonthArr[$monthNum] ?? 0);
+            $commentsByMonth->push($commentsByMonthArr[$monthNum] ?? 0);
+            $eventsByMonth->push($eventsByMonthArr[$monthNum] ?? 0);
+            $values->push($engagementByMonthArr[$monthNum] ?? 0);
         }
-
-        // --- Labels e values prontos para o gráfico ---
-        $labels = $engagementByMonth->keys()->map(fn($m) => Carbon::create()->month($m)->format('F'))->values();
-        $values = $engagementByMonth->values();
 
         // --- Top 3 eventos mais engajados ---
         $topEvents = collect();
@@ -103,10 +149,16 @@ class CoordinatorDashboardController extends Controller
             'likes',
             'saves',
             'comments',
-            'engagementByMonth',
             'labels',
             'values',
-            'topEvents'
-        ));
+            'topEvents',
+            'likesByMonth',
+            'savesByMonth',
+            'commentsByMonth',
+            'eventsByMonth'
+        ))->with([
+            'name' => $user->name,
+            'role' => 'Coordenador de Curso'
+        ]);
     }
 }

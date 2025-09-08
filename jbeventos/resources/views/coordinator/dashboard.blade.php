@@ -1,41 +1,54 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard Coordenador') }}
-        </h2>
-    </x-slot>
-
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+            
+            {{-- Componente de boas-vindas --}}
+            <x-welcome-message :name="$name" :role="$role" />
 
             {{-- Definição da variável $totalInteractions --}}
             @php
                 $totalInteractions = ($likes ?? 0) + ($comments ?? 0) + ($saves ?? 0);
             @endphp
 
-            {{-- Cards Resumo --}}
+            {{-- Cards Resumo com Mini Gráficos --}}
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                {{-- Card Eventos Criados --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Eventos Criados</h3>
+                    <h3 class="text-sm text-gray-500">Seus Eventos Criados</h3>
                     <p class="text-xl font-bold text-blue-600 mt-2">{{ $eventsCount }}</p>
+                    <div class="h-10 mt-2">
+                        <canvas id="eventsSparkline"></canvas>
+                    </div>
                 </div>
+                {{-- Card Curtidas Recebidas --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Curtidas Recebidas</h3>
+                    <h3 class="text-sm text-gray-500">Curtidas em Seus Eventos</h3>
                     <p class="text-xl font-bold text-green-600 mt-2">{{ $likes }}</p>
+                    <div class="h-10 mt-2">
+                        <canvas id="likesSparkline"></canvas>
+                    </div>
                 </div>
+                {{-- Card Comentários --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Comentários</h3>
+                    <h3 class="text-sm text-gray-500">Comentários em Seus Eventos</h3>
                     <p class="text-xl font-bold text-purple-600 mt-2">{{ $comments }}</p>
+                    <div class="h-10 mt-2">
+                        <canvas id="commentsSparkline"></canvas>
+                    </div>
                 </div>
+                {{-- Card Eventos Salvos --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Eventos Salvos</h3>
+                    <h3 class="text-sm text-gray-500">Seus Eventos Salvos</h3>
                     <p class="text-xl font-bold text-pink-600 mt-2">{{ $saves }}</p>
+                    <div class="h-10 mt-2">
+                        <canvas id="savesSparkline"></canvas>
+                    </div>
                 </div>
             </div>
 
-            {{-- Top 3 eventos mais engajados --}}
+            {{-- Top 3 eventos mais engajados do coordenador --}}
             <div class="mt-4">
-                <h3 class="text-lg font-semibold text-gray-700 mb-2">Top 3 Eventos Mais Engajados</h3>
+                <h3 class="text-lg font-semibold text-gray-700 mb-2">Seus Eventos Mais Engajados</h3>
 
                 @if($topEvents->isEmpty())
                     <p class="text-gray-500">Nenhum evento com interações ainda.</p>
@@ -57,15 +70,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {{-- Gráfico de engajamento por mês --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-0">Evolução do Engajamento (Mês a Mês)</h3>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-0">Evolução de Engajamento em Seus Eventos (Mês a Mês)</h3>
                     <canvas id="engagementChart" class="{{ $totalInteractions > 0 ? 'h-32' : 'h-28' }} w-full"></canvas>
                 </div>
 
                 {{-- Gráfico de distribuição de interações --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Distribuição das Interações</h3>
-                    {{-- AJUSTADO: Aumentada a altura do contêiner para 'h-48' ou 'h-56' --}}
-                    <div class="relative h-75"> {{-- Você pode experimentar com h-56 ou h-64 se quiser maior --}}
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Distribuição das Interações em Seus Eventos</h3>
+                    <div class="relative h-75">
                         <canvas id="distributionChart"></canvas>
                     </div>
                 </div>
@@ -77,7 +89,43 @@
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // O código JavaScript para os gráficos permanece o mesmo
+        // Função utilitária para criar mini gráfico
+        function createSparkline(elementId, data, color) {
+            new Chart(document.getElementById(elementId), {
+                type: 'line',
+                data: {
+                    labels: @json($labels),
+                    datasets: [{
+                        data: data,
+                        borderColor: color,
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 0 // Remove os pontos
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    }
+                }
+            });
+        }
+
+        // Cria os mini gráficos com os dados do controller
+        createSparkline('eventsSparkline', @json($eventsByMonth), 'rgb(59, 130, 246)');
+        createSparkline('likesSparkline', @json($likesByMonth), 'rgb(34, 197, 94)');
+        createSparkline('commentsSparkline', @json($commentsByMonth), 'rgb(139, 92, 246)');
+        createSparkline('savesSparkline', @json($savesByMonth), 'rgb(236, 72, 153)');
+
+        // Gráfico de engajamento principal (mantido)
         const engagementCtx = document.getElementById('engagementChart').getContext('2d');
         new Chart(engagementCtx, {
             type: 'bar',
@@ -100,6 +148,7 @@
             }
         });
 
+        // Gráfico de distribuição principal (mantido)
         const distributionCtx = document.getElementById('distributionChart').getContext('2d');
         new Chart(distributionCtx, {
             type: 'pie',
