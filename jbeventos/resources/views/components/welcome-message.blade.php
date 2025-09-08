@@ -1,4 +1,4 @@
-@props(['name', 'role'])
+@props(['name', 'message'])
 
 <div class="flex justify-center">
     <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 mt-3 mb-6 w-full md:w-3/4 lg:w-2/3" role="alert">
@@ -10,7 +10,7 @@
             </div>
             <div>
                 <p class="font-bold">Olá, {{ $name }}!</p>
-                <p class="text-sm">Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar suas interações e atividades recentes dos coordenadores e eventos da nossa escola.</p>
+                <p class="text-sm">{{ $message }}</p>
             </div>
         </div>
     </div>

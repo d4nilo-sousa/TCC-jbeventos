@@ -1,17 +1,19 @@
 <x-app-layout>
-    <x-welcome-message :name="Auth::user()->name" role="Admin Master" />
+    <x-welcome-message :name="$name" :message="$message" />
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
             
+            <h2 class="text-2xl font-bold text-gray-800">Visão Geral do Sistema</h2>
+
             {{-- Cards de Resumo --}}
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Total de Eventos</h3>
+                    <h3 class="text-sm text-gray-500">Eventos Totais</h3>
                     <p class="text-xl font-bold text-blue-600 mt-2">{{ $eventsCount }}</p>
                 </div>
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Curtidas Totais</h3>
+                    <h3 class="text-sm text-gray-500">Curtidas no Sistema</h3>
                     <p class="text-xl font-bold text-green-600 mt-2">{{ $likesCount }}</p>
                 </div>
                 <div class="p-3 bg-white rounded-2xl shadow">
@@ -19,7 +21,7 @@
                     <p class="text-xl font-bold text-purple-600 mt-2">{{ $commentsCount }}</p>
                 </div>
                 <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Qtd. Eventos Salvos</h3>
+                    <h3 class="text-sm text-gray-500">Eventos Salvos</h3>
                     <p class="text-xl font-bold text-pink-600 mt-2">{{ $savedEventsCount }}</p>
                 </div>
             </div>

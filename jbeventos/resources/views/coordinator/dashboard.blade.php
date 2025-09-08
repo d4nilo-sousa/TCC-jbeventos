@@ -3,7 +3,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
             
             {{-- Componente de boas-vindas --}}
-            <x-welcome-message :name="$name" :role="$role" />
+            <x-welcome-message :name="$name" :message="$message" />
 
             {{-- Definição da variável $totalInteractions --}}
             @php

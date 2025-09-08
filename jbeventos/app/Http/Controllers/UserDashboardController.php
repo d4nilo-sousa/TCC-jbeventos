@@ -99,6 +99,9 @@ class UserDashboardController extends Controller
             ->sortByDesc('created_at')
             ->take(3);
 
+        // Mensagem dinâmica para Usuário
+        $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar suas interações e a sua atividade recente nos eventos da nossa escola.';
+
         return view('user.dashboard', compact(
             'savedEventsCount',
             'likesCount',
@@ -107,6 +110,9 @@ class UserDashboardController extends Controller
             'distributionData',
             'dynamicHighlight',
             'recentActivities'
-        ));
+        ))->with([
+            'name' => $user->name,
+            'message' => $message // Passa a nova variável para a view
+        ]);
     }
 }

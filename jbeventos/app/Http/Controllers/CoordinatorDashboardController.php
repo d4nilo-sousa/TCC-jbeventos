@@ -144,6 +144,9 @@ class CoordinatorDashboardController extends Controller
                 ->take(3);
         }
 
+        // Mensagem dinâmica para Coordenador
+        $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar as interações dos usuários nos eventos que você cria/criou!';
+
         return view('coordinator.dashboard', compact(
             'eventsCount',
             'likes',
@@ -158,7 +161,7 @@ class CoordinatorDashboardController extends Controller
             'eventsByMonth'
         ))->with([
             'name' => $user->name,
-            'role' => 'Coordenador de Curso'
+            'message' => $message // Passa a nova variável para a view
         ]);
     }
 }

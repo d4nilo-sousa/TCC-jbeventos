@@ -80,6 +80,10 @@ class AdminDashboardController extends Controller
         $commentsCount = EventUserReaction::where('reaction_type', 'comment')->count();
         $savedEventsCount = EventUserReaction::where('reaction_type', 'save')->count();
         
+        // Mensagem dinâmica para Admin
+        $user = auth()->user();
+        $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar o total de interações do sistema, principais eventos, atividades recentes dos coordenadores/cursos/ eventos da nossa escola.';
+
         return view('admin.dashboard', compact(
             'topCoordinators',
             'otherCoordinators',
@@ -92,6 +96,9 @@ class AdminDashboardController extends Controller
             'likesCount',
             'commentsCount',
             'savedEventsCount'
-        ));
+        ))->with([
+            'name' => $user->name,
+            'message' => $message // Passa a nova variável para a view
+        ]);
     }
 }
