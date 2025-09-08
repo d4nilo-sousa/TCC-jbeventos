@@ -71,13 +71,13 @@
                 {{-- Gráfico de engajamento por mês --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
                     <h3 class="text-lg font-semibold text-gray-700 mb-0">Evolução de Engajamento em Seus Eventos (Mês a Mês)</h3>
-                    <canvas id="engagementChart" class="{{ $totalInteractions > 0 ? 'h-32' : 'h-28' }} w-full"></canvas>
+                    <canvas id="engagementChart" style="height: 180px;" class="w-full"></canvas>
                 </div>
 
                 {{-- Gráfico de distribuição de interações --}}
                 <div class="p-3 bg-white rounded-2xl shadow">
                     <h3 class="text-lg font-semibold text-gray-700 mb-3">Distribuição das Interações em Seus Eventos</h3>
-                    <div class="relative h-75">
+                    <div class="relative" style="height: 180px;">
                         <canvas id="distributionChart"></canvas>
                     </div>
                 </div>
