@@ -11,23 +11,55 @@ use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
-    /**
-     * Exibe o painel de controle do administrador.
-     */
     public function index()
     {
-        // 1. Ranking de Coordenadores
+        // Dados de Resumo
+        $eventsCount = Event::count();
+        $likesCount = EventUserReaction::where('reaction_type', 'like')->count();
+        $commentsCount = EventUserReaction::where('reaction_type', 'comment')->count();
+        $savedEventsCount = EventUserReaction::where('reaction_type', 'save')->count();
+
+        // --- Calcular tendências mês a mês ---
+        $prevMonth = now()->subMonth();
+
+        $eventsPrev = Event::whereMonth('created_at', $prevMonth->month)
+                            ->whereYear('created_at', $prevMonth->year)
+                            ->count();
+
+        $likesPrev = EventUserReaction::where('reaction_type', 'like')
+                        ->whereMonth('created_at', $prevMonth->month)
+                        ->whereYear('created_at', $prevMonth->year)
+                        ->count();
+
+        $commentsPrev = EventUserReaction::where('reaction_type', 'comment')
+                        ->whereMonth('created_at', $prevMonth->month)
+                        ->whereYear('created_at', $prevMonth->year)
+                        ->count();
+
+        $savedPrev = EventUserReaction::where('reaction_type', 'save')
+                        ->whereMonth('created_at', $prevMonth->month)
+                        ->whereYear('created_at', $prevMonth->year)
+                        ->count();
+
+        // Função helper para calcular % de variação
+        $calcTrend = fn($current, $previous) => $previous == 0 ? 100 : round((($current - $previous) / $previous) * 100);
+
+        $eventsTrend = $calcTrend($eventsCount, $eventsPrev);
+        $likesTrend = $calcTrend($likesCount, $likesPrev);
+        $commentsTrend = $calcTrend($commentsCount, $commentsPrev);
+        $savedEventsTrend = $calcTrend($savedEventsCount, $savedPrev);
+
+        // Restante do controller (rankings, top eventos, gráficos)
         $coordinatorsRanking = Event::select('coordinator_id', \DB::raw('count(*) as events_count'))
             ->whereNotNull('coordinator_id')
             ->groupBy('coordinator_id')
             ->orderByDesc('events_count')
             ->with('eventCoordinator.userAccount')
             ->get();
-            
+
         $topCoordinators = $coordinatorsRanking->take(3);
         $otherCoordinators = $coordinatorsRanking->skip(3);
 
-        // 2. Ranking de Cursos
         $coursesRanking = Event::select('course_id', \DB::raw('count(*) as events_count'))
             ->whereNotNull('course_id')
             ->groupBy('course_id')
@@ -38,15 +70,13 @@ class AdminDashboardController extends Controller
         $coursesLabels = $coursesRanking->pluck('eventCourse.course_name');
         $coursesData = $coursesRanking->pluck('events_count');
 
-        // 3. Top Eventos do Mês
         $topEventsOfTheMonth = Event::whereMonth('event_scheduled_at', now()->month)
             ->whereYear('event_scheduled_at', now()->year)
             ->withCount(['reactions as total_interactions'])
             ->orderByDesc('total_interactions')
             ->limit(5)
             ->get();
-            
-        // 4. Evolução no Tempo (Interações por Mês)
+
         $interactionsByMonth = EventUserReaction::select(
                 \DB::raw('YEAR(created_at) as year'),
                 \DB::raw('MONTH(created_at) as month'),
@@ -61,26 +91,16 @@ class AdminDashboardController extends Controller
                 return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
             });
 
-        // Montar labels e dados fixos (últimos 6 meses)
         $interactionsLabels = [];
         $interactionsData = [];
-
         for ($i = 5; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $key = $date->format('Y-m');
             $label = $date->format('M/Y');
-
             $interactionsLabels[] = $label;
             $interactionsData[] = $interactionsByMonth[$key]->total_interactions ?? 0;
         }
 
-        // Dados de Resumo
-        $eventsCount = Event::count();
-        $likesCount = EventUserReaction::where('reaction_type', 'like')->count();
-        $commentsCount = EventUserReaction::where('reaction_type', 'comment')->count();
-        $savedEventsCount = EventUserReaction::where('reaction_type', 'save')->count();
-        
-        // Mensagem dinâmica para Admin
         $user = auth()->user();
         $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar o total de interações do sistema, principais eventos, atividades recentes dos coordenadores/cursos/ eventos da nossa escola.';
 
@@ -95,10 +115,14 @@ class AdminDashboardController extends Controller
             'eventsCount',
             'likesCount',
             'commentsCount',
-            'savedEventsCount'
+            'savedEventsCount',
+            'eventsTrend',
+            'likesTrend',
+            'commentsTrend',
+            'savedEventsTrend'
         ))->with([
             'name' => $user->name,
-            'message' => $message // Passa a nova variável para a view
+            'message' => $message
         ]);
     }
 }
