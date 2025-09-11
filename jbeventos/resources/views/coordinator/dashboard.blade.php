@@ -16,8 +16,8 @@
                 <div class="p-4 bg-white rounded-2xl shadow flex flex-col justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-blue-100 rounded-full flex items-center justify-center">
-                            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6z"/>
+                            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                             </svg>
                         </div>
                         <div>
@@ -34,8 +34,8 @@
                 <div class="p-4 bg-white rounded-2xl shadow flex flex-col justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-green-100 rounded-full flex items-center justify-center">
-                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm8-3v6m3-3H7"/>
+                            <svg class="h-6 w-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
                             </svg>
                         </div>
                         <div>
@@ -52,8 +52,8 @@
                 <div class="p-4 bg-white rounded-2xl shadow flex flex-col justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-purple-100 rounded-full flex items-center justify-center">
-                            <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M7 8h6M7 12h4m-5-7v10l-3 3V4a2 2 0 012-2h8a2 2 0 012 2v12l-3-3V5"/>
+                            <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                             </svg>
                         </div>
                         <div>
@@ -70,8 +70,8 @@
                 <div class="p-4 bg-white rounded-2xl shadow flex flex-col justify-between">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-pink-100 rounded-full flex items-center justify-center">
-                            <svg class="w-5 h-5 text-pink-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M3 3h14a2 2 0 012 2v10a2 2 0 01-2 2H3a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+                            <svg class="h-6 w-6 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                             </svg>
                         </div>
                         <div>
