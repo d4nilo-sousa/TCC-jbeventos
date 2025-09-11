@@ -2,7 +2,7 @@
     {{-- Mensagem de boas-vindas --}}
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="p-5 bg-white rounded-2xl shadow">
-            <h2 class="text-2xl font-bold text-gray-800">Olá, {{ $name }}!</h2>
+            <h2 class="text-2xl font-bold font-ubuntu text-gray-600">Olá, {{ $name }}!</h2>
             <p class="text-gray-600 mt-1">{{ $message }}</p>
         </div>
     </div>
@@ -13,7 +13,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
 
             {{-- Eventos Totais --}}
-            <div class="p-5 rounded-2xl shadow-lg bg-gradient-to-r from-blue-400 to-blue-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
+            <div class="p-5 rounded-2xl shadow-blue-500 shadow-lg bg-gradient-to-r from-blue-400 to-blue-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,7 +39,7 @@
             </div>
 
             {{-- Curtidas --}}
-            <div class="p-5 rounded-2xl shadow-lg bg-gradient-to-r from-green-400 to-green-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
+            <div class="p-5 rounded-2xl shadow-lg shadow-green-500 bg-gradient-to-r from-green-400 to-green-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -65,7 +65,7 @@
             </div>
 
             {{-- Comentários --}}
-            <div class="p-5 rounded-2xl shadow-lg bg-gradient-to-r from-purple-400 to-purple-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
+            <div class="p-5 rounded-2xl shadow-lg shadow-purple-500 bg-gradient-to-r from-purple-400 to-purple-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -91,7 +91,7 @@
             </div>
 
             {{-- Eventos Salvos --}}
-            <div class="p-5 rounded-2xl shadow-lg bg-gradient-to-r from-pink-400 to-pink-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
+            <div class="p-5 rounded-2xl shadow-lg shadow-pink-500 bg-gradient-to-r from-pink-400 to-pink-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

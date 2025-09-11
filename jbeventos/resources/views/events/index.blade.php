@@ -1,5 +1,5 @@
-<x-app-layout backgroundClass="bg-gradient-to-br from-red-500 via-red-200 to-red-100">
-    <div class="py-[5rem] min-h-screen">
+<x-app-layout>
+    <div class="py-6 min-h-screen">
         <div class="w-full max-w-[100rem] mx-auto sm:px-6 lg:px-5 flex justify-center">
             <div class="w-full bg-white shadow-md rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto min-h-[70vh]">
 
@@ -17,17 +17,12 @@
                 <div
                     class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-3 gap-5 w-full flex-wrap mb-10 mt-3">
 
-                    {{-- Título e hr personalizado --}}
-                    <div>
-                        {{-- Título da view 'Lista de Eventos' --}}
-                        <p
-                            class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent 
-                        font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
-                            {{ request('status') === 'visible' ? __('Meus Eventos (Visíveis)') : (request('status') === 'hidden' ? __('Meus Eventos (Ocultos)') : __('Lista de Eventos')) }}
-                        </p>
-                        {{-- "hr" personalizado --}}
-                        <div class="w-[5rem] h-1 bg-red-400 rounded-full mt-3 shadow-xl"></div>
-                    </div>
+                    {{-- Título da view 'Lista de Eventos' --}}
+                    <p
+                        class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent 
+                        font-extrabold text-sm sm:text-4xl tracking-wide drop-shadow-md">
+                        {{ request('status') === 'visible' ? __('Meus Eventos (Visíveis)') : (request('status') === 'hidden' ? __('Meus Eventos (Ocultos)') : __('Lista de Eventos')) }}
+                    </p>
 
 
                     <div class="flex flex-wrap gap-5">
@@ -224,29 +219,21 @@
                 </div>
 
                 <div>
-                    <div
-                        class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100 min-h-[72%]">
-                        <div class="mb-10">
-                            {{-- Lista de eventos --}}
-                            @if ($events->count() > 0)
-                                <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
-                                    @foreach ($events as $event)
-                                        @include('partials.event-card', ['event' => $event])
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="flex flex-col items-center gap-5">
-                                    <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%] flex mx-auto"
-                                        alt="not-found">
-                                    <p class="text-gray-500">Nenhum evento encontrado...</p>
-                                </div>
-
-
-
-
-                            @endif
-                        </div>
-
+                    <div class="mb-10">
+                        {{-- Lista de eventos --}}
+                        @if ($events->count() > 0)
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
+                                @foreach ($events as $event)
+                                    @include('partials.event-card', ['event' => $event])
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="flex flex-col items-center gap-5">
+                                <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%] flex mx-auto"
+                                    alt="not-found">
+                                <p class="text-gray-500">Nenhum evento encontrado...</p>
+                            </div>
+                        @endif
 
                     </div>
                 </div>
