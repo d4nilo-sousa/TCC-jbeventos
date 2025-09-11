@@ -145,7 +145,7 @@ class EventController extends Controller
         return view('coordinator.events.create', compact('categories', 'minExpiredAt', 'eventExpiredAt'));
     }
 
-
+    // Cria o evento
     public function store(Request $request)
     {
         $request->validate([

@@ -1,15 +1,19 @@
 document.addEventListener('DOMContentLoaded', function () {
     // --- Seleção de capa ---
-    const eventImageInput = document.getElementById('event_image');
-    const eventImagePreview = document.getElementById('event_image_preview');
-    let selectedCover = null;
+    const eventImageInput = document.getElementById('event_image');  // input da capa
+    const eventImagePreview = document.getElementById('event_image_preview');  // preview da capa
+    let selectedCover = null;  // arquivo da capa selecionada
 
     // --- Seleção de imagens extras ---
-    const eventImagesInput = document.getElementById('event_images');
-    const eventImagesPreview = document.getElementById('event_images_preview');
-    let selectedFiles = [];
+    const eventImagesInput = document.getElementById('event_images');  // input das imagens extras
+    const eventImagesPreview = document.getElementById('event_images_preview');  // preview das imagens extras
+    let selectedFiles = [];  // arquivos extras selecionados
 
-    // Função genérica para criar preview
+    // Pega nomes das imagens já existentes no blade para evitar duplicatas
+    const existingImages = Array.from(document.querySelectorAll('#event_images_preview > div[data-filename]'))
+        .map(div => div.dataset.filename.toLowerCase());
+
+    // Função para criar preview de imagem com botão de remover
     function createImagePreview(file, previewContainer, onRemove) {
         const reader = new FileReader();
         reader.onload = function (event) {
@@ -24,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
             img.src = event.target.result;
             img.classList.add('object-contain', 'w-full', 'h-full');
 
-            // Botão de remover
+            // Botão para remover a imagem do preview e da seleção
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.innerHTML = '×';
@@ -45,26 +49,37 @@ document.addEventListener('DOMContentLoaded', function () {
         reader.readAsDataURL(file);
     }
 
-    // --- Capa ---
+    // --- Quando seleciona capa ---
     eventImageInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         selectedCover = file;
-        eventImagePreview.innerHTML = '';
+        eventImagePreview.innerHTML = '';  // limpa preview anterior
 
         createImagePreview(file, eventImagePreview, () => {
             selectedCover = null;
             eventImagePreview.innerHTML = '';
-            eventImageInput.value = '';
+            eventImageInput.value = '';  // reseta input
         });
     });
 
-    // --- Imagens extras ---
+    // --- Quando seleciona imagens extras ---
     eventImagesInput.addEventListener('change', (e) => {
         const files = Array.from(e.target.files);
 
         files.forEach(file => {
+            const fileName = file.name.toLowerCase();
+
+            // Evita arquivos duplicados (selecionados ou existentes)
+            const alreadySelected = selectedFiles.some(f => f.name.toLowerCase() === fileName);
+            const alreadyExists = existingImages.includes(fileName);
+
+            if (alreadySelected || alreadyExists) {
+                alert(`A imagem "${file.name}" já foi adicionada.`);
+                return;
+            }
+
             selectedFiles.push(file);
 
             createImagePreview(file, eventImagesPreview, (f, container) => {
@@ -74,9 +89,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        updateInputFiles();
+        updateInputFiles();  // atualiza input com arquivos selecionados
     });
 
+    // Atualiza o input 'eventImagesInput' com os arquivos selecionados (para enviar no form)
     function updateInputFiles() {
         const dataTransfer = new DataTransfer();
         selectedFiles.forEach(file => dataTransfer.items.add(file));
