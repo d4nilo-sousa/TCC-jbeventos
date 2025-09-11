@@ -1,45 +1,81 @@
 <x-app-layout>
-
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
 
-            {{-- Mensagem de Boas-Vindas Centralizada --}}
-            <x-welcome-message :name="Auth::user()->name" :message="$message" />
+            {{-- Mensagem de Boas-Vindas --}}
+            <div class="p-4 bg-white rounded-2xl shadow text-center">
+                <h2 class="text-2xl font-bold text-gray-800">Olá, {{ $name }}!</h2>
+                <p class="text-gray-600 mt-1">{{ $message }}</p>
+            </div>
 
             {{-- Destaque Dinâmico --}}
-            <div class="p-3 bg-white rounded-2xl shadow-md text-center">
-                <p class="text-md font-medium text-gray-700">{{ $dynamicHighlight }}</p>
+            <div class="p-3 bg-blue-50 rounded-2xl shadow text-center">
+                <p class="text-md font-medium text-blue-700">{{ $dynamicHighlight }}</p>
             </div>
 
-            {{-- Cards de Resumo --}}
+            {{-- Estatísticas Principais --}}
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Eventos Salvos</h3>
-                    <p class="text-xl font-bold text-blue-600 mt-2">{{ $savedEventsCount }}</p>
+                {{-- Eventos Salvos --}}
+                <div class="p-4 bg-white rounded-2xl shadow flex items-center space-x-3">
+                    <div class="p-3 bg-blue-100 rounded-full flex-shrink-0">
+                        <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 5v14l7-7 7 7V5H5z"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <h3 class="text-sm text-gray-500">Eventos Salvos</h3>
+                        <p class="text-xl font-bold text-blue-600">{{ $savedEventsCount }}</p>
+                    </div>
                 </div>
-                <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Curtidas Dadas</h3>
-                    <p class="text-xl font-bold text-green-600 mt-2">{{ $likesCount }}</p>
+
+                {{-- Curtidas Dadas --}}
+                <div class="p-4 bg-white rounded-2xl shadow flex items-center space-x-3">
+                    <div class="p-3 bg-green-100 rounded-full flex-shrink-0">
+                        <svg class="h-6 w-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <h3 class="text-sm text-gray-500">Curtidas Dadas</h3>
+                        <p class="text-xl font-bold text-green-600">{{ $likesCount }}</p>
+                    </div>
                 </div>
-                <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Comentários Feitos</h3>
-                    <p class="text-xl font-bold text-purple-600 mt-2">{{ $commentsCount }}</p>
+
+                {{-- Comentários Feitos --}}
+                <div class="p-4 bg-white rounded-2xl shadow flex items-center space-x-3">
+                    <div class="p-3 bg-purple-100 rounded-full flex-shrink-0">
+                        <svg class="h-6 w-6 text-purple-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h6m-6 4h5l4 4v-4h1a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2h1"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <h3 class="text-sm text-gray-500">Comentários Feitos</h3>
+                        <p class="text-xl font-bold text-purple-600">{{ $commentsCount }}</p>
+                    </div>
                 </div>
-                <div class="p-3 bg-white rounded-2xl shadow">
-                    <h3 class="text-sm text-gray-500">Notificações Ativas</h3>
-                    <p class="text-xl font-bold text-pink-600 mt-2">{{ $notifiedEventsCount }}</p>
+
+                {{-- Notificações Ativas --}}
+                <div class="p-4 bg-white rounded-2xl shadow flex items-center space-x-3">
+                    <div class="p-3 bg-pink-100 rounded-full flex-shrink-0">
+                        <svg class="h-6 w-6 text-pink-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V5a1 1 0 10-2 0v.083A6 6 0 006 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z"/>
+                        </svg>
+                    </div>
+                    <div class="flex flex-col justify-center">
+                        <h3 class="text-sm text-gray-500">Notificações Ativas</h3>
+                        <p class="text-xl font-bold text-pink-600">{{ $notifiedEventsCount }}</p>
+                    </div>
                 </div>
             </div>
 
-            {{-- Conteúdo Lado a Lado para Dispositivos Maiores --}}
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {{-- Conteúdo lado a lado --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
 
-                {{-- Sua Atividade Recente --}}
-                <div class="mt-4 lg:mt-0">
+                {{-- Atividade Recente --}}
+                <div>
                     <h3 class="text-lg font-semibold text-gray-700 mb-2">Sua Atividade Recente</h3>
-    
                     @if($recentActivities->isEmpty())
-                        <p class="text-gray-500 bg-white p-4 rounded-2xl shadow">Nenhuma interação recente para exibir.</p>
+                        <p class="text-gray-500 bg-white p-4 rounded-2xl shadow">Nenhuma interação recente.</p>
                     @else
                         <ul class="bg-white rounded-2xl shadow divide-y divide-gray-200">
                             @foreach($recentActivities as $activity)
@@ -58,16 +94,13 @@
                     @endif
                 </div>
 
-                {{-- Gráfico de Distribuição das Interações --}}
-                <div class="p-3 bg-white rounded-2xl shadow h-full flex flex-col justify-between">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-700 mb-3">Distribuição das Minhas Interações</h3>
-                        <div class="relative h-64">
-                            <canvas id="userDistributionChart"></canvas>
-                        </div>
+                {{-- Gráfico de Distribuição --}}
+                <div class="p-3 bg-white rounded-2xl shadow">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Distribuição das Minhas Interações</h3>
+                    <div class="relative h-64">
+                        <canvas id="userDistributionChart"></canvas>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
@@ -76,25 +109,19 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const distributionCtx = document.getElementById('userDistributionChart').getContext('2d');
-            
-            // Dados vindos do Laravel
-            const distributionData = @json($distributionData);
+            const ctx = document.getElementById('userDistributionChart').getContext('2d');
+            const data = @json($distributionData);
 
-            new Chart(distributionCtx, {
+            new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: ['Salvos', 'Curtidas', 'Comentários'],
                     datasets: [{
-                        data: [
-                            distributionData.saves,
-                            distributionData.likes,
-                            distributionData.comments
-                        ],
+                        data: [data.saves, data.likes, data.comments],
                         backgroundColor: [
-                            'rgba(59, 130, 246, 0.7)', // Azul para Salvos
-                            'rgba(34, 197, 94, 0.7)', // Verde para Curtidas
-                            'rgba(139, 92, 246, 0.7)'  // Roxo para Comentários
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(34, 197, 94, 0.7)',
+                            'rgba(139, 92, 246, 0.7)'
                         ],
                         borderColor: [
                             'rgba(59, 130, 246, 1)',
@@ -105,8 +132,8 @@
                     }]
                 },
                 options: {
-                    responsive: true, // Habilita a responsividade
-                    maintainAspectRatio: false // Desabilita o ajuste automático do tamanho do gráfico
+                    responsive: true,
+                    maintainAspectRatio: false
                 }
             });
         });

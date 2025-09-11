@@ -14,7 +14,7 @@ class UserDashboardController extends Controller
     {
         $user = auth()->user();
 
-        // ... (Cálculos de totais, destaque dinâmico e gráfico de distribuição) ...
+        // Totais principais
         $savedEventsCount = EventUserReaction::where('user_id', $user->id)
             ->where('reaction_type', 'save')
             ->count();
@@ -25,17 +25,20 @@ class UserDashboardController extends Controller
         $notifiedEventsCount = EventUserReaction::where('user_id', $user->id)
             ->where('reaction_type', 'notify')
             ->count();
+
+        // Destaque dinâmico
         $now = Carbon::now();
         $startOfThisMonth = $now->copy()->startOfMonth();
         $startOfLastMonth = $now->copy()->subMonth()->startOfMonth();
         $endOfLastMonth = $now->copy()->subMonth()->endOfMonth();
+
         $interactionsThisMonth = EventUserReaction::where('user_id', $user->id)
             ->where('created_at', '>=', $startOfThisMonth)
             ->count();
         $interactionsLastMonth = EventUserReaction::where('user_id', $user->id)
             ->whereBetween('created_at', [$startOfLastMonth, $endOfLastMonth])
             ->count();
-        $dynamicHighlight = '';
+
         if ($interactionsThisMonth > $interactionsLastMonth) {
             $dynamicHighlight = 'Você interagiu com mais eventos este mês do que no anterior.';
         } elseif ($interactionsThisMonth < $interactionsLastMonth) {
@@ -43,15 +46,15 @@ class UserDashboardController extends Controller
         } else {
             $dynamicHighlight = 'Seu nível de engajamento se manteve estável este mês.';
         }
+
+        // Distribuição das interações
         $distributionData = [
             'likes' => $likesCount,
             'comments' => $commentsCount,
             'saves' => $savedEventsCount,
         ];
-        
-        // Coletar a Atividade Recente 
-        
-        // 1. Coleta os comentários recentes e carrega o evento 
+
+        // Atividade recente (últimos 3 comentários ou reações)
         $recentComments = Comment::where('user_id', $user->id)
             ->with('event')
             ->orderBy('created_at', 'desc')
@@ -59,13 +62,11 @@ class UserDashboardController extends Controller
             ->get()
             ->map(function ($comment) {
                 return (object) [
-                    'type' => 'comment',
-                    'event_name' => $comment->event ? $comment->event->event_name : null,
+                    'message' => 'Você comentou no evento "' . ($comment->event->event_name ?? 'Evento não disponível') . '"',
                     'created_at' => $comment->created_at,
                 ];
             });
 
-        // 2. Coleta as reações recentes e carrega o evento 
         $recentReactions = EventUserReaction::where('user_id', $user->id)
             ->with('reactedEvent')
             ->orderBy('created_at', 'desc')
@@ -87,20 +88,20 @@ class UserDashboardController extends Controller
                         $message = 'Você ativou a notificação para o evento "' . ($reaction->reactedEvent->event_name ?? 'Evento não disponível') . '"';
                         break;
                 }
-
                 return (object) [
                     'message' => $message,
                     'created_at' => $reaction->created_at,
                 ];
             });
 
-        // 3. Combina os comentários com as reações
         $recentActivities = $recentComments->concat($recentReactions)
             ->sortByDesc('created_at')
             ->take(3);
 
-        // Mensagem dinâmica para Usuário
-        $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar suas interações e a sua atividade recente nos eventos da nossa escola.';
+        // Mensagem dinâmica de boas-vindas
+        $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar suas interações e atividade recente nos eventos da nossa escola.';
+
+        $name = $user->name;
 
         return view('user.dashboard', compact(
             'savedEventsCount',
@@ -109,10 +110,9 @@ class UserDashboardController extends Controller
             'notifiedEventsCount',
             'distributionData',
             'dynamicHighlight',
-            'recentActivities'
-        ))->with([
-            'name' => $user->name,
-            'message' => $message // Passa a nova variável para a view
-        ]);
+            'recentActivities',
+            'name',
+            'message'
+        ));
     }
 }
