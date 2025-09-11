@@ -3,8 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\CoordinatorPasswordController;
+use App\Http\Controllers\CoordinatorDashboardController;
+use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CourseFollowController;
 use App\Http\Controllers\EventReactionController;
@@ -51,7 +54,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
-        Route::get('/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
         // CRUD de coordenadores
         Route::resource('coordinators', CoordinatorController::class);
@@ -71,7 +74,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::prefix('coordinator')->middleware(['checkUserType:coordinator', 'forcePasswordChange:true'])->group(function () {
-        Route::get('/dashboard', fn() => view('coordinator.dashboard'))->name('coordinator.dashboard');
+        Route::get('/dashboard', [CoordinatorDashboardController::class, 'index'])->name('coordinator.dashboard');
 
         // CRUD de eventos
         Route::resource('events', EventController::class);
@@ -91,7 +94,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     |--------------------------------------------------------------------------
     */
     Route::prefix('user')->middleware('checkUserType:user')->group(function () {
-        Route::get('/dashboard', fn() => view('user.dashboard'))->name('user.dashboard');
+        Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('user.dashboard');
     });
 
     /*

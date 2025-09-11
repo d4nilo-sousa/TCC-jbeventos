@@ -331,6 +331,6 @@ class EventController extends Controller
 
         broadcast(new EventDeleted($eventId))->toOthers();
 
-        return redirect()->route('events.index')->with('success', 'Evento excluído com sucesso!');
+        return redirect()->route('coordinator.dashboard')->with('success', 'Evento excluído com sucesso!');
     }
 }
