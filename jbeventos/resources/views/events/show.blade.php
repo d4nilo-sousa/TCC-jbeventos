@@ -13,14 +13,49 @@
             {{-- Card do evento --}}
             <div class="overflow-hidden rounded-lg bg-white shadow-lg border">
 
-                @if ($event->event_image)
-                    <div class="w-full aspect-[2/1] overflow-hidden">
-                        <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
-                            class="w-full h-full object-cover">
-                    </div>
-                @else
-                    <div class="w-full aspect-[2/1] flex items-center justify-center bg-gray-200 text-gray-500">
-                        📷 Nenhuma imagem enviada
+                @if ($event->images->count())
+                    <div class="relative w-full" id="carouselContainer">
+
+                        {{-- Área da imagem --}}
+                        <div class="w-full aspect-[2/1] relative overflow-hidden rounded-lg" id="carousel">
+                            @foreach ($event->images as $img)
+                                <img src="{{ asset('storage/' . $img->image_path) }}"
+                                    class="absolute top-0 left-0 w-full h-full object-cover transition duration-500 carousel-img {{ $loop->first ? 'active' : 'hidden' }}">
+                            @endforeach
+
+                            {{-- Botão de enquadrar --}}
+                            <button id="zoomBtn"
+                                class="absolute bottom-2 left-2 bg-white/70 hover:bg-white text-gray-800 px-3 py-2 rounded-full shadow">
+                                🔍
+                            </button>
+
+                            {{-- Controles (‹ ›) --}}
+                            @if ($event->images->count() > 1)
+                                <button id="prevBtn"
+                                    class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white text-gray-800 px-3 py-2 rounded-full shadow">
+                                    ‹
+                                </button>
+                                <button id="nextBtn"
+                                    class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/70 hover:bg-white text-gray-800 px-3 py-2 rounded-full shadow">
+                                    ›
+                                </button>
+                            @endif
+                        </div>
+
+                        {{-- Indicador (1 / N) --}}
+                        <div id="indicator"
+                            class="absolute bottom-2 right-2 bg-black/60 text-white text-sm px-3 py-1 rounded">
+                            1 / {{ $event->images->count() }}
+                        </div>
+
+                        {{-- Modal de zoom --}}
+                        <div id="zoomModal"
+                            class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+                            <img id="zoomImg" src="" class="object-contain rounded-lg shadow-lg"
+                                style="max-width: 90%; max-height: 90%; transform: scale(1); transition: transform 0.2s;">
+                            <button id="closeZoom"
+                                class="absolute top-5 right-5 text-white text-2xl font-bold">×</button>
+                        </div>
                     </div>
                 @endif
 

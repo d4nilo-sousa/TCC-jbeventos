@@ -171,19 +171,18 @@ class EventController extends Controller
             'visible_event'
         ]);
 
+
+        // Capa do evento
         if ($request->hasFile('event_image')) {
             $upload = $request->file('event_image');
 
-            // Lê a imagem
             $image = Image::read($upload);
 
-            // Redimensiona mantendo proporção
             $image->resize(1200, 600, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             });
 
-            // Corta centralizado exatamente para 1200x600
             $width = $image->width();
             $height = $image->height();
             $cropX = max(0, intval(($width - 1200) / 2));
@@ -193,14 +192,13 @@ class EventController extends Controller
             $imageName = time() . '_' . $upload->getClientOriginalName();
             $path = storage_path('app/public/event_images/' . $imageName);
 
-            // Salva com qualidade dependendo do tipo
             $ext = strtolower($upload->getClientOriginalExtension());
             if (in_array($ext, ['jpg', 'jpeg'])) {
-                $image->save($path, 90); // JPEG alta qualidade
+                $image->save($path, 90);
             } elseif ($ext === 'png') {
-                $image->save($path, 9);  // PNG compressão leve
+                $image->save($path, 9);
             } else {
-                $image->save($path);     // Outros formatos
+                $image->save($path);
             }
 
             $data['event_image'] = 'event_images/' . $imageName;
@@ -211,6 +209,41 @@ class EventController extends Controller
         $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
 
         $event = Event::create($data);
+
+        // Imagens extras do carrossel
+        if ($request->hasFile('event_images')) {
+            foreach ($request->file('event_images') as $upload) {
+
+                $image = Image::read($upload);
+
+                $image->resize(1200, 600, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $width = $image->width();
+                $height = $image->height();
+                $cropX = max(0, intval(($width - 1200) / 2));
+                $cropY = max(0, intval(($height - 600) / 2));
+                $image->crop(1200, 600, $cropX, $cropY);
+
+                $imageName = time() . '_' . $upload->getClientOriginalName();
+                $path = storage_path('app/public/event_images/' . $imageName);
+
+                $ext = strtolower($upload->getClientOriginalExtension());
+                if (in_array($ext, ['jpg', 'jpeg'])) {
+                    $image->save($path, 90);
+                } elseif ($ext === 'png') {
+                    $image->save($path, 9);
+                } else {
+                    $image->save($path);
+                }
+
+                $event->images()->create([
+                    'image_path' => 'event_images/' . $imageName
+                ]);
+            }
+        }
 
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
@@ -293,13 +326,14 @@ class EventController extends Controller
             'visible_event'
         ]);
 
-        if ($request->hasFile('event_image')) {
-            // Exclui a imagem antiga
+        if ($request->input('remove_event_image') == '1') {
             if ($event->event_image) {
                 Storage::disk('public')->delete($event->event_image);
             }
-
+            $data['event_image'] = null;
+        } else if ($request->hasFile('event_image')) {
             $upload = $request->file('event_image');
+
             $image = Image::read($upload);
 
             $image->resize(1200, 600, function ($constraint) {
@@ -307,16 +341,71 @@ class EventController extends Controller
                 $constraint->upsize();
             });
 
-            $image->crop(1200, 600, 0, 0);
+            $width = $image->width();
+            $height = $image->height();
+            $cropX = max(0, intval(($width - 1200) / 2));
+            $cropY = max(0, intval(($height - 600) / 2));
+            $image->crop(1200, 600, $cropX, $cropY);
 
             $imageName = time() . '_' . $upload->getClientOriginalName();
             $path = storage_path('app/public/event_images/' . $imageName);
 
-            $ext = $upload->getClientOriginalExtension();
-            $quality = ($ext === 'png') ? 9 : 90;
-            $image->save($path, $quality);
+            $ext = strtolower($upload->getClientOriginalExtension());
+            if (in_array($ext, ['jpg', 'jpeg'])) {
+                $image->save($path, 90);
+            } elseif ($ext === 'png') {
+                $image->save($path, 9);
+            } else {
+                $image->save($path);
+            }
 
             $data['event_image'] = 'event_images/' . $imageName;
+        }
+
+        if ($request->filled('remove_event_images')) {
+            foreach ($request->input('remove_event_images') as $imageId => $remove) {
+                if ($remove == '1') {
+                    $image = $event->images()->find($imageId);
+                    if ($image) {
+                        Storage::disk('public')->delete($image->image_path);
+                        $image->delete();
+                    }
+                }
+            }
+        }
+
+        if ($request->hasFile('event_images')) {
+            foreach ($request->file('event_images') as $upload) {
+
+                $image = Image::read($upload);
+
+                $image->resize(1200, 600, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $width = $image->width();
+                $height = $image->height();
+                $cropX = max(0, intval(($width - 1200) / 2));
+                $cropY = max(0, intval(($height - 600) / 2));
+                $image->crop(1200, 600, $cropX, $cropY);
+
+                $imageName = time() . '_' . $upload->getClientOriginalName();
+                $path = storage_path('app/public/event_images/' . $imageName);
+
+                $ext = strtolower($upload->getClientOriginalExtension());
+                if (in_array($ext, ['jpg', 'jpeg'])) {
+                    $image->save($path, 90);
+                } elseif ($ext === 'png') {
+                    $image->save($path, 9);
+                } else {
+                    $image->save($path);
+                }
+
+                $event->images()->create([
+                    'image_path' => 'event_images/' . $imageName
+                ]);
+            }
         }
 
         $data['coordinator_id'] = $coordinator->id;
