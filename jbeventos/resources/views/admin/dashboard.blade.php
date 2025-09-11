@@ -17,7 +17,7 @@
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-6 14h6m-6 0v-4m0 4h-6m6 0V9m0 5h6" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                         </svg>
                     </div>
                     <div>
@@ -42,8 +42,8 @@
             <div class="p-5 rounded-2xl shadow-lg bg-gradient-to-r from-green-400 to-green-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9l-3 3m0 0l-3-3m3 3V4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
                         </svg>
                     </div>
                     <div>
@@ -68,9 +68,9 @@
             <div class="p-5 rounded-2xl shadow-lg bg-gradient-to-r from-purple-400 to-purple-600 text-white transform hover:-translate-y-1 transition-transform duration-300 relative">
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2m-4 0H5a2 2 0 00-2 2v2a2 2 0 002 2h2m0-4v4" />
-                        </svg>
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                         </svg>
                     </div>
                     <div>
                         <h3 class="text-sm font-medium">Comentários Feitos</h3>
@@ -95,7 +95,7 @@
                 <div class="flex items-center space-x-4">
                     <div class="p-3 bg-white bg-opacity-20 rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                         </svg>
                     </div>
                     <div>
