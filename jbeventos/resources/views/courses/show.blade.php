@@ -195,6 +195,12 @@
             @endif
         </div>
 
+        {{-- Nova seção para os posts --}}
+        <div class="px-6 py-6 border-t mt-4">
+            <h3 class="text-lg font-semibold mb-6">Mural do Curso</h3>
+            @livewire('course-posts', ['course' => $course])
+        </div>
+
         {{-- Botão excluir (só admin) --}}
         @if(auth()->user()->user_type === 'admin')
             <div class="px-6 py-4">
