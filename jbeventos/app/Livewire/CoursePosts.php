@@ -11,6 +11,8 @@ class CoursePosts extends Component
 {
     use WithPagination;
 
+    protected $paginationTheme = 'tailwind';
+
     public Course $course;
     public $newPostContent = '';
     public $newReplyContent = [];
@@ -20,12 +22,16 @@ class CoursePosts extends Component
         'newReplyContent.*' => 'required|string|min:2',
     ];
 
-    // Para o Livewire, esse é o método que carrega a view.
+    public function mount(Course $course)
+    {
+        $this->course = $course;
+    }
+
     public function render()
     {
         $posts = $this->course->posts()->with('author', 'replies.author')->latest()->paginate(5);
-        
-        $isCoordinator = auth()->user()->id === $this->course->courseCoordinator->userAccount->id;
+
+        $isCoordinator = auth()->check() && optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
 
         return view('livewire.course-posts', [
             'posts' => $posts,
@@ -35,9 +41,11 @@ class CoursePosts extends Component
 
     public function createPost()
     {
-        $this->validate(['newPostContent' => 'required|string|min:5']);
+        $this->validateOnly('newPostContent');
 
-        if (auth()->user()->id !== $this->course->courseCoordinator->userAccount->id) {
+        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
+
+        if (auth()->id() !== $coordinatorUserId) {
             session()->flash('error', 'Somente o coordenador pode criar posts.');
             return;
         }
@@ -48,7 +56,12 @@ class CoursePosts extends Component
         ]);
 
         $this->newPostContent = '';
+
+        // volta pra primeira página para ver o post novo
+        $this->resetPage();
+
         session()->flash('success', 'Post criado com sucesso!');
+        $this->dispatch('postCreated'); // opcional, útil se quiser escutar no JS
     }
 
     public function createReply($postId)
@@ -64,17 +77,25 @@ class CoursePosts extends Component
         ]);
 
         $this->newReplyContent[$postId] = '';
+
+        // garante que a lista de posts/replies atualize (e volte pra primeira página se necessário)
+        $this->resetPage();
+
         session()->flash('success', 'Resposta enviada com sucesso!');
+        $this->dispatch('replyCreated');
     }
 
     public function deleteReply($replyId)
     {
         $reply = \App\Models\Reply::findOrFail($replyId);
-        
-        // Permite ao autor da resposta ou ao coordenador do curso excluí-la
-        if (auth()->user()->id === $reply->author->id || auth()->user()->id === $this->course->courseCoordinator->userAccount->id) {
+
+        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
+
+        if (auth()->id() === $reply->author->id || auth()->id() === $coordinatorUserId) {
             $reply->delete();
             session()->flash('success', 'Resposta excluída com sucesso.');
+            $this->resetPage();
+            $this->dispatch('replyDeleted');
         } else {
             session()->flash('error', 'Você não tem permissão para excluir esta resposta.');
         }

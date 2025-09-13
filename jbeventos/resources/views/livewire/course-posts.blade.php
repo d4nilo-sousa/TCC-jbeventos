@@ -7,7 +7,9 @@
                 <textarea wire:model.defer="newPostContent" rows="4"
                     class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     placeholder="O que há de novo no curso?"></textarea>
-                @error('newPostContent') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                @error('newPostContent') 
+                    <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> 
+                @enderror
                 <div class="mt-3 text-right">
                     <button type="submit"
                         class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition">
@@ -47,7 +49,9 @@
 
                 {{-- Seção de respostas --}}
                 <div class="border-t pt-4">
-                    <h5 class="text-sm font-semibold mb-3 text-gray-600">Respostas ({{ $post->replies->count() }})</h5>
+                    <h5 class="text-sm font-semibold mb-3 text-gray-600">
+                        Respostas ({{ $post->replies->count() }})
+                    </h5>
                     <div class="space-y-4">
                         @foreach ($post->replies as $reply)
                             <div class="flex items-start gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
@@ -55,13 +59,14 @@
                                     class="w-8 h-8 rounded-full object-cover">
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
-                                        <p class="text-xs font-medium text-gray-800">{{ $reply->author->name }}
+                                        <p class="text-xs font-medium text-gray-800">
+                                            {{ $reply->author->name }}
                                             <span class="text-gray-500 ml-2 font-normal">{{ $reply->created_at->diffForHumans() }}</span>
                                         </p>
                                         {{-- Botão de excluir resposta --}}
                                         @if(auth()->id() === $reply->author->id || $isCoordinator)
                                             <button wire:click="deleteReply({{ $reply->id }})"
-                                                    wire:confirm="Tem certeza que deseja excluir esta resposta?"
+                                                    onclick="return confirm('Tem certeza que deseja excluir esta resposta?')"
                                                     class="text-red-500 hover:text-red-700 text-xs font-semibold">
                                                 Excluir
                                             </button>
@@ -78,7 +83,9 @@
                         <textarea wire:model.defer="newReplyContent.{{ $post->id }}" rows="2"
                             class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500"
                             placeholder="Deixe sua resposta..."></textarea>
-                        @error("newReplyContent.{$post->id}") <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        @error("newReplyContent.{$post->id}") 
+                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> 
+                        @enderror
                         <div class="mt-2 text-right">
                             <button type="submit"
                                 class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-1.5 px-4 rounded-lg transition">
