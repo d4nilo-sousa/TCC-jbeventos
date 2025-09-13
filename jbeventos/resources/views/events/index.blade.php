@@ -205,12 +205,13 @@
                             </div>
 
                         </div>
+
                         {{-- Barra de pesquisa --}}
                         <form action="{{ route('events.index') }}" method="GET"
                             class="items-center w-full sm:w-auto"> {{-- Adicionei mt-6 para espaçamento --}}
                             <div
                                 class="flex items-center bg-white rounded-full overflow-hidden border-2 w-full sm:w-auto">
-                                <input type="text" name="search" value="{{ request('search') }}"
+                                <input id="searchInput" name="search" value="{{ request('search') }}"
                                     placeholder="Pesquisar cursos..." autocomplete="off"
                                     class="px-6 flex-1 min-w-[200px] sm:min-w-[300px] lg:min-w-[350px] text-gray-800 placeholder-gray-500 border-none outline-none focus:ring-0 bg-white">
                                 <button type="submit"
@@ -227,27 +228,18 @@
                     <div
                         class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100 min-h-[72%]">
                         <div class="mb-10">
-                            {{-- Lista de eventos --}}
-                            @if ($events->count() > 0)
-                                <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
-                                    @foreach ($events as $event)
-                                        @include('partials.event-card', ['event' => $event])
-                                    @endforeach
-                                </div>
-                            @else
-                                <div class="flex flex-col items-center gap-5">
-                                    <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%] flex mx-auto"
-                                        alt="not-found">
-                                    <p class="text-gray-500">Nenhum evento encontrado...</p>
-                                </div>
-
-
-
-
-                            @endif
+                            <div id="eventsList" class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
+                                @forelse ($events as $event)
+                                    @include('partials.event-card', ['event' => $event])
+                                @empty
+                                    <div id="noEventsMessage"
+                                        class="col-span-full flex flex-col items-center justify-center gap-5 p-10">
+                                        <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%]" alt="not-found">
+                                        <p class="text-gray-500 text-center">Nenhum evento encontrado...</p>
+                                    </div>
+                                @endforelse
+                            </div>
                         </div>
-
-
                     </div>
                 </div>
             </div>
@@ -256,3 +248,76 @@
 
 {{-- Scripts compilados --}}
 @vite('resources/js/app.js')
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const searchForm = searchInput.closest("form"); // pega o form pai
+        const eventsList = document.getElementById("eventsList");
+        const originalHTML = eventsList.innerHTML; // salva a listagem original
+        const noEventsMessage = document.getElementById("noEventsMessage");
+        let timer = null;
+
+        function fetchEvents(query) {
+            let url = "{{ route('events.index') }}";
+            if (query) {
+                url += `?search=${encodeURIComponent(query)}`;
+            }
+
+            fetch(url, {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    const newCards = doc.querySelectorAll("#eventsList > *");
+
+                    eventsList.innerHTML = "";
+                    newCards.forEach(card => eventsList.appendChild(card));
+
+                    noEventsMessage.style.display = eventsList.children.length > 0 ? "none" : "flex";
+                })
+                .catch(err => console.error(err));
+        }
+
+        // AJAX ao digitar
+        searchInput.addEventListener("keyup", () => {
+            clearTimeout(timer);
+            const query = searchInput.value.trim();
+
+            timer = setTimeout(() => {
+                if (query) fetchEvents(query);
+            }, 300);
+        });
+
+        // Intercepta o submit do formulário
+        searchForm.addEventListener("submit", (e) => {
+            const query = searchInput.value.trim();
+            if (!query) {
+                e.preventDefault(); // evita enviar com campo vazio
+                window.location.href = "{{ route('events.index') }}"; // redireciona para /events
+            }
+            // se tiver texto, deixa enviar normalmente ou via AJAX
+        });
+
+        // Quando perde foco, restaura a listagem original
+        searchInput.addEventListener("blur", () => {
+            setTimeout(() => {
+                if (document.activeElement !== searchInput) {
+                    eventsList.innerHTML = originalHTML;
+                    noEventsMessage.style.display = eventsList.children.length > 0 ? "none" :
+                        "flex";
+                }
+            }, 100);
+        });
+
+        // Quando foca novamente, dispara a pesquisa atual automaticamente
+        searchInput.addEventListener("focus", () => {
+            const query = searchInput.value.trim();
+            if (query) fetchEvents(query);
+        });
+    });
+</script>

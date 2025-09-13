@@ -105,25 +105,8 @@ class EventController extends Controller
         $events->when($request->filled('search'), function ($query) use ($request) {
             $search = $request->input('search');
 
-            $query->where(
-                function ($q) use ($search) {
-                    $q->where('event_name', 'like', "%{$search}%")
-                        ->orWhereHas(
-                            'eventCoordinator.userAccount',
-                            function ($subQuery) use ($search) {
-                                $subQuery->where('name', 'like', "%{$search}%");
-                            }
-                        )
-                        ->orWhereHas(
-                            'eventCoordinator.coordinatedCourse',
-                            function ($subQuery) use ($search) {
-                                $subQuery->where('course_name', 'like', "%{$search}%");
-                            }
-                        );
-                }
-            );
+            $query->where('event_name', 'like', "%{$search}%");
         });
-
 
         // Executa a query
         $events = $events->get();
