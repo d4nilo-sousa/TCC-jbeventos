@@ -14,22 +14,31 @@ class CoursePosts extends Component
     protected $paginationTheme = 'tailwind';
 
     public Course $course;
+    public bool $overview = false; // define se é overview
     public $newPostContent = '';
     public $newReplyContent = [];
+    public $editingPostId = null;
+    public $editingPostContent = '';
 
     protected $rules = [
         'newPostContent' => 'required|string|min:5',
         'newReplyContent.*' => 'required|string|min:2',
+        'editingPostContent' => 'required|string|min:5',
     ];
 
-    public function mount(Course $course)
+    public function mount(Course $course, bool $overview = false)
     {
         $this->course = $course;
+        $this->overview = $overview;
     }
 
     public function render()
     {
-        $posts = $this->course->posts()->with('author', 'replies.author')->latest()->paginate(5);
+        if ($this->overview) {
+            $posts = $this->course->posts()->latest()->take(2)->get();
+        } else {
+            $posts = $this->course->posts()->with('author', 'replies.author')->latest()->paginate(5);
+        }
 
         $isCoordinator = auth()->check() && optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
 
@@ -39,6 +48,7 @@ class CoursePosts extends Component
         ]);
     }
 
+    // Criar novo post
     public function createPost()
     {
         $this->validateOnly('newPostContent');
@@ -56,14 +66,52 @@ class CoursePosts extends Component
         ]);
 
         $this->newPostContent = '';
-
-        // volta pra primeira página para ver o post novo
         $this->resetPage();
 
         session()->flash('success', 'Post criado com sucesso!');
-        $this->dispatch('postCreated'); // opcional, útil se quiser escutar no JS
     }
 
+    // Editar post
+    public function editPost(Post $post)
+    {
+        if (auth()->id() !== $post->user_id) {
+            session()->flash('error', 'Você não pode editar este post.');
+            return;
+        }
+
+        $this->editingPostId = $post->id;
+        $this->editingPostContent = $post->content;
+    }
+
+    public function updatePost(Post $post)
+    {
+        $this->validateOnly('editingPostContent');
+
+        if (auth()->id() !== $post->user_id) {
+            session()->flash('error', 'Você não pode atualizar este post.');
+            return;
+        }
+
+        $post->update(['content' => $this->editingPostContent]);
+        $this->editingPostId = null;
+        session()->flash('success', 'Post atualizado com sucesso!');
+    }
+
+    // Excluir post
+    public function deletePost(Post $post)
+    {
+        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
+
+        if (auth()->id() === $post->user_id || auth()->id() === $coordinatorUserId) {
+            $post->delete();
+            $this->resetPage();
+            session()->flash('success', 'Post excluído com sucesso!');
+        } else {
+            session()->flash('error', 'Você não tem permissão para excluir este post.');
+        }
+    }
+
+    // Resposta
     public function createReply($postId)
     {
         $this->validate([
@@ -77,25 +125,19 @@ class CoursePosts extends Component
         ]);
 
         $this->newReplyContent[$postId] = '';
-
-        // garante que a lista de posts/replies atualize (e volte pra primeira página se necessário)
         $this->resetPage();
-
         session()->flash('success', 'Resposta enviada com sucesso!');
-        $this->dispatch('replyCreated');
     }
 
     public function deleteReply($replyId)
     {
         $reply = \App\Models\Reply::findOrFail($replyId);
-
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 
         if (auth()->id() === $reply->author->id || auth()->id() === $coordinatorUserId) {
             $reply->delete();
-            session()->flash('success', 'Resposta excluída com sucesso.');
             $this->resetPage();
-            $this->dispatch('replyDeleted');
+            session()->flash('success', 'Resposta excluída com sucesso.');
         } else {
             session()->flash('error', 'Você não tem permissão para excluir esta resposta.');
         }
