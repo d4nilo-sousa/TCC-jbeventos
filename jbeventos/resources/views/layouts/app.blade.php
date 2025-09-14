@@ -17,12 +17,9 @@
 
     <script>
         window.Laravel = {
-            userId: {{ auth()->id() }}
+            userId: @json(auth()->id())
         };
     </script>
-
-    <script defer src="https://unpkg.com/@alpinejs/tooltip@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     @livewireStyles
 </head>

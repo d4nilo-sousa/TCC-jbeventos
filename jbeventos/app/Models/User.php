@@ -100,6 +100,19 @@ class User extends Authenticatable
         return $this->belongsToMany(Course::class, 'course_user_follow')->withTimestamps();
     }
 
+    // Posts feitos pelo usuário
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    // Respostas feitas pelo usuário
+    public function replies()
+    {
+        return $this->hasMany(Reply::class);
+    }
+
+
     // Reações feitas pelo usuário em eventos
     // Essa relação usa uma tabela pivot com atributos próprios (EventUserReaction)
     public function eventReactions() {
