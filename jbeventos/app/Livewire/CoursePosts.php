@@ -6,40 +6,35 @@ use App\Models\Course;
 use App\Models\Post;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Arr;
 
 class CoursePosts extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     protected $paginationTheme = 'tailwind';
 
     public Course $course;
-    public bool $overview = false; // define se é overview
     public $newPostContent = '';
     public $newReplyContent = [];
-    public $editingPostId = null;
-    public $editingPostContent = '';
+    public $images = []; // Array principal para todas as imagens
+    public $newlyUploadedImages = []; // Array temporário para o input de arquivo
 
     protected $rules = [
         'newPostContent' => 'required|string|min:5',
+        'images.*' => 'image|max:2048', // Valida o array principal
         'newReplyContent.*' => 'required|string|min:2',
-        'editingPostContent' => 'required|string|min:5',
     ];
 
-    public function mount(Course $course, bool $overview = false)
+    public function mount(Course $course)
     {
         $this->course = $course;
-        $this->overview = $overview;
     }
 
     public function render()
     {
-        if ($this->overview) {
-            $posts = $this->course->posts()->latest()->take(2)->get();
-        } else {
-            $posts = $this->course->posts()->with('author', 'replies.author')->latest()->paginate(5);
-        }
-
+        $posts = $this->course->posts()->with('author', 'replies.author')->latest()->paginate(5);
         $isCoordinator = auth()->check() && optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
 
         return view('livewire.course-posts', [
@@ -48,10 +43,40 @@ class CoursePosts extends Component
         ]);
     }
 
-    // Criar novo post
+    // Corrigido: Agora, o Livewire atualiza esta propriedade temporária.
+    // A lógica de mesclagem é feita aqui.
+    public function updatedNewlyUploadedImages()
+    {
+        // Se a seleção for um array de imagens (múltipla seleção de uma vez)
+        if (is_array($this->newlyUploadedImages)) {
+            $this->images = array_merge($this->images, $this->newlyUploadedImages);
+        } else {
+            // Se a seleção for de apenas uma imagem
+            $this->images[] = $this->newlyUploadedImages;
+        }
+
+        // Limita o total de imagens para 5
+        if (count($this->images) > 5) {
+            $this->images = array_slice($this->images, 0, 5);
+            session()->flash('error', 'Você só pode enviar até 5 imagens por post.');
+        }
+
+        // Limpa o array temporário para a próxima seleção
+        $this->newlyUploadedImages = [];
+    }
+
+    public function removeImage($index)
+    {
+        unset($this->images[$index]);
+        $this->images = array_values($this->images);
+    }
+
     public function createPost()
     {
-        $this->validateOnly('newPostContent');
+        $this->validate([
+            'newPostContent' => 'required|string|min:5', 
+            'images.*' => 'image|max:2048'
+        ]);
 
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 
@@ -60,58 +85,27 @@ class CoursePosts extends Component
             return;
         }
 
+        $imagePaths = [];
+        if (!empty($this->images)) {
+            foreach ($this->images as $image) {
+                $imagePaths[] = $image->store('post-images', 'public');
+            }
+        }
+
         $this->course->posts()->create([
             'user_id' => auth()->id(),
             'content' => $this->newPostContent,
+            'images' => $imagePaths,
         ]);
 
         $this->newPostContent = '';
+        $this->images = [];
         $this->resetPage();
 
         session()->flash('success', 'Post criado com sucesso!');
+        $this->dispatch('postCreated');
     }
 
-    // Editar post
-    public function editPost(Post $post)
-    {
-        if (auth()->id() !== $post->user_id) {
-            session()->flash('error', 'Você não pode editar este post.');
-            return;
-        }
-
-        $this->editingPostId = $post->id;
-        $this->editingPostContent = $post->content;
-    }
-
-    public function updatePost(Post $post)
-    {
-        $this->validateOnly('editingPostContent');
-
-        if (auth()->id() !== $post->user_id) {
-            session()->flash('error', 'Você não pode atualizar este post.');
-            return;
-        }
-
-        $post->update(['content' => $this->editingPostContent]);
-        $this->editingPostId = null;
-        session()->flash('success', 'Post atualizado com sucesso!');
-    }
-
-    // Excluir post
-    public function deletePost(Post $post)
-    {
-        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
-
-        if (auth()->id() === $post->user_id || auth()->id() === $coordinatorUserId) {
-            $post->delete();
-            $this->resetPage();
-            session()->flash('success', 'Post excluído com sucesso!');
-        } else {
-            session()->flash('error', 'Você não tem permissão para excluir este post.');
-        }
-    }
-
-    // Resposta
     public function createReply($postId)
     {
         $this->validate([
@@ -127,6 +121,7 @@ class CoursePosts extends Component
         $this->newReplyContent[$postId] = '';
         $this->resetPage();
         session()->flash('success', 'Resposta enviada com sucesso!');
+        $this->dispatch('replyCreated');
     }
 
     public function deleteReply($replyId)
@@ -136,10 +131,26 @@ class CoursePosts extends Component
 
         if (auth()->id() === $reply->author->id || auth()->id() === $coordinatorUserId) {
             $reply->delete();
-            $this->resetPage();
             session()->flash('success', 'Resposta excluída com sucesso.');
+            $this->resetPage();
+            $this->dispatch('replyDeleted');
         } else {
             session()->flash('error', 'Você não tem permissão para excluir esta resposta.');
+        }
+    }
+
+    public function deletePost($postId)
+    {
+        $post = Post::findOrFail($postId);
+        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
+
+        if (auth()->id() === $post->user_id || auth()->id() === $coordinatorUserId) {
+            $post->delete();
+            session()->flash('success', 'Post excluído com sucesso.');
+            $this->resetPage();
+            $this->dispatch('postDeleted');
+        } else {
+            session()->flash('error', 'Você não tem permissão para excluir este post.');
         }
     }
 }
