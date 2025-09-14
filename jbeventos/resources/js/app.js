@@ -10,3 +10,5 @@ import './phone-mask';
 import './echo';
 import './image-viewer';
 import './preview-images';
+import './events-search';
+

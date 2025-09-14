@@ -13,7 +13,7 @@
 
     <div class="p-4 flex flex-col flex-grow">
         {{-- Nome do evento --}}
-        <h3 class="mb-2 text-lg font-semibold text-gray-900">{{ $event->event_name }}</h3>
+        <h3 class="event-title mb-2 text-lg font-semibold text-gray-900">{{ $event->event_name }}</h3>
 
         {{-- Descrição limitada a 100 caracteres --}}
         <p class="mb-2 text-gray-700 text-sm overflow-hidden text-ellipsis line-clamp-3">

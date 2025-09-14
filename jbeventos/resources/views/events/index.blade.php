@@ -228,7 +228,8 @@
                     <div
                         class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100 min-h-[72%]">
                         <div class="mb-10">
-                            <div id="eventsList" class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
+                            <div id="eventsList" data-url="{{ route('events.index') }}"
+                                class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
                                 @forelse ($events as $event)
                                     @include('partials.event-card', ['event' => $event])
                                 @empty
@@ -248,76 +249,3 @@
 
 {{-- Scripts compilados --}}
 @vite('resources/js/app.js')
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("searchInput");
-        const searchForm = searchInput.closest("form"); // pega o form pai
-        const eventsList = document.getElementById("eventsList");
-        const originalHTML = eventsList.innerHTML; // salva a listagem original
-        const noEventsMessage = document.getElementById("noEventsMessage");
-        let timer = null;
-
-        function fetchEvents(query) {
-            let url = "{{ route('events.index') }}";
-            if (query) {
-                url += `?search=${encodeURIComponent(query)}`;
-            }
-
-            fetch(url, {
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest"
-                    }
-                })
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, "text/html");
-                    const newCards = doc.querySelectorAll("#eventsList > *");
-
-                    eventsList.innerHTML = "";
-                    newCards.forEach(card => eventsList.appendChild(card));
-
-                    noEventsMessage.style.display = eventsList.children.length > 0 ? "none" : "flex";
-                })
-                .catch(err => console.error(err));
-        }
-
-        // AJAX ao digitar
-        searchInput.addEventListener("keyup", () => {
-            clearTimeout(timer);
-            const query = searchInput.value.trim();
-
-            timer = setTimeout(() => {
-                if (query) fetchEvents(query);
-            }, 300);
-        });
-
-        // Intercepta o submit do formulário
-        searchForm.addEventListener("submit", (e) => {
-            const query = searchInput.value.trim();
-            if (!query) {
-                e.preventDefault(); // evita enviar com campo vazio
-                window.location.href = "{{ route('events.index') }}"; // redireciona para /events
-            }
-            // se tiver texto, deixa enviar normalmente ou via AJAX
-        });
-
-        // Quando perde foco, restaura a listagem original
-        searchInput.addEventListener("blur", () => {
-            setTimeout(() => {
-                if (document.activeElement !== searchInput) {
-                    eventsList.innerHTML = originalHTML;
-                    noEventsMessage.style.display = eventsList.children.length > 0 ? "none" :
-                        "flex";
-                }
-            }, 100);
-        });
-
-        // Quando foca novamente, dispara a pesquisa atual automaticamente
-        searchInput.addEventListener("focus", () => {
-            const query = searchInput.value.trim();
-            if (query) fetchEvents(query);
-        });
-    });
-</script>
