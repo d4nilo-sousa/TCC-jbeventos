@@ -88,7 +88,7 @@
                     {{-- Contagem de Membros --}}
                     <p class="text-sm text-gray-500 mt-1">
                         <span class="font-semibold">{{ $course->followers()->count() }}</span>
-                        {{ Str::plural('membro', $course->followers()->count()) }}
+                        {{ Str::plural('Seguidores', $course->followers()->count()) }}
                     </p>
 
                     <p class="text-sm text-gray-500 mt-1">
@@ -107,7 +107,7 @@
 
         {{-- Coluna da Direita (Tabs de Conteúdo) --}}
         <div class="lg:w-2/3">
-            <div x-data="{ tab: 'posts' }" class="bg-white rounded-2xl shadow-lg p-6">
+            <div x-data="{ tab: 'events' }" class="bg-white rounded-2xl shadow-lg p-6">
 
                 {{-- Navegação por abas --}}
                 <div class="border-b border-gray-200 mb-6">
@@ -141,7 +141,7 @@
                     <h2 class="text-xl font-bold text-stone-800 mb-4">Eventos do Curso</h2>
                     @if(auth()->user()->user_type === 'coordinator')
                         <div class="flex justify-end mb-4">
-                            <a href="{{ route('events.create', ['course_id' => $course->id]) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">
+                            <a href="{{ route('events.create', ['course_id' => $course->id]) }}" class="bg-gray-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">
                                 + Criar Evento
                             </a>
                         </div>
@@ -149,48 +149,24 @@
 
                     {{-- Lista de Eventos --}}
                     @if($course->events->isNotEmpty())
-                        <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach($course->events->sortByDesc('event_scheduled_at') as $event)
-                                <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200">
-                                    <div class="flex items-center gap-4 mb-4">
-                                        <div class="bg-blue-100 p-3 rounded-full">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                                            </svg>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-lg font-bold text-stone-800">{{ $event->event_name }}</h4>
-                                            @if ($event->event_scheduled_at)
-                                                <p class="text-sm text-gray-500 mt-1">
-                                                    {{ $event->event_scheduled_at->format('d/m/Y') }} às {{ $event->event_scheduled_at->format('H:i') }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                        <span class="text-xs text-gray-500">{{ $event->created_at->diffForHumans() }}</span>
-                                    </div>
-                                    
-                                    @if($event->event_cover)
-                                        <div class="rounded-lg overflow-hidden mb-4">
-                                            <img src="{{ asset('storage/' . $event->event_cover) }}" alt="Capa do Evento" class="object-cover w-full h-auto max-h-80">
+                                <a href="{{ route('events.show', $event->id) }}" class="bg-white rounded-2xl shadow-md border border-gray-200 hover:border-blue-500 transition-colors duration-200 overflow-hidden">
+                                    @if($event->event_image)
+                                        <div class="w-full h-36">
+                                            <img src="{{ asset('storage/' . $event->event_image) }}" alt="Capa do Evento" class="object-cover w-full h-full">
                                         </div>
                                     @endif
-
-                                    <p class="text-gray-600 text-sm mb-4 whitespace-pre-line">{{ $event->event_description }}</p>
-
-                                    <div class="flex items-center space-x-4 text-sm text-gray-500">
-                                        {{-- Link para visualizar o Evento --}}
-                                        <a href="{{ route('events.show', $event->id) }}" class="flex items-center gap-1 hover:text-blue-500 transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                            <span>Ver Detalhes</span>
-                                        </a>
+                                    <div class="p-4">
+                                        <h4 class="text-lg font-bold text-stone-800 truncate">{{ $event->event_name }}</h4>
+                                        @if ($event->event_scheduled_at)
+                                            <p class="text-sm text-gray-500 mt-1">
+                                                {{ $event->event_scheduled_at->format('d/m/Y') }} às {{ $event->event_scheduled_at->format('H:i') }}
+                                            </p>
+                                        @endif
+                                        <p class="text-sm text-gray-600 mt-2 line-clamp-2">{{ $event->event_description }}</p>
                                     </div>
-                                </div>
+                                </a>
                             @endforeach
                         </div>
                     @else
