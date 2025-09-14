@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
     const searchForm = searchInput.closest("form");
     const eventsList = document.getElementById("eventsList");
-    const baseUrl = eventsList.dataset.url; // pega a URL do Blade
+    const baseUrl = eventsList.dataset.url;
     const originalHTML = eventsList.innerHTML;
     const noEventsMessage = document.getElementById("noEventsMessage");
     let timer = null;
@@ -17,15 +17,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const normalizedText = normalize(text);
         const normalizedQuery = normalize(query);
         const regex = new RegExp(`(${normalizedQuery})`, "gi");
-        let highlighted = "";
-        let lastIndex = 0;
-        normalizedText.replace(regex, (match, p1, offset) => {
-            highlighted += text.substring(lastIndex, offset);
-            highlighted += `<span class="bg-yellow-200">${text.substr(offset, p1.length)}</span>`;
-            lastIndex = offset + p1.length;
-        });
-        highlighted += text.substring(lastIndex);
-        element.innerHTML = highlighted;
+
+        // Cria array de partes para evitar problemas com purged CSS
+        const parts = text.split(regex);
+        element.innerHTML = parts
+            .map(part => regex.test(normalize(part))
+                ? `<span class="bg-yellow-200">${part}</span>`
+                : part
+            )
+            .join("");
     }
 
     function fetchEvents(query) {
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (query) {
             eventsList.querySelectorAll(".event-title").forEach(title => {
-                title.innerHTML = title.textContent;
+                title.innerHTML = title.textContent; // reseta
                 highlightText(title, query);
             });
         }
