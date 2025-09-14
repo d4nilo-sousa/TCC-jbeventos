@@ -1,19 +1,19 @@
-<div id="event-card-{{ $event->id }}"
-    class="overflow-hidden rounded-lg border border-gray-200 shadow-sm flex flex-col">
-    <a href="{{ route('events.show', $event->id) }}">
-        {{-- Imagem do evento ou placeholder --}}
-        @if ($event->event_image)
+<div id="event-card-{{ $event->id }}" class="overflow-hidden rounded-lg border border-gray-200 shadow-sm flex flex-col">
+    {{-- Imagem do evento ou placeholder --}}
+    @if ($event->event_image)
+        <div class="w-full aspect-[2/1] overflow-hidden">
             <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
-                class="h-48 w-full object-cover">
-        @else
-            <div class="h-48 w-full bg-gray-200 flex items-center justify-center text-gray-500">
-                Sem imagem
-            </div>
-        @endif
+                 class="w-full h-full object-cover">
+        </div>
+    @else
+        <div class="w-full aspect-[2/1] flex items-center justify-center bg-gray-200 text-gray-500">
+            📷 Nenhuma imagem enviada
+        </div>
+    @endif
 
-        <div class="p-4 flex flex-col flex-grow">
-            {{-- Nome do evento --}}
-            <h3 class="mb-2 text-lg font-semibold text-gray-900">{{ $event->event_name }}</h3>
+    <div class="p-4 flex flex-col flex-grow">
+        {{-- Nome do evento --}}
+        <h3 class="event-title mb-2 text-lg font-semibold text-gray-900">{{ $event->event_name }}</h3>
 
             {{-- Descrição limitada a 100 caracteres --}}
             <p class="mb-2 text-gray-700 text-sm overflow-hidden text-ellipsis line-clamp-3">

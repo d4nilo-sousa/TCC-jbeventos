@@ -200,12 +200,13 @@
                             </div>
 
                         </div>
+
                         {{-- Barra de pesquisa --}}
                         <form action="{{ route('events.index') }}" method="GET"
                             class="items-center w-full sm:w-auto"> {{-- Adicionei mt-6 para espaçamento --}}
                             <div
                                 class="flex items-center bg-white rounded-full overflow-hidden border-2 w-full sm:w-auto">
-                                <input type="text" name="search" value="{{ request('search') }}"
+                                <input id="searchInput" name="search" value="{{ request('search') }}"
                                     placeholder="Pesquisar cursos..." autocomplete="off"
                                     class="px-6 flex-1 min-w-[200px] sm:min-w-[300px] lg:min-w-[350px] text-gray-800 placeholder-gray-500 border-none outline-none focus:ring-0 bg-white">
                                 <button type="submit"
@@ -219,22 +220,22 @@
                 </div>
 
                 <div>
-                    <div class="mb-10">
-                        {{-- Lista de eventos --}}
-                        @if ($events->count() > 0)
-                            <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
-                                @foreach ($events as $event)
+                    <div
+                        class="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-9 mx-auto border-2 border-stone-100 min-h-[72%]">
+                        <div class="mb-10">
+                            <div id="eventsList" data-url="{{ route('events.index') }}"
+                                class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
+                                @forelse ($events as $event)
                                     @include('partials.event-card', ['event' => $event])
-                                @endforeach
+                                @empty
+                                    <div id="noEventsMessage"
+                                        class="col-span-full flex flex-col items-center justify-center gap-5 p-10">
+                                        <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%]" alt="not-found">
+                                        <p class="text-gray-500 text-center">Nenhum evento encontrado...</p>
+                                    </div>
+                                @endforelse
                             </div>
-                        @else
-                            <div class="flex flex-col items-center gap-5">
-                                <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%] flex mx-auto"
-                                    alt="not-found">
-                                <p class="text-gray-500">Nenhum evento encontrado...</p>
-                            </div>
-                        @endif
-
+                        </div>
                     </div>
                 </div>
             </div>

@@ -18,6 +18,9 @@ use Carbon\Carbon;
 use App\Events\EventCreated;
 use App\Events\EventDeleted;
 use App\Events\EventUpdated;
+use Intervention\Image\Format;
+use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
@@ -34,21 +37,18 @@ class EventController extends Controller
                 // Eventos visíveis do coordenador logado
                 $events->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', true);
-            }
-            elseif ($request->status === 'hidden') {
+            } elseif ($request->status === 'hidden') {
                 // Eventos ocultos do coordenador logado
                 $events->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', false);
-            }
-            else {
+            } else {
                 // Sem filtro: eventos visíveis de todos + eventos do coordenador logado (ocultos ou visíveis)
                 $events->where(function ($query) use ($loggedCoordinator) {
                     $query->where('visible_event', true)
                         ->orWhere('coordinator_id', $loggedCoordinator->id);
                 });
             }
-        }
-        else {
+        } else {
             // Usuários que não são coordenadores veem apenas eventos visíveis
             $events->where('visible_event', true);
         }
@@ -80,14 +80,13 @@ class EventController extends Controller
         if ($request->filled('likes_order')) {
             $events->withCount([
                 'reactions as likes_count' => function ($query) {
-                $query->where('reaction_type', 'like');
-            }
+                    $query->where('reaction_type', 'like');
+                }
             ]);
 
             if ($request->likes_order === 'most') {
                 $events->orderBy('likes_count', 'desc');
-            }
-            elseif ($request->likes_order === 'least') {
+            } elseif ($request->likes_order === 'least') {
                 $events->orderBy('likes_count', 'asc');
             }
         }
@@ -96,32 +95,18 @@ class EventController extends Controller
         if ($request->filled('schedule_order')) {
             if ($request->schedule_order === 'soonest') {
                 $events->orderBy('event_scheduled_at', 'asc');
-            }
-            elseif ($request->schedule_order === 'latest') {
+            } elseif ($request->schedule_order === 'latest') {
                 $events->orderBy('event_scheduled_at', 'desc');
             }
-        }
-        else {
+        } else {
             $events->orderBy('created_at', 'desc');
         }
 
         $events->when($request->filled('search'), function ($query) use ($request) {
             $search = $request->input('search');
 
-            $query->where(function ($q) use ($search) {
-                    $q->where('event_name', 'like', "%{$search}%")
-                        ->orWhereHas('eventCoordinator.userAccount', function ($subQuery) use ($search) {
-                    $subQuery->where('name', 'like', "%{$search}%");
-                }
-                )
-                    ->orWhereHas('eventCoordinator.coordinatedCourse', function ($subQuery) use ($search) {
-                    $subQuery->where('course_name', 'like', "%{$search}%");
-                }
-                );
-            }
-            );
+            $query->where('event_name', 'like', "%{$search}%");
         });
-
 
         // Executa a query
         $events = $events->get();
@@ -143,7 +128,7 @@ class EventController extends Controller
         return view('coordinator.events.create', compact('categories', 'minExpiredAt', 'eventExpiredAt'));
     }
 
-    // Armazena evento
+    // Cria o evento
     public function store(Request $request)
     {
         $request->validate([
@@ -158,9 +143,7 @@ class EventController extends Controller
         ]);
 
         $coordinator = auth()->user()->coordinator;
-        if (!$coordinator) {
-            abort(403, 'Usuário não está vinculado a um coordenador.');
-        }
+        if (!$coordinator) abort(403, 'Usuário não está vinculado a um coordenador.');
 
         $data = $request->only([
             'event_name',
@@ -168,27 +151,86 @@ class EventController extends Controller
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
-            'event_image',
-            'visible_event',
+            'visible_event'
         ]);
 
+
+        // Capa do evento
         if ($request->hasFile('event_image')) {
-            $data['event_image'] = $request->file('event_image')->store('event_images', 'public');
+            $upload = $request->file('event_image');
+
+            $image = Image::read($upload);
+
+            $image->resize(1200, 600, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            $width = $image->width();
+            $height = $image->height();
+            $cropX = max(0, intval(($width - 1200) / 2));
+            $cropY = max(0, intval(($height - 600) / 2));
+            $image->crop(1200, 600, $cropX, $cropY);
+
+            $imageName = time() . '_' . $upload->getClientOriginalName();
+            $path = storage_path('app/public/event_images/' . $imageName);
+
+            $ext = strtolower($upload->getClientOriginalExtension());
+            if (in_array($ext, ['jpg', 'jpeg'])) {
+                $image->save($path, 90);
+            } elseif ($ext === 'png') {
+                $image->save($path, 9);
+            } else {
+                $image->save($path);
+            }
+
+            $data['event_image'] = 'event_images/' . $imageName;
         }
 
         $data['coordinator_id'] = $coordinator->id;
         $data['event_type'] = $coordinator->coordinator_type;
-
-        if ($coordinator->coordinator_type === 'course' && $coordinator->coordinatedCourse) {
-            $data['course_id'] = $coordinator->coordinatedCourse->id;
-        }
+        $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
 
         $event = Event::create($data);
 
+        // Imagens extras do carrossel
+        if ($request->hasFile('event_images')) {
+            foreach ($request->file('event_images') as $upload) {
+
+                $image = Image::read($upload);
+
+                $image->resize(1200, 600, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $width = $image->width();
+                $height = $image->height();
+                $cropX = max(0, intval(($width - 1200) / 2));
+                $cropY = max(0, intval(($height - 600) / 2));
+                $image->crop(1200, 600, $cropX, $cropY);
+
+                $imageName = time() . '_' . $upload->getClientOriginalName();
+                $path = storage_path('app/public/event_images/' . $imageName);
+
+                $ext = strtolower($upload->getClientOriginalExtension());
+                if (in_array($ext, ['jpg', 'jpeg'])) {
+                    $image->save($path, 90);
+                } elseif ($ext === 'png') {
+                    $image->save($path, 9);
+                } else {
+                    $image->save($path);
+                }
+
+                $event->images()->create([
+                    'image_path' => 'event_images/' . $imageName
+                ]);
+            }
+        }
+
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        }
-        else {
+        } else {
             $event->eventCategories()->detach();
         }
 
@@ -225,7 +267,7 @@ class EventController extends Controller
         $event = Event::findOrFail($id);
         $minExpiredAt = Carbon::now()->format('Y-m-d\TH:i');
         $eventExpiredAt = $event->event_expired_at
-            ?Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
+            ? Carbon::parse($event->event_expired_at)->format('Y-m-d\TH:i')
             : '';
 
         $authCoordinator = auth()->user()->coordinator;
@@ -264,15 +306,89 @@ class EventController extends Controller
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
-            'event_image',
-            'visible_event',
+            'visible_event'
         ]);
 
-        if ($request->hasFile('event_image')) {
+        if ($request->input('remove_event_image') == '1') {
             if ($event->event_image) {
                 Storage::disk('public')->delete($event->event_image);
             }
-            $data['event_image'] = $request->file('event_image')->store('event_images', 'public');
+            $data['event_image'] = null;
+        } else if ($request->hasFile('event_image')) {
+            $upload = $request->file('event_image');
+
+            $image = Image::read($upload);
+
+            $image->resize(1200, 600, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+            $width = $image->width();
+            $height = $image->height();
+            $cropX = max(0, intval(($width - 1200) / 2));
+            $cropY = max(0, intval(($height - 600) / 2));
+            $image->crop(1200, 600, $cropX, $cropY);
+
+            $imageName = time() . '_' . $upload->getClientOriginalName();
+            $path = storage_path('app/public/event_images/' . $imageName);
+
+            $ext = strtolower($upload->getClientOriginalExtension());
+            if (in_array($ext, ['jpg', 'jpeg'])) {
+                $image->save($path, 90);
+            } elseif ($ext === 'png') {
+                $image->save($path, 9);
+            } else {
+                $image->save($path);
+            }
+
+            $data['event_image'] = 'event_images/' . $imageName;
+        }
+
+        if ($request->filled('remove_event_images')) {
+            foreach ($request->input('remove_event_images') as $imageId => $remove) {
+                if ($remove == '1') {
+                    $image = $event->images()->find($imageId);
+                    if ($image) {
+                        Storage::disk('public')->delete($image->image_path);
+                        $image->delete();
+                    }
+                }
+            }
+        }
+
+        if ($request->hasFile('event_images')) {
+            foreach ($request->file('event_images') as $upload) {
+
+                $image = Image::read($upload);
+
+                $image->resize(1200, 600, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $width = $image->width();
+                $height = $image->height();
+                $cropX = max(0, intval(($width - 1200) / 2));
+                $cropY = max(0, intval(($height - 600) / 2));
+                $image->crop(1200, 600, $cropX, $cropY);
+
+                $imageName = time() . '_' . $upload->getClientOriginalName();
+                $path = storage_path('app/public/event_images/' . $imageName);
+
+                $ext = strtolower($upload->getClientOriginalExtension());
+                if (in_array($ext, ['jpg', 'jpeg'])) {
+                    $image->save($path, 90);
+                } elseif ($ext === 'png') {
+                    $image->save($path, 9);
+                } else {
+                    $image->save($path);
+                }
+
+                $event->images()->create([
+                    'image_path' => 'event_images/' . $imageName
+                ]);
+            }
         }
 
         $data['coordinator_id'] = $coordinator->id;
@@ -299,8 +415,7 @@ class EventController extends Controller
 
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
-        }
-        else {
+        } else {
             $event->eventCategories()->detach();
         }
 

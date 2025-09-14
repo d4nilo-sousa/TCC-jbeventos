@@ -74,4 +74,9 @@ class Event extends Model
     {
         return $this->belongsTo(Course::class, 'course_id');
     }
+
+    public function images()
+    {
+        return $this->hasMany(EventImage::class);
+    }
 }
