@@ -8,6 +8,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class CoursePosts extends Component
 {
@@ -18,12 +19,12 @@ class CoursePosts extends Component
     public Course $course;
     public $newPostContent = '';
     public $newReplyContent = [];
-    public $images = []; // Array principal para todas as imagens
-    public $newlyUploadedImages = []; // Array temporário para o input de arquivo
+    public $images = [];
+    public $newlyUploadedImages = [];
 
     protected $rules = [
         'newPostContent' => 'required|string|min:5',
-        'images.*' => 'image|max:2048', // Valida o array principal
+        'images.*' => 'image|max:2048',
         'newReplyContent.*' => 'required|string|min:2',
     ];
 
@@ -34,34 +35,33 @@ class CoursePosts extends Component
 
     public function render()
     {
+        // Agora, o componente busca APENAS os posts e os pagina.
         $posts = $this->course->posts()->with('author', 'replies.author')->latest()->paginate(5);
+
         $isCoordinator = auth()->check() && optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
 
+        // Passa a variável $posts para a view, corrigindo o erro
         return view('livewire.course-posts', [
-            'posts' => $posts,
+            'posts' => $posts, // Variável corrigida
             'isCoordinator' => $isCoordinator,
         ]);
     }
 
-    // Corrigido: Agora, o Livewire atualiza esta propriedade temporária.
-    // A lógica de mesclagem é feita aqui.
+    // ... (restante dos métodos Updated, createPost, createReply, deleteReply, deletePost permanecem os mesmos)
+
     public function updatedNewlyUploadedImages()
     {
-        // Se a seleção for um array de imagens (múltipla seleção de uma vez)
         if (is_array($this->newlyUploadedImages)) {
             $this->images = array_merge($this->images, $this->newlyUploadedImages);
         } else {
-            // Se a seleção for de apenas uma imagem
             $this->images[] = $this->newlyUploadedImages;
         }
 
-        // Limita o total de imagens para 5
         if (count($this->images) > 5) {
             $this->images = array_slice($this->images, 0, 5);
             session()->flash('error', 'Você só pode enviar até 5 imagens por post.');
         }
 
-        // Limpa o array temporário para a próxima seleção
         $this->newlyUploadedImages = [];
     }
 
@@ -73,10 +73,7 @@ class CoursePosts extends Component
 
     public function createPost()
     {
-        $this->validate([
-            'newPostContent' => 'required|string|min:5', 
-            'images.*' => 'image|max:2048'
-        ]);
+        $this->validate(['newPostContent' => 'required|string|min:5', 'images.*' => 'image|max:2048']);
 
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 

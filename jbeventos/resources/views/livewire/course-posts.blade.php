@@ -10,7 +10,6 @@
                 @error('newPostContent') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
 
                 {{-- Upload de imagens --}}
-                {{-- O wire:model agora aponta para a propriedade temporária --}}
                 <input type="file" wire:model="newlyUploadedImages" multiple accept="image/*"
                        class="w-full mt-3 border-gray-300 rounded-lg shadow-sm text-sm">
                 @error('images.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -49,6 +48,7 @@
     {{-- Lista de posts --}}
     <div class="space-y-8">
         @forelse ($posts as $post)
+            {{-- Card de Post --}}
             <div class="bg-white rounded-lg p-6 shadow-md border border-gray-100">
                 <div class="flex items-center gap-4 mb-4">
                     <img src="{{ $post->author->user_icon ? asset('storage/' . $post->author->user_icon) : asset('images/default-icon.png') }}"
@@ -58,7 +58,6 @@
                             <a href="#" class="text-stone-800 font-semibold text-lg hover:underline">{{ $post->author->name }}</a>
                             <span class="text-xs text-gray-500">{{ $post->created_at->diffForHumans() }}</span>
                         </div>
-                        {{-- Botões --}}
                         @if($isCoordinator && auth()->id() === $post->user_id)
                             <div class="mt-1 flex gap-2">
                                 <button class="text-blue-500 hover:underline text-xs font-semibold">Editar</button>
@@ -71,7 +70,6 @@
 
                 <p class="text-gray-700 mb-4 whitespace-pre-line">{{ $post->content }}</p>
 
-                {{-- Imagens do post --}}
                 @if(!empty($post->images))
                     <div class="flex flex-wrap gap-3 mb-4">
                         @foreach($post->images as $img)
@@ -82,7 +80,6 @@
                     </div>
                 @endif
 
-                {{-- Respostas --}}
                 <div class="border-t pt-4">
                     <h5 class="text-sm font-semibold mb-3 text-gray-600">Respostas ({{ $post->replies->count() }})</h5>
                     <div class="space-y-4">
@@ -106,7 +103,6 @@
                         @endforeach
                     </div>
 
-                    {{-- Formulário de reply --}}
                     <form wire:submit.prevent="createReply({{ $post->id }})" class="mt-4">
                         <textarea wire:model.defer="newReplyContent.{{ $post->id }}" rows="2"
                             class="w-full border-gray-300 rounded-lg shadow-sm text-sm focus:border-blue-500 focus:ring-blue-500"
@@ -121,7 +117,7 @@
             </div>
         @empty
             <div class="text-center p-10 bg-gray-50 rounded-lg shadow-md">
-                <p class="text-gray-500">Nenhum post ainda. O coordenador pode criar o primeiro!</p>
+                <p class="text-gray-500">Nenhum post foi criado neste curso ainda. O coordenador pode criar o primeiro!</p>
             </div>
         @endforelse
     </div>
