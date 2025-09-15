@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -33,6 +34,7 @@ class User extends Authenticatable
         'phone_number',
         'phone_number_verified_at',
         'user_icon',
+        'user_icon_default',
         'user_banner',
         'bio',
         'user_type',
@@ -93,6 +95,12 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class);
     }
 
+    public function savedEvents(){
+        return $this->belongsToMany(Event::class, 'event_user_reaction')
+                                    ->wherePivot('reaction_type', 'save')
+                                    ->withTimestamps();
+    }
+
     // Cursos que o usuário está participando
     // Relação muitos-para-muitos com a tabela pivot 'course_user_follow'
     // withTimestamps() mantém os timestamps na tabela pivot atualizados automaticamente
@@ -122,16 +130,36 @@ class User extends Authenticatable
     // Atributos personalizados
     public function getUserIconUrlAttribute()
     {
-    return $this->user_icon
-        ? asset('storage/' . $this->user_icon)
-        : asset('default-avatar.png');
+        if ($this->user_icon_default) {
+            // Retorna o ícone padrão escolhido
+            return asset('imgs/' . $this->user_icon_default);
+        }
+
+        if ($this->user_icon) {
+            // Verifica se o arquivo de upload realmente existe
+            if (Storage::disk('public')->exists($this->user_icon)) {
+                return asset('storage/' . $this->user_icon);
+            }
+        }
+
+        // Retorna o ícone padrão genérico se nada for encontrado
+        return asset('imgs/avatar_default_1.svg');
     }
 
     public function getUserBannerUrlAttribute()
     {
-    return $this->user_banner
-        ? asset('storage/' . $this->user_banner)
-        : asset('default-banner.jpg');
+        if ($this->user_banner) {
+            // Verifica se o valor é uma cor hexadecimal (ex: #CCCCCC)
+            if (preg_match('/^#[a-f0-9]{6}$/i', $this->user_banner)) {
+                return $this->user_banner;
+            }
+            // Se for um caminho de arquivo, verifica a existência
+            if (Storage::disk('public')->exists($this->user_banner)) {
+                return asset('storage/' . $this->user_banner);
+            }
+        }
+        // Retorna a cor padrão se não houver banner ou arquivo
+        return '#B0B0B0'; // Cor hexadecimal cinza claro
     }       
 
 }
