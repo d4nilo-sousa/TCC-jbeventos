@@ -161,23 +161,17 @@
                                 {{-- Garante que o coordenador logado é o responsável pelo evento --}}
 
                                 <div class="flex space-x-2">
-                                    {{-- Botão para editar o evento --}}
-                                    <a href="{{ route('events.edit', $event->id) }}"
+                                    {{-- Botão de Editar --}}
+                                    <button onclick="openModal('editModal-{{ $event->id }}')"
                                         class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
                                         Editar
-                                    </a>
+                                    </button>
 
-                                    {{-- Formulário para excluir o evento --}}
-                                    <form action="{{ route('events.destroy', $event->id) }}" method="POST"
-                                        onsubmit="return confirm('Deseja realmente excluir este evento?')">
-                                        @csrf {{-- Proteção contra CSRF --}}
-                                        @method('DELETE') {{-- Requisição do tipo DELETE --}}
-                                        <button type="submit"
-                                            class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 
-                                        text-red-900 hover:bg-red-400">
-                                            🗑 Excluir
-                                        </button>
-                                    </form>
+                                    {{-- Botão de Excluir (apenas abre o modal) --}}
+                                    <button onclick="openModal('deleteModal-{{ $event->id }}')"
+                                        class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 text-red-900 hover:bg-red-400">
+                                        🗑 Excluir
+                                    </button>
                                 </div>
                             @endif
                         @endif
@@ -217,10 +211,54 @@
     </div>
 </div>
 
+{{-- Modal de Edição --}}
+<div id="editModal-{{ $event->id }}"
+    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
+        <h2 class="text-lg font-semibold mb-4">Editar Evento</h2>
+        <p>Deseja editar este evento?</p>
+        <div class="mt-6 flex justify-end space-x-2">
+            <button onclick="closeModal('editModal-{{ $event->id }}')"
+                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+            <a href="{{ route('events.edit', $event->id) }}"
+                class="px-4 py-2 bg-yellow-400 text-yellow-900 rounded hover:bg-yellow-500">Ir para Edição</a>
+        </div>
+    </div>
+</div>
+
+{{-- Modal de Exclusão --}}
+<div id="deleteModal-{{ $event->id }}"
+    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
+        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
+        <p>Tem certeza que deseja excluir este evento? Esta ação não poderá ser desfeita.</p>
+        <div class="mt-6 flex justify-end space-x-2">
+            <button onclick="closeModal('deleteModal-{{ $event->id }}')"
+                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+            <form action="{{ route('events.destroy', $event->id) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
+                    Exclusão</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Toast simples --}}
 <div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
     <span id="toast-message"></span>
 </div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+</script>
 
 <script>
     window.authUserName = @json(auth()->user()->name);

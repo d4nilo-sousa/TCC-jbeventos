@@ -53,7 +53,7 @@
 
             <div class="flex items-center justify-center mt-3">
                 <x-button class="bg-red-600 hover:bg-red-700 w-60 h-10">
-                    {{ __('Login') }}
+                    {{ __('Entrar') }}
                 </x-button>
             </div>
         </form>

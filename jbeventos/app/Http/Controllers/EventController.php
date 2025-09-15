@@ -242,8 +242,6 @@ class EventController extends Controller
             Notification::send($event->notifiableUsers, new NewEventNotification($event));
         }
 
-        broadcast(new EventCreated($event))->toOthers();
-
         return redirect()->route('events.index')->with('success', 'Evento criado com sucesso!');
     }
 
@@ -419,7 +417,7 @@ class EventController extends Controller
             $event->eventCategories()->detach();
         }
 
-        return redirect()->route('events.index')->with('success', 'Evento atualizado com sucesso!');
+        return redirect()->route('events.show', $event->id)->with('success', 'Evento atualizado com sucesso!');
     }
 
     // Exclui um evento
@@ -446,6 +444,6 @@ class EventController extends Controller
 
         broadcast(new EventDeleted($eventId))->toOthers();
 
-        return redirect()->route('coordinator.dashboard')->with('success', 'Evento excluído com sucesso!');
+        return redirect()->route('events.index')->with('success', 'Evento excluído com sucesso!');
     }
 }
