@@ -91,6 +91,54 @@ class ProfileController extends Controller
         return back()->with('success', 'Evento removido dos salvos.');
     }
 
+    public function updateBannerColor(Request $request)
+    {
+        $user = auth()->user();
+
+        // Valida a cor
+        $request->validate([
+            'user_banner' => ['required', 'regex:/^#[a-f0-9]{6}$/i'],
+        ]);
+
+        // Apaga o banner antigo se existir, pois agora usaremos uma cor
+        if ($user->user_banner && !preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner)) {
+            if (Storage::disk('public')->exists($user->user_banner)) {
+                Storage::disk('public')->delete($user->user_banner);
+            }
+        }
+
+        // Salva a nova cor
+        $user->user_banner = $request->user_banner;
+        $user->save();
+
+        return back()->with('success', 'Banner atualizado com a cor escolhida!');
+    }
+
+
+     //Atualiza a foto de perfil com um dos ícones padrão.
+    public function updateDefaultPhoto(Request $request)
+    {
+        $user = auth()->user();
+
+        // Valida se o nome do ícone enviado é um dos válidos
+        $validated = $request->validate([
+            'user_icon_default' => 'required|string|in:avatar_default_1.svg,avatar_default_2.svg,avatar_default_3.png,avatar_default_4.svg',
+        ]);
+        
+        // Remove a foto de upload se existir, para evitar conflitos
+        if ($user->user_icon && Storage::disk('public')->exists($user->user_icon)) {
+            Storage::disk('public')->delete($user->user_icon);
+        }
+
+        // Salva o nome do arquivo padrão no banco de dados e limpa o campo de upload
+        $user->user_icon = null;
+        $user->user_icon_default = $validated['user_icon_default'];
+        $user->save();
+
+        return back()->with('success', 'Ícone padrão de perfil atualizado!');
+    }
+
+
     public function updatePhoto(Request $request)
     {
         $user = auth()->user();

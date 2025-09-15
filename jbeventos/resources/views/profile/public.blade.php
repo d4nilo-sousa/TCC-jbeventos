@@ -7,8 +7,14 @@
         </x-slot>
 
         {{-- Banner --}}
-        <div class="relative h-56 bg-gray-200">
-            <img src="{{ $user->user_banner_url }}" alt="Banner do Usuário" class="object-cover w-full h-full">
+        <div class="relative h-56 bg-gray-200"
+            style="{{ preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner_url) ? 'background-color: ' . $user->user_banner_url : '' }}">
+
+            {{-- Se for uma imagem, exibe-a --}}
+            @if(!preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner_url))
+                <img src="{{ $user->user_banner_url }}" alt="Banner do Usuário" class="object-cover w-full h-full">
+            @endif
+
         </div>
 
         {{-- Avatar e Nome --}}

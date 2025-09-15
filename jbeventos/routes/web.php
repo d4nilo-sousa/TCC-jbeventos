@@ -128,6 +128,12 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // Rotas para a reação de usuários ao evento
     Route::post('/events/{event}/react', [EventReactionController::class, 'react'])->name('events.react');
 
+    // Rotas para alterar a cor do banner
+    Route::post('/perfil/update-banner-color', [ProfileController::class, 'updateBannerColor'])->name('profile.updateBannerColor');
+
+    // Rotas para alterar a foto de perfil
+    Route::post('/perfil/update-default-photo', [ProfileController::class, 'updateDefaultPhoto'])->name('profile.updateDefaultPhoto');
+
     //Rotas para adicionar e remover eventos na view de perfil
     Route::post('/perfil/events/{event}/save', [ProfileController::class, 'saveEvent'])->name('events.save');
     Route::delete('/perfil/events/{event}/unsave', [ProfileController::class, 'unsaveEvent'])->name('events.unsave');
