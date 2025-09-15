@@ -74,4 +74,10 @@ class Event extends Model
     {
         return $this->belongsTo(Course::class, 'course_id');
     }
+
+    public function saivers(){
+        return $this->belongsToMany(User::class, 'event_user_reaction')
+                ->wherePivot('reaction_type', 'save')
+                ->withTimestamps();
+    }
 }

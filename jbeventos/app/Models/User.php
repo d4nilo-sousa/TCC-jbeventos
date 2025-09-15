@@ -93,6 +93,12 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class);
     }
 
+    public function savedEvents(){
+        return $this->belongsToMany(Event::class, 'event_user_reaction')
+                                    ->wherePivot('reaction_type', 'save')
+                                    ->withTimestamps();
+    }
+
     // Cursos que o usuário está participando
     // Relação muitos-para-muitos com a tabela pivot 'course_user_follow'
     // withTimestamps() mantém os timestamps na tabela pivot atualizados automaticamente
