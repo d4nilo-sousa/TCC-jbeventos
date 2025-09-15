@@ -78,6 +78,7 @@ class Event extends Model
     public function images()
     {
         return $this->hasMany(EventImage::class);
+    }    
     public function saivers(){
         return $this->belongsToMany(User::class, 'event_user_reaction')
                 ->wherePivot('reaction_type', 'save')
