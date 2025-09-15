@@ -159,7 +159,7 @@
                     {{-- Respostas (collapse) --}}
                     <div x-show="showReplies" x-transition>
                         @foreach($comment->replies as $reply)
-                            @include('partials.comment-reply', ['reply' => $reply])
+                            @include('partials.comments.comment-reply', ['reply' => $reply])
                         @endforeach
                     </div>
                 </div>
