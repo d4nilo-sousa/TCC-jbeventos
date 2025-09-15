@@ -207,7 +207,7 @@
                             <div
                                 class="flex items-center bg-white rounded-full overflow-hidden border-2 w-full sm:w-auto">
                                 <input id="searchInput" name="search" value="{{ request('search') }}"
-                                    placeholder="Pesquisar cursos..." autocomplete="off"
+                                    placeholder="Pesquisar eventos..." autocomplete="off"
                                     class="px-6 flex-1 min-w-[200px] sm:min-w-[300px] lg:min-w-[350px] text-gray-800 placeholder-gray-500 border-none outline-none focus:ring-0 bg-white">
                                 <button type="submit"
                                     class="flex items-center justify-center bg-stone-800 hover:bg-stone-900 transition-colors px-6 py-3">
@@ -226,7 +226,7 @@
                             <div id="eventsList" data-url="{{ route('events.index') }}"
                                 class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
                                 @forelse ($events as $event)
-                                    @include('partials.event-card', ['event' => $event])
+                                    @include('partials.events.event-card', ['event' => $event])
                                 @empty
                                     <div id="noEventsMessage"
                                         class="col-span-full flex flex-col items-center justify-center gap-5 p-10">

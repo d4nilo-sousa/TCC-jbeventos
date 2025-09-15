@@ -14,7 +14,7 @@ use App\Http\Controllers\EventReactionController;
 use App\Http\Controllers\UserPhoneController;
 use App\Http\Controllers\VisibilityController;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\EventPartialController;
+use App\Http\Controllers\PartialController;
 
 /*
 |--------------------------------------------------------------------------
