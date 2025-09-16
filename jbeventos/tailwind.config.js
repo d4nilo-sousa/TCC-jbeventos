@@ -16,6 +16,7 @@ export default {
             fontFamily: {
                 ubuntu: ['Ubuntu', ...defaultTheme.fontFamily.sans],
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                poppins: ['Poppins', 'sans-serif'],
             },
         },
     },
