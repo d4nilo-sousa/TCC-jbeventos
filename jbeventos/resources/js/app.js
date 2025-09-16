@@ -10,6 +10,5 @@ import './phone-mask';
 import './echo';
 import 'alpinejs';
 import './image-viewer';
-import './preview-images';
 import './events-search';
 
