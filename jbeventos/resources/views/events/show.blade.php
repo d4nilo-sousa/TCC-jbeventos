@@ -162,10 +162,10 @@
 
                                 <div class="flex space-x-2">
                                     {{-- Botão de Editar --}}
-                                    <button onclick="openModal('editModal-{{ $event->id }}')"
+                                    <a href="{{ route('events.edit', $event->id) }}"
                                         class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
                                         Editar
-                                    </button>
+                                    </a>
 
                                     {{-- Botão de Excluir (apenas abre o modal) --}}
                                     <button onclick="openModal('deleteModal-{{ $event->id }}')"
@@ -208,21 +208,6 @@
                     class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
             </div>
         </form>
-    </div>
-</div>
-
-{{-- Modal de Edição --}}
-<div id="editModal-{{ $event->id }}"
-    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-        <h2 class="text-lg font-semibold mb-4">Editar Evento</h2>
-        <p>Deseja editar este evento?</p>
-        <div class="mt-6 flex justify-end space-x-2">
-            <button onclick="closeModal('editModal-{{ $event->id }}')"
-                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-            <a href="{{ route('events.edit', $event->id) }}"
-                class="px-4 py-2 bg-yellow-400 text-yellow-900 rounded hover:bg-yellow-500">Ir para Edição</a>
-        </div>
     </div>
 </div>
 

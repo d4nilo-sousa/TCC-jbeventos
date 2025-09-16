@@ -46,18 +46,36 @@
                                                 class="inline-flex w-16 justify-center bg-stone-700 text-white py-1.5 rounded text-sm sm:text-base m-1">
                                                 Editar
                                             </a>
-                                            <form action="{{ route('coordinators.destroy', $coordinator->id) }}"
-                                                method="POST" class="inline-block"
-                                                onsubmit="return confirm('Confirma exclusão?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="inline-flex w-16 justify-center bg-red-500 text-white py-1.5 rounded text-sm sm:text-base m-1">
-                                                    Excluir
-                                                </button>
-                                            </form>
-                                        </td>
 
+                                            <button type="button"
+                                                onclick="openModal('deleteModal-{{ $coordinator->id }}')"
+                                                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                                Excluir
+                                            </button>
+
+                                            <!-- Modal para este coordenador -->
+                                            <div id="deleteModal-{{ $coordinator->id }}"
+                                                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+                                                <div class="bg-white p-6 rounded-md shadow-md max-w-md w-full">
+                                                    <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
+                                                    <p>Tem certeza que deseja excluir este coordenador? Esta ação não poderá ser desfeita.</p>
+                                                    <div class="mt-6 flex justify-end space-x-2">
+                                                        <button type="button"
+                                                            onclick="closeModal('deleteModal-{{ $coordinator->id }}')"
+                                                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                                                            Cancelar
+                                                        </button>
+                                                        <form action="{{ route('coordinators.destroy', $coordinator->id) }}" method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                                                                Confirmar Exclusão
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -65,7 +83,6 @@
                     </div>
                 @else
                     <div class="w-full flex flex-col items-center mt-16">
-                        <!-- flex-grow para preencher o espaço restante -->
                         <p class="text-gray-500 mt-5 text-base sm:text-lg">Nenhum Coordenador cadastrado . . .</p>
                         <img src="{{ asset('imgs/notFound2.png') }}" class="w-2/3 sm:w-1/3 lg:w-1/5 mt-6">
                     </div>
@@ -75,3 +92,13 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+</script>
