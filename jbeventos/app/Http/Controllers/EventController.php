@@ -28,90 +28,86 @@ class EventController extends Controller
     {
         $loggedCoordinator = auth()->user()->coordinator;
 
-        // Query base com relacionamentos
-        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
+        // Inicia a query com os relacionamentos necessários para a view.
+        $query = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
 
-
+        // Lógica principal de visibilidade baseada no tipo de usuário e filtro.
         if ($loggedCoordinator) {
             if ($request->status === 'visible') {
-                // Eventos visíveis do coordenador logado
-                $events->where('coordinator_id', $loggedCoordinator->id)
+                $query->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', true);
             } elseif ($request->status === 'hidden') {
-                // Eventos ocultos do coordenador logado
-                $events->where('coordinator_id', $loggedCoordinator->id)
+                $query->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', false);
             } else {
-                // Sem filtro: eventos visíveis de todos + eventos do coordenador logado (ocultos ou visíveis)
-                $events->where(function ($query) use ($loggedCoordinator) {
-                    $query->where('visible_event', true)
-                        ->orWhere('coordinator_id', $loggedCoordinator->id);
+                $query->where(function ($q) use ($loggedCoordinator) {
+                    $q->where('visible_event', true)
+                    ->orWhere('coordinator_id', $loggedCoordinator->id);
                 });
             }
         } else {
-            // Usuários que não são coordenadores veem apenas eventos visíveis
-            $events->where('visible_event', true);
+            $query->where('visible_event', true);
         }
+        
+        // --- Aplica os filtros adicionais (encadeados na mesma query) ---
 
-        // Filtros adicionais
-        if ($request->filled('event_type')) {
-            $events->where('event_type', $request->event_type);
-        }
+        // Filtro por tipo de evento
+        $query->when($request->filled('event_type'), function ($q) use ($request) {
+            $q->where('event_type', $request->event_type);
+        });
 
-        if ($request->filled('course_id')) {
-            $events->whereIn('course_id', $request->course_id);
-        }
+        // Filtro por curso
+        $query->when($request->filled('course_id'), function ($q) use ($request) {
+            $q->whereIn('course_id', $request->course_id);
+        });
 
-        if ($request->filled('category_id')) {
-            $events->whereHas('eventCategories', function ($q) use ($request) {
-                $q->whereIn('categories.id', $request->category_id);
+        // Filtro por categoria
+        $query->when($request->filled('category_id'), function ($q) use ($request) {
+            $q->whereHas('eventCategories', function ($subQuery) use ($request) {
+                $subQuery->whereIn('categories.id', $request->category_id);
             });
-        }
+        });
 
-        if ($request->filled('start_date')) {
-            $events->whereDate('event_scheduled_at', '>=', $request->start_date);
-        }
+        // Filtro por intervalo de datas
+        $query->when($request->filled('start_date'), function ($q) use ($request) {
+            $q->whereDate('event_scheduled_at', '>=', $request->start_date);
+        });
 
-        if ($request->filled('end_date')) {
-            $events->whereDate('event_scheduled_at', '<=', $request->end_date);
-        }
+        $query->when($request->filled('end_date'), function ($q) use ($request) {
+            $q->whereDate('event_scheduled_at', '<=', $request->end_date);
+        });
+
+        // --- Aplica a ordenação ---
 
         // Ordenação por curtidas
         if ($request->filled('likes_order')) {
-            $events->withCount([
-                'reactions as likes_count' => function ($query) {
-                    $query->where('reaction_type', 'like');
+            $query->withCount([
+                'reactions as likes_count' => function ($subQuery) {
+                    $subQuery->where('reaction_type', 'like');
                 }
             ]);
-
-            if ($request->likes_order === 'most') {
-                $events->orderBy('likes_count', 'desc');
-            } elseif ($request->likes_order === 'least') {
-                $events->orderBy('likes_count', 'asc');
-            }
+            
+            $query->orderBy('likes_count', $request->likes_order === 'most' ? 'desc' : 'asc');
         }
 
         // Ordenação por agendamento
         if ($request->filled('schedule_order')) {
-            if ($request->schedule_order === 'soonest') {
-                $events->orderBy('event_scheduled_at', 'asc');
-            } elseif ($request->schedule_order === 'latest') {
-                $events->orderBy('event_scheduled_at', 'desc');
-            }
+            $query->orderBy('event_scheduled_at', $request->schedule_order === 'soonest' ? 'asc' : 'desc');
         } else {
-            $events->orderBy('created_at', 'desc');
+            // Ordenação padrão: mais recente primeiro
+            $query->orderBy('created_at', 'desc');
         }
 
-        $events->when($request->filled('search'), function ($query) use ($request) {
+        // Filtro de pesquisa (usando 'when' para ser opcional)
+        $query->when($request->filled('search'), function ($q) use ($request) {
             $search = $request->input('search');
-
-            $query->where('event_name', 'like', "%{$search}%");
+            $q->where('event_name', 'like', "%{$search}%");
         });
+        
+        // Executa a query com paginação e preserva os filtros na URL
+        $events = $query->paginate(20)->withQueryString();
 
-        // Executa a query
-        $events = $events->get();
-
-        // Busca cursos e categorias
+        // Busca cursos e categorias (sem filtros)
         $courses = Course::all();
         $categories = Category::all();
 
