@@ -23,6 +23,9 @@ class EventComments extends Component
         'commentText' => 'required|string|max:1000',
         'media' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,webp,mp4,pdf'
     ];
+    
+    // Listeners para atualizar os comentários em tempo real
+    protected $listeners = ['commentAdded', 'commentDeleted', 'commentHidden'];
 
     public function mount($event)
     {
@@ -32,18 +35,16 @@ class EventComments extends Component
 
     public function render()
     {
-        return view('livewire.event-comments', [
-            'comments' => $this->comments
-        ]);
+        return view('livewire.event-comments');
     }
 
     public function loadComments()
-{
-    $this->comments = Comment::with([
+    {
+        $this->comments = Comment::with([
             'user',
-            'replies' => function($query) {
+            'replies' => function ($query) {
                 $query->where('visible_comment', true)
-                      ->with('user'); // já traz o usuário das respostas
+                      ->with(['user', 'reactions']);
             },
             'reactions'
         ])
@@ -56,11 +57,11 @@ class EventComments extends Component
             },
         ])
         ->where('event_id', $this->event->id)
-        ->where('visible_comment', true) // Só comentários visíveis
-        ->whereNull('parent_id') // Comentários principais
+        ->where('visible_comment', true)
+        ->whereNull('parent_id')
         ->orderBy('created_at', 'desc')
         ->get();
-}
+    }
 
     public function addComment()
     {
@@ -122,6 +123,19 @@ class EventComments extends Component
             $comment->delete();
         }
         $this->loadComments();
+    }
+
+    // NOVO MÉTODO PARA OCULTAR COMENTÁRIOS
+    public function hideComment($id)
+    {
+        $comment = Comment::find($id);
+
+        // Verifica se o usuário é coordenador e se o evento pertence a ele
+        if (Auth::user()->user_type === 'coordinator' && $this->event->coordinator_id === Auth::user()->coordinator->id) {
+            $comment->visible_comment = false;
+            $comment->save();
+            $this->loadComments();
+        }
     }
 
     public function reactToComment($commentId, $type)

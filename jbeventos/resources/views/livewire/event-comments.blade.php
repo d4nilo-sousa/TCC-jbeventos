@@ -1,171 +1,222 @@
-<div class="space-y-4" x-data>
-    {{-- Formulário de comentário / edição --}}
-    <div class="bg-gray-50 p-4 rounded-lg border">
+<div class="space-y-4">
+    {{-- Formulário de Comentário --}}
+    <div class="bg-gray-50 p-6 rounded-lg border shadow-sm">
+        @if ($replyTo)
+            <div class="mb-3 text-sm text-gray-600 flex items-center justify-between p-2 bg-blue-100 rounded">
+                <span>
+                    Respondendo a:
+                    <span class="font-semibold text-blue-800">
+                        {{ \App\Models\Comment::find($replyTo)->user->name }}
+                    </span>
+                </span>
+                <button wire:click="cancelReply" class="text-xs text-gray-500 hover:text-gray-800 hover:underline">
+                    Cancelar
+                </button>
+            </div>
+        @endif
+        
         <textarea wire:model.defer="commentText"
-                  class="w-full p-2 border rounded-md focus:ring focus:ring-blue-200"
-                  placeholder="{{ $replyTo ? 'Respondendo a um comentário...' : 'Escreva um comentário...' }}"></textarea>
+            class="w-full p-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
+            placeholder="Escreva um comentário...">
+        </textarea>
+        
+        @error('commentText')
+            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+        @enderror
 
-        <input type="file" wire:model="media" class="mt-2 text-sm">
+        <div class="flex items-center gap-3 mt-4">
+            <label for="media-upload" class="cursor-pointer">
+                <div class="flex items-center gap-2 text-sm text-gray-600 px-4 py-2 border rounded-full hover:bg-gray-100 transition-colors">
+                    <i class="fas fa-paperclip"></i>
+                    <span>{{ $media ? $media->getClientOriginalName() : 'Adicionar arquivo' }}</span>
+                </div>
+                <input type="file" id="media-upload" wire:model="media" class="hidden">
+            </label>
 
-        <div class="flex gap-2 mt-3">
+            @if ($media)
+                <span class="text-sm text-gray-500">
+                    {{ number_format($media->getSize() / 1024 / 1024, 2) }} MB
+                </span>
+            @endif
+
+            <div class="flex-1"></div>
+
             @if($editingCommentId)
                 <button wire:click="updateComment"
-                        class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded-md text-sm">
-                    ✏ Atualizar
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-check"></i> Atualizar
+                </button>
+                <button wire:click="$set('editingCommentId', null)"
+                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold px-4 py-2 rounded-lg transition-colors">
+                    Cancelar
                 </button>
             @else
                 <button wire:click="addComment"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm">
-                    💬 Comentar
-                </button>
-            @endif
-
-            @if($replyTo)
-                <button wire:click="cancelReply"
-                        class="text-sm text-gray-600 hover:underline">
-                    Cancelar resposta
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors">
+                    <span wire:loading.remove wire:target="addComment">Comentar</span>
+                    <span wire:loading wire:target="addComment">Enviando...</span>
                 </button>
             @endif
         </div>
     </div>
 
-    {{-- Listagem de comentários --}}
+    {{-- Lista de Comentários --}}
     @forelse($comments as $comment)
         @php
             $profileRoute = ($comment->user_id === auth()->id()) ? 'profile.show' : 'profile.view';
         @endphp
-        <div class="p-4 bg-white shadow-sm rounded-lg border" x-data="{ showReplies:false }">
-            <div class="flex items-start gap-3">
+        
+        <div class="p-4 bg-white shadow-md rounded-lg border">
+            {{-- Comentário principal --}}
+            <div class="flex items-start gap-4">
+                {{-- Avatar e Popover --}}
+                <a href="{{ route($profileRoute, $comment->user->id) }}">
+                    <img src="{{ $comment->user->user_icon_url }}" class="w-10 h-10 rounded-full shadow-sm">
+                </a>
 
-                {{-- Foto com popover --}}
-                <div class="relative"
-                     x-data="{ open:false }"
-                     @mouseenter="open=true" @mouseleave="open=false">
-
-                    <a href="{{ route($profileRoute, $comment->user->id) }}">
-                        <img src="{{ $comment->user->user_icon_url }}"
-                             class="w-10 h-10 rounded-full shadow-sm cursor-pointer">
-                    </a>
-
-                    {{-- Popover --}}
-                    <div x-show="open"
-                         x-transition
-                         class="absolute top-12 left-0 bg-white border rounded-lg shadow-lg p-3 w-56 z-10"
-                         @mouseenter="open=true" @mouseleave="open=false">
-                        <div class="flex items-center gap-2">
-                            <img src="{{ $comment->user->user_icon_url }}" class="w-10 h-10 rounded-full">
-                            <div>
-                                <p class="font-semibold text-gray-800">{{ $comment->user->name }}</p>
-                                <p class="text-xs text-gray-500">{{ $comment->user->email }}</p>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mt-2 line-clamp-3">
-                            {{ $comment->user->bio ?? 'Este usuário ainda não escreveu uma biografia.' }}
-                        </p>
-                        <a href="{{ route($profileRoute, $comment->user->id) }}"
-                           class="block mt-2 text-center text-sm bg-blue-500 hover:bg-blue-600 text-white py-1 rounded">
-                            Ver perfil completo
-                        </a>
-                    </div>
-                </div>
-
-                {{-- Conteúdo do comentário --}}
-                <div class="flex-1">
+                {{-- Conteúdo --}}
+                <div class="flex-1 space-y-2">
                     <div class="flex items-center gap-2">
-                        <a href="{{ route($profileRoute, $comment->user->id) }}"
-                           class="font-semibold text-blue-600 hover:underline">
+                        <a href="{{ route($profileRoute, $comment->user->id) }}" class="font-bold text-gray-800 hover:underline">
                             {{ $comment->user->name }}
                         </a>
-                        <span class="text-xs text-gray-400">
-                            {{ $comment->created_at->diffForHumans() }}
-                        </span>
+                        @if ($comment->user->user_type === 'coordinator')
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Coordenador
+                            </span>
+                        @endif
+                        <span class="text-sm text-gray-500">• {{ $comment->created_at->diffForHumans() }}</span>
                         @if($comment->isEdited())
-                            <span class="text-xs text-gray-500">(editado)</span>
+                            <span class="text-xs text-gray-400 italic">(editado)</span>
                         @endif
                     </div>
 
-                    <p class="mt-1 text-gray-700">{{ $comment->comment }}</p>
+                    <p class="text-gray-700">{{ $comment->comment }}</p>
 
-                    {{-- Mídia --}}
+                    {{-- Mídia do comentário --}}
                     @if($comment->media_path)
                         <div class="mt-2">
                             @if(Str::endsWith($comment->media_path, ['jpg','jpeg','png','webp']))
-                                <img src="{{ asset('storage/'.$comment->media_path) }}" class="w-40 rounded-md shadow">
+                                <img src="{{ asset('storage/'.$comment->media_path) }}" class="max-w-xs rounded-md shadow-sm border">
                             @elseif(Str::endsWith($comment->media_path, 'mp4'))
-                                <video controls class="w-40 rounded-md shadow">
+                                <video controls class="max-w-xs rounded-md shadow-sm border">
                                     <source src="{{ asset('storage/'.$comment->media_path) }}" type="video/mp4">
                                 </video>
                             @else
                                 <a href="{{ asset('storage/'.$comment->media_path) }}" target="_blank"
-                                   class="text-blue-600 underline">📎 Ver arquivo</a>
+                                    class="text-blue-600 underline text-sm flex items-center gap-1">
+                                    <i class="fas fa-file-alt"></i> Ver arquivo
+                                </a>
                             @endif
                         </div>
                     @endif
 
-                    {{-- Botões --}}
-                    <div class="text-sm text-gray-600 mt-2 flex gap-4 items-center">
-                        {{-- Likes e Dislikes --}}
-                        <div class="flex items-center gap-3">
-                            <button wire:click="reactToComment({{ $comment->id }}, 'like')"
-                                    class="flex items-center gap-1 hover:underline text-green-600">
-                                👍 <span>{{ $comment->reactions->where('type', 'like')->count() }}</span>
-                            </button>
-                            <button wire:click="reactToComment({{ $comment->id }}, 'dislike')"
-                                    class="flex items-center gap-1 hover:underline text-red-600">
-                                👎 <span>{{ $comment->reactions->where('type', 'dislike')->count() }}</span>
-                            </button>
-                        </div>
-
-                        <button wire:click="setReply({{ $comment->id }})" class="hover:underline">Responder</button>
-
-                        {{-- Contador de respostas --}}
-                        @if($comment->replies->count())
-                            <button @click="showReplies=!showReplies" class="hover:underline text-blue-600">
-                                💬 {{ $comment->replies->count() }} resposta{{ $comment->replies->count()>1?'s':'' }}
-                            </button>
-                        @endif
+                    {{-- Botões de Ação do Comentário --}}
+                    <div class="flex items-center gap-4 text-sm mt-2">
+                        {{-- Reações --}}
+                        <button wire:click="reactToComment({{ $comment->id }}, 'like')"
+                            class="flex items-center gap-1 p-1 px-2 rounded-full transition-colors 
+                                {{ auth()->user()->commentReactions->where('comment_id', $comment->id)->where('type', 'like')->count() > 0 
+                                    ? 'bg-blue-100 text-blue-600 font-semibold' 
+                                    : 'text-gray-600 hover:bg-gray-100' }}">
+                            <i class="far fa-thumbs-up"></i>
+                            <span>{{ $comment->likes_count }}</span>
+                        </button>
+                        <button wire:click="reactToComment({{ $comment->id }}, 'dislike')"
+                            class="flex items-center gap-1 p-1 px-2 rounded-full transition-colors 
+                                {{ auth()->user()->commentReactions->where('comment_id', $comment->id)->where('type', 'dislike')->count() > 0 
+                                    ? 'bg-red-100 text-red-600 font-semibold' 
+                                    : 'text-gray-600 hover:bg-gray-100' }}">
+                            <i class="far fa-thumbs-down"></i>
+                            <span>{{ $comment->dislikes_count }}</span>
+                        </button>
+                        
+                        {{-- Botões de Ação --}}
+                        <button wire:click="setReply({{ $comment->id }})" class="text-gray-600 hover:text-blue-600">Responder</button>
 
                         @if($comment->user_id === auth()->id())
-                            <button wire:click="editComment({{ $comment->id }})"
-                                    class="hover:underline">Editar</button>
-                            <button wire:click="deleteComment({{ $comment->id }})"
-                                    class="hover:underline text-red-500">Excluir</button>
+                            <button wire:click="editComment({{ $comment->id }})" class="text-gray-600 hover:text-yellow-600">Editar</button>
+                            <button wire:click="deleteComment({{ $comment->id }})" onclick="return confirm('Tem certeza que deseja excluir?')" class="text-red-500 hover:text-red-700">Excluir</button>
                         @endif
 
-                        @if(auth()->check() && auth()->user()->user_type === 'coordinator') 
-                        {{-- Só permite continuar se o usuário estiver logado e for coordenador --}}
-
-                            @php
-                                $loggedCoordinator = auth()->user()->coordinator;
-                                // Pega o coordenador vinculado ao usuário logado
-                            @endphp
-
-                            @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                            {{-- Garante que o coordenador logado é o responsável pelo evento --}}
-
-                                {{-- Formulário para ocultar o comentário --}}
-                                <form action="{{ route('events.updateComment', $comment->id) }}" method="POST"
-                                onsubmit="return confirm('Tem certeza que deseja ocultar este comentário?')" class="inline">
-                                    @csrf {{-- Proteção contra CSRF --}}
-                                    @method('PATCH') {{-- Requisição será do tipo PATCH --}}
-                                    <button type="submit" class="hover:underline text-gray-700">
-                                        Ocultar
-                                    </button>
-                                </form>
-                            @endif
+                        @if (auth()->check() && auth()->user()->user_type === 'coordinator' && $event->coordinator_id === auth()->user()->coordinator->id)
+                            <button wire:click="hideComment({{ $comment->id }})" onclick="return confirm('Tem certeza que deseja ocultar este comentário?')"
+                                class="text-red-500 hover:text-red-700">
+                                Ocultar
+                            </button>
                         @endif
-                    </div>
-
-                    {{-- Respostas (collapse) --}}
-                    <div x-show="showReplies" x-transition>
-                        @foreach($comment->replies as $reply)
-                            @include('partials.comment-reply', ['reply' => $reply])
-                        @endforeach
                     </div>
                 </div>
             </div>
+
+            {{-- Respostas aninhadas --}}
+            @if ($comment->replies->count())
+                <div class="mt-4 pl-12 border-l border-gray-200 space-y-4">
+                    @foreach($comment->replies as $reply)
+                        @php
+                            $replyProfileRoute = ($reply->user_id === auth()->id()) ? 'profile.show' : 'profile.view';
+                        @endphp
+                        <div class="flex items-start gap-4">
+                             <a href="{{ route($replyProfileRoute, $reply->user->id) }}">
+                                <img src="{{ $reply->user->user_icon_url }}" class="w-8 h-8 rounded-full shadow-sm">
+                            </a>
+                            <div class="flex-1 space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route($replyProfileRoute, $reply->user->id) }}" class="font-bold text-gray-800 hover:underline">
+                                        {{ $reply->user->name }}
+                                    </a>
+                                    @if ($reply->user->user_type === 'coordinator')
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Coordenador
+                                        </span>
+                                    @endif
+                                    <span class="text-sm text-gray-500">• {{ $reply->created_at->diffForHumans() }}</span>
+                                    @if($reply->isEdited())
+                                        <span class="text-xs text-gray-400 italic">(editado)</span>
+                                    @endif
+                                </div>
+                                <p class="text-gray-700 text-sm">{{ $reply->comment }}</p>
+
+                                {{-- Botões de Ação para a Resposta --}}
+                                <div class="flex items-center gap-4 text-xs mt-2">
+                                    {{-- Reações --}}
+                                    <button wire:click="reactToComment({{ $reply->id }}, 'like')"
+                                        class="flex items-center gap-1 p-1 px-2 rounded-full transition-colors 
+                                            {{ auth()->user()->commentReactions->where('comment_id', $reply->id)->where('type', 'like')->count() > 0 
+                                                ? 'bg-blue-100 text-blue-600 font-semibold' 
+                                                : 'text-gray-600 hover:bg-gray-100' }}">
+                                        <i class="far fa-thumbs-up"></i>
+                                        <span>{{ $reply->reactions->where('type', 'like')->count() }}</span>
+                                    </button>
+                                    <button wire:click="reactToComment({{ $reply->id }}, 'dislike')"
+                                        class="flex items-center gap-1 p-1 px-2 rounded-full transition-colors 
+                                            {{ auth()->user()->commentReactions->where('comment_id', $reply->id)->where('type', 'dislike')->count() > 0 
+                                                ? 'bg-red-100 text-red-600 font-semibold' 
+                                                : 'text-gray-600 hover:bg-gray-100' }}">
+                                        <i class="far fa-thumbs-down"></i>
+                                        <span>{{ $reply->reactions->where('type', 'dislike')->count() }}</span>
+                                    </button>
+                                    
+                                    {{-- Botões de Ação --}}
+                                    @if($reply->user_id === auth()->id())
+                                        <button wire:click="editComment({{ $reply->id }})" class="text-gray-600 hover:text-yellow-600">Editar</button>
+                                        <button wire:click="deleteComment({{ $reply->id }})" onclick="return confirm('Tem certeza que deseja excluir?')" class="text-red-500 hover:text-red-700">Excluir</button>
+                                    @endif
+                                    
+                                    @if (auth()->check() && auth()->user()->user_type === 'coordinator' && $event->coordinator_id === auth()->user()->coordinator->id)
+                                        <button wire:click="hideComment({{ $reply->id }})" onclick="return confirm('Tem certeza que deseja ocultar este comentário?')"
+                                            class="text-red-500 hover:text-red-700">
+                                            Ocultar
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     @empty
-        <p class="text-gray-500 text-sm">Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+        <p class="text-gray-500 text-center text-sm p-4">Nenhum comentário ainda. Seja o primeiro a comentar!</p>
     @endforelse
 </div>

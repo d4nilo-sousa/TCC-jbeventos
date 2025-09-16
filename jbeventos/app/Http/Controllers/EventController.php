@@ -21,6 +21,7 @@ use App\Events\EventUpdated;
 use Intervention\Image\Format;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
@@ -248,6 +249,11 @@ class EventController extends Controller
     {
         $user = auth()->user();
         $event->load(['eventCoordinator.userAccount', 'eventCategories', 'eventCourse']);
+
+       // Carrega a relação de reações do usuário
+        if ($user) {
+            $user->load('commentReactions');
+        }
 
         $userReactions = \App\Models\EventUserReaction::where('event_id', $event->id)
             ->where('user_id', $user->id)
