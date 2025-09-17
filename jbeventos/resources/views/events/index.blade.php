@@ -242,15 +242,5 @@
         </div>
 </x-app-layout>
 
-<script>
-    function openModal(id) {
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
-</script>
-
 {{-- Scripts compilados --}}
 @vite('resources/js/app.js')

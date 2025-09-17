@@ -236,19 +236,10 @@
 </div>
 
 <script>
-    function openModal(id) {
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
-</script>
-
-<script>
     window.authUserName = @json(auth()->user()->name);
     window.userPhoneNumber = @json(auth()->user()->phone_number);
 </script>
 
-
+{{-- Scripts compilados --}}
 @vite('resources/js/app.js')
+
