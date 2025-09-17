@@ -182,3 +182,25 @@
         </div>
     </div>
 </x-app-layout>
+
+{{-- Modal de Exclusão para Curso --}}
+<div id="deleteModal-{{ $course->id }}"
+    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
+        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
+        <p>Tem certeza que deseja excluir este curso? Esta ação não poderá ser desfeita.</p>
+        <div class="mt-6 flex justify-end space-x-2">
+            <button onclick="closeModal('deleteModal-{{ $course->id }}')"
+                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+            <form action="{{ route('courses.destroy', $course->id) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
+                    Exclusão</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Scripts compilados --}}
+@vite('resources/js/app.js')
