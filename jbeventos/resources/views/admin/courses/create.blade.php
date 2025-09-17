@@ -1,140 +1,290 @@
-<x-app-layout backgroundClass="bg-gradient-to-br from-blue-500 via-blue-200 to-blue-100">
-    <div class="w-full min-h-screen py-[5rem]">
-        <div class="w-full max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-full bg-white shadow-xl rounded-2xl p-6 sm:p-8 lg:p-10 mx-auto min-h-[65vh] border border-green-100">
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <!-- IMAGEM -->
-                    <div class="w-full lg:w-1/2 h-[300px] lg:h-auto relative group">
-                        <div class="absolute rounded-xl"></div>
-                        <img src="{{ asset('imgs/etec.jpg') }}" alt="Imagem do curso"
-                            class="w-full h-full object-cover rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-[1.02]">
-                        <div
-                            class="absolute bottom-4 left-4 text-white text-xs sm:text-sm font-semibold px-4 py-1 rounded-lg shadow-md">
-                            AMPARO • Etec JB
+<x-app-layout>
+    {{-- Cabeçalho da Página --}}
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Criar Curso
+        </h2>
+    </x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
+
+                {{-- Exibição de erros de validação --}}
+                @if ($errors->any())
+                    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md animate-fade-in" role="alert">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-bold">Atenção!</span>
                         </div>
+                        <ul class="mt-2 list-disc list-inside space-y-1 text-sm">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                {{-- Formulário de Criação --}}
+                <form id="course-create-form" action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+
+                    {{-- Abas de Navegação --}}
+                    <div class="flex flex-col md:flex-row gap-4 mb-8 border-b pb-4">
+                        <button type="button" data-tab-target="tab1" class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
+                            <span class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">1</span>
+                            Informações
+                        </button>
+                        <button type="button" data-tab-target="tab2" class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
+                            <span class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">2</span>
+                            Imagens
+                        </button>
                     </div>
 
-                    <!-- FORMULÁRIO -->
-                    <div class="w-full lg:w-1/2">
-                        @if ($errors->any())
-                            <div class="mb-4 bg-red-100 border border-red-300 text-red-700 p-3 rounded-lg">
-                                <ul class="list-disc pl-5">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
+                    {{-- Conteúdo das Abas --}}
+                    <div id="tab1" class="tab-content">
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Detalhes do Curso</h3>
+
+                            <div>
+                                <x-input-label for="course_name" value="Nome do Curso" />
+                                <x-text-input type="text" name="course_name" id="course_name"
+                                    value="{{ old('course_name') }}" required />
+                                @error('course_name')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <x-input-label for="course_description" value="Descrição" />
+                                <textarea name="course_description" id="course_description" rows="4"
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" required>{{ old('course_description') }}</textarea>
+                                @error('course_description')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <x-input-label for="coordinator_id" value="Coordenador" />
+                                <select name="coordinator_id" id="coordinator_id"
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Nenhum</option>
+                                    @foreach ($coordinators as $coordinator)
+                                        @if ($coordinator->coordinator_type === 'course')
+                                            @php $isDisabled = $coordinator->coordinatedCourse !== null; @endphp
+                                            <option value="{{ $coordinator->id }}" @selected(old('coordinator_id') == $coordinator->id)
+                                                @disabled($isDisabled)>
+                                                {{ $coordinator->userAccount->name ?? 'Sem nome' }}
+                                                @if ($isDisabled)
+                                                    ({{ $coordinator->coordinatedCourse->course_name }})
+                                                @endif
+                                            </option>
+                                        @endif
                                     @endforeach
-                                </ul>
+                                </select>
+                                @error('coordinator_id')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
                             </div>
-                        @endif
-
-                        <!-- TÍTULO DO FORMULÁRIO -->
-                        <div class="mb-6">
-                            <p
-                                class="text-center bg-gradient-to-r from-stone-900 to-stone-400 bg-clip-text text-transparent font-extrabold text-3xl sm:text-5xl tracking-wide drop-shadow-md">
-                                Criar Curso
-                            </p>
-                            <div class="w-24 h-1 bg-blue-500 mx-auto rounded-full mt-3 shadow"></div>
                         </div>
 
-                        <form action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data"
-                            class="space-y-6">
-                            @csrf
-
-                            <!-- Nome do Curso & Coordenador -->
-                            <div class="flex flex-col sm:flex-row gap-5">
-                                <div class="flex-1">
-                                    <label for="course_name" class="block font-semibold text-gray-700 mb-1">Nome do
-                                        Curso</label>
-                                    <input type="text" name="course_name" id="course_name"
-                                        value="{{ old('course_name') }}" placeholder="Digite o nome do curso"
-                                        class="w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-500 outline-none transition"
-                                        required>
-                                </div>
-
-                                <div class="flex-1">
-                                    <label for="coordinator_id"
-                                        class="block font-semibold text-gray-700 mb-1">Coordenador (opcional)</label>
-                                    <select name="coordinator_id" id="coordinator_id"
-                                        class="w-full border border-gray-300 rounded-lg p-3 shadow-sm focus:border-stone-500 focus:ring-2 focus:ring-stone-500 cursor-pointer transition">
-                                        <option value="">Nenhum</option>
-                                        @foreach ($coordinators as $coordinator)
-                                            @if ($coordinator->coordinator_type === 'course')
-                                                @php $isDisabled = $coordinator->coordinatedCourse !== null; @endphp
-                                                <option value="{{ $coordinator->id }}" @selected(old('coordinator_id') == $coordinator->id)
-                                                    @disabled($isDisabled)>
-                                                    {{ $coordinator->userAccount->name ?? 'Sem nome' }}
-                                                    @if ($isDisabled)
-                                                        ({{ $coordinator->coordinatedCourse->course_name }})
-                                                    @endif
-                                                </option>
-                                            @endif
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Descrição -->
-                            <div>
-                                <label for="course_description" class="block font-semibold text-gray-700 mb-1">Descrição
-                                    do Curso</label>
-                                <textarea name="course_description" id="course_description" placeholder="Digite a descrição do curso" rows="4"
-                                    class="w-full border border-gray-300 rounded-lg p-3 shadow-sm
-                                    focus:border-stone-500 focus:ring-2 focus:ring-stone-500 outline-none
-                                    resize-y max-h-40 transition">{{ old('course_description') }}</textarea>
-                            </div>
-
-                            <!-- Ícone do Curso -->
-                            <div>
-                                <label class="block font-semibold text-gray-700 mb-1">Ícone do Curso</label>
-                                <div class="flex items-center gap-4">
-                                    <label for="course_icon_input"
-                                        class="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-blue-700 transition">
-                                        Selecionar imagem
-                                    </label>
-                                    <input id="course_icon_input" name="course_icon" type="file" class="hidden"
-                                        onchange="updateFileName('course_icon_input', 'course_icon_name')">
-                                    <p id="course_icon_name" class="text-gray-600 text-sm">Nenhum ícone escolhido</p>
-                                </div>
-                            </div>
-
-                            <!-- Banner do Curso -->
-                            <div>
-                                <label class="block font-semibold text-gray-700 mb-1">Banner do Curso</label>
-                                <div class="flex items-center gap-4">
-                                    <label for="course_banner_input"
-                                        class="bg-blue-600 text-white py-2 px-4 rounded-lg cursor-pointer hover:bg-blue-700 transition">
-                                        Selecionar imagem
-                                    </label>
-                                    <input id="course_banner_input" name="course_banner" type="file" class="hidden"
-                                        onchange="updateFileName('course_banner_input', 'course_banner_name')">
-                                    <p id="course_banner_name" class="text-gray-600 text-sm">Nenhum banner escolhido</p>
-                                </div>
-                            </div>
-
-                            <script>
-                                function updateFileName(inputId, paragraphId) {
-                                    const fileInput = document.getElementById(inputId);
-                                    const fileName = document.getElementById(paragraphId);
-                                    fileName.textContent = fileInput.files.length > 0 ?
-                                        fileInput.files[0].name :
-                                        "Nenhuma imagem escolhida";
-                                }
-                            </script>
-
-                            <!-- Botões -->
-                            <div class="flex justify-end gap-3 pt-4">
-                                <button type="submit"
-                                    class="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 transition">
-                                    Salvar Curso
-                                </button>
-                                <a href="{{ route('courses.index') }}"
-                                    class="bg-gray-700 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-800 transition">
-                                    Cancelar
-                                </a>
-                            </div>
-                        </form>
+                        <div class="flex justify-end mt-8">
+                            <button type="button" data-next-tab="tab2" class="next-button px-6 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-colors duration-200">
+                                Próximo
+                            </button>
+                        </div>
                     </div>
-                </div>
+
+                    <div id="tab2" class="tab-content hidden">
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Imagens do Curso</h3>
+
+                            {{-- Imagem de Ícone --}}
+                            <div>
+                                <x-input-label for="course_icon" value="Ícone do Curso" />
+                                <div id="dropzone-icon" class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
+                                    <input type="file" name="course_icon" id="course_icon" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-blue-500 transition-colors">Arraste e solte ou clique para enviar um ícone.</p>
+                                </div>
+                                <div id="course_icon_preview" class="mt-4 flex justify-center"></div>
+                            </div>
+
+                            {{-- Imagem de Banner --}}
+                            <div>
+                                <x-input-label for="course_banner" value="Banner do Curso" />
+                                <div id="dropzone-banner" class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
+                                    <input type="file" name="course_banner" id="course_banner" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11V5" />
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-blue-500 transition-colors">Arraste e solte ou clique para enviar um banner.</p>
+                                </div>
+                                <div id="course_banner_preview" class="mt-4 flex justify-center"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-8">
+                            <button type="button" data-prev-tab="tab1" class="prev-button px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300 transition-colors duration-200">
+                                Anterior
+                            </button>
+                            <x-primary-button>
+                                Criar Curso
+                            </x-primary-button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lógica de abas
+        const tabs = document.querySelectorAll('.tab-content');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const nextButtons = document.querySelectorAll('.next-button');
+        const prevButtons = document.querySelectorAll('.prev-button');
+
+        function showTab(tabId) {
+            tabs.forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            tabButtons.forEach(button => {
+                const buttonSpan = button.querySelector('span:first-child');
+                if (button.dataset.tabTarget === tabId) {
+                    button.classList.add('active', 'text-gray-700');
+                    buttonSpan.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                    buttonSpan.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
+                } else {
+                    button.classList.remove('active', 'text-gray-700');
+                    buttonSpan.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                    buttonSpan.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        nextButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const currentTab = button.closest('.tab-content');
+                const inputs = currentTab.querySelectorAll('input[required], textarea[required]');
+                let allInputsValid = true;
+
+                inputs.forEach(input => {
+                    if (!input.checkValidity()) {
+                        allInputsValid = false;
+                        input.reportValidity();
+                    }
+                });
+
+                if (allInputsValid) {
+                    const nextTabId = button.dataset.nextTab;
+                    showTab(nextTabId);
+                }
+            });
+        });
+
+        prevButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const prevTabId = button.dataset.prevTab;
+                showTab(prevTabId);
+            });
+        });
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                showTab(button.dataset.tabTarget);
+            });
+        });
+
+        showTab('tab1');
+
+        // --- Lógica de Imagens (Ícone e Banner) ---
+        const dropzoneIcon = document.getElementById('dropzone-icon');
+        const courseIconInput = document.getElementById('course_icon');
+        const previewIcon = document.getElementById('course_icon_preview');
+
+        const dropzoneBanner = document.getElementById('dropzone-banner');
+        const courseBannerInput = document.getElementById('course_banner');
+        const previewBanner = document.getElementById('course_banner_preview');
+
+        // Função para criar o container da imagem com botão de remover
+        function createImageContainer(src) {
+            const container = document.createElement('div');
+            container.className = `relative rounded-lg overflow-hidden shadow-lg border border-gray-200 group w-full max-w-sm aspect-video`;
+            
+            const image = document.createElement('img');
+            image.src = src;
+            image.className = 'object-cover w-full h-full';
+            container.appendChild(image);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full text-xs transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110';
+            removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>`;
+
+            removeButton.onclick = () => {
+                container.remove();
+                
+                // Resetar o input file para que a imagem não seja enviada
+                const fileInput = event.target.closest('div').querySelector('input[type="file"]');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+            };
+            container.appendChild(removeButton);
+
+            return container;
+        }
+        
+        // Função genérica para configurar drag-and-drop
+        function setupDropzone(dropzone, inputElement, previewContainer) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => dropzone.classList.add('!border-blue-500', '!bg-blue-50'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => dropzone.classList.remove('!border-blue-500', '!bg-blue-50'), false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                inputElement.files = e.dataTransfer.files;
+                const changeEvent = new Event('change', { bubbles: true });
+                inputElement.dispatchEvent(changeEvent);
+            }, false);
+
+            inputElement.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    previewContainer.innerHTML = '';
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const newContainer = createImageContainer(e.target.result);
+                        previewContainer.appendChild(newContainer);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        setupDropzone(dropzoneIcon, courseIconInput, previewIcon);
+        setupDropzone(dropzoneBanner, courseBannerInput, previewBanner);
+    });
+</script>
