@@ -14,11 +14,4 @@ class PartialController extends Controller
         
         return view('partials.events.event-card', compact('event'))->render();
     }
-
-    public function coursePartial(string $id)
-    {
-        $course = Course::findOrFail($id);
-
-        return view('partials.courses.course-card', compact('course'))->render();
-    }
 }
