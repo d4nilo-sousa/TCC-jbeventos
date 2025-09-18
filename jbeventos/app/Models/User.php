@@ -127,6 +127,11 @@ class User extends Authenticatable
         return $this->hasMany(EventUserReaction::class);
     }
 
+    //reações do usuário em comentários
+    public function commentReactions(){
+        return $this->hasMany(CommentReaction::class);
+    }
+
     // Atributos personalizados
     public function getUserIconUrlAttribute()
     {

@@ -1,59 +1,94 @@
 <x-app-layout>
     <div class="py-12">
-        <div class="w-100% mx-auto sm:px-6 lg:px-8 flex justify-center">
-            <div class="w-[70rem] h-[46rem] bg-white shadow-md rounded-2xl p-9 mx-auto mt-2">
-                <div class="w-100% flex justify-center grid place-items-center mb-5">
-                    <p class="text-[2rem] text-stone-900">Editar Coordenador</p>
-                    <hr class="border-t-1 border-gray-100">
+        <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white shadow-lg rounded-2xl p-6 sm:p-8 lg:p-12">
+                
+                <!-- Título e Ícone da Página -->
+                <div class="flex flex-col items-center justify-center mb-8 text-center">
+                    <div class="p-3 bg-indigo-50 rounded-full mb-4 shadow-sm flex items-center justify-center">
+                        <img src="{{ asset('imgs/edit.png') }}" class="h-10 w-10 text-indigo-600">
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900">Editar Coordenador</h2>
                 </div>
-                <div class="m-10 mb-16">
-                    <img src="{{ asset('imgs/edit.png') }}" class="w-20 mx-auto">
-                </div>
+
+                <!-- Mensagens de Erro -->
                 @if ($errors->any())
-                    <div class="mb-4 text-red-600">
-                        <ul class="list-disc pl-5">
+                    <div class="mb-6 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 shadow-sm">
+                        <ul class="list-disc list-inside space-y-1 text-sm">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
-
-                <form action="{{ route('coordinators.update', $coordinator->id) }}" method="POST" class="space-y-4">
+                
+                <form action="{{ route('coordinators.update', $coordinator->id) }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')
 
-                    <div>
-                        <label class="block font-medium text-xl px-1">Nome</label>
-                        <input type="text" class="w-full border-gray-300 rounded shadow-sm"
-                            value="{{ $coordinator->userAccount->name ?? '-' }}" disabled>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome</label>
+                            <input type="text" class="w-full border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed" value="{{ $coordinator->userAccount->name ?? '-' }}" disabled>
+                        </div>
+    
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" class="w-full border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed" value="{{ $coordinator->userAccount->email ?? '-' }}" disabled>
+                        </div>
                     </div>
 
                     <div>
-                        <label class="block font-medium text-xl px-1 mt-10">Email</label>
-                        <input type="email" class="w-full border-gray-300 rounded shadow-sm"
-                            value="{{ $coordinator->userAccount->email ?? '-' }}" disabled>
+                        <label for="coordinator_type" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Coordenador</label>
+                        <select id="coordinator_type" name="coordinator_type" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+                            <option value="general" {{ $coordinator->coordinator_type == 'general' ? 'selected' : '' }}>Geral</option>
+                            <option value="course" {{ $coordinator->coordinator_type == 'course' ? 'selected' : '' }}>Curso</option>
+                        </select>
                     </div>
 
-                    <div>
-                        <label for="coordinator_type" class="block font-medium text-xl px-1 mt-10">Tipo de Coordenador</label>
-                        <select name="coordinator_type" class="w-full border-gray-300 rounded shadow-sm" required>
-                            <option value="general" {{ $coordinator->coordinator_type == 'general' ? 'selected' : '' }}>
-                                Geral</option>
-                            <option value="course" {{ $coordinator->coordinator_type == 'course' ? 'selected' : '' }}>
-                                Curso</option>
+                    <div id="course-select-container" class="{{ $coordinator->coordinator_type == 'course' ? '' : 'hidden' }}">
+                        <label for="course_id" class="block text-sm font-medium text-gray-700 mb-1">Curso</label>
+                        <select id="course_id" name="course_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            @foreach ($courses as $course)
+                                <option value="{{ $course->id }}" {{ ($coordinator->coordinatedCourse && $coordinator->coordinatedCourse->id == $course->id) ? 'selected' : '' }}>
+                                    {{ $course->course_name }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     
-                    <br><br>
-                    <div class="mt-6 w-full flex justify-end space-x-2">
-                        <button type="submit"
-                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Atualizar</button>
-                        <a href="{{ route('coordinators.index') }}"
-                            class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</a>
+                    <div class="flex justify-end space-x-3 mt-8">
+                        <a href="{{ route('coordinators.index') }}" class="inline-flex items-center px-6 py-2 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                            Atualizar
+                        </button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const coordinatorTypeSelect = document.getElementById('coordinator_type');
+        const courseSelectContainer = document.getElementById('course-select-container');
+        const courseSelect = document.getElementById('course_id');
+        
+        function toggleCourseSelect() {
+            if (coordinatorTypeSelect.value === 'course') {
+                courseSelectContainer.classList.remove('hidden');
+                courseSelect.required = true;
+            } else {
+                courseSelectContainer.classList.add('hidden');
+                courseSelect.required = false;
+            }
+        }
+
+        coordinatorTypeSelect.addEventListener('change', toggleCourseSelect);
+        toggleCourseSelect(); // Chama a função na inicialização para garantir o estado correto.
+    });
+</script>

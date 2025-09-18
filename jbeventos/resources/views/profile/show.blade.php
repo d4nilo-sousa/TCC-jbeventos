@@ -72,7 +72,7 @@
                                         'avatar_default_1.svg',
                                         'avatar_default_2.svg',
                                         'avatar_default_3.png',
-                                        'avatar_default_4.svg'
+                                        'avatar_default_4.png'
                                     ];
                                 @endphp
                                 @foreach($defaultAvatars as $avatar)
