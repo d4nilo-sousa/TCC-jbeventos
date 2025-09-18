@@ -52,8 +52,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (passwordConfirmation.value.length > 0 && passwordInput.value !== passwordConfirmation.value) {
             // Senhas diferentes: borda vermelha + mensagem de erro
-            passwordInput.style.border = '1px solid red';
-            passwordConfirmation.style.border = '1px solid red';
             errorMessage.classList.remove('hidden');
         } else {
             // Senhas iguais ou confirmação vazia: sem erro
