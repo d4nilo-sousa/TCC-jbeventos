@@ -1,14 +1,16 @@
 <x-app-layout>
-    {{-- Cabeçalho da Página --}}
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Criar Curso
-        </h2>
-    </x-slot>
-
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
+
+            {{-- Título da Página --}}
+                <div class="flex flex-col items-center justify-center mb-10 text-center">
+                    <div class="p-3 bg-indigo-50 rounded-full mb-4 shadow-sm flex items-center justify-center">
+                        <img src="{{ asset('imgs/book.png') }}" class="h-10 w-10 text-indigo-600">
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900">Criar Novo Curso</h2>
+                </div>
+
 
                 {{-- Exibição de erros de validação --}}
                 @if ($errors->any())
