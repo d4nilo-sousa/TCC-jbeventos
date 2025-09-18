@@ -122,7 +122,7 @@ class ProfileController extends Controller
 
         // Valida se o nome do ícone enviado é um dos válidos
         $validated = $request->validate([
-            'user_icon_default' => 'required|string|in:avatar_default_1.svg,avatar_default_2.svg,avatar_default_3.png,avatar_default_4.svg',
+            'user_icon_default' => 'required|string|in:avatar_default_1.svg,avatar_default_2.svg,avatar_default_3.png,avatar_default_4.png',
         ]);
         
         // Remove a foto de upload se existir, para evitar conflitos
