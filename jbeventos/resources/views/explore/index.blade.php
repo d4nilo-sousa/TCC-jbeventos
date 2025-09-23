@@ -17,11 +17,31 @@
                     </form>
                 </div>
 
+                {{-- Menu de Abas --}}
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button type="button" data-tab="events" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200 ease-in-out border-indigo-500 text-indigo-600">
+                            Eventos
+                        </button>
+                        <button type="button" data-tab="posts" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200 ease-in-out border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Posts
+                        </button>
+                        <button type="button" data-tab="courses" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200 ease-in-out border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Cursos
+                        </button>
+                        <button type="button" data-tab="coordinators" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm focus:outline-none transition-colors duration-200 ease-in-out border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Coordenadores
+                        </button>
+                    </nav>
+                </div>
+
+                {{-- Conteúdo das Abas --}}
+
                 {{-- Seção de Eventos --}}
-                <div class="mb-12">
+                <div id="events-section" class="tab-content">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Eventos</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @forelse ($events->take(4) as $event)
+                        @forelse ($events as $event)
                             <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg">
                                 <a href="{{ route('events.show', $event->id) }}">
                                     <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="w-full h-48 object-cover">
@@ -36,18 +56,44 @@
                             <p class="text-gray-500 text-center col-span-full">Nenhum evento encontrado.</p>
                         @endforelse
                     </div>
-                    @if ($events->count() > 4)
-                        <div class="text-right mt-4">
-                            <a href="#" class="text-indigo-600 font-semibold hover:underline">Ver todos os eventos →</a>
-                        </div>
-                    @endif
+                </div>
+
+                {{-- Seção de Posts --}}
+                <div id="posts-section" class="tab-content hidden">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Posts Recentes</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        @forelse ($posts as $post)
+                            <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg">
+                                <a href="{{ route('courses.show', $post->course->id) }}">
+                                    @if ($post->images && count($post->images) > 0)
+                                        <img src="{{ asset('storage/' . $post->images[0]) }}" alt="Imagem do post" class="w-full h-48 object-cover">
+                                    @else
+                                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+                                            Sem imagem
+                                        </div>
+                                    @endif
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-lg text-gray-900 leading-tight">{{ \Illuminate\Support\Str::limit($post->content, 50) }}</h3>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            Por <span class="font-semibold">{{ $post->author->name }}</span>
+                                        </p>
+                                        <p class="text-sm text-gray-500 mt-2">
+                                            {{ $post->created_at->format('d/m/Y H:i') }}
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                        @empty
+                            <p class="text-gray-500 text-center col-span-full">Nenhum post encontrado.</p>
+                        @endforelse
+                    </div>
                 </div>
 
                 {{-- Seção de Cursos --}}
-                <div class="mb-12">
+                <div id="courses-section" class="tab-content hidden">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Cursos</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @forelse ($courses->take(4) as $course)
+                        @forelse ($courses as $course)
                             <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden flex flex-col items-center justify-center p-6 text-center transform transition duration-300 hover:scale-105 hover:shadow-lg">
                                 <a href="{{ route('courses.show', $course->id) }}" class="flex flex-col items-center">
                                     <img src="{{ asset('storage/' . $course->course_icon) }}" alt="{{ $course->course_name }}" class="size-24 rounded-full object-cover border-4 border-gray-300 mb-4">
@@ -61,22 +107,16 @@
                             <p class="text-gray-500 text-center col-span-full">Nenhum curso encontrado.</p>
                         @endforelse
                     </div>
-                    @if ($courses->count() > 4)
-                        <div class="text-right mt-4">
-                            <a href="#" class="text-indigo-600 font-semibold hover:underline">Ver todos os cursos →</a>
-                        </div>
-                    @endif
                 </div>
 
-                {{-- Seção de Pessoas (apenas Coordenadores) --}}
-                <div class="mb-12">
+                {{-- Seção de Coordenadores --}}
+                <div id="coordinators-section" class="tab-content hidden">
                     <h2 class="text-3xl font-bold text-gray-800 mb-6">Coordenadores</h2>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        @forelse ($coordinators->take(4) as $coordinator)
+                        @forelse ($coordinators as $coordinator)
                             <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden flex flex-col items-center justify-center p-6 text-center transform transition duration-300 hover:scale-105 hover:shadow-lg">
                                 <a href="{{ route('profile.view', $coordinator->userAccount->id) }}" class="flex flex-col items-center">
-                                    {{-- Acessa a foto do usuário do Coordenador --}}
-                                    <img src="{{ $coordinator->userAccount->user_icon_url }}" alt="{{ $coordinator->userAccount->name }}" class="size-24 rounded-full object-cover border-4 border-gray-300 mb-4">
+                                    <img src="{{ $coordinator->userAccount->profile_photo_url }}" alt="{{ $coordinator->userAccount->name }}" class="size-24 rounded-full object-cover border-4 border-gray-300 mb-4">
                                     <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1">
                                         {{ $coordinator->userAccount->name }}
                                     </h3>
@@ -92,14 +132,76 @@
                             <p class="text-gray-500 text-center col-span-full">Nenhum coordenador encontrado.</p>
                         @endforelse
                     </div>
-                    @if ($coordinators->count() > 4)
-                        <div class="text-right mt-4">
-                            <a href="#" class="text-indigo-600 font-semibold hover:underline">Ver todos os coordenadores →</a>
-                        </div>
-                    @endif
                 </div>
 
             </div>
         </div>
     </div>
+
+    {{-- Script para a funcionalidade das abas --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+
+            function showContent(tabId) {
+                // Remove a classe de estilo da aba ativa e adiciona a inativa
+                tabs.forEach(tab => {
+                    tab.classList.remove('border-indigo-500', 'text-indigo-600');
+                    tab.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                });
+
+                // Oculta todo o conteúdo das abas
+                contents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Adiciona a classe de estilo à aba ativa
+                const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
+                if (activeTab) {
+                    activeTab.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    activeTab.classList.add('border-indigo-500', 'text-indigo-600');
+                }
+
+                // Mostra o conteúdo da aba selecionada
+                const activeContent = document.getElementById(`${tabId}-section`);
+                if (activeContent) {
+                    activeContent.classList.remove('hidden');
+                }
+            }
+
+            // Define a aba inicial com base no parâmetro de URL, se existir
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTabParam = urlParams.get('tab');
+            if (activeTabParam && document.querySelector(`[data-tab="${activeTabParam}"]`)) {
+                showContent(activeTabParam);
+            } else {
+                showContent('events'); // Aba padrão
+            }
+
+            // Adiciona o evento de clique para cada botão de aba
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    showContent(tabId);
+
+                    // Atualiza a URL sem recarregar a página
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set('tab', tabId);
+                    window.history.pushState({ path: newUrl.href }, '', newUrl.href);
+                });
+            });
+
+            // Permite a navegação com o botão "voltar" do navegador
+            window.addEventListener('popstate', function(event) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const activeTabParam = urlParams.get('tab');
+                if (activeTabParam) {
+                    showContent(activeTabParam);
+                } else {
+                    showContent('events');
+                }
+            });
+        });
+    </script>
 </x-app-layout>
