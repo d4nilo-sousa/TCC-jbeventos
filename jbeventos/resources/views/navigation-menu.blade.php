@@ -1,7 +1,7 @@
 <div>
-    <nav x-data="{ open: false }" class="bg-gray-800 border-b border-gray-700">
+    <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
         <div class="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-[10vh] sm:h-[12vh] lg:h-[10vh]">
+            <div class="flex justify-between items-center h-[10vh] sm:h-[12vh] lg:h-[8vh]">
                 {{-- Logo e Links de Navegação --}}
                 <div class="flex items-center">
                     {{-- Logo --}}
@@ -14,7 +14,7 @@
                     {{-- Links de Navegação Principais (Desktop) --}}
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex items-center">
                         {{-- Dashboard (Visível para todos) --}}
-                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" class="text-white hover:text-red-500">
+                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" class="text-gray-800 hover:text-red-500">
                             <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
                         </x-nav-link>
 
@@ -22,7 +22,7 @@
                         @if (auth()->user()->user_type === 'coordinator')
                             <div class="relative" x-data="{ open: false }" @click.away="open = false">
                                 <div class="h-full">
-                                    <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-white hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
+                                    <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
                                         <i class="fa-solid fa-calendar-days mr-2"></i> {{ __('Eventos') }}
                                         <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -51,7 +51,7 @@
                             </div>
                         @else
                             {{-- Link Eventos (para Admin e User) --}}
-                            <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')" class="text-white hover:text-red-500">
+                            <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')" class="text-gray-700 hover:text-red-500">
                                 <i class="fa-solid fa-calendar-days mr-2"></i> {{ __('Eventos') }}
                             </x-nav-link>
                         @endif
@@ -60,7 +60,7 @@
                         @if (auth()->user()->user_type === 'admin')
                             <div class="relative" x-data="{ open: false }" @click.away="open = false">
                                 <div class="h-full">
-                                    <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-white hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
+                                    <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
                                         <i class="fa-solid fa-graduation-cap mr-2"></i> {{ __('Cursos') }}
                                         <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
@@ -89,7 +89,7 @@
                             </div>
                         @else
                             {{-- Link Cursos (para Coordenador e User) --}}
-                            <x-nav-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.*')" class="text-white hover:text-red-500">
+                            <x-nav-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.*')" class="text-gray-700 hover:text-red-500">
                                 <i class="fa-solid fa-graduation-cap mr-2"></i> {{ __('Cursos') }}
                             </x-nav-link>
                         @endif
@@ -98,7 +98,7 @@
                         @if (auth()->user()->user_type === 'admin')
                             <div class="relative" x-data="{ open: false }" @click.away="open = false">
                                 <div class="h-full">
-                                    <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-white hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
+                                    <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-700 hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
                                         <i class="fa-solid fa-user-tie mr-2"></i> {{ __('Coordenadores') }}
                                         <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />

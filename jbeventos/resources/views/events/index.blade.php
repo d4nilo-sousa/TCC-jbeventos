@@ -13,7 +13,7 @@
 
                 {{-- Page Header and Filters --}}
                 <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 md:gap-0">
-                    <h1 class="text-3xl font-bold text-gray-800 leading-tight">
+                    <h1 class="text-2xl font-bold text-gray-800 leading-tight">
                         {{ request('status') === 'visible' ? 'Meus Eventos (Visíveis)' : (request('status') === 'hidden' ? 'Meus Eventos (Ocultos)' : 'Todos os Eventos') }}
                     </h1>
                     
@@ -123,7 +123,7 @@
                 {{-- Events List --}}
                 <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     @forelse ($events as $event)
-                        <a href="{{ route('events.show', $event->id) }}" class="block transform transition-transform duration-300 hover:scale-105 hover:shadow-lg rounded-xl overflow-hidden cursor-pointer">
+                        <a href="{{ route('events.show', $event->id) }}" class="block shadow-lg transform transition-transform duration-300 hover:scale-105 rounded-xl overflow-hidden cursor-pointer">
                             {{-- Event Card --}}
                             <div class="relative bg-white border border-gray-200 rounded-xl shadow-md p-4 flex flex-col h-full">
                                 {{-- Image --}}

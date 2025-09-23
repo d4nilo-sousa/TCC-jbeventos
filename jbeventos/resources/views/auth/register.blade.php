@@ -6,7 +6,7 @@
             </a>
         </x-slot>
 
-        <x-validation-errors class="mb-4" />
+        
 
         <form method="POST" action="{{ route('register') }}">
             @csrf
@@ -15,8 +15,9 @@
             <div class="text-center mb-5">
                 <h1 class="text-3xl font-bold text-stone-500 font-poppins">Olá, seja bem-vindo!</h1>
                 <p class="mt-2 text-sm text-stone-400">Cadastre-se para continuar</p>
-                <hr class="mx-auto w-1/4">
             </div>
+
+            <x-validation-errors class="mb-3 p-3 bg-red-50 rounded-lg shadow-md" />
 
             <div>
                 <x-label for="name" value="{{ __('Nome') }}" />
@@ -48,6 +49,17 @@
                             name="password_confirmation" required autocomplete="new-password" />
                     </div>
                 </div>
+            </div>
+
+            <div class="p-3 bg-gray-100 rounded-lg shadow-md mt-3">
+                <p class="text-gray-700 text-bold text-[15px] font-medium">
+                    Sua senha deve possuir:
+                </p>
+                <ul class="list-none pl-0 mt-2 space-y-1 text-gray-600">
+                    <li class="text-[13px]">
+                        <span class="text-stone-900">•</span> Mínimo de 8 caracteres
+                    </li>
+                </ul>
             </div>
 
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
