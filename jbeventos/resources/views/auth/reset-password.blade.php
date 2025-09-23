@@ -17,26 +17,23 @@
             <input type="hidden" name="token" value="{{ $request->route('token') }}">
             <input type="hidden" name="userType" value="{{ $userType }}">
 
+
             <div class="block">
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full"
-                         type="email" name="email"
-                         :value="old('email', $request->email)"
-                         required autofocus autocomplete="username" />
+                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)"
+                    required autofocus autocomplete="username" style="display: none;" />
             </div>
 
             <div class="mt-4">
                 <x-label for="password" value="{{ __('Senha') }}" />
                 <div class="relative">
-                    <x-input id="password" name="password" type="password"
-                             class="block mt-1 w-full pr-10"
-                             required autocomplete="new-password" />
+                    <x-input id="password" name="password" type="password" class="block mt-1 w-full pr-10" required
+                        autocomplete="new-password" />
 
                     <button type="button"
-                            class="absolute inset-y-0 right-3 flex items-center text-gray-500 toggle-password"
-                            data-target="#password">
+                        class="absolute inset-y-0 right-3 flex items-center text-gray-500 toggle-password"
+                        data-target="#password">
                         <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha"
-                             class="w-5 h-5 opacity-75 hover:opacity-100 transition" />
+                            class="w-5 h-5 opacity-75 hover:opacity-100 transition" />
                     </button>
                 </div>
 
@@ -52,13 +49,13 @@
                 <x-label for="password_confirmation" value="{{ __('Confirmar Senha') }}" />
                 <div class="relative">
                     <x-input id="password_confirmation" name="password_confirmation" type="password"
-                             class="block mt-1 w-full pr-10" required autocomplete="new-password" />
+                        class="block mt-1 w-full pr-10" required autocomplete="new-password" />
 
                     <button type="button"
-                            class="absolute inset-y-0 right-3 flex items-center text-gray-500 toggle-password"
-                            data-target="#password_confirmation">
+                        class="absolute inset-y-0 right-3 flex items-center text-gray-500 toggle-password"
+                        data-target="#password_confirmation">
                         <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha"
-                             class="w-5 h-5 opacity-75 hover:opacity-100 transition" />
+                            class="w-5 h-5 opacity-75 hover:opacity-100 transition" />
                     </button>
                 </div>
 

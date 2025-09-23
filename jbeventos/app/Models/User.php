@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\CustomResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -73,30 +74,35 @@ class User extends Authenticatable
         ];
     }
 
-      // Cursos criados pelo usuário
-    public function createdCourses() {
+    // Cursos criados pelo usuário
+    public function createdCourses()
+    {
         return $this->hasMany(Course::class);
     }
 
     // Retorna o coordenador associado a este usuário
-    public function coordinator() {
+    public function coordinator()
+    {
         return $this->hasOne(Coordinator::class);
     }
 
     // Retorna o coordenador associado a este usuário
-    public function coordinatorRole() {
+    public function coordinatorRole()
+    {
         return $this->hasOne(Coordinator::class);
     }
 
     // Comentários feitos pelo usuário
-    public function userComments() {
+    public function userComments()
+    {
         return $this->hasMany(Comment::class);
     }
 
     // Cursos que o usuário está participando
     // Relação muitos-para-muitos com a tabela pivot 'course_user_follow'
     // withTimestamps() mantém os timestamps na tabela pivot atualizados automaticamente
-    public function followedCourses() {
+    public function followedCourses()
+    {
         return $this->belongsToMany(Course::class, 'course_user_follow')->withTimestamps();
     }
 
@@ -115,24 +121,28 @@ class User extends Authenticatable
 
     // Reações feitas pelo usuário em eventos
     // Essa relação usa uma tabela pivot com atributos próprios (EventUserReaction)
-    public function eventReactions() {
+    public function eventReactions()
+    {
         return $this->hasMany(EventUserReaction::class);
     }
 
     // Atributos personalizados
     public function getUserIconUrlAttribute()
     {
-    return $this->user_icon
-        ? asset('storage/' . $this->user_icon)
-        : asset('default-avatar.png');
+        return $this->user_icon
+            ? asset('storage/' . $this->user_icon)
+            : asset('default-avatar.png');
     }
 
     public function getUserBannerUrlAttribute()
     {
-    return $this->user_banner
-        ? asset('storage/' . $this->user_banner)
-        : asset('default-banner.jpg');
-    }       
+        return $this->user_banner
+            ? asset('storage/' . $this->user_banner)
+            : asset('default-banner.jpg');
+    }
 
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new CustomResetPasswordNotification($token));
+    }
 }
-
