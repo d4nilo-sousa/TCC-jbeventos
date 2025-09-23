@@ -18,8 +18,13 @@
                             <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
                         </x-nav-link>
 
-                        {{-- Dropdown de Eventos (Apenas para Coordenador) --}}
-                        @if (auth()->user()->user_type === 'coordinator')
+                        {{-- Explorar (Adicionado para todos) --}}
+                        <x-nav-link href="{{ route('explore.index') }}" :active="request()->routeIs('explore.*')" class="text-white hover:text-red-500">
+                            <i class="fa-solid fa-compass mr-2"></i> {{ __('Explorar') }}
+                        </x-nav-link>
+
+                        {{-- Dropdown de Eventos (Apenas para Admin e Coordenador) --}}
+                        @if (in_array(auth()->user()->user_type, ['admin', 'coordinator']))
                             <div class="relative" x-data="{ open: false }" @click.away="open = false">
                                 <div class="h-full">
                                     <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-white hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
@@ -31,14 +36,14 @@
                                     </button>
                                 </div>
                                 <div x-show="open"
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    x-transition:leave-start="opacity-100 scale-100"
-                                    x-transition:leave-end="opacity-0 scale-95"
-                                    class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                                    style="display: none;">
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                     style="display: none;">
                                     <div class="py-1 bg-white rounded-md shadow-xs">
                                         <x-dropdown-link href="{{ route('events.index') }}" :active="request()->routeIs('events.index')">
                                             <i class="fa-solid fa-list mr-2"></i> {{ __('Listar Eventos') }}
@@ -50,7 +55,7 @@
                                 </div>
                             </div>
                         @else
-                            {{-- Link Eventos (para Admin e User) --}}
+                            {{-- Link Eventos (para User) --}}
                             <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')" class="text-white hover:text-red-500">
                                 <i class="fa-solid fa-calendar-days mr-2"></i> {{ __('Eventos') }}
                             </x-nav-link>
@@ -69,14 +74,14 @@
                                     </button>
                                 </div>
                                 <div x-show="open"
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    x-transition:leave-start="opacity-100 scale-100"
-                                    x-transition:leave-end="opacity-0 scale-95"
-                                    class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                                    style="display: none;">
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                     style="display: none;">
                                     <div class="py-1 bg-white rounded-md shadow-xs">
                                         <x-dropdown-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.index')">
                                             <i class="fa-solid fa-list mr-2"></i> {{ __('Listar Cursos') }}
@@ -107,14 +112,14 @@
                                     </button>
                                 </div>
                                 <div x-show="open"
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100"
-                                    x-transition:leave="transition ease-in duration-75"
-                                    x-transition:leave-start="opacity-100 scale-100"
-                                    x-transition:leave-end="opacity-0 scale-95"
-                                    class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                                    style="display: none;">
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 scale-95"
+                                     x-transition:enter-end="opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="opacity-100 scale-100"
+                                     x-transition:leave-end="opacity-0 scale-95"
+                                     class="absolute z-50 mt-2 w-48 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                     style="display: none;">
                                     <div class="py-1 bg-white rounded-md shadow-xs">
                                         <x-dropdown-link href="{{ route('coordinators.index') }}" :active="request()->routeIs('coordinators.index')">
                                             <i class="fa-solid fa-list mr-2"></i> {{ __('Listar Coordenadores') }}
@@ -218,8 +223,13 @@
                     <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
                 </x-responsive-nav-link>
 
+                {{-- Explorar (Adicionado para todos) --}}
+                <x-responsive-nav-link href="{{ route('explore.index') }}" :active="request()->routeIs('explore.index')">
+                    <i class="fa-solid fa-compass mr-2"></i> {{ __('Explorar') }}
+                </x-responsive-nav-link>
+
                 {{-- Links de Eventos Mobile --}}
-                @if (auth()->user()->user_type === 'coordinator')
+                @if (in_array(auth()->user()->user_type, ['admin', 'coordinator']))
                     <div class="border-t border-gray-200 pt-2">
                         <div class="block px-4 text-xs text-gray-400">
                             {{ __('Eventos') }}
@@ -232,7 +242,7 @@
                         </x-responsive-nav-link>
                     </div>
                 @else
-                    <x-responsive-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')">
+                    <x-responsive-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.index')">
                         <i class="fa-solid fa-calendar-days mr-2"></i> {{ __('Eventos') }}
                     </x-responsive-nav-link>
                 @endif

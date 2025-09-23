@@ -15,6 +15,7 @@ use App\Http\Controllers\UserPhoneController;
 use App\Http\Controllers\VisibilityController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\EventPartialController;
+use App\Http\Controllers\ExploreController;
 
 /*
 |--------------------------------------------------------------------------
@@ -143,6 +144,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::put('phone', [UserPhoneController::class, 'update'])->name('user.phone.update');
 
     Route::get('/chat/{user}', [ChatController::class, 'show'])->name('chat.show'); // Rota para exibir a tela de chat
+
+    //Rota para a tela de exploração
+    Route::get('/explore', [ExploreController::class, 'index'])->name('explore.index');
 
 
     /*
