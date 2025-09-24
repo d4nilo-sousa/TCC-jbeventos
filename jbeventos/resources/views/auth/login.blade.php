@@ -58,9 +58,9 @@
                 @endif
             </div>
 
-            <div class="flex items-center justify-center mt-6">
-                <x-button class="bg-red-600 hover:bg-red-700 w-full h-11 text-white">
-                    {{ __('Login') }}
+            <div class="flex items-center justify-center mt-3">
+                <x-button class="bg-red-600 hover:bg-red-700 w-60 h-10">
+                    {{ __('Entrar') }}
                 </x-button>
             </div>
         </form>

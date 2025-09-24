@@ -27,39 +27,47 @@
 
             <div class="mt-4">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full placeholder-gray-300" type="email" name="email" :value="old('email')"
-                    required autocomplete="username" placeholder="exemplo@gmail.com" />
+                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')"
+                    required autocomplete="username" />
             </div>
 
-            <!-- Campo de Senha  -->
-            <div class="flex mt-4 gap-3">
-                <div class="flex-1">
-                    <x-label for="password" value="{{ __('Senha') }}" />
-                    <div class="relative">
-                        <x-input id="password" class="block mt-1 w-full pr-10" type="password" name="password" required
-                            autocomplete="new-password" />
-                    </div>
+            <!-- Campo de Senha com botão olho -->
+            <div class="mt-4">
+                <x-label for="password" value="{{ __('Senha') }}" />
+                <div class="relative">
+                    <x-input id="password" class="block mt-1 w-full pr-10" type="password" name="password" required
+                        autocomplete="new-password" />
+
+                    <button type="button"
+                        class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 toggle-password"
+                        data-target="#password">
+                        <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha"
+                            class="w-5 h-5 opacity-75 hover:opacity-100 transition">
+                    </button>
                 </div>
 
-                <!-- Campo de Confirmação  -->
-                <div class="flex-1">
-                    <x-label for="password_confirmation" value="{{ __('Confirmar Senha') }}" />
-                    <div class="relative">
-                        <x-input id="password_confirmation" class="block mt-1 w-full pr-10" type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="p-3 bg-gray-100 rounded-lg shadow-md mt-3">
-                <p class="text-gray-700 text-bold text-[15px] font-medium">
-                    Sua senha deve possuir:
-                </p>
-                <ul class="list-none pl-0 mt-2 space-y-1 text-gray-600">
-                    <li class="text-[13px]">
-                        <span class="text-stone-900">•</span> Mínimo de 8 caracteres
-                    </li>
+                <ul id="password-requirements" class="text-sm mt-2 hidden">
+                    <li id="req-length" class="text-red-500">Pelo menos 8 caracteres</li>
                 </ul>
+            </div>
+
+            <!-- Campo de Confirmação com botão olho -->
+            <div class="mt-4">
+                <x-label for="password_confirmation" value="{{ __('Confirmar Senha') }}" />
+                <div class="relative">
+                    <x-input id="password_confirmation" class="block mt-1 w-full pr-10" type="password"
+                        name="password_confirmation" required autocomplete="new-password" />
+                    <button type="button"
+                        class="absolute top-1/2 right-2 transform -translate-y-1/2 text-gray-500 toggle-password"
+                        data-target="#password_confirmation">
+                        <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha"
+                            class="w-5 h-5 opacity-75 hover:opacity-100 transition">
+                    </button>
+                </div>
+
+                <p id="password-mismatch-error" class="text-red-500 text-sm mt-1 hidden">
+                    As senhas são diferentes!
+                </p>
             </div>
 
             @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
@@ -88,9 +96,14 @@
                 </div>
             @endif
 
-            <div class="flex items-center justify-center mt-6">
-                <x-button class="bg-red-600 hover:bg-red-700 w-full h-11 text-white">
-                    {{ __('Login') }}
+            <div class="flex items-center justify-end mt-4">
+                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    href="{{ route('login') }}">
+                    {{ __('Já possui conta?') }}
+                </a>
+
+                <x-button class="ms-4">
+                    {{ __('Criar Conta') }}
                 </x-button>
             </div>
         </form>

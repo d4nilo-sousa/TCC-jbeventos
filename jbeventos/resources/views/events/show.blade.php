@@ -120,6 +120,39 @@
                                 <p class="font-bold mb-1">Curso Relacionado:</p>
                                 <p>{{ $event->eventCourse->course_name ?? 'Sem Curso' }}</p>
                             </div>
+                            
+                    {{-- Botões de navegação e ações do coordenador --}}
+                    <div class="flex justify-between">
+                        <a href="{{ route('events.index') }}"
+                            class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
+                            ← Voltar
+                        </a>
+
+                        @if (auth()->check() && auth()->user()->user_type === 'coordinator')
+                            {{-- Só executa se o usuário estiver logado e for coordenador --}}
+
+                            @php
+                                $loggedCoordinator = auth()->user()->coordinator;
+                                // Pega o coordenador vinculado ao usuário logado
+                            @endphp
+
+                            @if ($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
+                                {{-- Garante que o coordenador logado é o responsável pelo evento --}}
+
+                                <div class="flex space-x-2">
+                                    {{-- Botão de Editar --}}
+                                    <a href="{{ route('events.edit', $event->id) }}"
+                                        class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
+                                        Editar
+                                    </a>
+
+                                    {{-- Botão de Excluir (apenas abre o modal) --}}
+                                    <button onclick="openModal('deleteModal-{{ $event->id }}')"
+                                        class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 text-red-900 hover:bg-red-400">
+                                        🗑 Excluir
+                                    </button>
+                                </div>
+                            @endif
                         @endif
                         <div>
                             <p class="font-bold mb-1">Categorias:</p>
@@ -193,7 +226,50 @@
     </div>
 </x-app-layout>
 
-{{-- Scripts for Interactivity --}}
+{{-- Modal para cadastrar telefone --}}
+<div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+        <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
+        <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
+            @csrf
+            @method('PUT')
+            <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999"
+                pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2"
+                required>
+            <div class="flex justify-end space-x-2">
+                <button type="button" id="cancelPhoneModal"
+                    class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Modal de Exclusão --}}
+<div id="deleteModal-{{ $event->id }}"
+    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
+        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
+        <p>Tem certeza que deseja excluir este evento? Esta ação não poderá ser desfeita.</p>
+        <div class="mt-6 flex justify-end space-x-2">
+            <button onclick="closeModal('deleteModal-{{ $event->id }}')"
+                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+            <form action="{{ route('events.destroy', $event->id) }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
+                    Exclusão</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Toast simples --}}
+<div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
+    <span id="toast-message"></span>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const carousel = document.getElementById('carousel');
@@ -325,5 +401,6 @@
     });
 </script>
 
-{{-- Livewire & App scripts --}}
+{{-- Scripts compilados --}}
 @vite('resources/js/app.js')
+

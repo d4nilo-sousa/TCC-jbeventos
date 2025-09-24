@@ -14,24 +14,20 @@ class CourseController extends Controller
      | LISTAGEM E DETALHES
      |--------------------------------------------------------------------------
      */
-    public function index(Request $request)    {
-        $search = $request->input('search');
+    public function index(Request $request)
+    {
+        $courses = Course::query();
 
-        $courses = Course::with(['courseCoordinator', 'events'])
-            ->when($search, function ($query, $search) {
-            $query->where('course_name', 'like', "%{$search}%")
-                ->orWhereHas('courseCoordinator.userAccount', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            }
-            );
-        })
-            ->paginate(6) // Mostra 6 cursos por página (pode alterar para 9, 12, etc)
-            ->appends(['search' => $search]); // Mantém o parâmetro de pesquisa ao mudar de página
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $courses->where('course_name', 'like', "%{$search}%");
+        }
 
-        return view('courses.index', [
-            'courses' => $courses,
-            'search' => $search,
-        ]);    }
+        $courses = $courses->get();
+
+        return view('courses.index', compact('courses'));
+    }
+
 
 
     public function create()

@@ -1,4 +1,4 @@
-<?php
+s<?php
 
 namespace App\Http\Controllers;
 
@@ -29,78 +29,79 @@ class EventController extends Controller
     {
         $loggedCoordinator = auth()->user()->coordinator;
 
-        // Inicia a query com os relacionamentos necessários para a view.
-        $query = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
+        // Query base com relacionamentos
+        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
 
-        // Lógica principal de visibilidade baseada no tipo de usuário e filtro.
         if ($loggedCoordinator) {
             if ($request->status === 'visible') {
-                $query->where('coordinator_id', $loggedCoordinator->id)
+                // Eventos visíveis do coordenador logado
+                $events = $events->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', true);
             } elseif ($request->status === 'hidden') {
-                $query->where('coordinator_id', $loggedCoordinator->id)
+                // Eventos ocultos do coordenador logado
+                $events = $events->where('coordinator_id', $loggedCoordinator->id)
                     ->where('visible_event', false);
             } else {
-                $query->where(function ($q) use ($loggedCoordinator) {
-                    $q->where('visible_event', true)
-                    ->orWhere('coordinator_id', $loggedCoordinator->id);
-                });
+                // Lista principal: apenas eventos visíveis de todos, incluindo do próprio coordenador
+                $events = $events->where('visible_event', true);
             }
         } else {
-            $query->where('visible_event', true);
+            // Usuários que não são coordenadores veem apenas eventos visíveis
+            $events = $events->where('visible_event', true);
         }
         
         // --- Aplica os filtros adicionais (encadeados na mesma query) ---
 
-        // Filtro por tipo de evento
-        $query->when($request->filled('event_type'), function ($q) use ($request) {
-            $q->where('event_type', $request->event_type);
-        });
+        // Filtros adicionais
+        if ($request->filled('event_type')) {
+            $events = $events->where('event_type', $request->event_type);
+        }
 
-        // Filtro por curso
-        $query->when($request->filled('course_id'), function ($q) use ($request) {
-            $q->whereIn('course_id', $request->course_id);
-        });
+        if ($request->filled('course_id')) {
+            $events = $events->whereIn('course_id', $request->course_id);
+        }
 
-        // Filtro por categoria
-        $query->when($request->filled('category_id'), function ($q) use ($request) {
-            $q->whereHas('eventCategories', function ($subQuery) use ($request) {
-                $subQuery->whereIn('categories.id', $request->category_id);
+        if ($request->filled('category_id')) {
+            $events = $events->whereHas('eventCategories', function ($q) use ($request) {
+                $q->whereIn('categories.id', $request->category_id);
             });
         });
 
-        // Filtro por intervalo de datas
-        $query->when($request->filled('start_date'), function ($q) use ($request) {
-            $q->whereDate('event_scheduled_at', '>=', $request->start_date);
-        });
+        if ($request->filled('start_date')) {
+            $events = $events->whereDate('event_scheduled_at', '>=', $request->start_date);
+        }
 
-        $query->when($request->filled('end_date'), function ($q) use ($request) {
-            $q->whereDate('event_scheduled_at', '<=', $request->end_date);
-        });
-
-        // --- Aplica a ordenação ---
+        if ($request->filled('end_date')) {
+            $events = $events->whereDate('event_scheduled_at', '<=', $request->end_date);
+        }
 
         // Ordenação por curtidas
         if ($request->filled('likes_order')) {
-            $query->withCount([
-                'reactions as likes_count' => function ($subQuery) {
-                    $subQuery->where('reaction_type', 'like');
+            $events = $events->withCount([
+                'reactions as likes_count' => function ($query) {
+                    $query->where('reaction_type', 'like');
                 }
             ]);
-            
-            $query->orderBy('likes_count', $request->likes_order === 'most' ? 'desc' : 'asc');
+
+            if ($request->likes_order === 'most') {
+                $events = $events->orderBy('likes_count', 'desc');
+            } elseif ($request->likes_order === 'least') {
+                $events = $events->orderBy('likes_count', 'asc');
+            }
         }
 
         // Ordenação por agendamento
         if ($request->filled('schedule_order')) {
-            $query->orderBy('event_scheduled_at', $request->schedule_order === 'soonest' ? 'asc' : 'desc');
+            if ($request->schedule_order === 'soonest') {
+                $events = $events->orderBy('event_scheduled_at', 'asc');
+            } elseif ($request->schedule_order === 'latest') {
+                $events = $events->orderBy('event_scheduled_at', 'desc');
+            }
         } else {
-            // Ordenação padrão: mais recente primeiro
-            $query->orderBy('created_at', 'desc');
+            $events = $events->orderBy('created_at', 'desc');
         }
 
-        // Filtro de pesquisa (usando 'when' para ser opcional)
-        $query->when($request->filled('search'), function ($q) use ($request) {
+        $events = $events->when($request->filled('search'), function ($query) use ($request) {
             $search = $request->input('search');
             $q->where('event_name', 'like', "%{$search}%");
         });
@@ -238,8 +239,6 @@ class EventController extends Controller
         if ($event->notifiableUsers->isNotEmpty()) {
             Notification::send($event->notifiableUsers, new NewEventNotification($event));
         }
-
-        broadcast(new EventCreated($event))->toOthers();
 
         return redirect()->route('events.index')->with('success', 'Evento criado com sucesso!');
     }
@@ -421,7 +420,7 @@ class EventController extends Controller
             $event->eventCategories()->detach();
         }
 
-        return redirect()->route('events.index')->with('success', 'Evento atualizado com sucesso!');
+        return redirect()->route('events.show', $event->id)->with('success', 'Evento atualizado com sucesso!');
     }
 
     // Exclui um evento
@@ -448,6 +447,6 @@ class EventController extends Controller
 
         broadcast(new EventDeleted($eventId))->toOthers();
 
-        return redirect()->route('coordinator.dashboard')->with('success', 'Evento excluído com sucesso!');
+        return redirect()->route('events.index')->with('success', 'Evento excluído com sucesso!');
     }
 }

@@ -1,49 +1,87 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const passwordInput = document.getElementById('password'); // Campo da senha principal
-    const passwordConfirmation = document.getElementById('password_confirmation'); // Campo de confirmação da senha
-    const requirementsList = document.getElementById('password-requirements'); // Lista com os requisitos da senha
-    const errorMessage = document.getElementById('password-mismatch-error'); // Mensagem de erro caso as senhas não coincidam
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmation = document.getElementById('password_confirmation');
+    const requirementsList = document.getElementById('password-requirements');
+    const errorMessage = document.getElementById('password-mismatch-error');
 
+    // Se os campos de senha não existirem, encerra o script
+    if (!passwordInput || !passwordConfirmation) return;
+
+    // Tenta obter userType se existir
+    const userTypeInput = document.querySelector('input[name="userType"]');
+    const userType = userTypeInput ? userTypeInput.value : null;
+
+    // Toggle show/hide password com ícone
     document.querySelectorAll('.toggle-password').forEach(button => {
-        const input = document.querySelector(button.dataset.target); // O input de senha
-        const img = button.querySelector('img'); // A imagem dentro do botão
+        const input = document.querySelector(button.dataset.target);
+        const img = button.querySelector('img');
+
+        if (!input) return;
 
         button.addEventListener('click', () => {
             const isText = input.type === 'text';
             input.type = isText ? 'password' : 'text';
 
-            // Caminhos corretos, relativos à raiz do projeto (public/)
-            img.src = isText
-                ? '/imgs/blind.png'
-                : '/imgs/open-eyes.png';
-
-            img.alt = isText ? 'Ocultar senha' : 'Mostrar senha';
+            if (img) {
+                img.src = isText ? '/imgs/blind.png' : '/imgs/open-eyes.png';
+                img.alt = isText ? 'Ocultar senha' : 'Mostrar senha';
+            }
         });
     });
 
-
-
-    // Validação dos requisitos da senha
+    // Validação de senha
     function validatePassword(password) {
-        const hasLength = password.length >= 8; // Mínimo de 8 caracteres
-        const hasUpper = /[A-Z]/.test(password); // Pelo menos uma letra maiúscula
-        const hasNumber = /[0-9]/.test(password); // Pelo menos um número
-        const hasSpecial = /[!@#$%&*]/.test(password); // Pelo menos um caractere especial
+        const hasLength = password.length >= 8;
+        const hasUpper = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecial = /[!@#$%&*]/.test(password);
 
-        // Altera a cor do item da lista conforme o requisito seja atendido ou não
-        document.getElementById('req-length').className = hasLength ? 'text-green-600' : 'text-red-500';
-        document.getElementById('req-uppercase').className = hasUpper ? 'text-green-600' : 'text-red-500';
-        document.getElementById('req-number').className = hasNumber ? 'text-green-600' : 'text-red-500';
-        document.getElementById('req-special').className = hasSpecial ? 'text-green-600' : 'text-red-500';
+        const reqs = {
+            length: hasLength,
+            uppercase: hasUpper,
+            number: hasNumber,
+            special: hasSpecial
+        };
 
-        // Retorna true se todos os requisitos forem atendidos
-        return hasLength && hasUpper && hasNumber && hasSpecial;
+        // Se lista de requisitos não existir, não faz nada
+        if (!requirementsList) return true;
+
+        // Exibe ou oculta baseando-se no userType
+        if (userType === 'coordinator') {
+            ['length', 'uppercase', 'number', 'special'].forEach(req => {
+                const el = document.getElementById(`req-${req}`);
+                if (el) {
+                    el.classList.remove('hidden');
+                    el.classList.toggle('text-green-600', reqs[req]);
+                    el.classList.toggle('text-red-500', !reqs[req]);
+                }
+            });
+
+            return hasLength && hasUpper && hasNumber && hasSpecial;
+        } else {
+            // Usuários comuns — apenas comprimento
+            const el = document.getElementById('req-length');
+            if (el) {
+                el.classList.remove('hidden');
+                el.classList.toggle('text-green-600', hasLength);
+                el.classList.toggle('text-red-500', !hasLength);
+            }
+
+            // Oculta os outros requisitos se existirem
+            ['uppercase', 'number', 'special'].forEach(req => {
+                const el = document.getElementById(`req-${req}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            return hasLength;
+        }
     }
 
-    // Validação se as senhas coincidem
+    // Verifica se as senhas coincidem
     function validatePasswordsMatch() {
+        if (!errorMessage) return;
+
         if (passwordInput.value.length === 0) {
-            // Se o campo estiver vazio, não mostrar erro
             passwordInput.style.border = '';
             passwordConfirmation.style.border = '';
             errorMessage.classList.add('hidden');
@@ -52,36 +90,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (passwordConfirmation.value.length > 0 && passwordInput.value !== passwordConfirmation.value) {
             // Senhas diferentes: borda vermelha + mensagem de erro
+            passwordInput.style.border = '1px solid red';
+            passwordConfirmation.style.border = '1px solid red';
             errorMessage.classList.remove('hidden');
         } else {
-            // Senhas iguais ou confirmação vazia: sem erro
             passwordInput.style.border = '';
             passwordConfirmation.style.border = '';
             errorMessage.classList.add('hidden');
         }
     }
 
-    // Quando o usuário foca no campo de senha, mostra os requisitos
+    // Mostra requisitos ao focar
     passwordInput.addEventListener('focus', () => {
-        requirementsList.classList.remove('hidden');
+        if (requirementsList) {
+            requirementsList.classList.remove('hidden');
+            validatePassword(passwordInput.value);
+        }
     });
 
-    // Ao digitar no campo de senha, valida os requisitos e a confirmação
+    // Valida ao digitar
     passwordInput.addEventListener('input', (e) => {
-        validatePassword(e.target.value);
+        const value = e.target.value;
+        if (requirementsList) requirementsList.classList.remove('hidden');
+        validatePassword(value);
         validatePasswordsMatch();
     });
 
-    // Ao digitar na confirmação, valida se as senhas coincidem
-    passwordConfirmation.addEventListener('input', validatePasswordsMatch);
-
-    // Ao sair do campo de senha, esconde a lista se tudo estiver válido
+    // Esconde requisitos ao perder foco se estiver vazio ou válido
     passwordInput.addEventListener('blur', () => {
-        const password = passwordInput.value.trim();
-        if (password === '' || validatePassword(password)) {
+        const isValid = validatePassword(passwordInput.value);
+
+        if (requirementsList && (passwordInput.value.length === 0 || isValid)) {
             requirementsList.classList.add('hidden');
-        } else {
-            requirementsList.classList.remove('hidden');
         }
     });
+
+    // Valida confirmação enquanto digita
+    passwordConfirmation.addEventListener('input', validatePasswordsMatch);
 });
