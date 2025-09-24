@@ -1,62 +1,86 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const userType = document.querySelector('input[name="userType"]').value;
-
     const passwordInput = document.getElementById('password');
     const passwordConfirmation = document.getElementById('password_confirmation');
     const requirementsList = document.getElementById('password-requirements');
     const errorMessage = document.getElementById('password-mismatch-error');
 
-    // Toggle show/hide password
+    // Se os campos de senha não existirem, encerra o script
+    if (!passwordInput || !passwordConfirmation) return;
+
+    // Tenta obter userType se existir
+    const userTypeInput = document.querySelector('input[name="userType"]');
+    const userType = userTypeInput ? userTypeInput.value : null;
+
+    // Toggle show/hide password com ícone
     document.querySelectorAll('.toggle-password').forEach(button => {
         const input = document.querySelector(button.dataset.target);
         const img = button.querySelector('img');
 
+        if (!input) return;
+
         button.addEventListener('click', () => {
             const isText = input.type === 'text';
             input.type = isText ? 'password' : 'text';
-            img.src = isText ? '/imgs/blind.png' : '/imgs/open-eyes.png';
-            img.alt = isText ? 'Ocultar senha' : 'Mostrar senha';
+
+            if (img) {
+                img.src = isText ? '/imgs/blind.png' : '/imgs/open-eyes.png';
+                img.alt = isText ? 'Ocultar senha' : 'Mostrar senha';
+            }
         });
     });
 
+    // Validação de senha
     function validatePassword(password) {
         const hasLength = password.length >= 8;
         const hasUpper = /[A-Z]/.test(password);
         const hasNumber = /[0-9]/.test(password);
         const hasSpecial = /[!@#$%&*]/.test(password);
 
+        const reqs = {
+            length: hasLength,
+            uppercase: hasUpper,
+            number: hasNumber,
+            special: hasSpecial
+        };
+
+        // Se lista de requisitos não existir, não faz nada
+        if (!requirementsList) return true;
+
+        // Exibe ou oculta baseando-se no userType
         if (userType === 'coordinator') {
             ['length', 'uppercase', 'number', 'special'].forEach(req => {
-                document.getElementById(`req-${req}`).classList.remove('hidden');
+                const el = document.getElementById(`req-${req}`);
+                if (el) {
+                    el.classList.remove('hidden');
+                    el.classList.toggle('text-green-600', reqs[req]);
+                    el.classList.toggle('text-red-500', !reqs[req]);
+                }
             });
-
-            document.getElementById('req-length').classList.toggle('text-green-600', hasLength);
-            document.getElementById('req-length').classList.toggle('text-red-500', !hasLength);
-
-            document.getElementById('req-uppercase').classList.toggle('text-green-600', hasUpper);
-            document.getElementById('req-uppercase').classList.toggle('text-red-500', !hasUpper);
-
-            document.getElementById('req-number').classList.toggle('text-green-600', hasNumber);
-            document.getElementById('req-number').classList.toggle('text-red-500', !hasNumber);
-
-            document.getElementById('req-special').classList.toggle('text-green-600', hasSpecial);
-            document.getElementById('req-special').classList.toggle('text-red-500', !hasSpecial);
 
             return hasLength && hasUpper && hasNumber && hasSpecial;
         } else {
-            document.getElementById('req-length').classList.remove('hidden');
-            document.getElementById('req-length').classList.toggle('text-green-600', hasLength);
-            document.getElementById('req-length').classList.toggle('text-red-500', !hasLength);
+            // Usuários comuns — apenas comprimento
+            const el = document.getElementById('req-length');
+            if (el) {
+                el.classList.remove('hidden');
+                el.classList.toggle('text-green-600', hasLength);
+                el.classList.toggle('text-red-500', !hasLength);
+            }
 
-            document.getElementById('req-uppercase').classList.add('hidden');
-            document.getElementById('req-number').classList.add('hidden');
-            document.getElementById('req-special').classList.add('hidden');
+            // Oculta os outros requisitos se existirem
+            ['uppercase', 'number', 'special'].forEach(req => {
+                const el = document.getElementById(`req-${req}`);
+                if (el) el.classList.add('hidden');
+            });
 
             return hasLength;
         }
     }
 
+    // Verifica se as senhas coincidem
     function validatePasswordsMatch() {
+        if (!errorMessage) return;
+
         if (passwordInput.value.length === 0) {
             passwordInput.style.border = '';
             passwordConfirmation.style.border = '';
@@ -75,29 +99,31 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Sempre mostra requisitos ao focar (mesmo vazio)
+    // Mostra requisitos ao focar
     passwordInput.addEventListener('focus', () => {
-        requirementsList.classList.remove('hidden');
-        validatePassword(passwordInput.value);
+        if (requirementsList) {
+            requirementsList.classList.remove('hidden');
+            validatePassword(passwordInput.value);
+        }
     });
 
-    // Valida enquanto digita
+    // Valida ao digitar
     passwordInput.addEventListener('input', (e) => {
         const value = e.target.value;
-        requirementsList.classList.remove('hidden'); // sempre mostra
+        if (requirementsList) requirementsList.classList.remove('hidden');
         validatePassword(value);
         validatePasswordsMatch();
     });
 
-    // Esconde requisitos ao perder foco se campo vazio ou senha válida
+    // Esconde requisitos ao perder foco se estiver vazio ou válido
     passwordInput.addEventListener('blur', () => {
         const isValid = validatePassword(passwordInput.value);
 
-        if (passwordInput.value.length === 0 || isValid) {
+        if (requirementsList && (passwordInput.value.length === 0 || isValid)) {
             requirementsList.classList.add('hidden');
-        } 
-        // se inválida e campo não vazio, mantém visível
+        }
     });
 
+    // Valida confirmação enquanto digita
     passwordConfirmation.addEventListener('input', validatePasswordsMatch);
 });
