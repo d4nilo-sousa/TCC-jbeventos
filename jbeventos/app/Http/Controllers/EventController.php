@@ -1,4 +1,4 @@
-s<?php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -26,95 +26,95 @@ use Illuminate\Support\Facades\Auth;
 class EventController extends Controller
 {
     public function index(Request $request)
-    {
-        $loggedCoordinator = auth()->user()->coordinator;
+{
+    $loggedCoordinator = auth()->user()->coordinator;
 
-        // Query base com relacionamentos
-        $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
+    // Query base com relacionamentos
+    $events = Event::with(['eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse']);
 
-        if ($loggedCoordinator) {
-            if ($request->status === 'visible') {
-                // Eventos visíveis do coordenador logado
-                $events = $events->where('coordinator_id', $loggedCoordinator->id)
-                    ->where('visible_event', true);
-            } elseif ($request->status === 'hidden') {
-                // Eventos ocultos do coordenador logado
-                $events = $events->where('coordinator_id', $loggedCoordinator->id)
-                    ->where('visible_event', false);
-            } else {
-                // Lista principal: apenas eventos visíveis de todos, incluindo do próprio coordenador
-                $events = $events->where('visible_event', true);
-            }
+    if ($loggedCoordinator) {
+        if ($request->status === 'visible') {
+            // Eventos visíveis do coordenador logado
+            $events = $events->where('coordinator_id', $loggedCoordinator->id)
+                ->where('visible_event', true);
+        } elseif ($request->status === 'hidden') {
+            // Eventos ocultos do coordenador logado
+            $events = $events->where('coordinator_id', $loggedCoordinator->id)
+                ->where('visible_event', false);
         } else {
-            // Usuários que não são coordenadores veem apenas eventos visíveis
+            // Lista principal: apenas eventos visíveis de todos, incluindo do próprio coordenador
             $events = $events->where('visible_event', true);
         }
-        
-        // --- Aplica os filtros adicionais (encadeados na mesma query) ---
-
-        // Filtros adicionais
-        if ($request->filled('event_type')) {
-            $events = $events->where('event_type', $request->event_type);
-        }
-
-        if ($request->filled('course_id')) {
-            $events = $events->whereIn('course_id', $request->course_id);
-        }
-
-        if ($request->filled('category_id')) {
-            $events = $events->whereHas('eventCategories', function ($q) use ($request) {
-                $q->whereIn('categories.id', $request->category_id);
-            });
-        });
-
-        if ($request->filled('start_date')) {
-            $events = $events->whereDate('event_scheduled_at', '>=', $request->start_date);
-        }
-
-        if ($request->filled('end_date')) {
-            $events = $events->whereDate('event_scheduled_at', '<=', $request->end_date);
-        }
-
-        // Ordenação por curtidas
-        if ($request->filled('likes_order')) {
-            $events = $events->withCount([
-                'reactions as likes_count' => function ($query) {
-                    $query->where('reaction_type', 'like');
-                }
-            ]);
-
-            if ($request->likes_order === 'most') {
-                $events = $events->orderBy('likes_count', 'desc');
-            } elseif ($request->likes_order === 'least') {
-                $events = $events->orderBy('likes_count', 'asc');
-            }
-        }
-
-        // Ordenação por agendamento
-        if ($request->filled('schedule_order')) {
-            if ($request->schedule_order === 'soonest') {
-                $events = $events->orderBy('event_scheduled_at', 'asc');
-            } elseif ($request->schedule_order === 'latest') {
-                $events = $events->orderBy('event_scheduled_at', 'desc');
-            }
-        } else {
-            $events = $events->orderBy('created_at', 'desc');
-        }
-
-        $events = $events->when($request->filled('search'), function ($query) use ($request) {
-            $search = $request->input('search');
-            $q->where('event_name', 'like', "%{$search}%");
-        });
-        
-        // Executa a query com paginação e preserva os filtros na URL
-        $events = $query->paginate(20)->withQueryString();
-
-        // Busca cursos e categorias (sem filtros)
-        $courses = Course::all();
-        $categories = Category::all();
-
-        return view('events.index', compact('events', 'courses', 'categories', 'loggedCoordinator'));
+    } else {
+        // Usuários que não são coordenadores veem apenas eventos visíveis
+        $events = $events->where('visible_event', true);
     }
+    
+    // --- Aplica os filtros adicionais (encadeados na mesma query) ---
+
+    // Filtros adicionais
+    if ($request->filled('event_type')) {
+        $events = $events->where('event_type', $request->event_type);
+    }
+
+    if ($request->filled('course_id')) {
+        $events = $events->whereIn('course_id', $request->course_id);
+    }
+
+    if ($request->filled('category_id')) {
+        $events = $events->whereHas('eventCategories', function ($q) use ($request) {
+            $q->whereIn('categories.id', $request->category_id);
+        });
+    }
+
+    if ($request->filled('start_date')) {
+        $events = $events->whereDate('event_scheduled_at', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $events = $events->whereDate('event_scheduled_at', '<=', $request->end_date);
+    }
+
+    // Ordenação por curtidas
+    if ($request->filled('likes_order')) {
+        $events = $events->withCount([
+            'reactions as likes_count' => function ($query) {
+                $query->where('reaction_type', 'like');
+            }
+        ]);
+
+        if ($request->likes_order === 'most') {
+            $events = $events->orderBy('likes_count', 'desc');
+        } elseif ($request->likes_order === 'least') {
+            $events = $events->orderBy('likes_count', 'asc');
+        }
+    }
+
+    // Ordenação por agendamento
+    if ($request->filled('schedule_order')) {
+        if ($request->schedule_order === 'soonest') {
+            $events = $events->orderBy('event_scheduled_at', 'asc');
+        } elseif ($request->schedule_order === 'latest') {
+            $events = $events->orderBy('event_scheduled_at', 'desc');
+        }
+    } else {
+        $events = $events->orderBy('created_at', 'desc');
+    }
+
+    $events = $events->when($request->filled('search'), function ($query) use ($request) {
+        $search = $request->input('search');
+        $query->where('event_name', 'like', "%{$search}%");
+    });
+    
+    // Executa a query com paginação e preserva os filtros na URL
+    $events = $events->paginate(20)->withQueryString();
+
+    // Busca cursos e categorias (sem filtros)
+    $courses = Course::all();
+    $categories = Category::all();
+
+    return view('events.index', compact('events', 'courses', 'categories', 'loggedCoordinator'));
+}
 
     // Formulário de criação
     public function create()

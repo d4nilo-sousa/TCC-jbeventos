@@ -164,21 +164,22 @@ class User extends Authenticatable
     public function getUserBannerUrlAttribute()
     {
         if ($this->user_banner) {
-            // Verifica se o valor é uma cor hexadecimal (ex: #CCCCCC)
+            // Se for uma cor hexadecimal
             if (preg_match('/^#[a-f0-9]{6}$/i', $this->user_banner)) {
                 return $this->user_banner;
             }
-            // Se for um caminho de arquivo, verifica a existência
+
+            // Se for um caminho de arquivo
             if (Storage::disk('public')->exists($this->user_banner)) {
                 return asset('storage/' . $this->user_banner);
             }
+
+            // Se o valor está definido mas não é válido, retorna banner default
+            return asset('default-banner.jpg');
         }
-        // Retorna a cor padrão se não houver banner ou arquivo
-        return '#B0B0B0'; // Cor hexadecimal cinza claro
-    }       
-        return $this->user_banner
-            ? asset('storage/' . $this->user_banner)
-            : asset('default-banner.jpg');
+
+        // Se não houver nenhum valor, retorna uma cor padrão
+        return '#B0B0B0';
     }
 
     public function sendPasswordResetNotification($token)
