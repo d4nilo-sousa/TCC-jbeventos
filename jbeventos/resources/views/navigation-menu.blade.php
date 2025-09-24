@@ -23,8 +23,8 @@
                             <i class="fa-solid fa-compass mr-2"></i> {{ __('Explorar') }}
                         </x-nav-link>
 
-                        {{-- Dropdown de Eventos (Apenas para Admin e Coordenador) --}}
-                        @if (in_array(auth()->user()->user_type, ['admin', 'coordinator']))
+                        {{-- Dropdown de Eventos (Apenas para Coordenador) --}}
+                        @if (in_array(auth()->user()->user_type, ['coordinator']))
                             <div class="relative" x-data="{ open: false }" @click.away="open = false">
                                 <div class="h-full">
                                     <button @click="open = ! open" class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-white hover:text-red-500 hover:border-red-500 focus:outline-none focus:text-red-500 focus:border-red-500 transition duration-150 ease-in-out">
@@ -55,7 +55,7 @@
                                 </div>
                             </div>
                         @else
-                            {{-- Link Eventos (para User) --}}
+                            {{-- Link Eventos (para User e Admin) --}}
                             <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')" class="text-white hover:text-red-500">
                                 <i class="fa-solid fa-calendar-days mr-2"></i> {{ __('Eventos') }}
                             </x-nav-link>
