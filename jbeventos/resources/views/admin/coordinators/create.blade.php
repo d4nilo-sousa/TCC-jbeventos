@@ -51,8 +51,7 @@
                 </div>
 
                 {{-- Formulário de Criação --}}
-                <form id="coordinator-form" action="{{ route('coordinators.store') }}" method="POST"
-                    class="space-y-8">
+                <form id="coordinator-form" action="{{ route('coordinators.store') }}" method="POST" class="space-y-8">
                     @csrf
 
                     {{-- Aba 1: Informações Básicas --}}
@@ -63,8 +62,8 @@
                             {{-- Nome do Coordenador --}}
                             <div>
                                 <x-input-label for="name" value="Nome do Coordenador" />
-                                <x-text-input type="text" name="name" id="name"
-                                    value="{{ old('name') }}" required />
+                                <x-text-input type="text" name="name" id="name" value="{{ old('name') }}"
+                                    required />
                                 @error('name')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -73,8 +72,8 @@
                             {{-- Email --}}
                             <div>
                                 <x-input-label for="email" value="Email" />
-                                <x-text-input type="email" name="email" id="email"
-                                    value="{{ old('email') }}" required />
+                                <x-text-input type="email" name="email" id="email" value="{{ old('email') }}"
+                                    required />
                                 @error('email')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -85,8 +84,7 @@
                         <div>
                             <x-input-label for="password" value="Senha Provisória" />
                             <div class="relative mt-1">
-                                <x-text-input type="text" name="password" id="password"
-                                    value="{{ old('password') }}"
+                                <x-text-input type="text" name="password" id="generated_password" value=""
                                     class="w-full pr-12 bg-gray-100 cursor-not-allowed" readonly required />
                                 <button type="button" onclick="generatePassword()"
                                     class="absolute inset-y-0 right-0 px-4 flex items-center text-sm font-semibold text-white bg-blue-600 rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -117,8 +115,8 @@
                                 class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                                 required>
                                 <option value="" disabled selected>Selecione...</option>
-                                <option value="general"
-                                    {{ old('coordinator_type') == 'general' ? 'selected' : '' }}>Geral</option>
+                                <option value="general" {{ old('coordinator_type') == 'general' ? 'selected' : '' }}>
+                                    Geral</option>
                                 <option value="course" {{ old('coordinator_type') == 'course' ? 'selected' : '' }}>
                                     Curso</option>
                             </select>
@@ -162,6 +160,7 @@
 </x-app-layout>
 
 @vite('resources/js/app.js')
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Lógica de abas (mesma do formulário de eventos)
@@ -226,21 +225,10 @@
             });
         });
 
-        // Lógica de tipo de coordenador e senha
+        // Lógica de tipo de coordenador e select de curso
         const coordinatorTypeSelect = document.getElementById('coordinator_type');
         const courseSelectContainer = document.getElementById('course-select-container');
         const courseSelect = document.getElementById('course_id');
-        const passwordInput = document.getElementById('password');
-
-        function generatePassword() {
-            const length = 12;
-            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{};:'\",.<>/?`~";
-            let password = "";
-            for (let i = 0; i < length; ++i) {
-                password += charset.charAt(Math.floor(Math.random() * charset.length));
-            }
-            passwordInput.value = password;
-        }
 
         function toggleCourseSelect() {
             if (coordinatorTypeSelect.value === 'course') {
@@ -254,17 +242,5 @@
 
         coordinatorTypeSelect.addEventListener('change', toggleCourseSelect);
         toggleCourseSelect(); // Chama na inicialização para garantir o estado correto.
-        generatePassword(); // Gera uma senha ao carregar a página
     });
-
-    function generatePassword() {
-        const passwordInput = document.getElementById('password');
-        const length = 12;
-        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{};:'\",.<>/?`~";
-        let password = "";
-        for (let i = 0; i < length; ++i) {
-            password += charset.charAt(Math.floor(Math.random() * charset.length));
-        }
-        passwordInput.value = password;
-    }
 </script>
