@@ -1,10 +1,3 @@
-/**
- * resources/js/search-highlight.js
- * Lógica Híbrida Final:
- * 1. Eventos (AJAX JSON + Filtros + Paginação)
- * 2. Cursos (AJAX Simples + HTML Parsing)
- */
-
 document.addEventListener('DOMContentLoaded', function() {
     
     // =========================================================
@@ -39,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // =========================================================
     // LÓGICA DE EVENTOS (JSON + FILTROS)
-    // - Usa 'search-input', 'events-container', 'pagination-links'
     // =========================================================
 
     const eventSearchInput = document.getElementById('search-input');
@@ -80,11 +72,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 eventsContainer.innerHTML = data.eventsHtml;
                 paginationLinks.innerHTML = data.paginationHtml;
                 
+                // ----------------------------------------------------
+                // ✅ CORREÇÃO: Aplicar Highlight APÓS injeção do HTML
+                // ----------------------------------------------------
+                if (query) {
+                    // Percorre todos os elementos com a classe .event-name-searchable
+                    eventsContainer.querySelectorAll('.event-name-searchable').forEach(element => {
+                        // O highlightText precisa do texto puro, então não precisa de reset
+                        highlightText(element, query);
+                    });
+                }
+                // ----------------------------------------------------
+                
             } catch (error) {
                 console.error('Erro na pesquisa AJAX de Eventos:', error);
                 eventsContainer.innerHTML = `
                     <div class="col-span-full text-center p-10 text-red-600 font-semibold">
-                        Ocorreu um erro ao buscar os eventos (AJAX).
+                        Ocorreu um erro ao buscar os eventos. Por favor, tente recarregar a página.
                     </div>
                 `;
                 paginationLinks.innerHTML = '';
@@ -99,12 +103,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // =========================================================
     // LÓGICA DE CURSOS (HTML Parsing)
-    // - Procura pelos IDs da lógica antiga: 'coursesList', 'searchInput'
     // =========================================================
-    
-    // Usa a variável que você tinha no código anterior (searchInput no escopo global)
-    // Se a página de Cursos não usa 'search-input', defina o ID correto aqui!
-    const courseSearchInput = document.getElementById("searchInput"); // <-- VERIFIQUE ESTE ID!
+     
+    const courseSearchInput = document.getElementById("searchInput"); 
 
     if (courseSearchInput) { 
         
@@ -114,27 +115,28 @@ document.addEventListener('DOMContentLoaded', function() {
             const list = document.getElementById(listId);
             if (!list) return;
 
+            // Tentativa de obter a URL base
             const baseUrl = list.dataset.url || searchForm.getAttribute('action') || window.location.pathname;
             const originalHTML = list.innerHTML;
             const noMessage = document.getElementById(noMessageId);
 
             function fetchList(query) {
                 let url = baseUrl;
-                // Para cursos, você provavelmente não quer os filtros de eventos
                 if (query) url += `?search=${encodeURIComponent(query)}`;
 
                 fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
-                    .then(res => res.text()) // Espera HTML/texto puro, não JSON
+                    .then(res => res.text()) // Espera HTML/texto puro
                     .then(html => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, "text/html");
-                        // Assume que o controller de Cursos retorna HTML que contém a div 'coursesList'
+                        
+                        // Busca o conteúdo dentro do container principal (coursesList)
                         const newListContainer = doc.getElementById(listId);
                         
                         if (newListContainer) {
                              list.innerHTML = newListContainer.innerHTML;
                         } else {
-                            // Se o controller de Cursos não retornar a div, tenta o método antigo
+                            // Fallback para o método antigo (caso o Controller retorne apenas os cards soltos)
                             const newCards = doc.querySelectorAll(`#${listId} > *`);
                             list.innerHTML = "";
                             newCards.forEach(card => list.appendChild(card));
@@ -152,28 +154,22 @@ document.addEventListener('DOMContentLoaded', function() {
             courseSearchInput.addEventListener("keyup", debounce(() => {
                 const query = courseSearchInput.value.trim();
                 
-                // Remove o highlight e limpa se a query estiver vazia
                 if (!query) {
-                    list.innerHTML = originalHTML; // Volta ao estado original
+                    list.innerHTML = originalHTML; 
                     if (noMessage) noMessage.style.display = list.children.length > 0 ? "none" : "flex";
                 }
                 
-                // Busca no backend
                 fetchList(query);
-
             }, 150));
             
-            // Tratamento de Submissão de formulário
             searchForm.addEventListener("submit", e => {
-                 // Deixa o form submeter normalmente se a query não estiver vazia
                 if (!courseSearchInput.value.trim()) {
                     e.preventDefault();
-                    window.location.href = baseUrl; // Redireciona para a URL limpa se o campo estiver vazio
+                    window.location.href = baseUrl; 
                 }
             });
         }
 
-        // Inicializa para cursos: 'coursesList' é o ID do container
         setupCourseSearch("coursesList", "course-title", "noCoursesMessage"); 
     }
 });
