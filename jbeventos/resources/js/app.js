@@ -12,5 +12,4 @@ import 'alpinejs';
 import './image-viewer';
 import './preview-images';
 import './search-highlight';
-import './search-highlight';
 import './modal-actions';
