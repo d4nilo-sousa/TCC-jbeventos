@@ -126,6 +126,9 @@
                             <p class="text-gray-500 text-center col-span-full">Nenhum curso encontrado.</p>
                         @endforelse
                     </div>
+                    <div class="mt-4 text-center">
+                        <a href="?tab=courses" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold">Ver todos os Cursos &rarr;</a>
+                    </div>
 
 
                     {{-- Coordenadores (Limitado a 5) --}}
