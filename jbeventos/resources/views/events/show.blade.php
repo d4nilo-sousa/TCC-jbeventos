@@ -11,10 +11,10 @@
 
             <h1 class="text-4xl font-bold text-gray-900 leading-tight">{{ $event->event_name }}</h1>
 
-            {{-- Main Content Grid --}}
+            {{-- Main Content Grid (IMAGEM e DETALHES RÁPIDOS FICAM LADO A LADO) --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {{-- Image Carousel Section --}}
+                {{-- Image Carousel Section (2/3 da largura em telas grandes) --}}
                 <div class="lg:col-span-2 relative">
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden border">
                         @if ($event->images->count())
@@ -23,7 +23,7 @@
                                 <div class="w-full h-full relative" id="carousel">
                                     @foreach ($event->images as $img)
                                         <img src="{{ asset('storage/' . $img->image_path) }}"
-                                             class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out carousel-img {{ $loop->first ? 'opacity-100' : 'opacity-0 absolute' }}">
+                                             class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out carousel-img {{ $loop->first ? '' : 'hidden' }}">
                                     @endforeach
                                 </div>
 
@@ -56,7 +56,7 @@
                     </div>
                 </div>
 
-                {{-- Event Info & Details --}}
+                {{-- Event Info & Details (1/3 da largura em telas grandes, ao lado da imagem) --}}
                 <div class="lg:col-span-1 space-y-6">
                     {{-- Quick Details Card --}}
                     <div class="bg-white rounded-2xl shadow-lg p-6 border space-y-4">
@@ -78,7 +78,6 @@
                                 <span class="font-bold">Horário:</span> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('HH:mm') }}
                             </p>
                         </div>
-
                         {{-- Coordinator's Actions --}}
                         @if (auth()->check() && auth()->user()->user_type === 'coordinator' && auth()->user()->coordinator->id === $event->coordinator_id)
                             <div class="pt-4 mt-4 border-t border-gray-200 flex flex-wrap gap-2">
@@ -86,15 +85,11 @@
                                     class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
                                     <i class="fas fa-edit"></i> Editar Evento
                                 </a>
-                                <form action="{{ route('events.destroy', $event->id) }}" method="POST"
-                                    onsubmit="return confirm('Tem certeza que deseja excluir este evento? Esta ação é irreversível.');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit"
-                                        class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
-                                        <i class="fas fa-trash-alt"></i> Excluir Evento
-                                    </button>
-                                </form>
+                                {{-- Botão de Excluir que abre o modal --}}
+                                <button onclick="openModal('deleteModal-{{ $event->id }}')"
+                                    class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                                    <i class="fas fa-trash-alt"></i> Excluir Evento
+                                </button>
                             </div>
                         @endif
                     </div>
@@ -120,39 +115,6 @@
                                 <p class="font-bold mb-1">Curso Relacionado:</p>
                                 <p>{{ $event->eventCourse->course_name ?? 'Sem Curso' }}</p>
                             </div>
-                            
-                    {{-- Botões de navegação e ações do coordenador --}}
-                    <div class="flex justify-between">
-                        <a href="{{ route('events.index') }}"
-                            class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
-                            ← Voltar
-                        </a>
-
-                        @if (auth()->check() && auth()->user()->user_type === 'coordinator')
-                            {{-- Só executa se o usuário estiver logado e for coordenador --}}
-
-                            @php
-                                $loggedCoordinator = auth()->user()->coordinator;
-                                // Pega o coordenador vinculado ao usuário logado
-                            @endphp
-
-                            @if ($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                                {{-- Garante que o coordenador logado é o responsável pelo evento --}}
-
-                                <div class="flex space-x-2">
-                                    {{-- Botão de Editar --}}
-                                    <a href="{{ route('events.edit', $event->id) }}"
-                                        class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
-                                        Editar
-                                    </a>
-
-                                    {{-- Botão de Excluir (apenas abre o modal) --}}
-                                    <button onclick="openModal('deleteModal-{{ $event->id }}')"
-                                        class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 text-red-900 hover:bg-red-400">
-                                        🗑 Excluir
-                                    </button>
-                                </div>
-                            @endif
                         @endif
                         <div>
                             <p class="font-bold mb-1">Categorias:</p>
@@ -166,17 +128,26 @@
                                 @endforelse
                             </div>
                         </div>
+                        {{-- Botão de navegação --}}
+                        <div class="flex justify-start pt-4 border-t border-gray-200">
+                            <a href="{{ route('events.index') }}"
+                                class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
+                                ← Voltar
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </div> {{-- FIM do grid grid-cols-1 lg:grid-cols-3 --}}
 
-            {{-- Description Section --}}
+            {{-- **SEÇÕES EMPILHADAS DE LARGURA TOTAL** --}}
+
+            {{-- Description Section (100% de largura) --}}
             <div class="bg-white rounded-2xl shadow-lg p-6 border">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">Sobre o Evento</h2>
                 <p class="text-gray-700 leading-relaxed">{{ $event->event_description }}</p>
             </div>
             
-            {{-- Reactions Section --}}
+            {{-- Reactions Section (100% de largura) --}}
             <div class="bg-white rounded-2xl shadow-lg p-6 border">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <i class="far fa-heart text-red-500"></i> Reações
@@ -187,24 +158,41 @@
                             $isActive = in_array($type, $userReactions);
                             $count = $event->reactions->where('reaction_type', $type)->count();
                         @endphp
+                        
                         <form class="reaction-form" method="POST" action="{{ route('events.react', ['event' => $event->id]) }}">
                             @csrf
                             <input type="hidden" name="reaction_type" value="{{ $type }}">
-                            <button type="submit" data-type="{{ $type }}" data-count="{{ $count }}"
-                                class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
-                                {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
-                                <i class="fas fa-{{ $type == 'like' ? 'thumbs-up' : ($type == 'save' ? 'bookmark' : 'bell') }}"></i>
-                                {{ $label }}
-                                <span class="reaction-count text-xs font-semibold px-2 py-1 rounded-full {{ $isActive ? 'bg-white text-blue-600' : 'bg-blue-100' }}">
-                                    {{ $count }}
-                                </span>
-                            </button>
+                            
+                            {{-- Lógica para o botão CURTIR (Com contador) --}}
+                            @if ($type === 'like')
+                                <button type="submit" data-type="{{ $type }}" data-count="{{ $count }}"
+                                    class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
+                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    {{ $label }}
+                                    <span class="reaction-count text-xs font-semibold px-2 py-1 rounded-full {{ $isActive ? 'bg-white text-blue-600' : 'bg-blue-100' }}">
+                                        {{ $count }}
+                                    </span>
+                                </button>
+                            
+                            {{-- Lógica para SALVAR e NOTIFICAR (Ação binária sem contador) --}}
+                            @else
+                                <button type="submit" data-type="{{ $type }}"
+                                    class="reaction-btn-toggle flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
+                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
+                                    <i class="fas fa-{{ $type == 'save' ? 'bookmark' : 'bell' }}"></i>
+                                    <span class="toggle-text font-semibold">
+                                        {{ $isActive ? ($type == 'save' ? 'Salvo' : 'Notificando') : $label }}
+                                    </span>
+                                </button>
+                            @endif
+
                         </form>
                     @endforeach
                 </div>
             </div>
 
-            {{-- Comments Section (Livewire) --}}
+            {{-- Comments Section (Livewire) (100% de largura) --}}
             <div class="bg-white rounded-2xl shadow-lg p-6 border">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">
                     Comentários
@@ -212,10 +200,12 @@
                 @livewire('event-comments', ['event' => $event])
             </div>
 
-        </div>
-    </div>
+        </div> {{-- FIM do max-w-7xl mx-auto space-y-8 --}}
+    </div> {{-- FIM do Main Container --}}
 
-    {{-- Modal de Zoom (fora do card para sobrepor tudo) --}}
+    {{-- MODAIS PRONTOS NO HTML --}}
+    
+    {{-- Modal de Zoom --}}
     <div id="zoomModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] hidden">
         <div class="relative w-full h-full p-4 flex items-center justify-center">
             <img id="zoomImg" src="" class="max-w-full max-h-full object-contain rounded-lg">
@@ -224,183 +214,108 @@
             </button>
         </div>
     </div>
-</x-app-layout>
 
-{{-- Modal para cadastrar telefone --}}
-<div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-    <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
-        <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
-        <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
-            @csrf
-            @method('PUT')
-            <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999"
-                pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2"
-                required>
-            <div class="flex justify-end space-x-2">
-                <button type="button" id="cancelPhoneModal"
-                    class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{{-- Modal de Exclusão --}}
-<div id="deleteModal-{{ $event->id }}"
-    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
-        <p>Tem certeza que deseja excluir este evento? Esta ação não poderá ser desfeita.</p>
-        <div class="mt-6 flex justify-end space-x-2">
-            <button onclick="closeModal('deleteModal-{{ $event->id }}')"
-                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-            <form action="{{ route('events.destroy', $event->id) }}" method="POST">
+    {{-- Modal para cadastrar telefone --}}
+    <div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+            <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
+            <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
                 @csrf
-                @method('DELETE')
-                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
-                    Exclusão</button>
+                @method('PUT')
+                <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999"
+                    pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2"
+                    required>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('phoneModal')" id="cancelPhoneModal"
+                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+                </div>
             </form>
         </div>
     </div>
-</div>
 
-{{-- Toast simples --}}
-<div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
-    <span id="toast-message"></span>
-</div>
+    {{-- Modal de Exclusão --}}
+    <div id="deleteModal-{{ $event->id }}"
+        class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
+            <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
+            <p>Tem certeza que deseja excluir este evento? Esta ação não poderá ser desfeita.</p>
+            <div class="mt-6 flex justify-end space-x-2">
+                <button onclick="closeModal('deleteModal-{{ $event->id }}')"
+                    class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                <form action="{{ route('events.destroy', $event->id) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
+                        Exclusão</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    {{-- Toast simples (mantido) --}}
+    <div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
+        <span id="toast-message"></span>
+    </div>
+
+</x-app-layout>
+
+{{-- SCRIPTS DE LÓGICA ESPECÍFICA --}}
 <script>
+    // Funções globais para Modais
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    // Função showToast (necessária para o event-reactions.js)
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-message');
+
+        toastMsg.textContent = message;
+        toast.classList.remove('hidden');
+
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
-        const carousel = document.getElementById('carousel');
-        const images = carousel ? carousel.querySelectorAll('.carousel-img') : [];
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const indicator = document.getElementById('indicator');
-        const zoomBtn = document.getElementById('zoomBtn');
+        // Lógica para fechar modais ao clicar fora (mantida aqui, pois usa a função closeModal)
         const zoomModal = document.getElementById('zoomModal');
-        const zoomImg = document.getElementById('zoomImg');
-        const closeZoom = document.getElementById('closeZoom');
+        const phoneModal = document.getElementById('phoneModal');
 
-        let currentIndex = 0;
-
-        function showImage(index) {
-            images.forEach((img, i) => {
-                img.classList.remove('opacity-100');
-                img.classList.add('opacity-0', 'absolute');
+        // Fechar modal de telefone ao clicar fora
+        if(phoneModal) {
+            phoneModal.addEventListener('click', (e) => {
+                // Remove a lógica de telefone, mas mantém a função closeModal
+                if(e.target === phoneModal) {
+                    closeModal('phoneModal');
+                }
             });
-            images[index].classList.remove('opacity-0', 'absolute');
-            images[index].classList.add('opacity-100');
-            if (indicator) {
-                indicator.textContent = `${index + 1} / ${images.length}`;
-            }
-        }
-
-        if (images.length > 0) {
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => {
-                    currentIndex = (currentIndex - 1 + images.length) % images.length;
-                    showImage(currentIndex);
-                });
-            }
-
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => {
-                    currentIndex = (currentIndex + 1) % images.length;
-                    showImage(currentIndex);
-                });
-            }
             
-            if (zoomBtn) {
-                zoomBtn.addEventListener('click', () => {
-                    zoomImg.src = images[currentIndex].src;
-                    zoomModal.classList.remove('hidden');
-                });
-            }
-        }
-
-        if (closeZoom) {
-            closeZoom.addEventListener('click', () => {
-                zoomModal.classList.add('hidden');
-            });
+            // Remove a lógica de submissão do formulário de telefone, pois não será mais usada.
+            // O botão de cancelar deve chamar apenas closeModal('phoneModal') no onclick
         }
         
-        if (zoomModal) {
-             zoomModal.addEventListener('click', (e) => {
+        // Fechar modal de zoom ao clicar fora
+        if(zoomModal) {
+            zoomModal.addEventListener('click', (e) => {
                 if(e.target === zoomModal) {
-                    zoomModal.classList.add('hidden');
+                    closeModal('zoomModal');
                 }
             });
         }
         
-        // --- NOVO CÓDIGO PARA AS REAÇÕES (AJAX) ---
-        const reactionForms = document.querySelectorAll('.reaction-form');
-
-        reactionForms.forEach(form => {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault(); // Impede o envio padrão do formulário e o redirecionamento
-                
-                const url = form.action;
-                const formData = new FormData(form);
-                const button = form.querySelector('.reaction-btn');
-                const countSpan = form.querySelector('.reaction-count');
-                const isCurrentlyActive = button.classList.contains('bg-blue-600');
-
-                // Adiciona um estado de carregamento e desabilita o botão
-                button.disabled = true;
-                button.classList.add('opacity-50', 'cursor-not-allowed');
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.status === 'added') {
-                        // Atualiza para o estado 'ativo'
-                        button.classList.remove('bg-white', 'text-blue-600', 'border-blue-500', 'hover:bg-blue-50');
-                        button.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                        countSpan.classList.remove('bg-blue-100');
-                        countSpan.classList.add('bg-white', 'text-blue-600');
-                        
-                        // Incrementa a contagem
-                        const currentCount = parseInt(countSpan.textContent, 10);
-                        countSpan.textContent = currentCount + 1;
-
-                    } else if (result.status === 'removed') {
-                        // Atualiza para o estado 'inativo'
-                        button.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                        button.classList.add('bg-white', 'text-blue-600', 'border-blue-500', 'hover:bg-blue-50');
-                        countSpan.classList.remove('bg-white', 'text-blue-600');
-                        countSpan.classList.add('bg-blue-100');
-
-                        // Decrementa a contagem
-                        const currentCount = parseInt(countSpan.textContent, 10);
-                        countSpan.textContent = Math.max(0, currentCount - 1); // Garante que a contagem não seja negativa
-                    }
-
-                } catch (error) {
-                    console.error('Erro ao enviar reação:', error);
-                    alert('Erro ao processar sua reação. Tente novamente.');
-                } finally {
-                    // Reabilita o botão
-                    button.disabled = false;
-                    button.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-            });
-        });
+        // IMPORTANTE: Toda a lógica de reações (AJAX) foi MOVIDA para event-reactions.js.
+        // NENHUM CÓDIGO DE REAÇÃO DEVE FICAR AQUI.
     });
 </script>
 
-{{-- Scripts compilados --}}
+{{-- Scripts compilados (Agora o app.js importa o event-reactions.js) --}}
 @vite('resources/js/app.js')
-

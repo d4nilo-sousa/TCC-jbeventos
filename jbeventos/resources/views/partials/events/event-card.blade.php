@@ -1,129 +1,70 @@
-<div id="event-card-{{ $event->id }}"
-    class="overflow-hidden rounded-lg border border-gray-200 shadow-sm flex flex-col">
-    {{-- Imagem do evento ou placeholder --}}
-    @if ($event->event_image)
-        <div class="w-full aspect-[2/1] overflow-hidden">
-            <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento"
-                class="w-full h-full object-cover">
-        </div>
-    @else
-        <div class="w-full aspect-[2/1] flex items-center justify-center bg-gray-200 text-gray-500">
-            📷 Nenhuma imagem enviada
-        </div>
-    @endif
+<a href="{{ route('events.show', $event->id) }}"
+   class="block shadow-lg transform transition-transform duration-300 hover:scale-105 rounded-xl overflow-hidden cursor-pointer">
+    {{-- Event Card --}}
+    <div class="relative bg-white border border-gray-200 rounded-xl shadow-md p-4 flex flex-col h-full">
+        {{-- Image --}}
+        <div class="relative w-full h-48 rounded-md overflow-hidden mb-4">
+            <img src="{{ $event->event_image ? asset('storage/' . $event->event_image) : asset('imgs/placeholder.png') }}"
+                 alt="{{ $event->event_name }}" class="object-cover w-full h-full">
 
-    <div class="p-4 flex flex-col flex-grow">
-        {{-- Nome do evento --}}
-        <h3 class="event-title mb-2 text-lg font-semibold text-gray-900">{{ $event->event_name }}</h3>
+            {{-- Tag para tipo de evento --}}
+            <span class="absolute top-2 right-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
+                {{ $event->event_type === 'course' ? 'Curso' : 'Evento' }}
+            </span>
 
-        {{-- Descrição limitada a 100 caracteres --}}
-        <p class="mb-2 text-gray-700 text-sm overflow-hidden text-ellipsis line-clamp-3">
-            {{ Str::limit($event->event_description, 100) }}
-        </p>
-
-        <div class="mt-auto">
-            {{-- Local e data/hora do evento --}}
-            <p class="mb-1 text-sm text-gray-500">
-                📍 {{ $event->event_location }}<br>
-                📅 {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
-            </p>
-        </div>
-
-        {{-- Botões de ação --}}
-        <div class="mt-auto flex flex-col space-y-2">
-
-            <a href="{{ route('events.show', $event->id) }}"
-                class="rounded-md bg-blue-100 px-3 py-1 text-center text-sm font-medium text-blue-700 hover:bg-blue-200 transition ease-in-out">
-                Ver
-            </a>
-
-            @if (auth()->check() && auth()->user()->user_type === 'coordinator')
-                @php
-                    $loggedCoordinator = auth()->user()->coordinator;
-                @endphp
-                @if ($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                    <a href="{{ route('events.edit', $event->id) }}"
-                        class="rounded-md bg-yellow-100 px-3 py-1 text-center text-sm font-medium text-yellow-700 hover:bg-yellow-200">
-                        Editar
-                    </a>
-
-                    <form action="{{ route('events.updateEvent', $event->id) }}" method="POST"
-                        class="inline">
-                        @csrf
-                        @method('PATCH')
-                        @if ($event->visible_event)
-                            {{-- Botão Ocultar (abre modal) --}}
-                            <button type="button" onclick="openModal('hideModal-{{ $event->id }}')"
-                                class="w-full rounded-md bg-green-100 px-3 py-1 text-sm font-medium text-green-700 hover:bg-green-200">
-                                Ocultar
-                            </button>
-
-                            {{-- Modal de confirmação para ocultar --}}
-                            <div id="hideModal-{{ $event->id }}"
-                                class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                                <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-                                    <h2 class="text-lg font-semibold mb-4 text-green-600">Ocultar Evento</h2>
-                                    <p>Você tem certeza que deseja ocultar este evento? Ele não ficará visível para os
-                                        usuários.</p>
-                                    <div class="mt-6 flex justify-end space-x-2">
-                                        <button type="button" onclick="closeModal('hideModal-{{ $event->id }}')"
-                                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-
-                                        <form action="{{ route('events.updateEvent', $event->id) }}" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                                                Confirmar Ocultação
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            {{-- Botão Mostrar (abre modal) --}}
-                            <button type="button" onclick="openModal('showModal-{{ $event->id }}')"
-                                class="w-full rounded-md bg-green-100 px-3 py-1 text-sm font-medium text-green-700 hover:bg-green-200">
-                                Mostrar
-                            </button>
-
-                            {{-- Modal de confirmação para mostrar --}}
-                            <div id="showModal-{{ $event->id }}"
-                                class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                                <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-                                    <h2 class="text-lg font-semibold mb-4 text-green-600">Mostrar Evento</h2>
-                                    <p>Você tem certeza que deseja mostrar este evento? Ele ficará visível para os
-                                        usuários.</p>
-                                    <div class="mt-6 flex justify-end space-x-2">
-                                        <button type="button" onclick="closeModal('showModal-{{ $event->id }}')"
-                                            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-
-                                        <form action="{{ route('events.updateEvent', $event->id) }}" method="POST">
-                                            @csrf
-                                            @method('PATCH')
-                                            <button type="submit"
-                                                class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                                                Confirmar Exibição
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </form>
-
-                    <form action="{{ route('events.destroy', $event->id) }}" method="POST"
-                        onsubmit="return confirm('Tem certeza que deseja excluir este evento?')" class="inline">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit"
-                            class="w-full rounded-md bg-red-100 px-3 py-1 text-sm font-medium text-red-700 hover:bg-red-200">
-                            Excluir
-                        </button>
-                    </form>
+            {{-- Tag para visibilidade (somente se o usuário é o coordenador e o evento é dele) --}}
+            @php $loggedCoordinator = auth()->user()->coordinator ?? null; @endphp
+            @if ($loggedCoordinator && $event->eventCoordinator && $loggedCoordinator->id === $event->eventCoordinator->user_account_id)
+                {{-- Nota: Usei $event->visible_event (o nome do campo de visibilidade mais comum no Laravel) --}}
+                @if ($event->visible_event)
+                    <span class="absolute top-2 left-2 text-xs font-semibold px-2 py-1 rounded-full shadow bg-green-500 text-white">
+                        Visível
+                    </span>
+                @else
+                    <span class="absolute top-2 left-2 text-xs font-semibold px-2 py-1 rounded-full shadow bg-red-500 text-white">
+                        Oculto
+                    </span>
                 @endif
             @endif
         </div>
+
+        {{-- Content --}}
+        <div class="flex-1 flex flex-col justify-between">
+            <div>
+                <h3 class="event-name-searchable text-lg font-bold text-gray-900 mb-1 leading-tight line-clamp-2">
+                    {{ $event->event_name }}
+                </h3>
+                <p class="text-sm text-gray-600 mb-2 line-clamp-2">
+                    {{ $event->event_description }}
+                </p>
+
+                <div class="flex flex-wrap gap-2 text-xs mb-2">
+                    @forelse ($event->eventCategories as $category)
+                        <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                            {{ $category->category_name }}
+                        </span>
+                    @empty
+                        <span class="bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                            Sem Categoria
+                        </span>
+                    @endforelse
+                </div>
+            </div>
+
+            <div class="mt-auto">
+                <p class="text-sm text-gray-800 font-medium mt-2 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 19.9l-4.95-5.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                    </svg>
+                    {{ $event->event_location }}
+                </p>
+                <p class="text-sm text-gray-800 font-medium mt-1 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h.01M3 15h18M3 21h18a2 2 0 002-2V7a2 2 0 00-2-2H3a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D MMMM YYYY, HH:mm') }}
+                </p>
+            </div>
+        </div>
     </div>
-    </a>
-</div>
+</a>
