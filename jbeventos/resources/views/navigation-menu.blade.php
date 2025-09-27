@@ -19,7 +19,7 @@
                         </x-nav-link>
 
                         {{-- Explorar (Adicionado para todos) --}}
-                        <x-nav-link href="{{ route('explore.index') }}" :active="request()->routeIs('explore.*')" class="text-white hover:text-red-500">
+                        <x-nav-link href="{{ route('explore.index') }}" :active="request()->routeIs('explore.*')" class="text-gray-800 hover:text-red-500">
                             <i class="fa-solid fa-compass mr-2"></i> {{ __('Explorar') }}
                         </x-nav-link>
 
@@ -56,7 +56,7 @@
                             </div>
                         @else
                             {{-- Link Eventos (para User e Admin) --}}
-                            <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')" class="text-white hover:text-red-500">
+                            <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')" class="text-gray-800 hover:text-red-500">
                                 <i class="fa-solid fa-calendar-days mr-2"></i> {{ __('Eventos') }}
                             </x-nav-link>
                         @endif
