@@ -6,7 +6,6 @@ import './filter-menu';
 import './order-menu';
 import './password-generator';
 import './password-validator';
-import './phone-mask';
 import './echo';
 import 'alpinejs';
 import './image-viewer';
