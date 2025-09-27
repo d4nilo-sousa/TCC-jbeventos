@@ -68,28 +68,28 @@ class CoordinatorController extends Controller
         return view('admin.coordinators.edit', compact('coordinator', 'courses'));
     }
 
-    // Atualiza o tipo do coordenador após validação
     public function update(Request $request, string $id)
     {
         $coordinator = Coordinator::findOrFail($id);
 
+        // Validação sem obrigar o course_id
         $request->validate([
             'coordinator_type' => 'required|in:general,course',
-            'course_id' => 'required_if:coordinator_type,course|nullable|exists:courses,id'
+            // removido: 'course_id' => 'required_if:coordinator_type,course|nullable|exists:courses,id'
         ]);
 
         $coordinator->update([
             'coordinator_type' => $request->coordinator_type,
         ]);
 
-        // Se for um coordenador de curso, vincula ao curso selecionado
-        if ($request->coordinator_type === 'course') {
+        // Se quiser manter a lógica de vincular curso, pode deixar condicional
+        if ($request->coordinator_type === 'course' && $request->filled('course_id')) {
             $coordinator->coordinatedCourse()->updateOrCreate(
                 ['coordinator_id' => $coordinator->id],
                 ['course_id' => $request->course_id]
             );
         } else {
-            // Se for geral, remove qualquer curso associado
+            // Se for geral, ou se não informou curso, remove vínculo
             $coordinator->coordinatedCourse()->delete();
         }
 

@@ -125,23 +125,6 @@
                             @enderror
                         </div>
 
-                        {{-- Seleção de Curso --}}
-                        <div id="course-select-container" class="hidden">
-                            <x-input-label for="course_id" value="Curso" />
-                            <select id="course_id" name="course_id"
-                                class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                                <option value="" disabled selected>Selecione um curso...</option>
-                                @foreach ($courses as $course)
-                                    <option value="{{ $course->id }}"
-                                        {{ old('course_id') == $course->id ? 'selected' : '' }}>
-                                        {{ $course->course_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('course_id')
-                                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
                         <div class="flex justify-between pt-4">
                             <button type="button" data-prev-tab="tab-basic-info"
                                 class="prev-button inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
@@ -224,23 +207,5 @@
                 showTab(button.dataset.tabTarget);
             });
         });
-
-        // Lógica de tipo de coordenador e select de curso
-        const coordinatorTypeSelect = document.getElementById('coordinator_type');
-        const courseSelectContainer = document.getElementById('course-select-container');
-        const courseSelect = document.getElementById('course_id');
-
-        function toggleCourseSelect() {
-            if (coordinatorTypeSelect.value === 'course') {
-                courseSelectContainer.classList.remove('hidden');
-                courseSelect.required = true;
-            } else {
-                courseSelectContainer.classList.add('hidden');
-                courseSelect.required = false;
-            }
-        }
-
-        coordinatorTypeSelect.addEventListener('change', toggleCourseSelect);
-        toggleCourseSelect(); // Chama na inicialização para garantir o estado correto.
     });
 </script>
