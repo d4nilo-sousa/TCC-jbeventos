@@ -34,6 +34,10 @@ class Coordinator extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function course(){
+        return $this->belongsTo(Course::class);
+    }
+
     // Retorna o curso coordenado por este coordenador
     public function coordinatedCourse() {
         return $this->hasOne(Course::class, 'coordinator_id');

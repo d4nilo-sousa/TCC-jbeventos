@@ -56,7 +56,7 @@ class Event extends Model
     // Essa relação envolve uma tabela pivô com atributos próprios
     public function reactions()
     {
-        return $this->hasMany(EventUserReaction::class);
+        return $this->hasMany(EventUserReaction::class, 'event_id');
     }
 
     public function notifiableUsers() {
