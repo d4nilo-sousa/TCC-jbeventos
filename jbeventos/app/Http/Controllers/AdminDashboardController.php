@@ -7,6 +7,8 @@ use App\Models\Event;
 use App\Models\EventUserReaction;
 use App\Models\User;
 use App\Models\Coordinator;
+use App\Models\Post; // NOVO
+use App\Models\Reply; // NOVO
 use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
@@ -18,6 +20,7 @@ class AdminDashboardController extends Controller
         $likesCount = EventUserReaction::where('reaction_type', 'like')->count();
         $commentsCount = EventUserReaction::where('reaction_type', 'comment')->count();
         $savedEventsCount = EventUserReaction::where('reaction_type', 'save')->count();
+        $postsCount = Post::count(); // NOVO: Total de Posts
 
         // --- Calcular tendências mês a mês ---
         $prevMonth = now()->subMonth();
@@ -27,19 +30,23 @@ class AdminDashboardController extends Controller
                             ->count();
 
         $likesPrev = EventUserReaction::where('reaction_type', 'like')
-                        ->whereMonth('created_at', $prevMonth->month)
-                        ->whereYear('created_at', $prevMonth->year)
-                        ->count();
+                            ->whereMonth('created_at', $prevMonth->month)
+                            ->whereYear('created_at', $prevMonth->year)
+                            ->count();
 
         $commentsPrev = EventUserReaction::where('reaction_type', 'comment')
-                        ->whereMonth('created_at', $prevMonth->month)
-                        ->whereYear('created_at', $prevMonth->year)
-                        ->count();
+                            ->whereMonth('created_at', $prevMonth->month)
+                            ->whereYear('created_at', $prevMonth->year)
+                            ->count();
 
         $savedPrev = EventUserReaction::where('reaction_type', 'save')
-                        ->whereMonth('created_at', $prevMonth->month)
-                        ->whereYear('created_at', $prevMonth->year)
-                        ->count();
+                            ->whereMonth('created_at', $prevMonth->month)
+                            ->whereYear('created_at', $prevMonth->year)
+                            ->count();
+        
+        $postsPrev = Post::whereMonth('created_at', $prevMonth->month) // NOVO: Posts do mês anterior
+                            ->whereYear('created_at', $prevMonth->year)
+                            ->count();
 
         // Função helper para calcular % de variação
         $calcTrend = fn($current, $previous) => $previous == 0 ? 100 : round((($current - $previous) / $previous) * 100);
@@ -48,6 +55,7 @@ class AdminDashboardController extends Controller
         $likesTrend = $calcTrend($likesCount, $likesPrev);
         $commentsTrend = $calcTrend($commentsCount, $commentsPrev);
         $savedEventsTrend = $calcTrend($savedEventsCount, $savedPrev);
+        $postsTrend = $calcTrend($postsCount, $postsPrev); // NOVO: Tendência de Posts
 
         // Restante do controller (rankings, top eventos, gráficos)
         $coordinatorsRanking = Event::select('coordinator_id', \DB::raw('count(*) as events_count'))
@@ -101,6 +109,45 @@ class AdminDashboardController extends Controller
             $interactionsData[] = $interactionsByMonth[$key]->total_interactions ?? 0;
         }
 
+        // NOVO: Coletar Posts e Respostas por mês (últimos 6 meses)
+        $postsByMonth = Post::select(
+            \DB::raw('YEAR(created_at) as year'),
+            \DB::raw('MONTH(created_at) as month'),
+            \DB::raw('count(*) as total_posts')
+        )
+        ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+        ->groupBy('year', 'month')
+        ->orderBy('year', 'asc')
+        ->orderBy('month', 'asc')
+        ->get()
+        ->keyBy(fn($item) => $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT));
+
+        $repliesByMonth = Reply::select(
+            \DB::raw('YEAR(created_at) as year'),
+            \DB::raw('MONTH(created_at) as month'),
+            \DB::raw('count(*) as total_replies')
+        )
+        ->where('created_at', '>=', now()->subMonths(5)->startOfMonth())
+        ->groupBy('year', 'month')
+        ->orderBy('year', 'asc')
+        ->orderBy('month', 'asc')
+        ->get()
+        ->keyBy(fn($item) => $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT));
+
+        $postInteractionsLabels = [];
+        $postsData = [];
+        $repliesData = [];
+
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subMonths($i);
+            $key = $date->format('Y-m');
+            $label = $date->format('M/Y');
+            
+            $postInteractionsLabels[] = $label;
+            $postsData[] = $postsByMonth[$key]->total_posts ?? 0;
+            $repliesData[] = $repliesByMonth[$key]->total_replies ?? 0;
+        }
+
         $user = auth()->user();
         $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar o total de interações do sistema, principais eventos, atividades recentes dos coordenadores/cursos/ eventos da nossa escola.';
 
@@ -116,10 +163,15 @@ class AdminDashboardController extends Controller
             'likesCount',
             'commentsCount',
             'savedEventsCount',
+            'postsCount', // NOVO
             'eventsTrend',
             'likesTrend',
             'commentsTrend',
-            'savedEventsTrend'
+            'savedEventsTrend',
+            'postsTrend', // NOVO
+            'postInteractionsLabels', // NOVO
+            'postsData', // NOVO
+            'repliesData' // NOVO
         ))->with([
             'name' => $user->name,
             'message' => $message
