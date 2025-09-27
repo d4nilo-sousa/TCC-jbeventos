@@ -3,7 +3,7 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
 
-                {{-- Exibição de erros de validação --}}
+                {{-- Exibição de erros de validação do Laravel/PHP --}}
                 @if ($errors->any())
                     <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md animate-fade-in" role="alert">
                         <div class="flex items-center">
@@ -63,6 +63,7 @@
                             <div>
                                 <label for="event_image" class="block font-medium text-gray-700 mb-2">Imagem de Capa (principal)</label>
                                 <div id="dropzone-cover" class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
+                                    {{-- O campo 'event_image' é REQUIRED --}}
                                     <input type="file" name="event_image" id="event_image" accept="image/*" class="hidden" required>
                                     <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -227,6 +228,7 @@
                                 <button type="button" data-prev-tab="tab-info" class="prev-button inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
                                     Anterior
                                 </button>
+                                {{-- BOTÃO DE SUBMISSÃO --}}
                                 <button type="submit" class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-green-600 hover:bg-green-700 transition ease-in-out duration-150">
                                     Criar Evento
                                 </button>
@@ -240,179 +242,66 @@
 </x-app-layout>
 
 @vite('resources/js/app.js')
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Lógica de abas (permanece a mesma)
-        const tabs = document.querySelectorAll('.tab-content');
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const nextButtons = document.querySelectorAll('.next-button');
-        const prevButtons = document.querySelectorAll('.prev-button');
+   document.addEventListener('DOMContentLoaded', function() {
+    // Lógica de abas
+    const tabs = document.querySelectorAll('.tab-content');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const nextButtons = document.querySelectorAll('.next-button');
+    const prevButtons = document.querySelectorAll('.prev-button');
 
-        function showTab(tabId) {
-            tabs.forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-
-            tabButtons.forEach(button => {
-                const buttonSpan = button.querySelector('span:first-child');
-                if (button.dataset.tabTarget === tabId) {
-                    button.classList.add('active', 'text-gray-700');
-                    buttonSpan.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
-                    buttonSpan.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
-                } else {
-                    button.classList.remove('active', 'text-gray-700');
-                    buttonSpan.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
-                    buttonSpan.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
-                }
-            });
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        nextButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const currentTab = button.closest('.tab-content');
-                const inputs = currentTab.querySelectorAll('input[required], textarea[required]');
-                let allInputsValid = true;
-
-                inputs.forEach(input => {
-                    if (!input.checkValidity()) {
-                        allInputsValid = false;
-                        input.reportValidity();
-                    }
-                });
-
-                if (allInputsValid) {
-                    const nextTabId = button.dataset.nextTab;
-                    showTab(nextTabId);
-                }
-            });
-        });
-
-        prevButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const prevTabId = button.dataset.prevTab;
-                showTab(prevTabId);
-            });
-        });
+    function showTab(tabId) {
+        tabs.forEach(tab => tab.classList.add('hidden'));
+        document.getElementById(tabId).classList.remove('hidden');
 
         tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                showTab(button.dataset.tabTarget);
-            });
-        });
-
-        // Seletores dos elementos de upload
-        const dropzoneCover = document.getElementById('dropzone-cover');
-        const eventImageInput = document.getElementById('event_image');
-        const previewCover = document.getElementById('event_image_preview');
-
-        const dropzoneGallery = document.getElementById('dropzone-gallery');
-        const eventImagesInput = document.getElementById('event_images');
-        const previewGallery = document.getElementById('event_images_preview');
-
-        // Função genérica para configurar drag-and-drop
-        function setupDropzone(dropzone, inputElement) {
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropzone.addEventListener(eventName, e => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }, false);
-            });
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropzone.addEventListener(eventName, () => dropzone.classList.add('!border-blue-500', '!bg-blue-50'), false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropzone.addEventListener(eventName, () => dropzone.classList.remove('!border-blue-500', '!bg-blue-50'), false);
-            });
-
-            dropzone.addEventListener('drop', (e) => {
-                inputElement.files = e.dataTransfer.files;
-            }, false);
-
-            dropzone.addEventListener('click', () => inputElement.click(), false);
-        }
-
-        // --- Lógica de pré-visualização e gerenciamento de arquivos ---
-
-        // Map para armazenar o arquivo da capa
-        const coverFile = new Map();
-
-        // Lógica para a imagem de capa (única)
-        eventImageInput.addEventListener('change', (e) => {
-            coverFile.clear(); // Limpa a pré-visualização anterior
-            previewCover.innerHTML = '';
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const imageContainer = createImageContainer(e.target.result, false);
-                    previewCover.appendChild(imageContainer);
-                };
-                reader.readAsDataURL(file);
-                coverFile.set('main', file);
+            const buttonSpan = button.querySelector('span:first-child');
+            if (button.dataset.tabTarget === tabId) {
+                button.classList.add('active', 'text-gray-700');
+                buttonSpan.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                buttonSpan.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
+            } else {
+                button.classList.remove('active', 'text-gray-700');
+                buttonSpan.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                buttonSpan.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
             }
         });
 
-        // Array para armazenar os arquivos da galeria
-        let galleryFiles = [];
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        // Lógica para a galeria de imagens (múltiplas)
-        eventImagesInput.addEventListener('change', (e) => {
-            const newFiles = Array.from(e.target.files);
-            newFiles.forEach(file => {
-                if (!galleryFiles.some(existingFile => existingFile.name === file.name && existingFile.size === file.size)) {
-                    galleryFiles.push(file);
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const imageContainer = createImageContainer(e.target.result, true);
-                        previewGallery.appendChild(imageContainer);
-                    };
-                    reader.readAsDataURL(file);
+    nextButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const currentTab = button.closest('.tab-content');
+            const inputs = currentTab.querySelectorAll('input[required], textarea[required]');
+            let allInputsValid = true;
+
+            inputs.forEach(input => {
+                if (!input.checkValidity()) {
+                    allInputsValid = false;
+                    input.reportValidity();
                 }
             });
-        });
 
-        // Função para criar o container da imagem com botão de remover
-        function createImageContainer(src, isMultiple) {
-            const imageContainer = document.createElement('div');
-            imageContainer.className = `relative aspect-[4/3] rounded-lg overflow-hidden shadow-lg border border-gray-200 group ${isMultiple ? 'w-full' : 'max-w-sm w-full'}`;
-            if (!isMultiple) {
-                 imageContainer.className = 'relative w-full max-w-sm aspect-video rounded-lg overflow-hidden shadow-lg border border-gray-200 group';
+            if (allInputsValid) {
+                const nextTabId = button.dataset.nextTab;
+                showTab(nextTabId);
             }
-
-            const image = document.createElement('img');
-            image.src = src;
-            image.className = 'object-cover w-full h-full';
-            imageContainer.appendChild(image);
-
-            const removeButton = document.createElement('button');
-            removeButton.type = 'button';
-            removeButton.className = 'absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full text-xs transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110';
-            removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                      </svg>`;
-            removeButton.onclick = () => {
-                imageContainer.remove();
-                if (isMultiple) {
-                    galleryFiles = galleryFiles.filter(file => {
-                        return URL.createObjectURL(file) !== src;
-                    });
-                    const dataTransfer = new DataTransfer();
-                    galleryFiles.forEach(file => dataTransfer.items.add(file));
-                    eventImagesInput.files = dataTransfer.files;
-                } else {
-                    coverFile.clear();
-                    eventImageInput.value = '';
-                }
-            };
-            imageContainer.appendChild(removeButton);
-
-            return imageContainer;
-        }
-
-        setupDropzone(dropzoneCover, eventImageInput);
-        setupDropzone(dropzoneGallery, eventImagesInput);
+        });
     });
+
+    prevButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const prevTabId = button.dataset.prevTab;
+            showTab(prevTabId);
+        });
+    });
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            showTab(button.dataset.tabTarget);
+        });
+    });
+});
 </script>

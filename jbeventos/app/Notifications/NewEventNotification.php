@@ -3,9 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\Event;
 use Carbon\Carbon;
 
@@ -25,12 +24,10 @@ class NewEventNotification extends Notification
 
     /**
      * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail']; // apenas email por enquanto
     }
 
     /**
@@ -49,7 +46,8 @@ class NewEventNotification extends Notification
             ->subject('Novo Evento: ' . $this->event->event_name)
             ->greeting('Olá, ' . $notifiable->name . '!')
             ->line('Um novo evento foi adicionado ao curso que você segue:')
-            ->line('**' . $this->event->event_name . '**')
+            ->line('Curso: **' . $this->event->course->course_name . '**')
+            ->line('Evento: **' . $this->event->event_name . '**')
             ->line($this->event->event_description)
             ->line('⏳ Começa ' . $diff . '.')
             ->action('Ver detalhes do evento', route('events.show', $this->event->id))
@@ -58,15 +56,14 @@ class NewEventNotification extends Notification
 
     /**
      * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
      */
     public function toArray(object $notifiable): array
     {
         return [
-            'event_id' => $this->event->id,
+            'event_id'   => $this->event->id,
             'event_name' => $this->event->event_name,
-            'course_id' => $this->event->course_id,
+            'course_id'  => $this->event->course_id,
+            'course_name'=> $this->event->course->course_name,
         ];
     }
 }
