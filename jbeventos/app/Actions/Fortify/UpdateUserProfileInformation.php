@@ -20,11 +20,19 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'phone_number' => ['nullable', 'string', 'regex:/^\(\d{2}\) \d{5}-\d{4}$/', Rule::unique('users')->ignore($user->id)], // telefone opcional, formato específico, único na tabela users
             'photo' => ['nullable', 'mimes:jpg,jpeg,png', 'max:1024'],
         ])->validateWithBag('updateProfileInformation');
 
         if (isset($input['photo'])) {
             $user->updateProfilePhoto($input['photo']);
+        }
+
+        // Ajusta o número de telefone para null se for string vazia
+        $phoneNumber = $input['phone_number'];
+
+        if ($phoneNumber === '') {
+            $phoneNumber = null;
         }
 
         if ($input['email'] !== $user->email &&
@@ -34,6 +42,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             $user->forceFill([
                 'name' => $input['name'],
                 'email' => $input['email'],
+                'phone_number' => $phoneNumber,
             ])->save();
         }
     }
@@ -48,6 +57,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         $user->forceFill([
             'name' => $input['name'],
             'email' => $input['email'],
+            'phone_number' => $phoneNumber,
             'email_verified_at' => null,
         ])->save();
 

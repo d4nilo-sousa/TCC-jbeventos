@@ -1,101 +1,292 @@
 <x-app-layout>
-    <!-- Slot para o cabeçalho da página -->
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Criar Curso
-        </h2>
-    </x-slot>
-
     <div class="py-6">
-        <!-- Container centralizado com largura máxima -->
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <!-- Caixa branca com sombra e bordas arredondadas para o formulário -->
-            <div class="bg-white shadow-md rounded p-6">
-                
-                <!-- Se houver erros de validação, exibe a lista de erros -->
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
+
+            {{-- Título da Página --}}
+                <div class="flex flex-col items-center justify-center mb-10 text-center">
+                    <div class="p-3 bg-indigo-50 rounded-full mb-4 shadow-sm flex items-center justify-center">
+                        <img src="{{ asset('imgs/book.png') }}" class="h-10 w-10 text-indigo-600">
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900">Criar Novo Curso</h2>
+                </div>
+
+
+                {{-- Exibição de erros de validação --}}
                 @if ($errors->any())
-                    <div class="mb-4 text-red-600">
-                        <ul class="list-disc pl-5">
-                            <!-- Loop para listar todos os erros -->
+                    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md animate-fade-in" role="alert">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-bold">Atenção!</span>
+                        </div>
+                        <ul class="mt-2 list-disc list-inside space-y-1 text-sm">
                             @foreach ($errors->all() as $error)
                                 <li>{{ $error }}</li>
                             @endforeach
                         </ul>
                     </div>
                 @endif
-                
-                <!-- Formulário que envia via POST para a rota 'courses.store' -->
-                <form action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                    @csrf <!-- Token de proteção contra CSRF -->
 
-                    <!-- Campo para nome do curso -->
-                    <div>
-                        <label for="course_name" class="block font-medium">Nome do Curso</label>
-                        <input type="text" name="course_name" id="course_name" 
-                               value="{{ old('course_name') }}" 
-                               class="w-full border-gray-300 rounded shadow-sm" 
-                               required>
-                    </div>
+                {{-- Formulário de Criação --}}
+                <form id="course-create-form" action="{{ route('courses.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
 
-                    <!-- Campo para descrição do curso -->
-                    <div>
-                        <label for="course_description" class="block font-medium">Descrição</label>
-                        <textarea name="course_description" id="course_description" 
-                                  class="w-full border-gray-300 rounded shadow-sm">{{ old('course_description') }}</textarea>
-                    </div>
-
-                    <!-- Select para escolher coordenador do curso (opcional) -->
-                    <div>
-                        <label for="coordinator_id" class="block font-medium">Coordenador (opcional)</label>
-                        <select name="coordinator_id" id="coordinator_id" class="w-full border-gray-300 rounded shadow-sm">
-                            <option value="">-- Nenhum --</option>
-                            <!-- Loop para listar os coordenadores disponíveis -->
-                            @foreach($coordinators as $coordinator)
-                                @if($coordinator->coordinator_type === 'course')
-                                    @if($coordinator->coordinatedCourse)
-                                        {{-- Coordenador já vinculado a um curso, opção desabilitada --}}
-                                        <option value="{{ $coordinator->id }}" disabled>
-                                            {{ $coordinator->userAccount->name ?? 'Sem nome' }} 
-                                            ({{ $coordinator->coordinatedCourse->course_name }})
-                                        </option>
-                                    @else
-                                        {{-- Coordenador disponível, opção selecionável --}}
-                                        <option value="{{ $coordinator->id }}" {{ old('coordinator_id') == $coordinator->id ? 'selected' : '' }}>
-                                            {{ $coordinator->userAccount->name ?? 'Sem nome' }}
-                                        </option>
-                                    @endif
-                                @endif
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <!-- Upload do ícone do curso -->
-                    <div>
-                        <label for="course_icon" class="block font-medium">Ícone do Curso (imagem)</label>
-                        <input type="file" name="course_icon" id="course_icon" accept="image/*" 
-                               class="w-full border-gray-300 rounded shadow-sm">
-                    </div>
-
-                    <!-- Upload do banner do curso -->
-                    <div>
-                        <label for="course_banner" class="block font-medium">Banner do Curso (imagem)</label>
-                        <input type="file" name="course_banner" id="course_banner" accept="image/*" 
-                               class="w-full border-gray-300 rounded shadow-sm">
-                    </div>
-
-                    <!-- Botões para enviar ou cancelar -->
-                    <div class="flex space-x-2">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                            Salvar Curso
+                    {{-- Abas de Navegação --}}
+                    <div class="flex flex-col md:flex-row gap-4 mb-8 border-b pb-4">
+                        <button type="button" data-tab-target="tab1" class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
+                            <span class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">1</span>
+                            Informações
                         </button>
-                        <a href="{{ route('courses.index') }}" 
-                           class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
-                            Cancelar
-                        </a>
+                        <button type="button" data-tab-target="tab2" class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
+                            <span class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">2</span>
+                            Imagens
+                        </button>
                     </div>
 
+                    {{-- Conteúdo das Abas --}}
+                    <div id="tab1" class="tab-content">
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Detalhes do Curso</h3>
+
+                            <div>
+                                <x-input-label for="course_name" value="Nome do Curso" />
+                                <x-text-input type="text" name="course_name" id="course_name"
+                                    value="{{ old('course_name') }}" required />
+                                @error('course_name')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <x-input-label for="course_description" value="Descrição" />
+                                <textarea name="course_description" id="course_description" rows="4"
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" required>{{ old('course_description') }}</textarea>
+                                @error('course_description')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <x-input-label for="coordinator_id" value="Coordenador" />
+                                <select name="coordinator_id" id="coordinator_id"
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <option value="">Nenhum</option>
+                                    @foreach ($coordinators as $coordinator)
+                                        @if ($coordinator->coordinator_type === 'course')
+                                            @php $isDisabled = $coordinator->coordinatedCourse !== null; @endphp
+                                            <option value="{{ $coordinator->id }}" @selected(old('coordinator_id') == $coordinator->id)
+                                                @disabled($isDisabled)>
+                                                {{ $coordinator->userAccount->name ?? 'Sem nome' }}
+                                                @if ($isDisabled)
+                                                    ({{ $coordinator->coordinatedCourse->course_name }})
+                                                @endif
+                                            </option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                                @error('coordinator_id')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-8">
+                            <button type="button" data-next-tab="tab2" class="next-button px-6 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-colors duration-200">
+                                Próximo
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="tab2" class="tab-content hidden">
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Imagens do Curso</h3>
+
+                            {{-- Imagem de Ícone --}}
+                            <div>
+                                <x-input-label for="course_icon" value="Ícone do Curso" />
+                                <div id="dropzone-icon" class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
+                                    <input type="file" name="course_icon" id="course_icon" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-blue-500 transition-colors">Arraste e solte ou clique para enviar um ícone.</p>
+                                </div>
+                                <div id="course_icon_preview" class="mt-4 flex justify-center"></div>
+                            </div>
+
+                            {{-- Imagem de Banner --}}
+                            <div>
+                                <x-input-label for="course_banner" value="Banner do Curso" />
+                                <div id="dropzone-banner" class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
+                                    <input type="file" name="course_banner" id="course_banner" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11V5" />
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-blue-500 transition-colors">Arraste e solte ou clique para enviar um banner.</p>
+                                </div>
+                                <div id="course_banner_preview" class="mt-4 flex justify-center"></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between mt-8">
+                            <button type="button" data-prev-tab="tab1" class="prev-button px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300 transition-colors duration-200">
+                                Anterior
+                            </button>
+                            <x-primary-button>
+                                Criar Curso
+                            </x-primary-button>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lógica de abas
+        const tabs = document.querySelectorAll('.tab-content');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const nextButtons = document.querySelectorAll('.next-button');
+        const prevButtons = document.querySelectorAll('.prev-button');
+
+        function showTab(tabId) {
+            tabs.forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            tabButtons.forEach(button => {
+                const buttonSpan = button.querySelector('span:first-child');
+                if (button.dataset.tabTarget === tabId) {
+                    button.classList.add('active', 'text-gray-700');
+                    buttonSpan.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                    buttonSpan.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
+                } else {
+                    button.classList.remove('active', 'text-gray-700');
+                    buttonSpan.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                    buttonSpan.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        nextButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const currentTab = button.closest('.tab-content');
+                const inputs = currentTab.querySelectorAll('input[required], textarea[required]');
+                let allInputsValid = true;
+
+                inputs.forEach(input => {
+                    if (!input.checkValidity()) {
+                        allInputsValid = false;
+                        input.reportValidity();
+                    }
+                });
+
+                if (allInputsValid) {
+                    const nextTabId = button.dataset.nextTab;
+                    showTab(nextTabId);
+                }
+            });
+        });
+
+        prevButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const prevTabId = button.dataset.prevTab;
+                showTab(prevTabId);
+            });
+        });
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                showTab(button.dataset.tabTarget);
+            });
+        });
+
+        showTab('tab1');
+
+        // --- Lógica de Imagens (Ícone e Banner) ---
+        const dropzoneIcon = document.getElementById('dropzone-icon');
+        const courseIconInput = document.getElementById('course_icon');
+        const previewIcon = document.getElementById('course_icon_preview');
+
+        const dropzoneBanner = document.getElementById('dropzone-banner');
+        const courseBannerInput = document.getElementById('course_banner');
+        const previewBanner = document.getElementById('course_banner_preview');
+
+        // Função para criar o container da imagem com botão de remover
+        function createImageContainer(src) {
+            const container = document.createElement('div');
+            container.className = `relative rounded-lg overflow-hidden shadow-lg border border-gray-200 group w-full max-w-sm aspect-video`;
+            
+            const image = document.createElement('img');
+            image.src = src;
+            image.className = 'object-cover w-full h-full';
+            container.appendChild(image);
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'absolute top-2 right-2 p-1 bg-red-600 text-white rounded-full text-xs transition-all duration-200 opacity-0 group-hover:opacity-100 hover:scale-110';
+            removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>`;
+
+            removeButton.onclick = () => {
+                container.remove();
+                
+                // Resetar o input file para que a imagem não seja enviada
+                const fileInput = event.target.closest('div').querySelector('input[type="file"]');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+            };
+            container.appendChild(removeButton);
+
+            return container;
+        }
+        
+        // Função genérica para configurar drag-and-drop
+        function setupDropzone(dropzone, inputElement, previewContainer) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => dropzone.classList.add('!border-blue-500', '!bg-blue-50'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, () => dropzone.classList.remove('!border-blue-500', '!bg-blue-50'), false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                inputElement.files = e.dataTransfer.files;
+                const changeEvent = new Event('change', { bubbles: true });
+                inputElement.dispatchEvent(changeEvent);
+            }, false);
+
+            inputElement.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    previewContainer.innerHTML = '';
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const newContainer = createImageContainer(e.target.result);
+                        previewContainer.appendChild(newContainer);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        setupDropzone(dropzoneIcon, courseIconInput, previewIcon);
+        setupDropzone(dropzoneBanner, courseBannerInput, previewBanner);
+    });
+</script>

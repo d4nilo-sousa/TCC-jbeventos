@@ -14,10 +14,16 @@ export default {
     theme: {
         extend: {
             fontFamily: {
+                ubuntu: ['Ubuntu', ...defaultTheme.fontFamily.sans],
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                poppins: ['Poppins', 'sans-serif'],
             },
         },
     },
+
+    safelist: [
+        'bg-yellow-200', // garante que o destaque amarelo existe mesmo se só for usado via JS
+    ],
 
     plugins: [forms, typography],
 };

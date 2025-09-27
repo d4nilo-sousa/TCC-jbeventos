@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Coordinator;
 use App\Models\User;
+use App\Models\Course;
 use Illuminate\Support\Facades\Hash;
 
 class CoordinatorController extends Controller
@@ -19,7 +20,9 @@ class CoordinatorController extends Controller
     // Exibe o formulário para criar um novo coordenador
     public function create()
     {
-        return view('admin.coordinators.create');
+        // Se a view de criação precisar de cursos, adicione a busca aqui
+        $courses = Course::all();
+        return view('admin.coordinators.create', compact('courses'));
     }
 
     // Armazena um novo coordenador e o usuário associado após validar os dados
@@ -36,7 +39,6 @@ class CoordinatorController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'email_verified_at' => now(),
             'password' => Hash::make($request->password),
             'user_type' => 'coordinator',
         ]);
@@ -61,7 +63,9 @@ class CoordinatorController extends Controller
     public function edit(string $id)
     {
         $coordinator = Coordinator::with('userAccount')->findOrFail($id);
-        return view('admin.coordinators.edit', compact('coordinator'));
+        $courses = Course::all(); // Variável corrigida para $courses
+
+        return view('admin.coordinators.edit', compact('coordinator', 'courses'));
     }
 
     // Atualiza o tipo do coordenador após validação
@@ -71,11 +75,23 @@ class CoordinatorController extends Controller
 
         $request->validate([
             'coordinator_type' => 'required|in:general,course',
+            'course_id' => 'required_if:coordinator_type,course|nullable|exists:courses,id'
         ]);
 
         $coordinator->update([
             'coordinator_type' => $request->coordinator_type,
         ]);
+
+        // Se for um coordenador de curso, vincula ao curso selecionado
+        if ($request->coordinator_type === 'course') {
+            $coordinator->coordinatedCourse()->updateOrCreate(
+                ['coordinator_id' => $coordinator->id],
+                ['course_id' => $request->course_id]
+            );
+        } else {
+            // Se for geral, remove qualquer curso associado
+            $coordinator->coordinatedCourse()->delete();
+        }
 
         return redirect()->route('coordinators.index')->with('success', 'Coordenador atualizado com sucesso!');
     }

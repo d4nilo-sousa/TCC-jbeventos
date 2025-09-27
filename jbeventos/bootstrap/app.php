@@ -8,17 +8,19 @@ use App\Console\Commands\DeleteExpiredEvents;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         // Define os arquivos de rotas utilizados pela aplicação
-        web: __DIR__.'/../routes/web.php',           // Rotas web (interface do usuário)
-        api: __DIR__.'/../routes/api.php',           // Rotas da API
-        commands: __DIR__.'/../routes/console.php',  // Comandos Artisan personalizados
-        health: '/up',                               // Rota de verificação de integridade (health check)
+        web: __DIR__ . '/../routes/web.php',           // Rotas web (interface do usuário)
+        api: __DIR__ . '/../routes/api.php',           // Rotas da API
+        commands: __DIR__ . '/../routes/console.php',  // Comandos Artisan personalizados
+        channels: __DIR__ . '/../routes/channels.php', // Canais de broadcast
+        health: '/up',                                 // Rota de verificação de integridade (health check)
     )
 
     // Registra middlewares personalizados
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'checkUserType' => \App\Http\Middleware\CheckUserType::class,           // Middleware para verificar o tipo de usuário
+            'checkUserType' => \App\Http\Middleware\CheckUserType::class, // Middleware para verificar o tipo de usuário
             'forcePasswordChange' => \App\Http\Middleware\ForcePasswordChange::class, // Middleware para forçar troca de senha
+            'checkEventVisibility' => \App\Http\Middleware\CheckEventVisibility::class, // Middleware que controla o acesso a eventos de acordo com sua visibilidade e permissões do usuário
         ]);
     })
 
@@ -29,8 +31,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
     // Agendamento de comandos
     ->withSchedule(function (\Illuminate\Console\Scheduling\Schedule $schedule) {
-        // Executa o comando todo segundo
-        $schedule->command('app:delete-expired-events')->everySecond();
+        // Executa o comando todo segundo (só de teste, pode mudar pra everyMinute)
+        $schedule->command('app:delete-expired-events')->everyMinute();
+
+        // Executa o comando de preencher coordenadores faltando
+        $schedule->command('app:fill-missing-event-coordinators')->everyMinute();
     })
 
     // Configuração de tratamento de exceções

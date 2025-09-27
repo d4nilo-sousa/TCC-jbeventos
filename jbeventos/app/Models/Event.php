@@ -18,8 +18,9 @@ class Event extends Model
         'event_expired_at',
         'event_image',
         'visible_event',
+        'event_type',
         'coordinator_id', // Relacionamento com Coordenador
-        'course_id',      // Relacionamento com Curso (opcional)
+        'course_id', // Relacionamento com Curso
     ];
 
     // Define o cast dos campos para tipos específicos
@@ -33,24 +34,54 @@ class Event extends Model
     }
 
     // Retorna os comentários associados a este evento
-    public function eventComments() {
+    public function eventComments()
+    {
         return $this->hasMany(Comment::class);
     }
 
     // Retorna o coordenador responsável pelo evento
-    public function eventCoordinator() {
-        return $this->belongsTo(Coordinator::class ,'coordinator_id');
+    public function eventCoordinator()
+    {
+        return $this->belongsTo(Coordinator::class, 'coordinator_id');
     }
 
     // Relação muitos-para-muitos com Category usando tabela pivot 'category_event'
     // withTimestamps() adiciona timestamps na tabela pivot automaticamente
-    public function eventCategories() {
+    public function eventCategories()
+    {
         return $this->belongsToMany(Category::class, 'category_event')->withTimestamps();
     }
 
     // Retorna as reações dos usuários ao evento
     // Essa relação envolve uma tabela pivô com atributos próprios
-    public function reactions() {
-        return $this->hasMany(EventUserReaction::class);
+    public function reactions()
+    {
+        return $this->hasMany(EventUserReaction::class, 'event_id');
+    }
+
+    public function notifiableUsers() {
+        return $this->belongsToMany(User::class, 'event_user_alerts', 'event_id', 'user_id');
+    }
+
+    // Relação com o modelo Course
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
+
+    // Retorna o curso que está assossiado ao evento
+    public function eventCourse()
+    {
+        return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(EventImage::class);
+    }    
+    public function saivers(){
+        return $this->belongsToMany(User::class, 'event_user_reaction')
+                ->wherePivot('reaction_type', 'save')
+                ->withTimestamps();
     }
 }

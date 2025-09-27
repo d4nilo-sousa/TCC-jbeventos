@@ -1,98 +1,321 @@
 <x-app-layout>
-    {{-- Slot do cabeçalho da página --}}
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ $event->event_name }}
-        </h2>
-    </x-slot>
+    {{-- Main Container --}}
+    <div class="py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-8">
+            {{-- Breadcrumbs and Title --}}
+            <div class="flex items-center justify-between">
+                <a href="{{ route('events.index') }}" class="text-gray-500 hover:text-gray-700 transition-colors">
+                    ← Voltar para todos os eventos
+                </a>
+            </div>
 
-    {{-- Corpo principal da página --}}
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="overflow-hidden rounded-lg bg-white shadow">
+            <h1 class="text-4xl font-bold text-gray-900 leading-tight">{{ $event->event_name }}</h1>
 
-                {{-- Exibe a imagem do evento, se houver --}}
-                @if($event->event_image)
-                    <img src="{{ asset('storage/' . $event->event_image) }}" alt="Imagem do Evento" class="w-full object-cover max-h-96">
-                @endif
+            {{-- Main Content Grid (IMAGEM e DETALHES RÁPIDOS FICAM LADO A LADO) --}}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {{-- Informações detalhadas do evento --}}
-                <div class="p-6">
-                    {{-- Descrição do evento --}}
-                    <p class="mb-4 text-gray-700">{{ $event->event_description }}</p>
+                {{-- Image Carousel Section (2/3 da largura em telas grandes) --}}
+                <div class="lg:col-span-2 relative">
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border">
+                        @if ($event->images->count())
+                            <div class="relative aspect-video w-full" id="carouselContainer">
+                                {{-- Carousel Images --}}
+                                <div class="w-full h-full relative" id="carousel">
+                                    @foreach ($event->images as $img)
+                                        <img src="{{ asset('storage/' . $img->image_path) }}"
+                                             class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out carousel-img {{ $loop->first ? '' : 'hidden' }}">
+                                    @endforeach
+                                </div>
 
-                    {{-- Local e data/hora do evento --}}
-                    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 mb-4 text-gray-600">
-                        <div>
-                            <strong>📍 Local:</strong> {{ $event->event_location }}
-                        </div>
-                        <div>
-                            <strong>📅 Irá ocorrem em:</strong> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}
-                            {{-- Mostra a data de término, se estiver definida (Apenas para o coordenador que criou) --}}
-                            @if(auth()->check() && auth()->user()->user_type === 'coordinator')
-                                @php
-                                    $loggedCoordinator = auth()->user()->coordinator;
-                                @endphp
-
-                                @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                                    <br><strong>⏱ Exclusão Automática:</strong> {{ \Carbon\Carbon::parse($event->event_expired_at)->format('d/m/Y H:i') }}
+                                {{-- Carousel Controls & Indicator --}}
+                                @if ($event->images->count() > 1)
+                                    <button id="prevBtn"
+                                            class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
+                                        <i class="fas fa-chevron-left w-4 h-4"></i>
+                                    </button>
+                                    <button id="nextBtn"
+                                            class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
+                                        <i class="fas fa-chevron-right w-4 h-4"></i>
+                                    </button>
+                                    <div id="indicator" class="absolute bottom-4 right-4 bg-black/60 text-white text-sm px-3 py-1 rounded-full">
+                                        1 / {{ $event->images->count() }}
+                                    </div>
                                 @endif
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Coordenador responsável, tipo e curso relacionado --}}
-                    <div class="mb-4 text-gray-600">
-                        <strong>👤 Coordenador:</strong> {{ $event->eventCoordinator?->userAccount?->name ?? 'Nenhum coordenador definido' }}<br>
-                        @if ($event->eventCoordinator?->coordinator_type === 'general')
-                            <strong>📌 Tipo do evento:</strong> Evento Geral
-                        @elseif ($event->eventCoordinator?->coordinator_type === 'course')
-                            <strong>📌 Tipo do evento:</strong> Evento de Curso<br>
-                            <strong>🎓 Curso:</strong> {{ $event->eventCoordinator?->coordinatedCourse?->course_name ?? 'Sem Curso' }}
+                                
+                                {{-- Zoom Button --}}
+                                <button id="zoomBtn"
+                                        class="absolute bottom-4 left-4 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
+                                    <i class="fas fa-expand w-4 h-4"></i>
+                                </button>
+                            </div>
+                        @else
+                            <div class="aspect-video w-full flex items-center justify-center bg-gray-100 rounded-2xl">
+                                <span class="text-gray-400 text-lg">Sem imagem de capa.</span>
+                            </div>
                         @endif
                     </div>
+                </div>
 
-                    {{-- Categorias associadas ao evento --}}
-                    <div class="mb-4">
-                        <strong>🏷 Categorias:</strong>
-                        @forelse($event->eventCategories as $category)
-                            <span class="inline-block rounded bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800 mr-2 mb-2">
-                                {{ $category->category_name }}
-                            </span>
-                        @empty
-                            <span class="text-gray-400">Nenhuma categoria atribuída.</span>
-                        @endforelse
-                    </div>
-
-                    {{-- Botões de navegação e ações do coordenador --}}
-                    <div class="flex justify-between">
-                        {{-- Botão para voltar à lista de eventos --}}
-                        <a href="{{ route('events.index') }}" class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
-                            ← Voltar
-                        </a>
-
-                        {{-- Botões de editar e excluir, visíveis apenas para o coordenador responsável --}}
-                        @if(auth()->user()->id === ($event->eventCoordinator?->userAccount?->id ?? 0))
-                            <div class="flex space-x-2">
-                                {{-- Editar evento --}}
-                                <a href="{{ route('events.edit', $event->id) }}" class="inline-flex items-center rounded-md bg-yellow-300 px-4 py-2 text-yellow-900 hover:bg-yellow-400">
-                                    Editar
+                {{-- Event Info & Details (1/3 da largura em telas grandes, ao lado da imagem) --}}
+                <div class="lg:col-span-1 space-y-6">
+                    {{-- Quick Details Card --}}
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border space-y-4">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-map-marker-alt text-blue-600"></i>
+                            <p class="text-gray-800 text-base">
+                                <span class="font-bold">Local:</span> {{ $event->event_location }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="far fa-calendar-alt text-blue-600"></i>
+                            <p class="text-gray-800 text-base">
+                                <span class="font-bold">Data:</span> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D MMMM YYYY') }}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="far fa-clock text-blue-600"></i>
+                            <p class="text-gray-800 text-base">
+                                <span class="font-bold">Horário:</span> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('HH:mm') }}
+                            </p>
+                        </div>
+                        {{-- Coordinator's Actions --}}
+                        @if (auth()->check() && auth()->user()->user_type === 'coordinator' && auth()->user()->coordinator->id === $event->coordinator_id)
+                            <div class="pt-4 mt-4 border-t border-gray-200 flex flex-wrap gap-2">
+                                <a href="{{ route('events.edit', $event->id) }}"
+                                    class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
+                                    <i class="fas fa-edit"></i> Editar Evento
                                 </a>
-
-                                {{-- Formulário para excluir o evento com confirmação --}}
-                                <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir este evento?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center rounded-md bg-red-300 px-4 py-2 text-red-900 hover:bg-red-400">
-                                        Excluir
-                                    </button>
-                                </form>
+                                {{-- Botão de Excluir que abre o modal --}}
+                                <button onclick="openModal('deleteModal-{{ $event->id }}')"
+                                    class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                                    <i class="fas fa-trash-alt"></i> Excluir Evento
+                                </button>
                             </div>
                         @endif
                     </div>
 
+                    {{-- Additional Details Card --}}
+                    <div class="bg-white rounded-2xl shadow-lg p-6 border space-y-4 text-gray-700">
+                        <div>
+                            <p class="font-bold mb-1">Coordenador:</p>
+                            <p>
+                                @if (!$event->eventCoordinator || $event->eventCoordinator->coordinator_type !== $event->event_type)
+                                    Nenhum coordenador definido
+                                @else
+                                    {{ $event->eventCoordinator?->userAccount?->name ?? 'N/A' }}
+                                @endif
+                            </p>
+                        </div>
+                        <div>
+                            <p class="font-bold mb-1">Tipo de Evento:</p>
+                            <p>{{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'N/A') }}</p>
+                        </div>
+                        @if ($event->event_type === 'course')
+                            <div>
+                                <p class="font-bold mb-1">Curso Relacionado:</p>
+                                <p>{{ $event->eventCourse->course_name ?? 'Sem Curso' }}</p>
+                            </div>
+                        @endif
+                        <div>
+                            <p class="font-bold mb-1">Categorias:</p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                @forelse($event->eventCategories as $category)
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                                        {{ $category->category_name }}
+                                    </span>
+                                @empty
+                                    <span class="text-gray-400 text-sm">Nenhuma categoria atribuída.</span>
+                                @endforelse
+                            </div>
+                        </div>
+                        {{-- Botão de navegação --}}
+                        <div class="flex justify-start pt-4 border-t border-gray-200">
+                            <a href="{{ route('events.index') }}"
+                                class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
+                                ← Voltar
+                            </a>
+                        </div>
+                    </div>
                 </div>
+            </div> {{-- FIM do grid grid-cols-1 lg:grid-cols-3 --}}
+
+            {{-- **SEÇÕES EMPILHADAS DE LARGURA TOTAL** --}}
+
+            {{-- Description Section (100% de largura) --}}
+            <div class="bg-white rounded-2xl shadow-lg p-6 border">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Sobre o Evento</h2>
+                <p class="text-gray-700 leading-relaxed">{{ $event->event_description }}</p>
+            </div>
+            
+            {{-- Reactions Section (100% de largura) --}}
+            <div class="bg-white rounded-2xl shadow-lg p-6 border">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="far fa-heart text-red-500"></i> Reações
+                </h2>
+                <div id="reactions" class="flex flex-wrap gap-4">
+                    @foreach (['like' => 'Curtir', 'save' => 'Salvar', 'notify' => 'Notificar'] as $type => $label)
+                        @php
+                            $isActive = in_array($type, $userReactions);
+                            $count = $event->reactions->where('reaction_type', $type)->count();
+                        @endphp
+                        
+                        <form class="reaction-form" method="POST" action="{{ route('events.react', ['event' => $event->id]) }}">
+                            @csrf
+                            <input type="hidden" name="reaction_type" value="{{ $type }}">
+                            
+                            {{-- Lógica para o botão CURTIR (Com contador) --}}
+                            @if ($type === 'like')
+                                <button type="submit" data-type="{{ $type }}" data-count="{{ $count }}"
+                                    class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
+                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
+                                    <i class="fas fa-thumbs-up"></i>
+                                    {{ $label }}
+                                    <span class="reaction-count text-xs font-semibold px-2 py-1 rounded-full {{ $isActive ? 'bg-white text-blue-600' : 'bg-blue-100' }}">
+                                        {{ $count }}
+                                    </span>
+                                </button>
+                            
+                            {{-- Lógica para SALVAR e NOTIFICAR (Ação binária sem contador) --}}
+                            @else
+                                <button type="submit" data-type="{{ $type }}"
+                                    class="reaction-btn-toggle flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
+                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
+                                    <i class="fas fa-{{ $type == 'save' ? 'bookmark' : 'bell' }}"></i>
+                                    <span class="toggle-text font-semibold">
+                                        {{ $isActive ? ($type == 'save' ? 'Salvo' : 'Notificando') : $label }}
+                                    </span>
+                                </button>
+                            @endif
+
+                        </form>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Comments Section (Livewire) (100% de largura) --}}
+            <div class="bg-white rounded-2xl shadow-lg p-6 border">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                    Comentários
+                </h2>
+                @livewire('event-comments', ['event' => $event])
+            </div>
+
+        </div> {{-- FIM do max-w-7xl mx-auto space-y-8 --}}
+    </div> {{-- FIM do Main Container --}}
+
+    {{-- MODAIS PRONTOS NO HTML --}}
+    
+    {{-- Modal de Zoom --}}
+    <div id="zoomModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] hidden">
+        <div class="relative w-full h-full p-4 flex items-center justify-center">
+            <img id="zoomImg" src="" class="max-w-full max-h-full object-contain rounded-lg">
+            <button id="closeZoom" class="absolute top-5 right-5 text-white text-4xl font-light hover:text-gray-300 transition-colors">
+                &times;
+            </button>
+        </div>
+    </div>
+
+    {{-- Modal para cadastrar telefone --}}
+    <div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
+            <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
+            <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
+                @csrf
+                @method('PUT')
+                <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999"
+                    pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2"
+                    required>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('phoneModal')" id="cancelPhoneModal"
+                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Modal de Exclusão --}}
+    <div id="deleteModal-{{ $event->id }}"
+        class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
+            <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
+            <p>Tem certeza que deseja excluir este evento? Esta ação não poderá ser desfeita.</p>
+            <div class="mt-6 flex justify-end space-x-2">
+                <button onclick="closeModal('deleteModal-{{ $event->id }}')"
+                    class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                <form action="{{ route('events.destroy', $event->id) }}" method="POST">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
+                        Exclusão</button>
+                </form>
             </div>
         </div>
     </div>
+
+    {{-- Toast simples (mantido) --}}
+    <div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
+        <span id="toast-message"></span>
+    </div>
+
 </x-app-layout>
+
+{{-- SCRIPTS DE LÓGICA ESPECÍFICA --}}
+<script>
+    // Funções globais para Modais
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+
+    // Função showToast (necessária para o event-reactions.js)
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        const toastMsg = document.getElementById('toast-message');
+
+        toastMsg.textContent = message;
+        toast.classList.remove('hidden');
+
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lógica para fechar modais ao clicar fora (mantida aqui, pois usa a função closeModal)
+        const zoomModal = document.getElementById('zoomModal');
+        const phoneModal = document.getElementById('phoneModal');
+
+        // Fechar modal de telefone ao clicar fora
+        if(phoneModal) {
+            phoneModal.addEventListener('click', (e) => {
+                // Remove a lógica de telefone, mas mantém a função closeModal
+                if(e.target === phoneModal) {
+                    closeModal('phoneModal');
+                }
+            });
+            
+            // Remove a lógica de submissão do formulário de telefone, pois não será mais usada.
+            // O botão de cancelar deve chamar apenas closeModal('phoneModal') no onclick
+        }
+        
+        // Fechar modal de zoom ao clicar fora
+        if(zoomModal) {
+            zoomModal.addEventListener('click', (e) => {
+                if(e.target === zoomModal) {
+                    closeModal('zoomModal');
+                }
+            });
+        }
+        
+        // IMPORTANTE: Toda a lógica de reações (AJAX) foi MOVIDA para event-reactions.js.
+        // NENHUM CÓDIGO DE REAÇÃO DEVE FICAR AQUI.
+    });
+</script>
+
+{{-- Scripts compilados (Agora o app.js importa o event-reactions.js) --}}
+@vite('resources/js/app.js')

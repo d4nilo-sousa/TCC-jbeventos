@@ -17,9 +17,9 @@ class CoordinatorPasswordController extends Controller
     // Recebe o formulário e atualiza a senha do coordenador
     public function update(Request $request)
     {
-        // Valida: senha obrigatória, mínimo 8 caracteres, e confirmação da senha
+        // Valida: senha obrigatória, mínimo: 8 caracteres, 1 letra maiscula, 1 numero e 1 caracter especial (!@#$%&*), confirmação da senha.
         $request->validate([
-            'password' => 'required|string|min:8|confirmed',
+             'password' => 'required|string|min:8|confirmed|regex:/[A-Z]/|regex:/[0-9]/|regex:/[!@#$%&*]/',
         ]);
 
         // Pega o usuário autenticado
