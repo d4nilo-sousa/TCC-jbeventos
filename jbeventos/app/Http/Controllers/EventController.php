@@ -314,11 +314,13 @@ class EventController extends Controller
     }
 
     // Atualiza evento
+    // Atualiza evento
     public function update(Request $request, $id)
     {
         $event = Event::findOrFail($id);
 
-        $request->validate([
+        // Pega dados validados
+        $validated = $request->validate([
             'event_name' => 'required|string|unique:events,event_name,' . $event->id,
             'event_description' => 'nullable|string',
             'event_location' => 'required|string',
@@ -329,11 +331,16 @@ class EventController extends Controller
             'categories.*' => 'exists:categories,id',
         ]);
 
+        // Confere se usuário tem permissão
         $coordinator = auth()->user()->coordinator;
         if (!$coordinator || $event->coordinator_id !== $coordinator->id) {
             abort(403, "Usuário não está vinculado a um coordenador");
         }
 
+        // Guarda dados originais
+        $original = $event->getOriginal();
+
+        // Prepara dados para update
         $data = $request->only([
             'event_name',
             'event_description',
@@ -343,14 +350,16 @@ class EventController extends Controller
             'visible_event'
         ]);
 
+        // =====================
+        // Imagem principal
+        // =====================
         if ($request->input('remove_event_image') == '1') {
             if ($event->event_image) {
                 Storage::disk('public')->delete($event->event_image);
             }
             $data['event_image'] = null;
-        } else if ($request->hasFile('event_image')) {
+        } elseif ($request->hasFile('event_image')) {
             $upload = $request->file('event_image');
-
             $image = Image::read($upload);
 
             $image->resize(1200, 600, function ($constraint) {
@@ -379,6 +388,9 @@ class EventController extends Controller
             $data['event_image'] = 'event_images/' . $imageName;
         }
 
+        // =====================
+        // Imagens extras
+        // =====================
         if ($request->filled('remove_event_images')) {
             foreach ($request->input('remove_event_images') as $imageId => $remove) {
                 if ($remove == '1') {
@@ -393,7 +405,6 @@ class EventController extends Controller
 
         if ($request->hasFile('event_images')) {
             foreach ($request->file('event_images') as $upload) {
-
                 $image = Image::read($upload);
 
                 $image->resize(1200, 600, function ($constraint) {
@@ -425,36 +436,37 @@ class EventController extends Controller
             }
         }
 
+        // Salva coordenador e curso
         $data['coordinator_id'] = $coordinator->id;
         $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
 
-        $originalData = $event->getOriginal();
-        $event->fill($data);
-        $changed = array_diff_assoc($event->getAttributes(), $originalData);
-
+        // Atualiza evento
         $event->update($data);
 
         $changed = $event->getChanges();
-        unset($changed['updated_at'], $changed['created_at']);
 
-        if (!empty($changed)) {
+        $importantChanges = array_intersect_key($changed, array_flip(['event_name', 'event_scheduled_at', 'event_location']));
+
+        if (!empty($importantChanges)) {
             if ($event->course && $event->course->followers->isNotEmpty()) {
-                Notification::send($event->course->followers, new EventUpdatedNotification($event, $changed));
+                Notification::send($event->course->followers, new EventUpdatedNotification($event, $importantChanges));
             }
 
             if ($event->notifiableUsers->isNotEmpty()) {
-                Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $changed));
+                Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $importantChanges));
             }
         }
-
+        
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
         } else {
             $event->eventCategories()->detach();
         }
 
-        return redirect()->route('events.show', $event->id)->with('success', 'Evento atualizado com sucesso!');
+        return redirect()->route('events.show', $event->id)
+            ->with('success', 'Evento atualizado com sucesso!');
     }
+
 
     // Exclui um evento
     public function destroy($id)
