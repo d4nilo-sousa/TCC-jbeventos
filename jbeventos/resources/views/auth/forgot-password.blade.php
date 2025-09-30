@@ -1,11 +1,17 @@
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
-            <x-authentication-card-logo />
+            <a href="/">
+                <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-1/6 h-auto mx-auto">
+            </a>
         </x-slot>
 
-        <div class="mb-4 text-sm text-gray-600">
-            {{ __('Esqueceu sua senha? Informe seu e-mail e enviaremos um link para redefinição.') }}
+        <div class="mb-5 text-center">
+            <h1 class="text-3xl font-medium text-red-700 font-ubuntu">Esqueceu sua senha?</h1>
+        </div>
+        <div class="mb-4 text-sm text-center text-gray-600 px-5">
+            {{ __('Informe seu e-mail e enviaremos um link para redefinição.') }}
+            
         </div>
 
         @session('status')

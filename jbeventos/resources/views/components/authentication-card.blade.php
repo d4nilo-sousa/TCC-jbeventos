@@ -2,19 +2,17 @@
 
 
     <!-- Lado esquerdo -->
-    <div
-        x-data="{ show: false }"
-        x-init="setTimeout(() => show = true, 100)"
-        x-show="show"
-        x-transition:enter="transition ease-out duration-700"
-        x-transition:enter-start="opacity-0 -translate-x-10"
-        x-transition:enter-end="opacity-100 translate-x-0"
-        class="hidden md:flex w-1/2 relative">
-        
+    <div x-data="{ show: false }" x-init="setTimeout(() => show = true, 100)" x-show="show"
+        x-transition:enter="transition ease-out duration-700" x-transition:enter-start="opacity-0 -translate-x-10"
+        x-transition:enter-end="opacity-100 translate-x-0" class="hidden md:flex w-1/2 relative">
+
         @if (Route::is('login'))
             <img src="{{ asset('imgs/etecLogin2.png') }}" alt="Imagem de fundo"
                 class="absolute inset-0 w-full h-full object-cover z-0" />
         @elseif (Route::is('register'))
+            <img src="{{ asset('imgs/etecCadastro.jpeg') }}" alt="Imagem de fundo"
+                class="absolute inset-0 w-full h-full object-cover z-0" />
+        @elseif (Route::is('password.request'))
             <img src="{{ asset('imgs/etecCadastro.jpeg') }}" alt="Imagem de fundo"
                 class="absolute inset-0 w-full h-full object-cover z-0" />
         @endif
@@ -24,12 +22,12 @@
         <div
             class="relative z-20 flex flex-col justify-center items-center text-white px-10 text-center mx-auto max-w-[50%]">
             @if (Route::is('login'))
-                <h2 class="text-3xl font-bold mb-3">Novo por aqui?</h2>
-                <p class="w-full text-lg mb-6">
+                <h2 class="text-3xl font-black mb-3">Novo por aqui?</h2>
+                <p class="w-full font-thin text-lg mb-6">
                     Crie uma conta agora mesmo e descubra tudo que o <strong>JB Eventos</strong> pode oferecer!
                 </p>
                 <a href="{{ route('register') }}"
-                    class="inline-block bg-white text-red-700 font-semibold px-6 py-2 rounded-full hover:bg-red-100 transition">
+                    class="inline-block text-white bg-red-700 font-semibold px-6 py-2 rounded-full hover:bg-red-800 transition">
                     Criar conta
                 </a>
             @elseif (Route::is('register'))
@@ -46,23 +44,20 @@
     </div>
 
     <!-- Lado direito -->
-    <div
-        x-data="{ show: false }"
-        x-init="setTimeout(() => show = true, 300)"
-        x-show="show"
-        x-transition:enter="transition ease-out duration-700"
-        x-transition:enter-start="opacity-0 translate-x-10"
+    <div x-data="{ show: false }" x-init="setTimeout(() => show = true, 300)" x-show="show"
+        x-transition:enter="transition ease-out duration-700" x-transition:enter-start="opacity-0 translate-x-10"
         x-transition:enter-end="opacity-100 translate-x-0"
         class="md:w-1/2 flex flex-col justify-center items-center bg-white text-white">
-        
+
         <div class="mb-[10%]">
             {{ $logo }}
         </div>
 
         <div class="w-full max-w-md">
-            <div class="py-10 text-gray-800 shadow-xl rounded-xl border-2 border-gray-100 p-10">
+            <div class="py-10 text-gray-800 shadow-xl rounded-xl border-2 border-gray-100 p-14">
                 {{ $slot }}
             </div>
         </div>
+
     </div>
 </div>
