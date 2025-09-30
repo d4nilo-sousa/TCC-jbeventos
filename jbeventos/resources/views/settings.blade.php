@@ -14,10 +14,6 @@
 
         <x-section-border />
 
-        @livewire('profile.logout-other-browser-sessions-form')
-
-        <x-section-border />
-
         @livewire('profile.delete-user-form')
     </div>
 </x-app-layout>
