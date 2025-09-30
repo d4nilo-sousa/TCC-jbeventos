@@ -1,11 +1,83 @@
 <x-app-layout>
     {{-- Mensagem de boas-vindas --}}
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="p-5 bg-white rounded-2xl shadow-sm">
+    <div class="p-5 bg-white rounded-2xl shadow-sm flex justify-between items-center">
+        <div>
             <h2 class="text-2xl font-bold font-ubuntu text-gray-800">Olá, {{ $name }}!</h2>
             <p class="text-gray-600 mt-1">{{ $message }}</p>
         </div>
+        
+        {{-- Botão que abre o modal --}}
+        <div x-data="{ open: false }">
+            <button @click="open = true"
+                class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-900 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Exportar Relatório
+            </button>
+        
+            {{-- MODAL DE SELEÇÃO DE PERÍODO --}}
+            <div x-show="open" 
+                  x-transition.opacity 
+                  class="fixed inset-0 z-50 overflow-y-auto" 
+                  aria-labelledby="modal-title" 
+                  role="dialog" 
+                  aria-modal="true">
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div x-show="open" x-transition.opacity @click="open = false" 
+                          class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                    
+                    <div x-show="open" x-transition.duration.300ms
+                          class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        
+                        {{-- OBS: Adicionado o ID 'exportForm' para capturar os dados do gráfico --}}
+                        <form method="POST" action="{{ route('admin.dashboard.export.pdf') }}" id="exportForm">
+                            @csrf
+                            {{-- CAMPOS OCULTOS PARA AS IMAGENS DOS GRÁFICOS --}}
+                            <input type="hidden" name="interactionsChartImage" id="interactionsChartImage">
+                            <input type="hidden" name="postInteractionsChartImage" id="postInteractionsChartImage">
+                            <input type="hidden" name="coursesChartImage" id="coursesChartImage">
+                            
+                            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                    Exportar Relatório em PDF
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500 mb-4">Selecione o período para a coleta de dados de totais e rankings (os gráficos de evolução sempre mostram os últimos 6 meses).</p>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="start_date" class="block text-sm font-medium text-gray-700">Data Inicial</label>
+                                            <input type="date" name="start_date" id="start_date" required
+                                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                        </div>
+                                        <div>
+                                            <label for="end_date" class="block text-sm font-medium text-gray-700">Data Final</label>
+                                            <input type="date" name="end_date" id="end_date" required
+                                                         class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                <button type="submit"
+                                        id="pdfSubmitButton" {{-- Adicionado ID para JS --}}
+                                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Gerar PDF
+                                </button>
+                                <button @click="open = false" type="button"
+                                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
@@ -237,10 +309,16 @@
     {{-- Chart.js --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Variável global para armazenar as instâncias dos gráficos
+        let interactionsChartInstance;
+        let postInteractionsChartInstance;
+        let coursesChartInstance;
+        
         document.addEventListener('DOMContentLoaded', function () {
-            // Gráfico Ranking de Cursos
+            
+            // --- 1. Gráfico Ranking de Cursos ---
             const coursesCtx = document.getElementById('coursesChart').getContext('2d');
-            new Chart(coursesCtx, {
+            coursesChartInstance = new Chart(coursesCtx, {
                 type: 'bar',
                 data: {
                     labels: @json($coursesLabels),
@@ -253,7 +331,7 @@
                     }]
                 },
                 options: { 
-                    indexAxis: 'y', // Manteve o eixo Y para barras horizontais
+                    indexAxis: 'y',
                     responsive: true, 
                     maintainAspectRatio: false, 
                     scales: { 
@@ -262,9 +340,9 @@
                 }
             });
 
-            // Gráfico Evolução de Interações (Eventos)
+            // --- 2. Gráfico Evolução de Interações (Eventos) ---
             const interactionsCtx = document.getElementById('interactionsChart').getContext('2d');
-            new Chart(interactionsCtx, {
+            interactionsChartInstance = new Chart(interactionsCtx, {
                 type: 'line',
                 data: {
                     labels: @json($interactionsLabels),
@@ -280,9 +358,9 @@
                 options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
             });
             
-            // Gráfico Evolução de Posts e Respostas
+            // --- 3. Gráfico Evolução de Posts e Respostas ---
             const postInteractionsCtx = document.getElementById('postInteractionsChart').getContext('2d');
-            new Chart(postInteractionsCtx, {
+            postInteractionsChartInstance = new Chart(postInteractionsCtx, {
                 type: 'line',
                 data: {
                     labels: @json($postInteractionsLabels),
@@ -290,7 +368,7 @@
                         {
                             label: 'Posts Criados',
                             data: @json($postsData),
-                            borderColor: 'rgba(245, 158, 11, 1)', // Amarelo/Âmbar
+                            borderColor: 'rgba(245, 158, 11, 1)',
                             backgroundColor: 'rgba(245, 158, 11, 0.2)',
                             fill: true,
                             tension: 0.3
@@ -298,7 +376,7 @@
                         {
                             label: 'Respostas Recebidas',
                             data: @json($repliesData),
-                            borderColor: 'rgba(59, 130, 246, 1)', // Azul
+                            borderColor: 'rgba(59, 130, 246, 1)',
                             backgroundColor: 'rgba(59, 130, 246, 0.2)',
                             fill: true,
                             tension: 0.3
@@ -313,6 +391,25 @@
                     } 
                 }
             });
+            
+            // --- LÓGICA DE CAPTURA DE GRÁFICOS PARA O PDF ---
+            const exportForm = document.getElementById('exportForm');
+            if (exportForm) {
+                exportForm.addEventListener('submit', function(e) {
+                    // Previne o envio padrão do formulário
+                    e.preventDefault(); 
+                    
+                    // Converte cada canvas do Chart.js para Base64 e insere no campo oculto
+                    // NOTA: chart.toBase64Image() é o método preferido do Chart.js, mas 
+                    // toDataURL() da canvas funciona de forma semelhante e é mais genérico.
+                    document.getElementById('interactionsChartImage').value = interactionsChartInstance.toBase64Image('image/png', 1.0);
+                    document.getElementById('postInteractionsChartImage').value = postInteractionsChartInstance.toBase64Image('image/png', 1.0);
+                    document.getElementById('coursesChartImage').value = coursesChartInstance.toBase64Image('image/png', 1.0);
+
+                    // Re-envia o formulário com os dados Base64
+                    exportForm.submit();
+                });
+            }
         });
     </script>
 

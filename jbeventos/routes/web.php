@@ -57,6 +57,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
+        //nova rota para exportar pdf
+         Route::post('/dashboard/export-pdf', [AdminDashboardController::class, 'exportPdf'])
+         ->name('admin.dashboard.export.pdf');
+
         // CRUD de coordenadores
         Route::resource('coordinators', CoordinatorController::class);
 
