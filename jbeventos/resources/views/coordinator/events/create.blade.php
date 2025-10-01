@@ -116,12 +116,13 @@
                                         imagens.
                                     </p>
                                 </div>
-                                <div id="event_images_preview"
-                                    class="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div>
+                                <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center"></div>
                                 @error('event_images')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
 
                             <div class="flex justify-end">
                                 <button type="button" data-next-tab="tab-info"
@@ -185,6 +186,8 @@
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
 
                             <div class="flex justify-between">
                                 <button type="button" data-prev-tab="tab-media"
@@ -270,6 +273,8 @@
                                 </div>
                             @endif
 
+                            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
+
                             <div class="flex justify-between">
                                 <button type="button" data-prev-tab="tab-info"
                                     class="prev-button inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
@@ -290,132 +295,3 @@
 </x-app-layout>
 
 @vite('resources/js/app.js')
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Lógica de abas
-    const tabs = document.querySelectorAll('.tab-content');
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const nextButtons = document.querySelectorAll('.next-button');
-    const prevButtons = document.querySelectorAll('.prev-button');
-
-    // Função para mostrar a aba ativa
-    function showTab(tabId) {
-        tabs.forEach(tab => tab.classList.add('hidden')); // Esconde todas as abas
-        const activeTab = document.getElementById(tabId);
-        activeTab.classList.remove('hidden'); // Mostra a aba selecionada
-
-        tabButtons.forEach(button => {
-            const buttonSpan = button.querySelector('span:first-child');
-            if (button.dataset.tabTarget === tabId) {
-                button.classList.add('active', 'text-gray-700', 'font-semibold');
-                buttonSpan.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
-                buttonSpan.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
-            } else {
-                button.classList.remove('active', 'text-gray-700', 'font-semibold');
-                buttonSpan.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
-                buttonSpan.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
-            }
-        });
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // Lógica do botão "Próximo"
-    nextButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const eventName = document.getElementById('event_name');
-            const eventLocation = document.getElementById('event_location');
-            let allInputsValid = true;
-
-            // Validar "Nome do Evento" primeiro
-            if (!eventName || !eventName.checkValidity()) {
-                allInputsValid = false;
-                eventName.reportValidity();
-                return; // Para aqui para mostrar erro antes de validar o próximo campo
-            }
-
-            // Validar "Local" depois que "Nome do Evento" está válido
-            if (!eventLocation || !eventLocation.checkValidity()) {
-                allInputsValid = false;
-                eventLocation.reportValidity();
-                return;
-            }
-
-            // Avança para a próxima aba se tudo estiver válido
-            if (allInputsValid) {
-                const nextTabId = button.dataset.nextTab;
-                showTab(nextTabId);
-            }
-        });
-    });
-
-    // Lógica do botão "Anterior"
-    prevButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const prevTabId = button.dataset.prevTab;
-            showTab(prevTabId);
-        });
-    });
-
-    // Lógica do clique direto nas abas
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            showTab(button.dataset.tabTarget);
-        });
-    });
-
-    // Forçar a aba "Mídias" se na rota de criação do evento
-    if (window.location.pathname === '/coordinator/events/create') {
-        showTab('tab-media');
-    }
-
-    // --- Uploads: apenas abrir o input, sem pré-visualização ---
-
-    // Imagem de capa
-    const dropzoneCover = document.getElementById('dropzone-cover');
-    const eventImageInput = document.getElementById('event_image');
-
-    dropzoneCover.addEventListener('dragover', event => {
-        event.preventDefault();
-        dropzoneCover.classList.add('border-blue-500', 'bg-gray-50');
-    });
-
-    dropzoneCover.addEventListener('dragleave', () => {
-        dropzoneCover.classList.remove('border-blue-500', 'bg-gray-50');
-    });
-
-    dropzoneCover.addEventListener('drop', event => {
-        event.preventDefault();
-        dropzoneCover.classList.remove('border-blue-500', 'bg-gray-50');
-        eventImageInput.files = event.dataTransfer.files; // Apenas seta arquivos
-    });
-
-    dropzoneCover.addEventListener('click', () => {
-        eventImageInput.click();
-    });
-
-    // Galeria de imagens
-    const dropzoneGallery = document.getElementById('dropzone-gallery');
-    const eventImagesInput = document.getElementById('event_images');
-
-    dropzoneGallery.addEventListener('dragover', event => {
-        event.preventDefault();
-        dropzoneGallery.classList.add('border-blue-500', 'bg-gray-50');
-    });
-
-    dropzoneGallery.addEventListener('dragleave', () => {
-        dropzoneGallery.classList.remove('border-blue-500', 'bg-gray-50');
-    });
-
-    dropzoneGallery.addEventListener('drop', event => {
-        event.preventDefault();
-        dropzoneGallery.classList.remove('border-blue-500', 'bg-gray-50');
-        eventImagesInput.files = event.dataTransfer.files; // Apenas seta arquivos
-    });
-
-    dropzoneGallery.addEventListener('click', () => {
-        eventImagesInput.click();
-    });
-});
-</script>
