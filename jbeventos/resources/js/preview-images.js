@@ -1,77 +1,74 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // --- Seleção de capa ---
-    const eventImageInput = document.getElementById('event_image');  // input da capa
-    const eventImagePreview = document.getElementById('event_image_preview');  // preview da capa
-    let selectedCover = null;  // arquivo da capa selecionada
+    const eventImageInput = document.getElementById('event_image');  
+    const eventImagePreview = document.getElementById('event_image_preview');  
+    let selectedCover = null;  
 
-    // --- Seleção de imagens extras ---
-    const eventImagesInput = document.getElementById('event_images');  // input das imagens extras
-    const eventImagesPreview = document.getElementById('event_images_preview');  // preview das imagens extras
-    let selectedFiles = [];  // arquivos extras selecionados
+    const eventImagesInput = document.getElementById('event_images');  
+    const eventImagesPreview = document.getElementById('event_images_preview');  
+    let selectedFiles = [];  
 
-    // Pega nomes das imagens já existentes no blade para evitar duplicatas
     const existingImages = Array.from(document.querySelectorAll('#event_images_preview > div[data-filename]'))
         .map(div => div.dataset.filename.toLowerCase());
 
-    // Função para criar preview de imagem com botão de remover
-    function createImagePreview(file, previewContainer, onRemove) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            const imgContainer = document.createElement('div');
-            imgContainer.classList.add(
-                'relative', 'rounded', 'overflow-hidden',
-                'flex', 'items-center', 'justify-center', 'bg-gray-100',
-                'w-full', 'max-w-full', 'aspect-[2/1]'
-            );
+    function createFileItem(file, container, onRemove) {
+        const fileDiv = document.createElement('div');
+        fileDiv.style.display = "flex";
+        fileDiv.style.alignItems = "center";
+        fileDiv.style.gap = "10px"; // espaço entre input e botão
 
-            const img = document.createElement('img');
-            img.src = event.target.result;
-            img.classList.add('object-contain', 'w-full', 'h-full');
+        const fileNameInput = document.createElement('input');
+        fileNameInput.type = 'text';
+        fileNameInput.value = file.name;
+        fileNameInput.readOnly = true;
+        fileNameInput.style.cursor = 'default';
 
-            // Botão para remover a imagem do preview e da seleção
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.innerHTML = '×';
-            removeBtn.classList.add(
-                'absolute', 'z-20',
-                'bg-red-600', 'text-white', 'rounded-full', 'w-6', 'h-6',
-                'flex', 'items-center', 'justify-center', 'hover:bg-red-700'
-            );
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.textContent = 'Excluir';
 
-            removeBtn.addEventListener('click', () => {
-                onRemove(file, imgContainer);
-            });
+        // estilo do botão azul
+        removeBtn.style.backgroundColor = "#007BFF";
+        removeBtn.style.color = "#fff";
+        removeBtn.style.border = "none";
+        removeBtn.style.padding = "5px 10px";
+        removeBtn.style.borderRadius = "4px";
+        removeBtn.style.cursor = "pointer";
 
-            imgContainer.appendChild(img);
-            imgContainer.appendChild(removeBtn);
-            previewContainer.appendChild(imgContainer);
-        };
-        reader.readAsDataURL(file);
+        removeBtn.addEventListener('mouseenter', () => {
+            removeBtn.style.backgroundColor = "#0056b3"; // hover mais escuro
+        });
+        removeBtn.addEventListener('mouseleave', () => {
+            removeBtn.style.backgroundColor = "#007BFF";
+        });
+
+        removeBtn.addEventListener('click', () => {
+            onRemove(file, fileDiv);
+        });
+
+        fileDiv.appendChild(fileNameInput);
+        fileDiv.appendChild(removeBtn);
+        container.appendChild(fileDiv);
     }
 
-    // --- Quando seleciona capa ---
     eventImageInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         selectedCover = file;
-        eventImagePreview.innerHTML = '';  // limpa preview anterior
-
-        createImagePreview(file, eventImagePreview, () => {
+        eventImagePreview.innerHTML = '';
+        createFileItem(file, eventImagePreview, () => {
             selectedCover = null;
             eventImagePreview.innerHTML = '';
-            eventImageInput.value = '';  // reseta input
+            eventImageInput.value = '';
         });
     });
 
-    // --- Quando seleciona imagens extras ---
     eventImagesInput.addEventListener('change', (e) => {
         const files = Array.from(e.target.files);
 
         files.forEach(file => {
             const fileName = file.name.toLowerCase();
 
-            // Evita arquivos duplicados (selecionados ou existentes)
             const alreadySelected = selectedFiles.some(f => f.name.toLowerCase() === fileName);
             const alreadyExists = existingImages.includes(fileName);
 
@@ -82,17 +79,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             selectedFiles.push(file);
 
-            createImagePreview(file, eventImagesPreview, (f, container) => {
+            createFileItem(file, eventImagesPreview, (f, fileDiv) => {
                 selectedFiles = selectedFiles.filter(item => item !== f);
-                eventImagesPreview.removeChild(container);
+                eventImagesPreview.removeChild(fileDiv);
                 updateInputFiles();
             });
         });
 
-        updateInputFiles();  // atualiza input com arquivos selecionados
+        updateInputFiles();
     });
 
-    // Atualiza o input 'eventImagesInput' com os arquivos selecionados (para enviar no form)
     function updateInputFiles() {
         const dataTransfer = new DataTransfer();
         selectedFiles.forEach(file => dataTransfer.items.add(file));
