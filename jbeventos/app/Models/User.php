@@ -32,8 +32,6 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
-        'phone_number',
-        'phone_number_verified_at',
         'user_icon',
         'user_icon_default',
         'user_banner',
@@ -71,7 +69,6 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'phone_number_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
