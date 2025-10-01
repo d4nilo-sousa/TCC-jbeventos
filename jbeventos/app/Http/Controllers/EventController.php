@@ -314,7 +314,6 @@ class EventController extends Controller
     }
 
     // Atualiza evento
-    // Atualiza evento
     public function update(Request $request, $id)
     {
         $event = Event::findOrFail($id);
