@@ -36,10 +36,10 @@ class EventController extends Controller
         if ($loggedCoordinator) {
             if ($request->status === 'visible') {
                 $events = $events->where('coordinator_id', $loggedCoordinator->id)
-                                ->where('visible_event', true);
+                    ->where('visible_event', true);
             } elseif ($request->status === 'hidden') {
                 $events = $events->where('coordinator_id', $loggedCoordinator->id)
-                                ->where('visible_event', false);
+                    ->where('visible_event', false);
             } else {
                 $events = $events->where('visible_event', true);
             }
@@ -109,20 +109,20 @@ class EventController extends Controller
         $categories = Category::all();
 
         // ----------------------------------------------------------------------
-    // ✅ CORREÇÃO: Resposta para requisições AJAX (Sem o Helper)
-    // ----------------------------------------------------------------------
-    if ($request->ajax()) {
-        
-        // 1. Renderiza o HTML dos cards de evento
-        $eventsHtml = $events->map(function ($event) {
-            // **IMPORTANTE**: O caminho do partial DEVE ser EXATO.
-            return view('partials.events.event-card', ['event' => $event])->render();
-        })->implode(''); 
+        // ✅ CORREÇÃO: Resposta para requisições AJAX (Sem o Helper)
+        // ----------------------------------------------------------------------
+        if ($request->ajax()) {
 
-        // 2. Lógica para NENHUM EVENTO ENCONTRADO (Injetando o HTML da mensagem)
-        if ($events->isEmpty()) {
-            // Este HTML é injetado diretamente no events-container
-            $eventsHtml = '
+            // 1. Renderiza o HTML dos cards de evento
+            $eventsHtml = $events->map(function ($event) {
+                // **IMPORTANTE**: O caminho do partial DEVE ser EXATO.
+                return view('partials.events.event-card', ['event' => $event])->render();
+            })->implode('');
+
+            // 2. Lógica para NENHUM EVENTO ENCONTRADO (Injetando o HTML da mensagem)
+            if ($events->isEmpty()) {
+                // Este HTML é injetado diretamente no events-container
+                $eventsHtml = '
                 <div class="col-span-full flex flex-col items-center justify-center p-12">
                     <img src="' . asset('imgs/notFound.png') . '"
                         alt="Nenhum evento encontrado"
@@ -131,21 +131,21 @@ class EventController extends Controller
                     <p class="text-sm text-gray-400 mt-2">Tente ajustar os filtros ou a pesquisa.</p>
                 </div>
             ';
+            }
+
+            // 3. Renderiza o HTML dos links de paginação
+            $paginationHtml = (string) $events->links();
+
+            // 4. Retorna o JSON
+            return response()->json([
+                'eventsHtml' => $eventsHtml,
+                'paginationHtml' => $paginationHtml,
+            ]);
         }
+        // ----------------------------------------------------------------------
 
-        // 3. Renderiza o HTML dos links de paginação
-        $paginationHtml = (string) $events->links();
-
-        // 4. Retorna o JSON
-        return response()->json([
-            'eventsHtml' => $eventsHtml,
-            'paginationHtml' => $paginationHtml,
-        ]);
-    }
-    // ----------------------------------------------------------------------
-
-    // Retorna view completa normalmente
-    return view('events.index', compact('events', 'courses', 'categories', 'loggedCoordinator'));
+        // Retorna view completa normalmente
+        return view('events.index', compact('events', 'courses', 'categories', 'loggedCoordinator'));
     }
 
 
@@ -265,12 +265,12 @@ class EventController extends Controller
             $event->eventCategories()->detach();
         }
 
-        if ($event->course && $event->course->followers) {
-            Notification::send($event->course->followers, new NewEventNotification($event));
-        }
+        if ($event->course) {
+            $followers = $event->course->followers;
 
-        if ($event->notifiableUsers->isNotEmpty()) {
-            Notification::send($event->notifiableUsers, new NewEventNotification($event));
+            foreach ($followers as $user) {
+                $user->notify(new NewEventNotification($event));
+            }
         }
 
         return redirect()->route('events.index')->with('success', 'Evento criado com sucesso!');
@@ -282,7 +282,7 @@ class EventController extends Controller
         $user = auth()->user();
         $event->load(['eventCoordinator.userAccount', 'eventCategories', 'eventCourse']);
 
-       // Carrega a relação de reações do usuário
+        // Carrega a relação de reações do usuário
         if ($user) {
             $user->load('commentReactions');
         }
@@ -318,7 +318,8 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
-        $request->validate([
+        // Pega dados validados
+        $validated = $request->validate([
             'event_name' => 'required|string|unique:events,event_name,' . $event->id,
             'event_description' => 'nullable|string',
             'event_location' => 'required|string',
@@ -329,11 +330,16 @@ class EventController extends Controller
             'categories.*' => 'exists:categories,id',
         ]);
 
+        // Confere se usuário tem permissão
         $coordinator = auth()->user()->coordinator;
         if (!$coordinator || $event->coordinator_id !== $coordinator->id) {
             abort(403, "Usuário não está vinculado a um coordenador");
         }
 
+        // Guarda dados originais
+        $original = $event->getOriginal();
+
+        // Prepara dados para update
         $data = $request->only([
             'event_name',
             'event_description',
@@ -343,14 +349,16 @@ class EventController extends Controller
             'visible_event'
         ]);
 
+        // =====================
+        // Imagem principal
+        // =====================
         if ($request->input('remove_event_image') == '1') {
             if ($event->event_image) {
                 Storage::disk('public')->delete($event->event_image);
             }
             $data['event_image'] = null;
-        } else if ($request->hasFile('event_image')) {
+        } elseif ($request->hasFile('event_image')) {
             $upload = $request->file('event_image');
-
             $image = Image::read($upload);
 
             $image->resize(1200, 600, function ($constraint) {
@@ -379,6 +387,9 @@ class EventController extends Controller
             $data['event_image'] = 'event_images/' . $imageName;
         }
 
+        // =====================
+        // Imagens extras
+        // =====================
         if ($request->filled('remove_event_images')) {
             foreach ($request->input('remove_event_images') as $imageId => $remove) {
                 if ($remove == '1') {
@@ -393,7 +404,6 @@ class EventController extends Controller
 
         if ($request->hasFile('event_images')) {
             foreach ($request->file('event_images') as $upload) {
-
                 $image = Image::read($upload);
 
                 $image->resize(1200, 600, function ($constraint) {
@@ -425,36 +435,37 @@ class EventController extends Controller
             }
         }
 
+        // Salva coordenador e curso
         $data['coordinator_id'] = $coordinator->id;
         $data['course_id'] = optional($coordinator->coordinatedCourse)->id;
 
-        $originalData = $event->getOriginal();
-        $event->fill($data);
-        $changed = array_diff_assoc($event->getAttributes(), $originalData);
-
+        // Atualiza evento
         $event->update($data);
 
         $changed = $event->getChanges();
-        unset($changed['updated_at'], $changed['created_at']);
 
-        if (!empty($changed)) {
+        $importantChanges = array_intersect_key($changed, array_flip(['event_name', 'event_scheduled_at', 'event_location']));
+
+        if (!empty($importantChanges)) {
             if ($event->course && $event->course->followers->isNotEmpty()) {
-                Notification::send($event->course->followers, new EventUpdatedNotification($event, $changed));
+                Notification::send($event->course->followers, new EventUpdatedNotification($event, $importantChanges));
             }
 
             if ($event->notifiableUsers->isNotEmpty()) {
-                Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $changed));
+                Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $importantChanges));
             }
         }
-
+        
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
         } else {
             $event->eventCategories()->detach();
         }
 
-        return redirect()->route('events.show', $event->id)->with('success', 'Evento atualizado com sucesso!');
+        return redirect()->route('events.show', $event->id)
+            ->with('success', 'Evento atualizado com sucesso!');
     }
+
 
     // Exclui um evento
     public function destroy($id)

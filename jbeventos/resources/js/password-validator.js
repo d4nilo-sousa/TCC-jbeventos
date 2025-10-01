@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!requirementsList) return true;
 
-        if (userType === 'coordinator') {
+        if (userType === 'coordinator' || userType === 'admin') {
             ['length', 'uppercase', 'number', 'special'].forEach(req => {
                 const el = document.getElementById(`req-${req}`);
                 if (el) {

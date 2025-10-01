@@ -70,29 +70,26 @@
                     <div class="flex items-center justify-between">
                         <h1 class="text-xl font-bold text-stone-800">{{ $course->course_name }}</h1>
 
-                        {{-- Botão de Seguir/Deixar de Seguir --}}
-                        @auth
-                            <div>
-                                @if (auth()->user()->followedCourses->contains($course->id))
-                                    <form action="{{ route('courses.unfollow', $course->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow transition">
-                                            ✔ Seguindo
-                                        </button>
-                                    </form>
-                                @else
-                                    <form action="{{ route('courses.follow', $course->id) }}" method="POST">
-                                        @csrf
-                                        <button type="submit"
-                                            class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow transition">
-                                            + Seguir
-                                        </button>
-                                    </form>
-                                @endif
-                            </div>
-                        @endauth
+                       {{-- Botão de Seguir/Deixar de Seguir --}}
+@auth
+    <div>
+        @if (auth()->user()->followedCourses->contains($course->id))
+            <button type="button"
+                class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
+                id="unfollowButton"
+                data-course-id="{{ $course->id }}">
+                ✔ Seguindo
+            </button>
+        @else
+            <button type="button"
+                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
+                id="followButton"
+                data-course-id="{{ $course->id }}">
+                + Seguir
+            </button>
+        @endif
+    </div>
+@endauth
                     </div>
 
                     {{-- Contagem de Membros --}}

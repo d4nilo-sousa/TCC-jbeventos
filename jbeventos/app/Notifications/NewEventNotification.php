@@ -3,11 +3,9 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 use App\Models\Event;
-use Carbon\Carbon;
 
 class NewEventNotification extends Notification
 {
@@ -16,7 +14,7 @@ class NewEventNotification extends Notification
     protected $event;
 
     /**
-     * Create a new notification instance.
+     * Cria uma nova instância da notificação.
      */
     public function __construct(Event $event)
     {
@@ -24,49 +22,36 @@ class NewEventNotification extends Notification
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Define os canais de envio.
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail']; // apenas email por enquanto
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Constrói o email usando Markdown.
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $startDate = Carbon::parse($this->event->event_scheduled_at);
-        $diff = Carbon::now()->diffForHumans($startDate, [
-            'parts' => 2,
-            'short' => true,
-            'syntax' => Carbon::DIFF_RELATIVE_TO_NOW,
-        ]);
-
         return (new MailMessage)
             ->subject('Novo Evento: ' . $this->event->event_name)
-            ->greeting('Olá, ' . $notifiable->name . '!')
-            ->line('Um novo evento foi adicionado ao curso que você segue:')
-            ->line('**' . $this->event->event_name . '**')
-            ->line($this->event->event_description)
-            ->line('⏳ Começa ' . $diff . '.')
-            ->action('Ver detalhes do evento', route('events.show', $this->event->id))
-            ->line('Fique ligado para não perder!');
+            ->markdown('emails.events.new', [
+                'event' => $this->event,
+                'user'  => $notifiable,
+            ]);
     }
 
     /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
+     * Representação em array (para database ou outros usos, opcional).
      */
     public function toArray(object $notifiable): array
     {
         return [
-            'event_id' => $this->event->id,
+            'event_id'   => $this->event->id,
             'event_name' => $this->event->event_name,
-            'course_id' => $this->event->course_id,
+            'course_id'  => $this->event->course_id,
+            'course_name'=> $this->event->course->course_name,
         ];
     }
 }
