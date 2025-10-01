@@ -50,7 +50,7 @@
                             </div>
                         @else
                             <div class="aspect-video w-full flex items-center justify-center bg-gray-100 rounded-2xl">
-                                <span class="text-gray-400 text-lg">Sem imagem de capa.</span>
+                                <span class="text-gray-400 text-lg">Sem imagem de galeria.</span>
                             </div>
                         @endif
                     </div>
@@ -212,26 +212,6 @@
             <button id="closeZoom" class="absolute top-5 right-5 text-white text-4xl font-light hover:text-gray-300 transition-colors">
                 &times;
             </button>
-        </div>
-    </div>
-
-    {{-- Modal para cadastrar telefone --}}
-    <div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-        <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
-            <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
-            <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
-                @csrf
-                @method('PUT')
-                <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999"
-                    pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2"
-                    required>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="closeModal('phoneModal')" id="cancelPhoneModal"
-                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
-                </div>
-            </form>
         </div>
     </div>
 
