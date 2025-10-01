@@ -81,6 +81,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::prefix('coordinator')->middleware(['checkUserType:coordinator', 'forcePasswordChange:true'])->group(function () {
         Route::get('/dashboard', [CoordinatorDashboardController::class, 'index'])->name('coordinator.dashboard');
 
+        // Nova rota para exportar o dashboard para PDF
+        Route::post('/dashboard/export-pdf', [CoordinatorDashboardController::class, 'exportPdf'])
+            ->name('coordinator.dashboard.export.pdf');
+
         // CRUD de eventos
         Route::resource('events', EventController::class);
 

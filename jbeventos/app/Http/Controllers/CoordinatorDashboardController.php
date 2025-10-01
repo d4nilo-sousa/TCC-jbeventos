@@ -9,10 +9,15 @@ use App\Models\Comment;
 use App\Models\Post; 
 use App\Models\Reply; 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB; // Adicionado para uso em consultas Raw
 
 class CoordinatorDashboardController extends Controller
 {
-    public function index()
+    /**
+     * Prepara os dados do dashboard para exibição ou exportação.
+     * @return array
+     */
+    private function getDashboardData()
     {
         $user = auth()->user();
         $coordinator = $user->coordinator;
@@ -70,6 +75,7 @@ class CoordinatorDashboardController extends Controller
         
         foreach ($months as $m) {
             $monthNum = (int)$m->format('n');
+            // Inicializa todos com 0.
             $engagementByMonthArr[$monthNum] = 0;
             $likesByMonthArr[$monthNum] = 0;
             $savesByMonthArr[$monthNum] = 0;
@@ -86,7 +92,7 @@ class CoordinatorDashboardController extends Controller
             // Interações de Eventos
             $reactionsByMonth = EventUserReaction::whereIn('event_id', $eventIds)
                 ->where('created_at', '>=', $startDate)
-                ->selectRaw('MONTH(created_at) as month, reaction_type, COUNT(*) as total')
+                ->select(DB::raw('MONTH(created_at) as month, reaction_type, COUNT(*) as total')) // Usando DB::raw
                 ->groupBy('month', 'reaction_type')
                 ->get();
             
@@ -102,7 +108,7 @@ class CoordinatorDashboardController extends Controller
             // Comentários de Eventos
             $commentsByMonth = Comment::whereIn('event_id', $eventIds)
                 ->where('created_at', '>=', $startDate)
-                ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+                ->select(DB::raw('MONTH(created_at) as month, COUNT(*) as total')) // Usando DB::raw
                 ->groupBy('month')
                 ->pluck('total', 'month')
                 ->toArray();
@@ -116,7 +122,7 @@ class CoordinatorDashboardController extends Controller
         // Eventos Criados (por mês)
         $eventsByMonthData = Event::where('coordinator_id', $coordinator->id)
             ->where('created_at', '>=', $startDate)
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+            ->select(DB::raw('MONTH(created_at) as month, COUNT(*) as total')) // Usando DB::raw
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
@@ -130,7 +136,7 @@ class CoordinatorDashboardController extends Controller
         // Posts Criados (por mês)
         $postsByMonth = Post::where('user_id', $user->id)
             ->where('created_at', '>=', $startDate)
-            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+            ->select(DB::raw('MONTH(created_at) as month, COUNT(*) as total')) // Usando DB::raw
             ->groupBy('month')
             ->pluck('total', 'month')
             ->toArray();
@@ -143,7 +149,7 @@ class CoordinatorDashboardController extends Controller
         if (! $postIds->isEmpty()) {
             $repliesByMonth = Reply::whereIn('post_id', $postIds)
                 ->where('created_at', '>=', $startDate)
-                ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+                ->select(DB::raw('MONTH(created_at) as month, COUNT(*) as total')) // Usando DB::raw
                 ->groupBy('month')
                 ->pluck('total', 'month')
                 ->toArray();
@@ -217,26 +223,81 @@ class CoordinatorDashboardController extends Controller
 
         // Mensagem dinâmica para Coordenador
         $message = 'Bem-vindo(a) ao seu painel de controle. Acompanhe o desempenho dos seus posts e o engajamento dos eventos que você gerencia.';
-
-        return view('coordinator.dashboard', compact(
-            'eventsCount',
-            'likes',
-            'saves',
-            'comments',
-            'postsCount', 
-            'postsTrend', 
-            'topEvents',
-            'labels',
-            'eventEngagementValues', 
-            'eventsByMonth',
-            'likesByMonth',
-            'savesByMonth',
-            'commentsByMonth',
-            'postsValues', 
-            'postInteractionsValues' 
-        ))->with([
+        
+        return [
+            'eventsCount' => $eventsCount,
+            'likes' => $likes,
+            'saves' => $saves,
+            'comments' => $comments,
+            'postsCount' => $postsCount, 
+            'postsTrend' => $postsTrend, 
+            'topEvents' => $topEvents,
+            'labels' => $labels,
+            'eventEngagementValues' => $eventEngagementValues, 
+            'eventsByMonth' => $eventsByMonth,
+            'likesByMonth' => $likesByMonth,
+            'savesByMonth' => $savesByMonth,
+            'commentsByMonth' => $commentsByMonth,
+            'postsValues' => $postsValues, 
+            'postInteractionsValues' => $postInteractionsValues,
             'name' => $user->name,
-            'message' => $message 
+            'message' => $message,
+            'currentDate' => $now->format('d/m/Y H:i:s'),
+            // Adicionar logo base64 aqui se você tiver a lógica no backend
+            'logoBase64' => 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imgs/logoJb.png'))), 
+            'reportStartDate' => $startDate->format('d/m/Y'),
+            'reportEndDate' => $now->format('d/m/Y'),
+        ];
+    }
+
+    /**
+     * Exibe o dashboard do coordenador com todos os dados de performance.
+     */
+    public function index()
+    {
+        $data = $this->getDashboardData();
+
+        return view('coordinator.dashboard', $data)->with([
+            'name' => $data['name'],
+            'message' => $data['message'] 
         ]);
+    }
+
+    /**
+     * Exporta os dados do dashboard do coordenador para PDF.
+     * * @param \Illuminate\Http\Request $request
+     */
+    public function exportPdf(Request $request)
+    {
+        $data = $this->getDashboardData();
+        
+        // 1. COLETAR AS IMAGENS BASE64 DOS GRÁFICOS ENVIADAS PELO FRONTEND
+        $chartImages = [
+            'eventEngagementChartImage' => $request->input('eventEngagementChartImage'),
+            'publicationsChartImage'    => $request->input('publicationsChartImage'),
+            'postInteractionsChartImage'  => $request->input('postInteractionsChartImage'),
+        ];
+        
+        // 2. Coletar a logo Base64 (assumindo que a função getDashboardData já buscou)
+        $logoBase64 = $data['logoBase64'] ?? '';
+
+
+        // 3. Juntar todos os dados para a view
+        $dataToPdf = array_merge($data, [
+            'userName' => $data['name'],
+            'chartImages' => $chartImages, // Passa o array de imagens Base64
+            'logoBase64' => $logoBase64,   // Garante que a logo Base64 está incluída
+        ]);
+        
+        // Título dinâmico para o PDF
+        $filename = 'Relatorio_Coordenador_' . auth()->user()->id . '_' . Carbon::now()->format('Ymd_His') . '.pdf';
+
+        // 4. CORRIGIR A VIEW: Usar a view 'report.pdf.blade.php'
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('coordinator.dashboard-pdf', $dataToPdf);
+
+        // Define as opções do DomPDF para visualização amigável em PDF
+        $pdf->setOptions(['defaultFont' => 'sans-serif']);
+
+        return $pdf->download($filename);
     }
 }
