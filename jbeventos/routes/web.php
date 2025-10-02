@@ -56,6 +56,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::prefix('admin')->middleware('checkUserType:admin')->group(function () {
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
+        //nova rota para exportar pdf
+         Route::post('/dashboard/export-pdf', [AdminDashboardController::class, 'exportPdf'])
+         ->name('admin.dashboard.export.pdf');
+
         // CRUD de coordenadores
         Route::resource('coordinators', CoordinatorController::class);
 
@@ -75,6 +79,10 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     */
     Route::prefix('coordinator')->middleware(['checkUserType:coordinator', 'forcePasswordChange:true'])->group(function () {
         Route::get('/dashboard', [CoordinatorDashboardController::class, 'index'])->name('coordinator.dashboard');
+
+        // Nova rota para exportar o dashboard para PDF
+        Route::post('/dashboard/export-pdf', [CoordinatorDashboardController::class, 'exportPdf'])
+            ->name('coordinator.dashboard.export.pdf');
 
         // CRUD de eventos
         Route::resource('events', EventController::class);

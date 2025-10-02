@@ -1,10 +1,18 @@
 <x-app-layout>
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-        {{-- Boas-vindas --}}
-        <div class="p-5 bg-white rounded-2xl shadow-sm">
-            <h2 class="text-2xl font-bold font-ubuntu text-gray-800">Olá, {{ $name }}!</h2>
-            <p class="text-gray-600 mt-1">{{ $message }}</p>
+        {{-- Boas-vindas e Botão de Exportar PDF --}}
+        <div class="p-5 bg-white rounded-2xl shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+            <div>
+                <h2 class="text-2xl font-bold font-ubuntu text-gray-800">Olá, {{ $name }}!</h2>
+                <p class="text-gray-600 mt-1">{{ $message }}</p>
+            </div>
+            
+            {{-- Botão Exportar para PDF: Agora submete o formulário oculto --}}
+            <button type="button" id="submitExportButton" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:border-red-700 focus:ring focus:ring-red-300 disabled:opacity-25 transition">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Gerar PDF (6 Últimos Meses)
+            </button>
         </div>
 
         {{-- Cards de Resumo (5 CARDS) --}}
@@ -19,7 +27,7 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-medium text-gray-600">Eventos Criados por Você</h3>
+                        <h3 class="text-sm font-medium text-gray-600">Eventos Criados por Você</h3>
                         <p class="text-3xl font-bold text-gray-800 mt-1">{{ $eventsCount }}</p>
                     </div>
                 </div>
@@ -37,11 +45,10 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-medium text-gray-600">Posts Criados por Você</h3>
+                        <h3 class="text-sm font-medium text-gray-600">Posts Criados por Você</h3>
                         <p class="text-3xl font-bold text-gray-800 mt-1">{{ $postsCount }}</p>
                     </div>
                 </div>
-                {{-- REMOVIDO: Tendência de Posts (Comparativo Mês Anterior) --}}
                 <div class="mt-2 h-10 w-full">
                     <canvas id="postsSparkline"></canvas>
                 </div>
@@ -122,6 +129,11 @@
             </div>
         </div>
         
+        {{-- Canvas invisível para gerar o Gráfico de Publicações (necessário para o PDF) --}}
+        <div style="width: 600px; height: 300px; position: absolute; left: -9999px; visibility: hidden;">
+            <canvas id="publicationsChartCanvas"></canvas>
+        </div>
+        
         {{-- Ranking de Engajamento e Distribuição --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
@@ -152,131 +164,228 @@
                 </div>
             </div>
         </div>
+        
+        {{-- ********************************************************* --}}
+        {{-- FORMULÁRIO OCULTO PARA EXPORTAÇÃO PDF (SIMPLIFICADO) --}}
+        {{-- ********************************************************* --}}
+        <form method="POST" action="{{ route('coordinator.dashboard.export.pdf') }}" id="exportForm" class="hidden">
+            @csrf
+            {{-- CAMPOS HIDDEN PARA AS IMAGENS BASE64 DOS GRÁFICOS --}}
+            <input type="hidden" name="eventEngagementChartImage" id="eventEngagementChartImage">
+            <input type="hidden" name="publicationsChartImage" id="publicationsChartImage">
+            <input type="hidden" name="postInteractionsChartImage" id="postInteractionsChartImage">
+        </form>
 
     </div>
 
-    {{-- Scripts Chart.js --}}
+    {{-- Scripts Chart.js e Lógica do Modal --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Função para criar Sparklines
-        function createSparkline(elementId, data, color) {
-            new Chart(document.getElementById(elementId), {
-                type: 'line',
-                data: {
-                    labels: @json($labels),
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // Variáveis de dados do PHP
+            const labels = @json($labels);
+            const eventsByMonth = @json($eventsByMonth);
+            const postsValues = @json($postsValues);
+            const likesByMonth = @json($likesByMonth);
+            const commentsByMonth = @json($commentsByMonth);
+            const savesByMonth = @json($savesByMonth);
+            const eventEngagementValues = @json($eventEngagementValues);
+            const postInteractionsValues = @json($postInteractionsValues);
+            const totalLikes = {{ $likes }};
+            const totalComments = {{ $comments }};
+            const totalSaves = {{ $saves }};
+
+            let charts = {}; // Objeto para armazenar as instâncias dos gráficos
+
+            // Funções de Criação de Gráficos (mantidas)
+            function createSparkline(elementId, data, color) {
+                charts[elementId] = new Chart(document.getElementById(elementId), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{ 
+                            data: data, 
+                            borderColor: color, 
+                            borderWidth: 2, 
+                            fill: false, 
+                            tension: 0.4, 
+                            pointRadius: 0 
+                        }]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        plugins: { 
+                            legend: { display: false }, 
+                            tooltip: { enabled: false } 
+                        }, 
+                        scales: { 
+                            x: { display: false }, 
+                            y: { display: false } 
+                        } 
+                    }
+                });
+            }
+            
+            function createChart(elementId, config) {
+                 charts[elementId] = new Chart(document.getElementById(elementId), config);
+                 return charts[elementId];
+            }
+            
+            // 1. Sparklines dos Cards
+            createSparkline('eventsSparkline', eventsByMonth, 'rgb(59, 130, 246)');
+            createSparkline('postsSparkline', postsValues, 'rgb(245, 158, 11)');
+            createSparkline('likesSparkline', likesByMonth, 'rgb(34, 197, 94)');
+            createSparkline('commentsSparkline', commentsByMonth, 'rgb(139, 92, 246)');
+            createSparkline('savesSparkline', savesByMonth, 'rgb(236, 72, 153)');
+
+            // 2. Gráfico principal de Engajamento (Eventos)
+            createChart('engagementChart', {
+                type: 'bar',
+                data: { 
+                    labels: labels, 
                     datasets: [{ 
-                        data: data, 
-                        borderColor: color, 
-                        borderWidth: 2, 
-                        fill: false, 
-                        tension: 0.4, 
-                        pointRadius: 0 
-                    }]
+                        label: 'Interações', 
+                        data: eventEngagementValues, 
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)', 
+                        borderColor: 'rgba(59, 130, 246, 1)', 
+                        borderWidth: 1, 
+                        borderRadius: 6 
+                    }] 
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { enabled: false } 
-                    }, 
                     scales: { 
-                        x: { display: false }, 
-                        y: { display: false } 
+                        y: { beginAtZero: true } 
                     } 
                 }
             });
-        }
 
-        // 1. Sparklines dos Cards
-        createSparkline('eventsSparkline', @json($eventsByMonth), 'rgb(59, 130, 246)');
-        createSparkline('postsSparkline', @json($postsValues), 'rgb(245, 158, 11)'); // Sparkline para Posts
-        createSparkline('likesSparkline', @json($likesByMonth), 'rgb(34, 197, 94)');
-        createSparkline('commentsSparkline', @json($commentsByMonth), 'rgb(139, 92, 246)');
-        createSparkline('savesSparkline', @json($savesByMonth), 'rgb(236, 72, 153)');
-
-        // 2. Gráfico principal de Engajamento (Eventos)
-        const engagementCtx = document.getElementById('engagementChart').getContext('2d');
-        new Chart(engagementCtx, {
-            type: 'bar',
-            data: { 
-                labels: @json($labels), 
-                datasets: [{ 
-                    label: 'Interações', 
-                    data: @json($eventEngagementValues), 
-                    backgroundColor: 'rgba(59, 130, 246, 0.7)', 
-                    borderColor: 'rgba(59, 130, 246, 1)', 
-                    borderWidth: 1, 
-                    borderRadius: 6 
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { 
-                    y: { beginAtZero: true } 
-                } 
-            }
-        });
-
-        // 3. Gráfico de Interações em Posts (NOVO GRÁFICO)
-        const postInteractionsCtx = document.getElementById('postInteractionsChart').getContext('2d');
-        new Chart(postInteractionsCtx, {
-            type: 'line',
-            data: { 
-                labels: @json($labels), 
-                datasets: [{ 
-                    label: 'Respostas em Posts', 
-                    data: @json($postInteractionsValues), 
-                    borderColor: 'rgba(245, 158, 11, 1)', // Laranja/Amarelo
-                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }] 
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { 
-                    y: { beginAtZero: true } 
-                } 
-            }
-        });
-
-        // 4. Gráfico de Distribuição (Eventos)
-        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
-        new Chart(distributionCtx, {
-            type: 'pie',
-            data: {
-                labels: ['Curtidas', 'Comentários', 'Salvos'],
-                datasets: [{
-                    data: [{{ $likes }}, {{ $comments }}, {{ $saves }}],
-                    backgroundColor: [
-                        'rgba(34, 197, 94, 0.7)', // Green - Likes
-                        'rgba(139, 92, 246, 0.7)', // Purple - Comments
-                        'rgba(236, 72, 153, 0.7)' // Pink - Saves
-                    ],
-                    borderColor: [
-                        'rgba(34, 197, 94, 1)',
-                        'rgba(139, 92, 246, 1)',
-                        'rgba(236, 72, 153, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right', 
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20
+            // 3. Gráfico de Interações em Posts
+            createChart('postInteractionsChart', {
+                type: 'line',
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        label: 'Respostas em Posts', 
+                        data: postInteractionsValues, 
+                        borderColor: 'rgba(245, 158, 11, 1)', 
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { beginAtZero: true } 
+                    } 
+                }
+            });
+            
+            // 4. Gráfico de Distribuição (Eventos)
+            createChart('distributionChart', {
+                type: 'pie',
+                data: {
+                    labels: ['Curtidas', 'Comentários', 'Salvos'],
+                    datasets: [{
+                        data: [totalLikes, totalComments, totalSaves],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.7)', 
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(236, 72, 153, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(34, 197, 94, 1)',
+                            'rgba(139, 92, 246, 1)',
+                            'rgba(236, 72, 153, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right', 
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
                         }
                     }
                 }
-            }
+            });
+            
+            // 5. Gráfico de Publicações (para o PDF)
+            createChart('publicationsChartCanvas', {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Eventos Criados',
+                            data: eventsByMonth,
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                        },
+                        {
+                            label: 'Posts Criados',
+                            data: postsValues,
+                            borderColor: 'rgb(245, 158, 11)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+
+            // *********************************************************
+            // LÓGICA DE EXPORTAÇÃO PDF SIMPLIFICADA (SEM MODAL/FILTRO)
+            // *********************************************************
+            
+            const submitButton = document.getElementById('submitExportButton');
+            const exportForm = document.getElementById('exportForm');
+
+            // Função Auxiliar para Capturar Base64
+            const captureChartImage = (chartId, hiddenInputId) => {
+                const chart = charts[chartId];
+                if (chart) {
+                    // Garante que o gráfico está com o tamanho correto antes de capturar
+                    chart.resize(); 
+                    chart.update();
+                    const dataURL = chart.toBase64Image('image/png', 1.0); 
+                    document.getElementById(hiddenInputId).value = dataURL;
+                }
+            };
+
+            // Evento no botão Gerar PDF
+            submitButton.addEventListener('click', () => {
+                
+                // 1. Capturar os gráficos (eles já refletem o padrão de 6 meses)
+                captureChartImage('engagementChart', 'eventEngagementChartImage');
+                captureChartImage('publicationsChartCanvas', 'publicationsChartImage');
+                captureChartImage('postInteractionsChart', 'postInteractionsChartImage');
+                
+                // 2. Submete o formulário. O Controller gera os dados dos 6 meses.
+                exportForm.submit();
+            });
+
         });
     </script>
 </x-app-layout>
