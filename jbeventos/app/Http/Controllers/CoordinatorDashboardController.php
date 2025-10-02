@@ -15,9 +15,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class CoordinatorDashboardController extends Controller
 {
     /**
-     * Prepara os dados do dashboard para exibição ou exportação.
-     * @param string|null $startDateString Data de início da filtragem (Y-m-d).
-     * @param string|null $endDateString Data de fim da filtragem (Y-m-d).
+     * Prepara os dados do dashboard para exibição ou exportação (sempre 6 meses).
+     * @param string|null $startDateString Data de início da filtragem (Y-m-d). *IGNORADO NA EXPORTAÇÃO PADRÃO*
+     * @param string|null $endDateString Data de fim da filtragem (Y-m-d). *IGNORADO NA EXPORTAÇÃO PADRÃO*
      * @return array
      */
     private function getDashboardData($startDateString = null, $endDateString = null)
@@ -31,41 +31,26 @@ class CoordinatorDashboardController extends Controller
         }
 
         // ----------------------------------------------------
-        // 1. Definição do Período de Análise e Rótulos (Labels)
+        // 1. Definição do Período de Análise (SEMPRE 6 MESES)
         // ----------------------------------------------------
         
         $months = collect();
-
-        if ($startDateString && $endDateString) {
-            // Se as datas foram fornecidas (filtro do PDF), usa-as.
-            $startDate = Carbon::parse($startDateString)->startOfDay();
-            $endDate = Carbon::parse($endDateString)->endOfDay();
-            
-            // Cria array de meses APENAS dentro do intervalo [startDate, endDate]
-            $tempDate = $startDate->copy()->startOfMonth();
-            while ($tempDate->lte($endDate)) {
-                $months->push($tempDate->copy());
-                $tempDate->addMonth();
-            }
-            
-        } else {
-            // Padrão: Últimos 6 meses (para o dashboard principal)
-            for ($i = 5; $i >= 0; $i--) {
-                $months->push($now->copy()->subMonths($i));
-            }
-            $startDate = $months->first()->copy()->startOfMonth();
-            $endDate = $now->copy();
+        // Padrão: Últimos 6 meses (Cálculo unificado)
+        for ($i = 5; $i >= 0; $i--) {
+            $months->push($now->copy()->subMonths($i));
         }
-
-        // Rótulos do gráfico (Mês/Ano) e Chaves Únicas (AnoMês) para o loop de inicialização
+        $startDate = $months->first()->copy()->startOfMonth();
+        $endDate = $now->copy(); 
+        
+        // Rótulos do gráfico (Mês) e Chaves Únicas (AnoMês)
         $labels = $months->map(fn ($m) => $m->format('M'));
         $periodKeys = $months->map(fn ($m) => $m->format('Ym'));
 
-        // Define o formato de agrupamento de data para as queries (Ano e Mês para chave única)
+        // Define o formato de agrupamento de data para as queries
         $groupFormat = "DATE_FORMAT(created_at, '%Y%m')";
 
 
-        // IDs de TODOS os eventos e posts do coordenador (para contagem de interações)
+        // IDs de TODOS os eventos e posts do coordenador
         $allCoordinatorEventIds = Event::where('coordinator_id', $coordinator->id)->pluck('id');
         $allCoordinatorPostIds = Post::where('user_id', $user->id)->pluck('id');
 
@@ -73,7 +58,6 @@ class CoordinatorDashboardController extends Controller
         // 2. Totais Simples (Dentro do período de $startDate a $endDate)
         // ----------------------------------------------------
         
-        // Eventos e Posts: Contamos APENAS os criados DENTRO do período
         $eventsCount = Event::where('coordinator_id', $coordinator->id)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
@@ -82,13 +66,11 @@ class CoordinatorDashboardController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count(); 
             
-        // Interações: Contamos APENAS as que aconteceram DENTRO do período
         if ($allCoordinatorEventIds->isEmpty()) {
             $likes = 0;
             $saves = 0;
             $comments = 0;
         } else {
-            // Contagem de interações de Eventos
             $likes = EventUserReaction::whereIn('event_id', $allCoordinatorEventIds)
                 ->where('reaction_type', 'like')
                 ->whereBetween('created_at', [$startDate, $endDate])
@@ -109,7 +91,6 @@ class CoordinatorDashboardController extends Controller
         // 3. DADOS POR PERÍODO (Para os gráficos de Evolução)
         // ----------------------------------------------------
         
-        // Inicializa arrays de dados usando as chaves de período (Ym) para alinhamento
         $engagementByPeriodArr = [];
         $likesByPeriodArr = [];
         $savesByPeriodArr = [];
@@ -118,7 +99,6 @@ class CoordinatorDashboardController extends Controller
         $postsByPeriodArr = []; 
         $postInteractionsByPeriodArr = []; 
         
-        // Inicializa o array com a chave 'Ym' e valor 0 para todos os meses no filtro
         foreach ($periodKeys as $key) {
             $engagementByPeriodArr[$key] = 0;
             $likesByPeriodArr[$key] = 0;
@@ -129,9 +109,8 @@ class CoordinatorDashboardController extends Controller
             $postInteractionsByPeriodArr[$key] = 0;
         }
         
-        // --- Interações de Eventos (Likes, Saves, Comments) ---
+        // --- Interações de Eventos ---
         if (! $allCoordinatorEventIds->isEmpty()) {
-            // Reações (Likes/Saves)
             $reactionsByPeriod = EventUserReaction::whereIn('event_id', $allCoordinatorEventIds)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->select(DB::raw("{$groupFormat} as period_label, reaction_type, COUNT(*) as total"))
@@ -150,7 +129,6 @@ class CoordinatorDashboardController extends Controller
                 }
             }
 
-            // Comentários
             $commentsByPeriodData = Comment::whereIn('event_id', $allCoordinatorEventIds)
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->select(DB::raw("{$groupFormat} as period_label, COUNT(*) as total"))
@@ -211,14 +189,13 @@ class CoordinatorDashboardController extends Controller
         }
         
         // ----------------------------------------------------
-        // 4. TOP EVENTOS MAIS ENGAJADOS
+        // 4. TOP EVENTOS MAIS ENGAJADOS e Tendências (Mantidos)
         // ----------------------------------------------------
         
         $topEvents = collect();
         if (! $allCoordinatorEventIds->isEmpty()) {
             $topEvents = Event::whereIn('id', $allCoordinatorEventIds) 
                 ->withCount([
-                    // Conta as reações DENTRO do período de filtro
                     'reactions as likes_count' => function ($q) use ($startDate, $endDate) { 
                         $q->where('reaction_type', 'like')->whereBetween('created_at', [$startDate, $endDate]); 
                     },
@@ -234,12 +211,12 @@ class CoordinatorDashboardController extends Controller
                     $e->total_engagement = ($e->likes_count ?? 0) + ($e->event_comments_count ?? 0) + ($e->saves_count ?? 0);
                     return $e;
                 })
-                ->filter(fn($e) => $e->total_engagement > 0) // Remove eventos sem engajamento no período
+                ->filter(fn($e) => $e->total_engagement > 0)
                 ->sortByDesc('total_engagement')
                 ->take(3);
         }
         
-        // Cálculo de Tendências (Mantido)
+        // Cálculo de Tendências (Mantido, usa o Carbon::now() interno)
         $currentMonthStart = Carbon::now()->startOfMonth();
         $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
         $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
@@ -257,7 +234,6 @@ class CoordinatorDashboardController extends Controller
 
 
         // Garante que os arrays de valores sigam a ORDEM do $periodKeys
-        // Mapeia os arrays de inicialização (que estão na ordem correta) para gerar a Collection final de valores.
         $eventEngagementValues = $periodKeys->map(fn($key) => $engagementByPeriodArr[$key] ?? 0);
         $postsValues = $periodKeys->map(fn($key) => $postsByPeriodArr[$key] ?? 0); 
         $postInteractionsValues = $periodKeys->map(fn($key) => $postInteractionsByPeriodArr[$key] ?? 0); 
@@ -278,7 +254,6 @@ class CoordinatorDashboardController extends Controller
             'postsTrend' => $postsTrend, 
             'topEvents' => $topEvents,
             
-            // Dados para o Gráfico (agora refletem o período filtrado)
             'labels' => $labels,
             'eventEngagementValues' => $eventEngagementValues, 
             'eventsByMonth' => $eventsByPeriod,
@@ -293,18 +268,18 @@ class CoordinatorDashboardController extends Controller
             'currentDate' => Carbon::now()->format('d/m/Y H:i:s'),
             'logoBase64' => 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imgs/logoJb.png'))), 
             
-            // Datas usadas no relatório (para a capa do PDF)
+            // Datas do relatório (para o PDF)
             'reportStartDate' => $startDate->format('d/m/Y'),
             'reportEndDate' => $endDate->format('d/m/Y'),
         ];
     }
 
     /**
-     * Exibe o dashboard do coordenador com todos os dados de performance.
+     * Exibe o dashboard do coordenador com os dados dos últimos 6 meses.
      */
     public function index()
     {
-        // O index sempre carrega o padrão de 6 meses (sem argumentos)
+        // Carrega o padrão de 6 meses (sem argumentos)
         $data = $this->getDashboardData();
 
         return view('coordinator.dashboard', $data)->with([
@@ -314,16 +289,15 @@ class CoordinatorDashboardController extends Controller
     }
 
     /**
-     * Exporta os dados do dashboard do coordenador para PDF.
+     * Exporta os dados dos últimos 6 meses para PDF (função simplificada).
      * @param \Illuminate\Http\Request $request
      */
     public function exportPdf(Request $request)
     {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+        // 1. Gera os dados do último período de 6 meses (ignora qualquer filtro do request)
+        $data = $this->getDashboardData();
         
-        $data = $this->getDashboardData($startDate, $endDate);
-        
+        // 2. Coleta as imagens Base64 que foram capturadas na View
         $chartImages = [
             'eventEngagementChartImage' => $request->input('eventEngagementChartImage'),
             'publicationsChartImage'    => $request->input('publicationsChartImage'),
@@ -340,7 +314,6 @@ class CoordinatorDashboardController extends Controller
         
         $filename = 'Relatorio_Coordenador_' . auth()->user()->id . '_' . Carbon::now()->format('Ymd_His') . '.pdf';
 
-        // Usa o namespace correto do DomPDF, garantindo que o PDF seja gerado.
         $pdf = Pdf::loadView('coordinator.dashboard-pdf', $dataToPdf); 
 
         $pdf->setOptions(['defaultFont' => 'sans-serif']);

@@ -1,19 +1,17 @@
 <!DOCTYPE html>
-
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Relatório de Desempenho do Coordenador</title>
     <style>
         /* Cor Principal: #C0392B (Vermelho Vinho) */
-        
         body {
             font-family: sans-serif;
             margin: 30px;
             font-size: 12px;
             color: #333;
         }
-        
+
         /* Quebra de Página */
         .page-break {
             page-break-after: always;
@@ -37,7 +35,7 @@
             margin-top: 5px;
         }
 
-        /* Estilo do Logo (Usa Base64 ou URL) */
+        /* Estilo do Logo */
         .logo {
             max-width: 350px;
             height: auto;
@@ -45,13 +43,13 @@
             display: block;
         }
 
-        /* Títulos Padrão de Seção (Conteúdo após a Capa) */
+        /* Títulos Padrão de Seção */
         h2 {
             font-size: 18px;
             color: #1f2937;
             margin-top: 30px;
             margin-bottom: 15px;
-            border-left: 5px solid #C0392B; /* Cor Vermelha Vinho */
+            border-left: 5px solid #C0392B;
             padding-left: 10px;
         }
         h3 {
@@ -60,7 +58,7 @@
             margin-top: 15px;
             margin-bottom: 10px;
         }
-        
+
         /* Tabelas Resumo (Cards) */
         .summary-table {
             width: 100%;
@@ -78,7 +76,7 @@
             color: #1f2937;
             font-weight: bold;
         }
-        
+
         /* Tabela de Rankings/Listas */
         .ranking-table {
             width: 100%; 
@@ -96,7 +94,7 @@
             color: #1f2937;
             font-weight: bold;
         }
-        
+
         /* Gráficos */
         .chart-box {
             width: 100%;
@@ -111,22 +109,15 @@
         .chart-box img {
             width: 100%;
             height: auto;
-            /* Altura máxima para melhor distribuição no PDF */
             max-height: 350px; 
             display: block;
-        }
-
-        /* Limpeza de floats */
-        .clear {
-            clear: both;
         }
 
         /* Layout de Gráficos em Colunas (2 por linha) */
         .chart-container {
             width: 100%;
             margin-top: 15px;
-            /* Usar overflow: hidden para conter os floats */
-            overflow: hidden; 
+            overflow: hidden;
             page-break-inside: avoid;
         }
         .chart-col {
@@ -140,7 +131,7 @@
             float: right;
             margin-right: 0;
         }
-        
+
         /* Rodapé */
         .footer {
             margin-top: 50px;
@@ -149,13 +140,10 @@
             color: #6B7280;
         }
     </style>
-
 </head>
 <body>
 
-    {{-- ********************************************************* --}}
-    {{-- CAPA DO RELATÓRIO (PÁGINA 1) --}}
-    {{-- ********************************************************* --}}
+    {{-- CAPA DO RELATÓRIO --}}
     <div class="cover-page">
         <h1>Relatório - Dados de Eventos do Coordenador</h1>
         <p>
@@ -169,17 +157,16 @@
         @endif
         
         <p style="margin-top: 50px;">
-            <span style="font-weight: bold;">Período de Análise:</span> {{ $reportStartDate ?? 'N/A' }} a {{ $reportEndDate ?? 'N/A' }}
+            <span style="font-weight: bold;">Análise Padrão:</span> Últimos 6 Meses
             <br>
             Documento Gerado em: {{ now()->format('d/m/Y H:i') }}
         </p>
     </div>
-    <div class="page-break"></div> {{-- FORÇA QUEBRA DE PÁGINA --}}
-    
-    {{-- ********************************************************* --}}
+
+    <div class="page-break"></div>
+
     {{-- 1. RESUMO GERAL --}}
-    {{-- ********************************************************* --}}
-    <h2>1. Resumo Geral de Atividades</h2>
+    <h2>1. Resumo Geral de Atividades (Últimos 6 Meses)</h2>
     <table class="summary-table">
         <thead>
             <tr>
@@ -200,13 +187,10 @@
             </tr>
         </tbody>
     </table>
-    
-    {{-- ********************************************************* --}}
-    {{-- 2. EVOLUÇÃO MENSAL (GRÁFICOS) --}}
-    {{-- ********************************************************* --}}
-    <h2>2. Evolução de Atividades no Período Selecionado</h2>
 
-    {{-- GRÁFICO 2.1: INTERAÇÕES DE EVENTOS (AGORA EM LINHA ÚNICA) --}}
+    {{-- 2. EVOLUÇÃO MENSAL (GRÁFICOS) --}}
+    <h2>2. Evolução de Atividades (Últimos 6 Meses)</h2>
+
     <div class="chart-box">
         <h3>Interações de Eventos (Curtidas, Comentários, Salvos)</h3>
         @if(isset($chartImages['eventEngagementChartImage']) && $chartImages['eventEngagementChartImage'])
@@ -215,8 +199,7 @@
             <p style="color: #999;">Gráfico de Engajamento em Eventos não disponível.</p>
         @endif
     </div>
-    
-    {{-- GRÁFICO 2.2: EVENTOS E POSTS CRIADOS (AGORA EM NOVA LINHA ÚNICA) --}}
+
     <div class="chart-box">
         <h3>Publicações (Eventos e Posts Criados)</h3>
         @if(isset($chartImages['publicationsChartImage']) && $chartImages['publicationsChartImage'])
@@ -225,8 +208,7 @@
             <p style="color: #999;">Gráfico de Publicações não disponível.</p>
         @endif
     </div>
-    
-    {{-- GRÁFICO 2.3: INTERAÇÕES DE POSTS (Já estava em linha inteira) --}}
+
     <div class="chart-box" style="margin-top: 20px;">
         <h3>Interações de Posts (Respostas Recebidas)</h3>
         @if(isset($chartImages['postInteractionsChartImage']) && $chartImages['postInteractionsChartImage'])
@@ -235,46 +217,48 @@
             <p style="color: #999;">Gráfico de Interações em Posts não disponível.</p>
         @endif
     </div>
-    
-    <div class="page-break"></div> {{-- Quebra de página para começar os rankings --}}
-    
-    {{-- ********************************************************* --}}
+
+    <div class="page-break"></div>
+
     {{-- 3. TOP EVENTOS MAIS ENGAJADOS --}}
-    {{-- ********************************************************* --}}
     <h2>3. Top Eventos Mais Engajados</h2>
-    <p style="color: #4b5563; margin-bottom: 10px;">Eventos criados pelo(a) coordenador(a) com maior engajamento (Curtidas + Comentários + Salvos) dentro do período selecionado.</p>
-    
+    <p style="color: #4b5563; margin-bottom: 10px;">
+        Eventos criados pelo(a) coordenador(a) com maior engajamento (Curtidas + Comentários + Salvos) nos últimos 6 meses.
+    </p>
+
     @if($topEvents->isEmpty())
         Nenhum evento com interações registrado no período.
     @else
-    <table class="ranking-table">
-        <thead>
-            <tr>
-                <th>Nome do Evento</th>
-                <th style="text-align: center;">Curtidas</th>
-                <th style="text-align: center;">Comentários</th>
-                <th style="text-align: center;">Salvos</th>
-                <th style="text-align: center;">Engajamento Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($topEvents as $event)
+        <table class="ranking-table">
+            <thead>
                 <tr>
-                    <td>{{ $event->event_name }}</td>
-                    <td style="text-align: center;">{{ $event->likes_count ?? 0 }}</td>
-                    <td style="text-align: center;">{{ $event->event_comments_count ?? 0 }}</td>
-                    <td style="text-align: center;">{{ $event->saves_count ?? 0 }}</td>
-                    <td style="text-align: center; font-weight: bold; background-color: #f0f8ff;">{{ $event->total_engagement }}</td>
+                    <th>Nome do Evento</th>
+                    <th style="text-align: center;">Curtidas</th>
+                    <th style="text-align: center;">Comentários</th>
+                    <th style="text-align: center;">Salvos</th>
+                    <th style="text-align: center;">Engajamento Total</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
-@endif
+            </thead>
+            <tbody>
+                @foreach($topEvents as $event)
+                    <tr>
+                        <td>{{ $event->event_name }}</td>
+                        <td style="text-align: center;">{{ $event->likes_count ?? 0 }}</td>
+                        <td style="text-align: center;">{{ $event->event_comments_count ?? 0 }}</td>
+                        <td style="text-align: center;">{{ $event->saves_count ?? 0 }}</td>
+                        <td style="text-align: center; font-weight: bold; background-color: #f0f8ff;">
+                            {{ $event->total_engagement }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
 
-<div class="footer">
-    <br>
-    Gerado em: {{ now()->format('d/m/Y H:i:s') }}
-</div>
+    <div class="footer">
+        <br>
+        Gerado em: {{ now()->format('d/m/Y H:i:s') }}
+    </div>
 
 </body>
 </html>
