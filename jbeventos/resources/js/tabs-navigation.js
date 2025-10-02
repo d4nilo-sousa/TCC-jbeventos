@@ -1,68 +1,83 @@
-const tabs = document.querySelectorAll('.tab-content');
-const tabButtons = document.querySelectorAll('.tab-button');
-const nextButtons = document.querySelectorAll('.next-button');
-const prevButtons = document.querySelectorAll('.prev-button');
+document.addEventListener('DOMContentLoaded', function () {
+    const tabs = document.querySelectorAll('.tab-content');
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const nextButtons = document.querySelectorAll('.next-button');
+    const prevButtons = document.querySelectorAll('.prev-button');
 
-function showTab(tabId) {
-    tabs.forEach(tab => tab.classList.add('hidden')); 
-    const activeTab = document.getElementById(tabId);
-    activeTab.classList.remove('hidden'); 
+    function showTab(tabId) {
+        tabs.forEach(tab => tab.classList.add('hidden'));
+        const activeTab = document.getElementById(tabId);
+        if (activeTab) {
+            activeTab.classList.remove('hidden');
+        }
+
+        tabButtons.forEach(button => {
+            const buttonSpan = button.querySelector('span:first-child');
+            if (button.dataset.tabTarget === tabId) {
+                button.classList.add('active', 'text-gray-700', 'font-semibold');
+                buttonSpan?.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                buttonSpan?.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
+            } else {
+                button.classList.remove('active', 'text-gray-700', 'font-semibold');
+                buttonSpan?.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
+                buttonSpan?.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
+            }
+        });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    nextButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const currentTab = button.closest('.tab-content');
+            const nextTabId = button.dataset.nextTab;
+
+            const inputs = currentTab?.querySelectorAll('input, textarea, select');
+            let allInputsValid = true;
+
+            if (inputs) {
+                for (const input of inputs) {
+                    if (!input.checkValidity()) {
+                        input.reportValidity();
+                        allInputsValid = false;
+                        break;
+                    }
+                }
+            }
+
+            if (allInputsValid && nextTabId) {
+                showTab(nextTabId);
+            }
+        });
+    });
+
+    prevButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const prevTabId = button.dataset.prevTab;
+            if (prevTabId) {
+                showTab(prevTabId);
+            }
+        });
+    });
 
     tabButtons.forEach(button => {
-        const buttonSpan = button.querySelector('span:first-child');
-        if (button.dataset.tabTarget === tabId) {
-            button.classList.add('active', 'text-gray-700', 'font-semibold');
-            buttonSpan.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
-            buttonSpan.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
-        } else {
-            button.classList.remove('active', 'text-gray-700', 'font-semibold');
-            buttonSpan.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
-            buttonSpan.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
-        }
-    });
-
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-}
-
-nextButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const currentTab = button.closest('.tab-content');
-        const nextTabId = button.dataset.nextTab;
-
-        const inputs = currentTab.querySelectorAll('input, textarea, select');
-        let allInputsValid = true;
-
-        for (const input of inputs) {
-            if (!input.checkValidity()) {
-                input.reportValidity();
-                allInputsValid = false;
-                break; 
+        button.addEventListener('click', () => {
+            const target = button.dataset.tabTarget;
+            if (target) {
+                showTab(target);
             }
-        }
-
-        if (allInputsValid) {
-            showTab(nextTabId);
-        }
+        });
     });
+
+    // Exibe aba inicial com base na rota
+    const path = window.location.pathname;
+
+    const isCreate = path === '/coordinator/events/create';
+    const isEdit = /^\/coordinator\/events\/\d+\/edit$/.test(path);
+
+    if (isEdit && document.getElementById('tab1')) {
+        showTab('tab1');
+    } else if (isCreate && document.getElementById('tab-media')) {
+        showTab('tab-media');
+    }
 });
-
-
-prevButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const prevTabId = button.dataset.prevTab;
-        showTab(prevTabId);
-    });
-});
-
-tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        showTab(button.dataset.tabTarget);
-    });
-});
-
-if (window.location.pathname === '/coordinator/events/create') {
-    showTab('tab-media');
-}

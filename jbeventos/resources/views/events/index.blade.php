@@ -3,12 +3,13 @@
         <div class="bg-white shadow-xl rounded-2xl p-6 sm:p-9">
 
             {{-- Header com Pesquisa, Filtros e Ordenação --}}
-            <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+            <div
+                class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
                 <h2 class="text-2xl font-bold text-gray-800">Todos os Eventos</h2>
 
                 {{-- O contêiner pai deve ter 'flex' e a pesquisa deve ter 'flex-grow' --}}
                 <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
-                    
+
                     {{-- Pesquisa - Corrigido para ocupar o máximo de espaço --}}
                     <form method="GET" action="{{ route('events.index') }}" class="w-full flex-grow">
                         <div class="relative flex items-center w-full">
@@ -44,17 +45,14 @@
                                 @php $loggedCoordinator = auth()->user()->coordinator ?? null; @endphp
                                 @if ($loggedCoordinator)
                                     <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1">Visibilidade</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Visibilidade</label>
                                         <div class="flex items-center space-x-4">
                                             @foreach (['visible' => 'Visível', 'hidden' => 'Oculto'] as $value => $label)
                                                 <label class="inline-flex items-center">
-                                                    <input type="checkbox" name="status"
-                                                        value="{{ $value }}"
+                                                    <input type="checkbox" name="status" value="{{ $value }}"
                                                         {{ request('status') === $value ? 'checked' : '' }}
                                                         class="form-checkbox text-blue-600 rounded">
-                                                    <span
-                                                        class="ml-2 text-sm text-gray-600">{{ $label }}</span>
+                                                    <span class="ml-2 text-sm text-gray-600">{{ $label }}</span>
                                                 </label>
                                             @endforeach
                                         </div>
@@ -63,17 +61,14 @@
 
                                 {{-- Tipo de Evento --}}
                                 <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
                                     <div class="flex items-center space-x-4">
                                         @foreach (['event' => 'Evento', 'course' => 'Curso'] as $value => $label)
                                             <label class="inline-flex items-center">
-                                                <input type="checkbox" name="event_type"
-                                                    value="{{ $value }}"
+                                                <input type="checkbox" name="event_type" value="{{ $value }}"
                                                     {{ request('event_type') === $value ? 'checked' : '' }}
                                                     class="form-checkbox text-blue-600 rounded">
-                                                <span
-                                                    class="ml-2 text-sm text-gray-600">{{ $label }}</span>
+                                                <span class="ml-2 text-sm text-gray-600">{{ $label }}</span>
                                             </label>
                                         @endforeach
                                     </div>
@@ -81,10 +76,8 @@
 
                                 {{-- Categories --}}
                                 <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-1">Categorias</label>
-                                    <div
-                                        class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border rounded-md">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Categorias</label>
+                                    <div class="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-2 border rounded-md">
                                         {{-- Certifique-se que $categories é passado pela controller --}}
                                         @if (isset($categories))
                                             @foreach ($categories as $category)
@@ -103,50 +96,42 @@
 
                                 {{-- Date Range --}}
                                 <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-1">Intervalo
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Intervalo
                                         de Datas</label>
-                                    <input type="date" name="start_date"
-                                        value="{{ request('start_date') }}"
+                                    <input type="date" name="start_date" value="{{ request('start_date') }}"
                                         class="w-full rounded-md border-gray-300 text-sm mb-2">
-                                    <input type="date" name="end_date"
-                                        value="{{ request('end_date') }}"
+                                    <input type="date" name="end_date" value="{{ request('end_date') }}"
                                         class="w-full rounded-md border-gray-300 text-sm">
                                 </div>
 
                                 {{-- Order By --}}
                                 <div>
-                                    <label
-                                        class="block text-sm font-medium text-gray-700 mb-1">Ordenar
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Ordenar
                                         por</label>
                                     <div class="flex flex-col space-y-2">
                                         <label class="inline-flex items-center">
-                                            <input type="checkbox" name="schedule_order"
-                                                value="soonest"
+                                            <input type="checkbox" name="schedule_order" value="soonest"
                                                 {{ request('schedule_order') === 'soonest' ? 'checked' : '' }}
                                                 class="form-checkbox text-blue-600 rounded">
                                             <span class="ml-2 text-sm text-gray-600">Mais
                                                 Próximo</span>
                                         </label>
                                         <label class="inline-flex items-center">
-                                            <input type="checkbox" name="schedule_order"
-                                                value="latest"
+                                            <input type="checkbox" name="schedule_order" value="latest"
                                                 {{ request('schedule_order') === 'latest' ? 'checked' : '' }}
                                                 class="form-checkbox text-blue-600 rounded">
                                             <span class="ml-2 text-sm text-gray-600">Mais
                                                 Distante</span>
                                         </label>
                                         <label class="inline-flex items-center">
-                                            <input type="checkbox" name="likes_order"
-                                                value="most"
+                                            <input type="checkbox" name="likes_order" value="most"
                                                 {{ request('likes_order') === 'most' ? 'checked' : '' }}
                                                 class="form-checkbox text-blue-600 rounded">
                                             <span class="ml-2 text-sm text-gray-600">Mais
                                                 Curtidos</span>
                                         </label>
                                         <label class="inline-flex items-center">
-                                            <input type="checkbox" name="likes_order"
-                                                value="least"
+                                            <input type="checkbox" name="likes_order" value="least"
                                                 {{ request('likes_order') === 'least' ? 'checked' : '' }}
                                                 class="form-checkbox text-blue-600 rounded">
                                             <span class="ml-2 text-sm text-gray-600">Menos
@@ -158,8 +143,7 @@
                                 <button type="submit"
                                     class="w-full rounded-md bg-blue-600 py-2 text-white font-semibold hover:bg-blue-700 transition-colors">Aplicar
                                     Filtros</button>
-                                <button type="button"
-                                    onclick="window.location.href='{{ route('events.index') }}'"
+                                <button type="button" onclick="window.location.href='{{ route('events.index') }}'"
                                     class="w-full mt-2 rounded-md bg-gray-200 py-2 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">Limpar
                                     Filtros</button>
                             </form>
@@ -169,8 +153,7 @@
             </div>
 
             {{-- Events List (Container de AJAX) --}}
-            <div id="events-container"
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {{-- Use APENAS o loop, sem o @empty, pois a mensagem é tratada no Controller/AJAX --}}
                 @foreach ($events as $event)
                     @include('partials.events.event-card', ['event' => $event])
@@ -178,10 +161,8 @@
 
                 {{-- Se for a primeira carga e a coleção estiver vazia, adicione a mensagem AQUI manualmente --}}
                 @if ($events->isEmpty() && !request()->ajax())
-                    <div id="no-events-message"
-                        class="col-span-full flex flex-col items-center justify-center p-12">
-                        <img src="{{ asset('imgs/notFound.png') }}"
-                            alt="Nenhum evento encontrado"
+                    <div id="no-events-message" class="col-span-full flex flex-col items-center justify-center p-12">
+                        <img src="{{ asset('imgs/notFound.png') }}" alt="Nenhum evento encontrado"
                             class="w-32 h-32 mb-4 text-gray-400">
                         <p class="text-xl font-semibold text-gray-500">Nenhum evento encontrado...</p>
                         <p class="text-sm text-gray-400 mt-2">Tente ajustar os filtros ou a pesquisa.</p>
@@ -197,46 +178,6 @@
     </div>
 </x-app-layout>
 
-{{-- Scripts para Dropdown e Checkbox (Deixamos aqui para não precisar mexer em outros arquivos) --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const filterBtn = document.getElementById('filterBtn');
-        const filterMenu = document.getElementById('filterMenu');
-
-        // Toggle filter dropdown
-        filterBtn.addEventListener('click', function() {
-            filterMenu.classList.toggle('hidden');
-        });
-
-        // Hide dropdown on outside click
-        document.addEventListener('click', function(event) {
-            if (!filterBtn.contains(event.target) && !filterMenu.contains(event.target)) {
-                filterMenu.classList.add('hidden');
-            }
-        });
-
-        // Stop propogation on filter form to keep dropdown open
-        filterMenu.addEventListener('click', function(event) {
-            event.stopPropagation();
-        });
-
-        // Ensure only one checkbox is checked for single-select filters
-        document.querySelectorAll(
-            'input[name="status"], input[name="event_type"], input[name="schedule_order"], input[name="likes_order"]'
-        ).forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                // Desmarca outros checkboxes com o mesmo 'name'
-                if (this.checked) {
-                    document.querySelectorAll(`input[name="${this.name}"]`).forEach(cb => {
-                        if (cb !== this) {
-                            cb.checked = false;
-                        }
-                    });
-                }
-            });
-        });
-    });
-</script>
-
-{{-- Scripts compilados, incluindo search-highlight.js --}}
 @vite('resources/js/app.js')
+
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
