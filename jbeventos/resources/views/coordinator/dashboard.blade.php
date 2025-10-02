@@ -8,19 +8,11 @@
                 <p class="text-gray-600 mt-1">{{ $message }}</p>
             </div>
             
-            {{-- Botão Exportar para PDF: O formulário agora tem um ID para ser submetido via JS --}}
-            <form method="POST" action="{{ route('coordinator.dashboard.export.pdf') }}" id="exportForm" class="inline-block">
-                @csrf
-                {{-- CAMPOS HIDDEN PARA AS IMAGENS BASE64 DOS GRÁFICOS --}}
-                <input type="hidden" name="eventEngagementChartImage" id="eventEngagementChartImage">
-                <input type="hidden" name="publicationsChartImage" id="publicationsChartImage">
-                <input type="hidden" name="postInteractionsChartImage" id="postInteractionsChartImage">
-                
-                <button type="button" id="exportButton" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:border-red-700 focus:ring focus:ring-red-300 disabled:opacity-25 transition">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Exportar para PDF
-                </button>
-            </form>
+            {{-- Botão Exportar para PDF: Agora abre o modal --}}
+            <button type="button" id="openExportModalButton" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:border-red-700 focus:ring focus:ring-red-300 disabled:opacity-25 transition">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                Exportar para PDF
+            </button>
         </div>
 
         {{-- Cards de Resumo (5 CARDS) --}}
@@ -175,12 +167,76 @@
 
     </div>
 
-    {{-- Scripts Chart.js --}}
+    {{-- ********************************************************* --}}
+    {{-- MODAL DE FILTRO DE DATAS PARA EXPORTAÇÃO PDF --}}
+    {{-- ********************************************************* --}}
+    <div id="dateFilterModal" class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-75 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form method="POST" action="{{ route('coordinator.dashboard.export.pdf') }}" id="exportForm">
+                    @csrf
+                    
+                    {{-- CAMPOS HIDDEN PARA AS IMAGENS BASE64 DOS GRÁFICOS (mantidos aqui) --}}
+                    <input type="hidden" name="eventEngagementChartImage" id="eventEngagementChartImage">
+                    <input type="hidden" name="publicationsChartImage" id="publicationsChartImage">
+                    <input type="hidden" name="postInteractionsChartImage" id="postInteractionsChartImage">
+                    
+                    {{-- CAMPOS HIDDEN PARA AS DATAS DE FILTRO --}}
+                    <input type="hidden" name="start_date" id="exportStartDate">
+                    <input type="hidden" name="end_date" id="exportEndDate">
+                    
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h.01M12 11h.01M15 11h.01M7 15h.01M11 15h.01M15 15h.01M4 20h16a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                    Filtrar Relatório PDF por Data
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">
+                                        Selecione o período de início e fim para a captura dos dados no seu relatório de desempenho.
+                                    </p>
+                                    
+                                    <div class="mt-4 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="modal_start_date" class="block text-sm font-medium text-gray-700">Data Inicial</label>
+                                            <input type="date" id="modal_start_date" name="modal_start_date" class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                        </div>
+                                        <div>
+                                            <label for="modal_end_date" class="block text-sm font-medium text-gray-700">Data Final</label>
+                                            <input type="date" id="modal_end_date" name="modal_end_date" class="mt-1 focus:ring-red-500 focus:border-red-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required>
+                                        </div>
+                                    </div>
+                                    <p id="dateError" class="text-red-500 text-sm mt-2 hidden">A Data Inicial não pode ser maior que a Data Final.</p>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit" id="submitExportButton" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm transition ease-in-out duration-150">
+                            Gerar PDF
+                        </button>
+                        <button type="button" id="closeModalButton" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    {{-- Scripts Chart.js e Lógica do Modal --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             
-            // Variáveis de dados do PHP
+            // Variáveis de dados do PHP (mantidas para os gráficos do dashboard)
             const labels = @json($labels);
             const eventsByMonth = @json($eventsByMonth);
             const postsValues = @json($postsValues);
@@ -195,7 +251,7 @@
 
             let charts = {}; // Objeto para armazenar as instâncias dos gráficos
 
-            // Função para criar Sparklines
+            // Funções de Criação de Gráficos (mantidas)
             function createSparkline(elementId, data, color) {
                 charts[elementId] = new Chart(document.getElementById(elementId), {
                     type: 'line',
@@ -225,12 +281,11 @@
                 });
             }
             
-            // Função para criar Gráfico Principal e retorná-lo
             function createChart(elementId, config) {
                  charts[elementId] = new Chart(document.getElementById(elementId), config);
                  return charts[elementId];
             }
-
+            
             // 1. Sparklines dos Cards (apenas visualização no Dashboard)
             createSparkline('eventsSparkline', eventsByMonth, 'rgb(59, 130, 246)');
             createSparkline('postsSparkline', postsValues, 'rgb(245, 158, 11)');
@@ -320,7 +375,6 @@
             });
             
             // 5. Gráfico de Publicações (Eventos e Posts Criados) - Necessário para o PDF (Sec. 2.2)
-            // Usa o canvas invisível 'publicationsChartCanvas'
             createChart('publicationsChartCanvas', {
                 type: 'line',
                 data: {
@@ -354,37 +408,82 @@
             });
 
 
-            // Lógica de Exportação do PDF
-            document.getElementById('exportButton').addEventListener('click', function(e) {
-                // Previne a submissão imediata do formulário
+            // *********************************************************
+            // LÓGICA DO MODAL E EXPORTAÇÃO PDF (NOVA)
+            // *********************************************************
+            
+            const modal = document.getElementById('dateFilterModal');
+            const openButton = document.getElementById('openExportModalButton');
+            const closeButton = document.getElementById('closeModalButton');
+            const submitButton = document.getElementById('submitExportButton');
+            const exportForm = document.getElementById('exportForm');
+            const modalStartDateInput = document.getElementById('modal_start_date');
+            const modalEndDateInput = document.getElementById('modal_end_date');
+            const exportStartDateHidden = document.getElementById('exportStartDate');
+            const exportEndDateHidden = document.getElementById('exportEndDate');
+            const dateError = document.getElementById('dateError');
+
+            // 1. Abrir Modal
+            openButton.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                // Opcional: Pré-preencher as datas com o range padrão atual
+                // Não é necessário pois o PDF já tem o range de 6 meses como fallback
+            });
+
+            // 2. Fechar Modal
+            closeButton.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+            
+            // Fechar ao clicar fora
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+
+            // 3. Função Auxiliar para Capturar Base64
+            const captureChartImage = (chartId, hiddenInputId) => {
+                const chart = charts[chartId];
+                if (chart) {
+                    chart.resize(); 
+                    chart.update();
+                    const dataURL = chart.toBase64Image('image/png', 1.0); 
+                    document.getElementById(hiddenInputId).value = dataURL;
+                }
+            };
+
+            // 4. Submeter Formulário (dentro do modal)
+            exportForm.addEventListener('submit', function(e) {
                 e.preventDefault(); 
                 
-                // Função auxiliar para capturar Base64 de um gráfico
-                const captureChartImage = (chartId, hiddenInputId) => {
-                    const chart = charts[chartId];
-                    if (chart) {
-                        // Força uma renderização antes da captura (opcional, mas recomendado)
-                        chart.resize(); 
-                        chart.update();
-                        
-                        // Captura o Base64. Usa 'image/jpeg' com qualidade 0.9 para tamanhos menores, mas 'image/png' para melhor qualidade é preferível.
-                        const dataURL = chart.toBase64Image('image/png', 1.0); 
-                        document.getElementById(hiddenInputId).value = dataURL;
-                    }
-                };
+                const startDateValue = modalStartDateInput.value;
+                const endDateValue = modalEndDateInput.value;
 
-                // Captura os gráficos necessários para o PDF
+                if (!startDateValue || !endDateValue) {
+                    alert("Por favor, selecione a Data Inicial e a Data Final.");
+                    return;
+                }
+
+                if (new Date(startDateValue) > new Date(endDateValue)) {
+                    dateError.classList.remove('hidden');
+                    return;
+                } else {
+                    dateError.classList.add('hidden');
+                }
+                
+                // 4.1. Inserir as datas no formulário (campos hidden)
+                exportStartDateHidden.value = startDateValue;
+                exportEndDateHidden.value = endDateValue;
+
+                // 4.2. Capturar os gráficos
                 captureChartImage('engagementChart', 'eventEngagementChartImage');
-                captureChartImage('publicationsChartCanvas', 'publicationsChartImage'); // Usa o canvas invisível
+                captureChartImage('publicationsChartCanvas', 'publicationsChartImage');
                 captureChartImage('postInteractionsChart', 'postInteractionsChartImage');
                 
-                // Para o Distribution Chart (como ele também é exibido no PDF, farei a conversão)
-                // O PDF tem um layout de duas colunas (2.1 e 2.2) e uma linha inteira (2.3). 
-                // A distribuição (4º chart) não está mapeada no PDF original, mas o Engajamento já está lá.
-                // O PDF original mostra Engajamento (2.1), Publicações (2.2), Interações Post (2.3)
-                
-                // Finalmente, submete o formulário com os dados Base64
-                document.getElementById('exportForm').submit();
+                // 4.3. Submete o formulário com os dados Base64 e as datas
+                this.submit();
             });
 
         });

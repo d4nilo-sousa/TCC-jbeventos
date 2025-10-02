@@ -122,8 +122,6 @@
         }
 
         /* Layout de Gráficos em Colunas (2 por linha) */
-        /* Mantive este estilo caso haja a necessidade de usá-lo para outros gráficos,
-           mas não será mais aplicado aos dois primeiros. */
         .chart-container {
             width: 100%;
             margin-top: 15px;
@@ -159,9 +157,9 @@
     {{-- CAPA DO RELATÓRIO (PÁGINA 1) --}}
     {{-- ********************************************************* --}}
     <div class="cover-page">
-        <h1>Relatório de Desempenho do Coordenador</h1>
+        <h1>Relatório - Dados de Eventos do Coordenador</h1>
         <p>
-            Desempenho e Produtividade do Coordenador(a): **{{ $userName }}**
+            Desempenho estatístico dos Eventos criados pelo Coordenador(a): {{ $userName }}
         </p>
 
         @if (!empty($logoBase64))
@@ -171,7 +169,7 @@
         @endif
         
         <p style="margin-top: 50px;">
-            Período de Análise: {{ $reportStartDate ?? 'N/A' }} a {{ $reportEndDate ?? 'N/A' }}
+            <span style="font-weight: bold;">Período de Análise:</span> {{ $reportStartDate ?? 'N/A' }} a {{ $reportEndDate ?? 'N/A' }}
             <br>
             Documento Gerado em: {{ now()->format('d/m/Y H:i') }}
         </p>
@@ -206,7 +204,7 @@
     {{-- ********************************************************* --}}
     {{-- 2. EVOLUÇÃO MENSAL (GRÁFICOS) --}}
     {{-- ********************************************************* --}}
-    <h2>2. Evolução Mensal de Atividades (Últimos 6 Meses)</h2>
+    <h2>2. Evolução de Atividades no Período Selecionado</h2>
 
     {{-- GRÁFICO 2.1: INTERAÇÕES DE EVENTOS (AGORA EM LINHA ÚNICA) --}}
     <div class="chart-box">
@@ -244,7 +242,7 @@
     {{-- 3. TOP EVENTOS MAIS ENGAJADOS --}}
     {{-- ********************************************************* --}}
     <h2>3. Top Eventos Mais Engajados</h2>
-    <p style="color: #4b5563; margin-bottom: 10px;">Eventos criados pelo(a) coordenador(a) com maior engajamento (Curtidas + Comentários + Salvos).</p>
+    <p style="color: #4b5563; margin-bottom: 10px;">Eventos criados pelo(a) coordenador(a) com maior engajamento (Curtidas + Comentários + Salvos) dentro do período selecionado.</p>
     
     @if($topEvents->isEmpty())
         Nenhum evento com interações registrado no período.
@@ -274,7 +272,6 @@
 @endif
 
 <div class="footer">
-    Relatório confidencial. Uso interno da plataforma.
     <br>
     Gerado em: {{ now()->format('d/m/Y H:i:s') }}
 </div>
