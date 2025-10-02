@@ -18,6 +18,11 @@
                             <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
                         </x-nav-link>
 
+                        {{-- Feed (Adicionado para todos) --}}
+                        <x-nav-link href="{{ route('feed.index') }}" :active="request()->routeIs('feed.index')" class="text-gray-800 hover:text-red-500">
+                            <i class="fa-solid fa-rss mr-2"></i> {{ __('Feed') }}
+                        </x-nav-link>
+
                         {{-- Explorar (Adicionado para todos) --}}
                         <x-nav-link href="{{ route('explore.index') }}" :active="request()->routeIs('explore.*')" class="text-gray-800 hover:text-red-500">
                             <i class="fa-solid fa-compass mr-2"></i> {{ __('Explorar') }}
@@ -221,6 +226,11 @@
             <div class="pt-2 pb-3 space-y-1">
                 <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                     <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
+                </x-responsive-nav-link>
+
+                {{-- Feed (Mobile) --}}
+                <x-responsive-nav-link href="{{ route('feed.index') }}" :active="request()->routeIs('feed.index')">
+                    <i class="fa-solid fa-rss mr-2"></i> {{ __('Feed') }}
                 </x-responsive-nav-link>
 
                 {{-- Explorar (Adicionado para todos) --}}
