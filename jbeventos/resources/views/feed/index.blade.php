@@ -35,8 +35,7 @@
             @forelse ($feedItems as $item)
     
                 @if ($item->type === 'event')
-                    {{-- CARTÃO DE EVENTO - Destaque em Indigo --}}
-                    {{-- Verifica se o usuário já curtiu ou salvou o evento --}}
+                    {{-- CARTÃO DE EVENTO - Destaque em VERMELHO --}}
                     @php
                         // Assumindo que $item->userReactions é uma coleção de EventUserReaction 
                         // carregada com eager loading (Event::with('userReactions'))
@@ -45,7 +44,7 @@
                         $likeCount = $item->reactions->where('reaction_type', 'like')->count();
                     @endphp
 
-                    <div id="event-{{ $item->id }}" class="feed-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-indigo-200 dark:border-indigo-700">
+                    <div id="event-{{ $item->id }}" class="feed-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-red-200 dark:border-red-700">
                         
                         <!-- Imagem/Placeholder do Evento (Clicável) -->
                         <a href="{{ route('events.show', $item) }}" class="block">
@@ -54,13 +53,13 @@
                                     <img class="w-full h-full object-cover" src="{{ asset('storage/' . $item->images->first()->image_path) }}" alt="{{ $item->event_name }}" loading="lazy">
                                 @else
                                     <!-- Placeholder sem imagem -->
-                                    <div class="flex flex-col items-center justify-center w-full h-full text-red-500 dark:text-indigo-400">
+                                    <div class="flex flex-col items-center justify-center w-full h-full text-red-500 dark:text-red-400">
                                         <i class="ph-bold ph-calendar-blank text-6xl"></i>
                                         <p class="mt-2 text-sm">Evento Sem Imagem</p>
                                     </div>
                                 @endif
                                 <!-- Tag de Evento -->
-                                <span class="absolute top-4 right-4 bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">EVENTO</span>
+                                <span class="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">EVENTO</span>
                             </div>
                         </a>
     
@@ -74,7 +73,7 @@
                             </div>
     
                             <a href="{{ route('events.show', $item) }}" class="block">
-                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2 hover:text-red-600 dark:hover:text-red-400 transition">
                                     {{ $item->event_name }}
                                 </h2>
                             </a>
@@ -110,7 +109,7 @@
                                     <span class="text-sm font-medium ml-1 hidden sm:inline">Curtidas</span>
                                 </button>
 
-                                {{-- Botão de Salvar (Agora com destaque amarelo) --}}
+                                {{-- Botão de Salvar (Mantido com destaque amarelo) --}}
                                 <button 
                                     class="reaction-button flex items-center text-gray-600 dark:text-gray-400 transition"
                                     data-event-id="{{ $item->id }}" 
@@ -120,9 +119,6 @@
                                     <i class="ph-bold ph-bookmark-simple text-2xl {{ $isSaved ? 'text-yellow-500 ph-fill' : 'hover:text-yellow-500' }}" id="icon-save-{{ $item->id }}"></i>
                                     <span class="text-sm font-medium ml-2 hidden sm:inline">Salvar</span>
                                 </button>
-
-                                {{-- Botão Ver Detalhes REMOVIDO do rodapé --}}
-
                             </div>
                         </div>
                     </div>
@@ -163,12 +159,12 @@
                         <!-- Footer do Post: Respostas -->
                         <div class="mt-4 border-t border-gray-100 dark:border-gray-700 pt-4 flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                             <div class="flex items-center">
-                                <i class="ph-fill ph-chat-circle text-lg mr-2 text-indigo-500"></i>
+                                <i class="ph-fill ph-chat-circle text-lg mr-2 text-red-500"></i>
                                 {{ $item->replies->count() }} Respostas
                             </div>
-                            <a href="{{ route('posts.show', $item) }}" class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium flex items-center">
-                                Comentar <i class="ph ph-arrow-right ml-1"></i>
-                            </a>
+                            <span class="text-gray-500 font-medium flex items-center">
+                                Veja na página do curso <i class="ph ph-arrow-right ml-1"></i>
+                            </span>
                         </div>
                     </div>
     
@@ -203,7 +199,7 @@
                     <img src="{{ asset('imgs/logo_do_sistema.png') }}" 
                          alt="Logo do Sistema de Eventos" 
                          class="h-16 mx-auto mb-4 object-contain"
-                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/004d99/ffffff?text=LOGO'">
+                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/990000/ffffff?text=LOGO'">
     
                     <h3 id="modal-title" class="text-3xl font-extrabold text-gray-900 dark:text-white mb-3">
                         Bem-vindo(a) à Comunidade!
@@ -214,7 +210,7 @@
                     </p>
                     
                     <button onclick="document.getElementById('welcome-modal').classList.add('hidden')"
-                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-3 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 sm:text-lg">
+                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-3 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg">
                         Começar a Explorar o Feed
                     </button>
                 </div>
@@ -256,7 +252,7 @@
                     countElement.textContent = currentCount - 1;
                 }
             } else if (reactionType === 'save') {
-                // ALTERADO: Usando text-yellow-500 para Salvar
+                // Manter o destaque amarelo para Salvar
                 if (isActive) {
                     icon.classList.remove('ph');
                     icon.classList.add('ph-fill', 'text-yellow-500');
@@ -304,7 +300,7 @@
                         countElement.textContent = currentCount + 1; // Volta a contagem original
                     }
                 } else if (reactionType === 'save') {
-                    // ALTERADO: Reversão usando text-yellow-500
+                    // Reversão do destaque amarelo
                     if (!isActive) {
                         icon.classList.remove('ph-fill', 'text-yellow-500');
                         icon.classList.add('ph');
