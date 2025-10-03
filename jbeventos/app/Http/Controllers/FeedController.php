@@ -12,7 +12,7 @@ class FeedController extends Controller
     /**
      * Exibe a tela de Feed.
      */
-    public function index(Request $request)
+     public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -23,7 +23,7 @@ class FeedController extends Controller
             // Filtra eventos agendados para agora ou futuro.
             ->where(function ($query) {
                 $query->whereNull('event_expired_at')
-                      ->orWhere('event_expired_at', '>', now());
+                    ->orWhere('event_expired_at', '>', now());
             })
             ->get()
             ->map(function ($event) {
@@ -33,26 +33,25 @@ class FeedController extends Controller
                 return $event;
             });
 
-        // 2. Coleta de Posts (Todos, ordenados por data de criação)
-        // Eager Loading: Carrega o Curso e o Autor do Post.
-        $posts = Post::with(['course.courseCoordinator.userAccount', 'author'])
-            ->get()
+        // 2. Posts serão carregados e gerenciados pelo componente Livewire FeedPosts.
+        // O FeedController NÃO precisa mais buscar posts aqui, mas vamos buscá-los de forma leve para a ordenação inicial.
+
+        $posts = Post::select('id', 'created_at')->get() // Busca apenas o necessário para ordenar
             ->map(function ($post) {
                 $post->type = 'post';
-                // Define a data de criação como base para ordenação no feed
                 $post->sort_date = $post->created_at; 
                 return $post;
             });
 
         // 3. Combina e Ordena (do mais novo/agendado para o mais antigo)
+        // Isso é necessário para manter a ordem mista Eventos/Posts na view.
         $feedItems = $events->merge($posts)
-                            ->sortByDesc('sort_date')
-                            ->values();
+            ->sortByDesc('sort_date')
+            ->values();
 
         // Lógica para o Modal de Boas-Vindas (usando a sessão)
         $isFirstLogin = !$request->session()->has('has_seen_welcome_modal');
         if ($isFirstLogin) {
-            // Marca a sessão para que o modal não seja exibido novamente.
             $request->session()->put('has_seen_welcome_modal', true);
         }
 

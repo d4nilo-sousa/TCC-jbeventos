@@ -20,12 +20,10 @@
     </style>
     @endpush
     
-    {{-- REMOVIDO: dark:bg-gray-900. O fundo será bg-gray-50 (cinza claro) --}}
     <div class="py-10 bg-gray-50 min-h-screen"> 
         {{-- Aumentado o max-w para suportar 2 colunas e mx-auto para centralizar --}}
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
-            {{-- REMOVIDO: dark:bg-gray-800, dark:border-gray-700, dark:text-white, dark:text-gray-400 --}}
             <div class="bg-white shadow rounded-xl p-4 sm:p-6 border border-gray-200">
                 <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
                 <p class="text-gray-600">
@@ -36,15 +34,16 @@
             {{-- FILTRAGEM E SEPARAÇÃO DE EVENTOS E POSTS --}}
             @php
                 // Separa os itens do feed em duas coleções distintas para o layout de colunas
+                // O FeedController já filtrou os itens; aqui só os separamos
                 $events = $feedItems->filter(fn($item) => $item->type === 'event');
-                $posts = $feedItems->filter(fn($item) => $item->type === 'post');
             @endphp
 
-            @if ($events->isNotEmpty() || $posts->isNotEmpty())
+            @if ($events->isNotEmpty() || true) {{-- Mantemos o layout mesmo se só houver posts (gerenciados pelo Livewire) --}}
                 {{-- LAYOUT PRINCIPAL DE DUAS COLUNAS --}}
                 {{-- Aplicado um grid de 2 colunas para telas maiores que 'md' --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
+                    {{-- COLUNA ESQUERDA: EVENTOS --}}
                     <div class="space-y-6">
                         <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2">🗓️ Eventos</h2>
                         @forelse ($events as $item)
@@ -55,11 +54,9 @@
                                 $likeCount = $item->reactions->where('reaction_type', 'like')->count();
                             @endphp
 
-                            {{-- REMOVIDO: dark:bg-gray-800, dark:border-red-700 --}}
                             <div id="event-{{ $item->id }}" class="feed-card bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-red-200">
                                 
                                 <a href="{{ route('events.show', $item) }}" class="block">
-                                    {{-- REMOVIDO: dark:bg-gray-700, dark:text-red-400 --}}
                                     <div class="relative h-64 w-full bg-gray-200"> 
                                         @if ($item->images->first())
                                             <img class="w-full h-full object-cover" src="{{ asset('storage/' . $item->images->first()->image_path) }}" alt="{{ $item->event_name }}" loading="lazy">
@@ -74,22 +71,19 @@
                                 </a>
                                 
                                 <div class="p-6">
-                                    {{-- REMOVIDO: dark:text-gray-400, dark:text-white --}}
                                     <div class="flex items-center mb-3 text-sm text-gray-500">
                                         <i class="ph-fill ph-graduation-cap mr-2 text-red-500"></i>
                                         Coordenador: <span class="font-semibold text-gray-800 ml-1">
-                                            {{ $item->eventCourse->courseCoordinator->userAccount->name ?? $item->eventCourse->course_name ?? 'Curso não definido' }}
+                                            {{ optional(optional(optional($item->eventCourse)->courseCoordinator)->userAccount)->name ?? $item->eventCourse->course_name ?? 'Curso não definido' }}
                                         </span>
                                     </div>
                                     
                                     <a href="{{ route('events.show', $item) }}" class="block">
-                                        {{-- REMOVIDO: dark:text-white, dark:hover:text-red-400 --}}
                                         <h2 class="text-2xl font-bold text-gray-900 mb-2 hover:text-red-600 transition">
                                             {{ $item->event_name }}
                                         </h2>
                                     </a>
                                     
-                                    {{-- REMOVIDO: dark:text-gray-300 --}}
                                     <p class="text-gray-700 line-clamp-3 mb-4 text-base">
                                         {{ $item->event_description }}
                                     </p>
@@ -139,70 +133,34 @@
                         @endforelse
                     </div>
 
+                    {{-- COLUNA DIREITA: POSTS (Gerenciada pelo Livewire) --}}
                     <div class="space-y-6">
                         <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2">📰 Posts</h2>
-                        @forelse ($posts as $item)
-                            {{-- CARTÃO DE POST --}}
-                            {{-- REMOVIDO: dark:bg-gray-800, dark:border-gray-700, dark:bg-gray-700, dark:text-gray-400, dark:text-white, dark:text-gray-200, dark:text-gray-700 --}}
-                            <div class="bg-white shadow rounded-xl p-6 border border-gray-200 transition duration-300 hover:shadow-lg">
-                                
-                                <div class="flex items-start mb-4">
-                                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                                        <i class="ph-fill ph-chalkboard-teacher text-gray-600 text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <p class="font-bold text-gray-900">
-                                            Post de <span class="text-red-600">{{ $item->course->course_name ?? 'Comunidade' }}</span>
-                                        </p>
-                                        <p class="text-xs text-gray-500">
-                                            Publicado por {{ $item->author->name ?? 'Usuário Desconhecido' }} &middot; {{ $item->created_at->diffForHumans() }}
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                <p class="text-gray-800 mb-4 whitespace-pre-wrap">
-                                    {{ $item->content }}
-                                </p>
-                                
-                                @if (property_exists($item, 'images') && is_array($item->images) && count($item->images) > 0)
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                                        @foreach ($item->images as $imagePath)
-                                            <img src="{{ asset('storage/' . $imagePath) }}" alt="Imagem do Post" class="rounded-lg object-cover w-full h-40 shadow-md">
-                                        @endforeach
-                                    </div>
-                                @endif
-                                
-                                {{-- REMOVIDO: dark:border-gray-700, dark:text-gray-400 --}}
-                                <div class="mt-4 border-t border-gray-100 pt-4 flex items-center justify-between text-sm text-gray-500">
-                                    <div class="flex items-center">
-                                        <i class="ph-fill ph-chat-circle text-lg mr-2 text-red-500"></i>
-                                        {{ $item->replies->count() }} Respostas
-                                    </div>
-                                    <span class="text-gray-500 font-medium flex items-center">
-                                        Veja na página do curso <i class="ph ph-arrow-right ml-1"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="p-4 bg-white rounded-xl shadow border border-gray-100 text-center text-gray-500">Nenhum post para exibir.</div>
-                        @endforelse
+                        
+                        {{-- INTEGRAÇÃO LIVEWIRE: O componente Livewire FeedPosts fará o loop e a paginação dos posts --}}
+                        @livewire('feed-posts')
+                        
+                        {{-- Caso o Livewire não consiga renderizar, mantemos um fallback básico (embora o Livewire deva renderizar o seu próprio estado vazio) --}}
+                        @if ($events->isEmpty() && $posts->isEmpty())
+                             <div class="p-4 bg-white rounded-xl shadow border border-gray-100 text-center text-gray-500">Nenhum post para exibir.</div>
+                        @endif
                     </div>
 
                 </div>
             @else
-                {{-- MENSAGEM QUANDO NÃO HOUVER ITENS --}}
-                {{-- Mantido em uma única coluna se o feed estiver vazio --}}
-                {{-- REMOVIDO: dark:bg-gray-800, dark:border-gray-700, dark:text-gray-500, dark:text-gray-300, dark:text-gray-400 --}}
+                {{-- MENSAGEM QUANDO NÃO HOUVER ITENS (Fallback para Livewire em caso de erro no FeedController) --}}
                 <div class="max-w-2xl mx-auto space-y-6">
                     <div class="text-center py-10 bg-white rounded-xl shadow-lg border border-gray-200">
                         <i class="ph-bold ph-magnifying-glass text-5xl text-gray-400 mb-4"></i>
                         <p class="text-xl font-semibold text-gray-700">Nenhum conteúdo no feed.</p>
                         <p class="text-gray-500 mt-2">Parece que ainda não há eventos ou posts recentes. Tente explorar novos cursos!</p>
+                        
+                        {{-- Chamada do Livewire para garantir que pelo menos o post form apareça, se for o caso --}}
+                         <div class="mt-6">@livewire('feed-posts')</div>
                     </div>
                 </div>
             @endif
     
-            {{-- REMOVIDO: dark:text-gray-600 --}}
             <div class="text-center py-6 text-gray-500">
                 <p>Você chegou ao final do feed.</p>
             </div>
@@ -211,7 +169,6 @@
     
     
     @if (isset($isFirstLogin) && $isFirstLogin)
-        {{-- REMOVIDO: dark:bg-gray-800 --}}
         <div id="welcome-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center transition-opacity duration-300">
             <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 m-4 transform transition-transform duration-300 scale-100"
                 role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -234,7 +191,7 @@
                     </p>
                     
                     <button onclick="document.getElementById('welcome-modal').classList.add('hidden')"
-                                class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-3 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg">
+                            class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-3 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg">
                         Começar a Explorar o Feed
                     </button>
                 </div>
@@ -285,12 +242,12 @@
                 }
             }
             
-            // 2. Requisição AJAX (fetch) para o seu Laravel Controller
+            // 2. Requisição AJAX (fetch) para o backend
             fetch(`/events/${eventId}/react`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Obrigatório para Laravel
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Obrigatório 
                 },
                 body: JSON.stringify({ reaction_type: reactionType })
             })
@@ -333,7 +290,6 @@
                     }
                 }
 
-                // Em um app real, você mostraria uma mensagem de erro aqui
             })
             .finally(() => {
                 button.disabled = false; // Desbloqueia o botão
