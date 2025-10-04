@@ -14,3 +14,4 @@ import './search-highlight';
 import './modal-actions';
 import './upload-dropzone';
 import './tabs-navigation';
+import './delete-images';

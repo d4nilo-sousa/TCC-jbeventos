@@ -1,53 +1,55 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const images = document.querySelectorAll('.carousel-img'); // todas as imagens do carrossel
-    const indicator = document.getElementById('indicator'); // indicador da posição atual
-    const prevBtn = document.getElementById('prevBtn'); // botão anterior
-    const nextBtn = document.getElementById('nextBtn'); // botão próximo
-    const zoomBtn = document.getElementById('zoomBtn'); // botão para abrir zoom
-    const zoomModal = document.getElementById('zoomModal'); // modal do zoom
-    const zoomImg = document.getElementById('zoomImg'); // imagem dentro do modal
-    const closeZoom = document.getElementById('closeZoom'); // botão para fechar o modal
+    const images = document.querySelectorAll('.carousel-img');
+    const indicator = document.getElementById('indicator');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const zoomBtn = document.getElementById('zoomBtn');
+    const zoomModal = document.getElementById('zoomModal');
+    const zoomImg = document.getElementById('zoomImg');
+    const closeZoom = document.getElementById('closeZoom');
 
-    let current = 0; // índice da imagem atual
+    let current = 0;
 
-    // Atualiza a exibição das imagens e o indicador
     function showImage(index) {
         images.forEach((img, i) => {
-            img.classList.toggle('hidden', i !== index); // mostra só a imagem atual
+            img.classList.toggle('hidden', i !== index);
             img.classList.toggle('active', i === index);
         });
-        indicator.textContent = `${index + 1} / ${images.length}`; // atualiza contador
+
+        indicator.textContent = `${index + 1} / ${images.length}`;
         current = index;
+
+        // Controle dos botões
+        if (prevBtn) prevBtn.classList.toggle('hidden', current === 0);
+        if (nextBtn) nextBtn.classList.toggle('hidden', current === images.length - 1);
     }
 
-    // Navegação para a imagem anterior, com loop
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
-            let newIndex = (current - 1 + images.length) % images.length;
-            showImage(newIndex);
+            if (current > 0) showImage(current - 1);
         });
     }
 
-    // Navegação para a próxima imagem, com loop
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
-            let newIndex = (current + 1) % images.length;
-            showImage(newIndex);
+            if (current < images.length - 1) showImage(current + 1);
         });
     }
 
-    // Abre modal de zoom mostrando a imagem atual
-    zoomBtn.addEventListener('click', () => {
-        const activeImg = images[current];
-        zoomImg.src = activeImg.src;
-        zoomModal.classList.remove('hidden');
-    });
+    if (zoomBtn) {
+        zoomBtn.addEventListener('click', () => {
+            zoomImg.src = images[current].src;
+            zoomModal.classList.remove('hidden');
+        });
+    }
 
-    // Fecha o modal de zoom
-    closeZoom.addEventListener('click', () => {
-        zoomModal.classList.add('hidden');
-    });
+    if (closeZoom) {
+        closeZoom.addEventListener('click', () => {
+            zoomModal.classList.add('hidden');
+            zoomImg.src = ''; // limpa imagem do modal ao fechar
+        });
+    }
 
-    // Exibe a primeira imagem ao carregar
+    // Inicia exibindo a primeira
     showImage(current);
 });

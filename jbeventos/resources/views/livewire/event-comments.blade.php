@@ -138,13 +138,6 @@
                             <button wire:click="editComment({{ $comment->id }})" class="text-gray-600 hover:text-yellow-600">Editar</button>
                             <button wire:click="deleteComment({{ $comment->id }})" onclick="return confirm('Tem certeza que deseja excluir?')" class="text-red-500 hover:text-red-700">Excluir</button>
                         @endif
-
-                        @if (auth()->check() && auth()->user()->user_type === 'coordinator' && $event->coordinator_id === auth()->user()->coordinator->id)
-                            <button wire:click="hideComment({{ $comment->id }})" onclick="return confirm('Tem certeza que deseja ocultar este comentário?')"
-                                class="text-red-500 hover:text-red-700">
-                                Ocultar
-                            </button>
-                        @endif
                     </div>
 
                     {{-- Respostas (collapse) --}}
@@ -208,13 +201,6 @@
                                     @if($reply->user_id === auth()->id())
                                         <button wire:click="editComment({{ $reply->id }})" class="text-gray-600 hover:text-yellow-600">Editar</button>
                                         <button wire:click="deleteComment({{ $reply->id }})" onclick="return confirm('Tem certeza que deseja excluir?')" class="text-red-500 hover:text-red-700">Excluir</button>
-                                    @endif
-                                    
-                                    @if (auth()->check() && auth()->user()->user_type === 'coordinator' && $event->coordinator_id === auth()->user()->coordinator->id)
-                                        <button wire:click="hideComment({{ $reply->id }})" onclick="return confirm('Tem certeza que deseja ocultar este comentário?')"
-                                            class="text-red-500 hover:text-red-700">
-                                            Ocultar
-                                        </button>
                                     @endif
                                 </div>
                             </div>
