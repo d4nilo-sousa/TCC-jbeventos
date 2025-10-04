@@ -45,7 +45,7 @@
                     
                     {{-- COLUNA ESQUERDA: EVENTOS --}}
                     <div class="space-y-6">
-                        <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2">🗓️ Eventos</h2>
+                        <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2"><i class="ph ph-calendar-blank bg-red-600 text-white rounded-full p-1"></i> Eventos</h2>
                         @forelse ($events as $item)
                             {{-- CARTÃO DE EVENTO --}}
                             @php
@@ -135,7 +135,7 @@
 
                     {{-- COLUNA DIREITA: POSTS (Gerenciada pelo Livewire) --}}
                     <div class="space-y-6">
-                        <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2">📰 Posts</h2>
+                        <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2"><i class="ph ph-article bg-red-600 text-white rounded-full p-1"></i> Posts</h2>
                         
                         {{-- INTEGRAÇÃO LIVEWIRE: O componente Livewire FeedPosts fará o loop e a paginação dos posts --}}
                         @livewire('feed-posts')
