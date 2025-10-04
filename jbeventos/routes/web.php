@@ -15,6 +15,7 @@ use App\Http\Controllers\VisibilityController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PartialController;
 use App\Http\Controllers\ExploreController;
+use App\Http\Controllers\EventImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,9 +84,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
         Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
 
-        // Ocultar Eventos e Comentários
+        // Ocultar Eventos
         Route::patch('/events/{event}/visibility', [VisibilityController::class, 'updateEvent'])->name('events.updateEvent');
-        Route::patch('/comments/{comment}/visibility', [VisibilityController::class, 'updateComment'])->name('events.updateComment');
     });
 
     /*
@@ -151,4 +151,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     */
     Route::post('/courses/{course}/follow', [CourseFollowController::class, 'follow'])->name('courses.follow');
     Route::delete('/courses/{course}/unfollow', [CourseFollowController::class, 'unfollow'])->name('courses.unfollow');
+
+    Route::delete('/event-images/{id}', [EventImageController::class, 'destroy'])->name('event-images.destroy');
 });

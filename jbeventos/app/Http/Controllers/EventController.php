@@ -53,12 +53,19 @@ class EventController extends Controller
         }
 
         if ($request->filled('course_id')) {
-            $events = $events->whereIn('course_id', $request->course_id);
+            $courseIds = is_array($request->course_id)
+                ? $request->course_id
+                : [$request->course_id];
+
+            $events = $events->whereIn('course_id', $courseIds);
         }
 
+
         if ($request->filled('category_id')) {
-            $events = $events->whereHas('eventCategories', function ($q) use ($request) {
-                $q->whereIn('categories.id', $request->category_id);
+            $categoryIds = is_array($request->category_id) ? $request->category_id : [$request->category_id];
+
+            $events = $events->whereHas('eventCategories', function ($q) use ($categoryIds) {
+                $q->whereIn('categories.id', $categoryIds);
             });
         }
 
@@ -185,8 +192,6 @@ class EventController extends Controller
             'visible_event'
         ]);
 
-
-        // Capa do evento
         if ($request->hasFile('event_image')) {
             $upload = $request->file('event_image');
 
@@ -203,13 +208,17 @@ class EventController extends Controller
             $cropY = max(0, intval(($height - 600) / 2));
             $image->crop(1200, 600, $cropX, $cropY);
 
-            $imageName = time() . '_' . $upload->getClientOriginalName();
+            $originalName = pathinfo($upload->getClientOriginalName(), PATHINFO_FILENAME);
+            $slug = Str::slug($originalName);
+            $uniqueId = uniqid();
+            $extension = strtolower($upload->getClientOriginalExtension());
+            $imageName = "{$uniqueId}_{$slug}.{$extension}";
+
             $path = storage_path('app/public/event_images/' . $imageName);
 
-            $ext = strtolower($upload->getClientOriginalExtension());
-            if (in_array($ext, ['jpg', 'jpeg'])) {
+            if (in_array($extension, ['jpg', 'jpeg'])) {
                 $image->save($path, 90);
-            } elseif ($ext === 'png') {
+            } elseif ($extension === 'png') {
                 $image->save($path, 9);
             } else {
                 $image->save($path);
@@ -224,10 +233,8 @@ class EventController extends Controller
 
         $event = Event::create($data);
 
-        // Imagens extras do carrossel
         if ($request->hasFile('event_images')) {
             foreach ($request->file('event_images') as $upload) {
-
                 $image = Image::read($upload);
 
                 $image->resize(1200, 600, function ($constraint) {
@@ -241,13 +248,17 @@ class EventController extends Controller
                 $cropY = max(0, intval(($height - 600) / 2));
                 $image->crop(1200, 600, $cropX, $cropY);
 
-                $imageName = time() . '_' . $upload->getClientOriginalName();
+                $originalName = pathinfo($upload->getClientOriginalName(), PATHINFO_FILENAME);
+                $slug = Str::slug($originalName);
+                $uniqueId = uniqid();
+                $extension = strtolower($upload->getClientOriginalExtension());
+                $imageName = "{$uniqueId}_{$slug}.{$extension}";
+
                 $path = storage_path('app/public/event_images/' . $imageName);
 
-                $ext = strtolower($upload->getClientOriginalExtension());
-                if (in_array($ext, ['jpg', 'jpeg'])) {
+                if (in_array($extension, ['jpg', 'jpeg'])) {
                     $image->save($path, 90);
-                } elseif ($ext === 'png') {
+                } elseif ($extension === 'png') {
                     $image->save($path, 9);
                 } else {
                     $image->save($path);
@@ -267,7 +278,6 @@ class EventController extends Controller
 
         if ($event->course) {
             $followers = $event->course->followers;
-
             foreach ($followers as $user) {
                 $user->notify(new NewEventNotification($event));
             }
@@ -372,13 +382,18 @@ class EventController extends Controller
             $cropY = max(0, intval(($height - 600) / 2));
             $image->crop(1200, 600, $cropX, $cropY);
 
-            $imageName = time() . '_' . $upload->getClientOriginalName();
+            // Nome melhorado
+            $originalName = pathinfo($upload->getClientOriginalName(), PATHINFO_FILENAME);
+            $slug = Str::slug($originalName);
+            $uniqueId = uniqid();
+            $extension = strtolower($upload->getClientOriginalExtension());
+            $imageName = "{$uniqueId}_{$slug}.{$extension}";
+
             $path = storage_path('app/public/event_images/' . $imageName);
 
-            $ext = strtolower($upload->getClientOriginalExtension());
-            if (in_array($ext, ['jpg', 'jpeg'])) {
+            if (in_array($extension, ['jpg', 'jpeg'])) {
                 $image->save($path, 90);
-            } elseif ($ext === 'png') {
+            } elseif ($extension === 'png') {
                 $image->save($path, 9);
             } else {
                 $image->save($path);
@@ -417,13 +432,18 @@ class EventController extends Controller
                 $cropY = max(0, intval(($height - 600) / 2));
                 $image->crop(1200, 600, $cropX, $cropY);
 
-                $imageName = time() . '_' . $upload->getClientOriginalName();
+                // Nome melhorado
+                $originalName = pathinfo($upload->getClientOriginalName(), PATHINFO_FILENAME);
+                $slug = Str::slug($originalName);
+                $uniqueId = uniqid();
+                $extension = strtolower($upload->getClientOriginalExtension());
+                $imageName = "{$uniqueId}_{$slug}.{$extension}";
+
                 $path = storage_path('app/public/event_images/' . $imageName);
 
-                $ext = strtolower($upload->getClientOriginalExtension());
-                if (in_array($ext, ['jpg', 'jpeg'])) {
+                if (in_array($extension, ['jpg', 'jpeg'])) {
                     $image->save($path, 90);
-                } elseif ($ext === 'png') {
+                } elseif ($extension === 'png') {
                     $image->save($path, 9);
                 } else {
                     $image->save($path);
@@ -455,7 +475,7 @@ class EventController extends Controller
                 Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $importantChanges));
             }
         }
-        
+
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
         } else {
@@ -465,7 +485,6 @@ class EventController extends Controller
         return redirect()->route('events.show', $event->id)
             ->with('success', 'Evento atualizado com sucesso!');
     }
-
 
     // Exclui um evento
     public function destroy($id)

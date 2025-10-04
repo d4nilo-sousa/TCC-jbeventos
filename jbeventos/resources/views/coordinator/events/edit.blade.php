@@ -5,10 +5,13 @@
 
                 {{-- Exibição de erros de validação --}}
                 @if ($errors->any())
-                    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md animate-fade-in" role="alert">
+                    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md animate-fade-in"
+                        role="alert">
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-red-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span class="font-bold">Atenção!</span>
                         </div>
@@ -21,18 +24,23 @@
                 @endif
 
                 {{-- Formulário de Edição --}}
-                <form id="event-edit-form" action="{{ route('events.update', $event->id) }}" method="POST" enctype="multipart/form-data">
+                <form id="event-edit-form" action="{{ route('events.update', $event->id) }}" method="POST"
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
                     {{-- Abas de Navegação --}}
                     <div class="flex flex-col md:flex-row gap-4 mb-8 border-b pb-4">
-                        <button type="button" data-tab-target="tab1" class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
-                            <span class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">1</span>
+                        <button type="button" data-tab-target="tab1"
+                            class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
+                            <span
+                                class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">1</span>
                             Informações
                         </button>
-                        <button type="button" data-tab-target="tab2" class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
-                            <span class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">2</span>
+                        <button type="button" data-tab-target="tab2"
+                            class="tab-button w-full md:w-auto flex-1 text-center py-2 px-4 rounded-lg transition-colors duration-200 ease-in-out border text-gray-700 active:bg-blue-50 active:text-blue-600 active:border-blue-500">
+                            <span
+                                class="inline-flex items-center justify-center w-6 h-6 mr-2 font-bold rounded-full border border-gray-300 bg-white text-gray-500">2</span>
                             Imagens
                         </button>
                     </div>
@@ -72,9 +80,10 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
-                                    <x-text-input type="datetime-local" name="event_scheduled_at" id="event_scheduled_at"
-                                        min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
-                                        value="{{ old('event_scheduled_at', $event->event_scheduled_at ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}" required />
+                                    <x-text-input type="datetime-local" name="event_scheduled_at"
+                                        id="event_scheduled_at" min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
+                                        value="{{ old('event_scheduled_at', $event->event_scheduled_at ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}"
+                                        required />
                                     @error('event_scheduled_at')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -94,7 +103,8 @@
                                 <x-input-label value="Categorias do Evento" />
                                 <div class="mt-2 flex flex-wrap gap-4">
                                     @foreach ($categories as $category)
-                                        <label class="inline-flex items-center space-x-2 transition-colors duration-200 ease-in-out cursor-pointer hover:text-blue-600">
+                                        <label
+                                            class="inline-flex items-center space-x-2 transition-colors duration-200 ease-in-out cursor-pointer hover:text-blue-600">
                                             <input type="checkbox" name="categories[]" value="{{ $category->id }}"
                                                 class="rounded text-blue-600 border-gray-300 focus:ring-blue-500"
                                                 {{ in_array($category->id, old('categories', $event->eventCategories->pluck('id')->toArray())) ? 'checked' : '' }}>
@@ -110,8 +120,14 @@
 
                         <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mt-5"></h3>
 
-                        <div class="flex justify-end mt-8">
-                            <button type="button" data-next-tab="tab2" class="next-button px-6 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-colors duration-200">
+                        <div class="flex justify-between mt-8">
+                            <a href="{{ route('events.show', $event->id) }}"
+                                class="px-6 py-2 bg-gray-300 text-gray-700 rounded-md font-semibold hover:bg-gray-400 transition-colors duration-200">
+                                Cancelar
+                            </a>
+
+                            <button type="button" data-next-tab="tab2"
+                                class="next-button px-6 py-2 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 transition-colors duration-200">
                                 Próximo
                             </button>
                         </div>
@@ -139,16 +155,32 @@
                                         imagem de capa.
                                     </p>
                                 </div>
-                                <div id="event_image_preview" class="mt-4 flex justify-center"></div>
-                                @error('event_image')
-                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                @enderror
+
+                                <input type="hidden" name="remove_event_image" value="0">
+
+                                <div id="event_image_preview" class="mt-4 flex flex-col items-center gap-2">
+                                    @if ($event->event_image)
+                                        <div data-filename="{{ basename($event->event_image) }}"
+                                            style="display: flex; align-items: center; gap: 10px;">
+                                            <input type="text" value="{{ basename($event->event_image) }}"
+                                                readonly style="cursor: default;">
+                                            <button type="button"
+                                                onclick="this.closest('div[data-filename]').remove(); document.querySelector('input[name=remove_event_image]').value = 1;"
+                                                style="background-color: #007BFF; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
+                                                onmouseenter="this.style.backgroundColor='#0056b3'"
+                                                onmouseleave="this.style.backgroundColor='#007BFF'">
+                                                Excluir
+                                            </button>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
 
                             {{-- Outras Imagens (Galeria) --}}
                             <div>
                                 <label for="event_images" class="block font-medium text-gray-700 mb-2">Galeria de
                                     Imagens</label>
+
                                 <div id="dropzone-gallery"
                                     class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
                                     <input type="file" name="event_images[]" id="event_images" accept="image/*"
@@ -161,29 +193,48 @@
                                             d="M12 11V5" />
                                     </svg>
                                     <p class="mt-2 text-sm text-gray-500 group-hover:text-blue-500 transition-colors">
-                                        <span class="font-semibold">Arraste e solte</span> ou clique para adicionar mais
-                                        imagens.
+                                        <span class="font-semibold">Arraste e solte</span> ou clique para adicionar
+                                        mais imagens.
                                     </p>
                                 </div>
-                                <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center"></div>
+
+                                <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
+                                    @foreach ($event->images as $img)
+                                        <div data-id="{{ $img->id }}">
+                                            <input type="text" value="{{ basename($img->image_path) }}" readonly
+                                                style="cursor: default;">
+                                            <button type="button" onclick="deleteImage({{ $img->id }}, this)"
+                                                style="background-color: #007BFF; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
+                                                onmouseenter="this.style.backgroundColor='#0056b3'"
+                                                onmouseleave="this.style.backgroundColor='#007BFF'">
+                                                Excluir
+                                            </button>
+
+                                            <input type="hidden" name="keep_event_images[]"
+                                                value="{{ $img->id }}">
+                                        </div>
+                                    @endforeach
+                                </div>
+
+
                                 @error('event_images')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
-                        </div>
 
-                        <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mt-7"></h3>
+                            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mt-7"></h3>
 
-                        <div class="flex items-center justify-between mt-6">
-                            <button type="button" data-prev-tab="tab1" class="prev-button px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300 transition-colors duration-200">
-                                Anterior
-                            </button>
-                            <button type="submit"
+                            <div class="flex items-center justify-between mt-6">
+                                <button type="button" data-prev-tab="tab1"
+                                    class="prev-button px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300 transition-colors duration-200">
+                                    Anterior
+                                </button>
+                                <button type="submit"
                                     class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-green-600 hover:bg-green-700 transition ease-in-out duration-150">
                                     Atualizar Evento
                                 </button>
+                            </div>
                         </div>
-                    </div>
                 </form>
             </div>
         </div>

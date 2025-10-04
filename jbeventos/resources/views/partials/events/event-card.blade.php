@@ -20,7 +20,7 @@
             {{-- Tag para tipo de evento --}}
             <span
                 class="absolute top-2 right-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
-                {{ $event->event_type === 'course' ? 'Curso' : 'Evento' }}
+                {{ $event->event_type === 'course' ? 'Curso' : ($event->event_type === 'general' ? 'Geral' : "") }}
             </span>
 
             {{-- Tag para visibilidade (somente se o usuário é o coordenador e o evento é dele) --}}

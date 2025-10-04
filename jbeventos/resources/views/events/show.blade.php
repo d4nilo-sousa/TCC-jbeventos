@@ -23,34 +23,50 @@
                                 <div class="w-full h-full relative" id="carousel">
                                     @foreach ($event->images as $img)
                                         <img src="{{ asset('storage/' . $img->image_path) }}"
-                                             class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out carousel-img {{ $loop->first ? '' : 'hidden' }}">
+                                            class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out carousel-img {{ $loop->first ? '' : 'hidden' }}">
                                     @endforeach
                                 </div>
 
                                 {{-- Carousel Controls & Indicator --}}
                                 @if ($event->images->count() > 1)
+                                    {{-- Botões de navegação --}}
                                     <button id="prevBtn"
-                                            class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
-                                        <i class="fas fa-chevron-left w-4 h-4"></i>
+                                        class="hidden absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                        </svg>
                                     </button>
                                     <button id="nextBtn"
-                                            class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
-                                        <i class="fas fa-chevron-right w-4 h-4"></i>
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                        </svg>
                                     </button>
-                                    <div id="indicator" class="absolute bottom-4 right-4 bg-black/60 text-white text-sm px-3 py-1 rounded-full">
+                                @endif
+
+                                {{-- Indicador (mostrar mesmo com 1 imagem) --}}
+                                @if ($event->images->count() > 0)
+                                    <div id="indicator"
+                                        class="absolute bottom-4 right-4 bg-black/60 text-white text-sm px-3 py-1 rounded-full">
                                         1 / {{ $event->images->count() }}
                                     </div>
                                 @endif
-                                
+
                                 {{-- Zoom Button --}}
                                 <button id="zoomBtn"
-                                        class="absolute bottom-4 left-4 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
-                                    <i class="fas fa-expand w-4 h-4"></i>
+                                    class="absolute bottom-4 left-4 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M21 21l-4.35-4.35m1.61-5.52a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
                                 </button>
                             </div>
                         @else
                             <div class="aspect-video w-full flex items-center justify-center bg-gray-100 rounded-2xl">
-                                <span class="text-gray-400 text-lg">Sem imagem de galeria.</span>
+                                <span class="text-gray-400 text-lg">Sem imagem de galeria</span>
                             </div>
                         @endif
                     </div>
@@ -69,17 +85,21 @@
                         <div class="flex items-center gap-3">
                             <i class="far fa-calendar-alt text-blue-600"></i>
                             <p class="text-gray-800 text-base">
-                                <span class="font-bold">Data:</span> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D MMMM YYYY') }}
+                                <span class="font-bold">Data:</span>
+                                {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D MMMM YYYY') }}
                             </p>
                         </div>
                         <div class="flex items-center gap-3">
                             <i class="far fa-clock text-blue-600"></i>
                             <p class="text-gray-800 text-base">
-                                <span class="font-bold">Horário:</span> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('HH:mm') }}
+                                <span class="font-bold">Horário:</span>
+                                {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('HH:mm') }}
                             </p>
                         </div>
                         {{-- Coordinator's Actions --}}
-                        @if (auth()->check() && auth()->user()->user_type === 'coordinator' && auth()->user()->coordinator->id === $event->coordinator_id)
+                        @if (auth()->check() &&
+                                auth()->user()->user_type === 'coordinator' &&
+                                auth()->user()->coordinator->id === $event->coordinator_id)
                             <div class="pt-4 mt-4 border-t border-gray-200 flex flex-wrap gap-2">
                                 <a href="{{ route('events.edit', $event->id) }}"
                                     class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
@@ -108,7 +128,8 @@
                         </div>
                         <div>
                             <p class="font-bold mb-1">Tipo de Evento:</p>
-                            <p>{{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'N/A') }}</p>
+                            <p>{{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'N/A') }}
+                            </p>
                         </div>
                         @if ($event->event_type === 'course')
                             <div>
@@ -120,7 +141,8 @@
                             <p class="font-bold mb-1">Categorias:</p>
                             <div class="mt-2 flex flex-wrap gap-2">
                                 @forelse($event->eventCategories as $category)
-                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                                    <span
+                                        class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                                         {{ $category->category_name }}
                                     </span>
                                 @empty
@@ -146,7 +168,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">Sobre o Evento</h2>
                 <p class="text-gray-700 leading-relaxed">{{ $event->event_description }}</p>
             </div>
-            
+
             {{-- Reactions Section (100% de largura) --}}
             <div class="bg-white rounded-2xl shadow-lg p-6 border">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -158,24 +180,27 @@
                             $isActive = in_array($type, $userReactions);
                             $count = $event->reactions->where('reaction_type', $type)->count();
                         @endphp
-                        
-                        <form class="reaction-form" method="POST" action="{{ route('events.react', ['event' => $event->id]) }}">
+
+                        <form class="reaction-form" method="POST"
+                            action="{{ route('events.react', ['event' => $event->id]) }}">
                             @csrf
                             <input type="hidden" name="reaction_type" value="{{ $type }}">
-                            
+
                             {{-- Lógica para o botão CURTIR (Com contador) --}}
                             @if ($type === 'like')
-                                <button type="submit" data-type="{{ $type }}" data-count="{{ $count }}"
+                                <button type="submit" data-type="{{ $type }}"
+                                    data-count="{{ $count }}"
                                     class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
                                     {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
                                     <i class="fas fa-thumbs-up"></i>
                                     {{ $label }}
-                                    <span class="reaction-count text-xs font-semibold px-2 py-1 rounded-full {{ $isActive ? 'bg-white text-blue-600' : 'bg-blue-100' }}">
+                                    <span
+                                        class="reaction-count text-xs font-semibold px-2 py-1 rounded-full {{ $isActive ? 'bg-white text-blue-600' : 'bg-blue-100' }}">
                                         {{ $count }}
                                     </span>
                                 </button>
-                            
-                            {{-- Lógica para SALVAR e NOTIFICAR (Ação binária sem contador) --}}
+
+                                {{-- Lógica para SALVAR e NOTIFICAR (Ação binária sem contador) --}}
                             @else
                                 <button type="submit" data-type="{{ $type }}"
                                     class="reaction-btn-toggle flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
@@ -204,12 +229,13 @@
     </div> {{-- FIM do Main Container --}}
 
     {{-- MODAIS PRONTOS NO HTML --}}
-    
+
     {{-- Modal de Zoom --}}
     <div id="zoomModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] hidden">
         <div class="relative w-full h-full p-4 flex items-center justify-center">
             <img id="zoomImg" src="" class="max-w-full max-h-full object-contain rounded-lg">
-            <button id="closeZoom" class="absolute top-5 right-5 text-white text-4xl font-light hover:text-gray-300 transition-colors">
+            <button id="closeZoom"
+                class="absolute top-5 right-5 text-white text-4xl font-light hover:text-gray-300 transition-colors">
                 &times;
             </button>
         </div>
@@ -241,17 +267,7 @@
 
 </x-app-layout>
 
-{{-- SCRIPTS DE LÓGICA ESPECÍFICA --}}
 <script>
-    // Funções globais para Modais
-    function openModal(id) {
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
-
     // Função showToast (necessária para o event-reactions.js)
     function showToast(message) {
         const toast = document.getElementById('toast');
@@ -264,37 +280,6 @@
             toast.classList.add('hidden');
         }, 3000);
     }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Lógica para fechar modais ao clicar fora (mantida aqui, pois usa a função closeModal)
-        const zoomModal = document.getElementById('zoomModal');
-        const phoneModal = document.getElementById('phoneModal');
-
-        // Fechar modal de telefone ao clicar fora
-        if(phoneModal) {
-            phoneModal.addEventListener('click', (e) => {
-                // Remove a lógica de telefone, mas mantém a função closeModal
-                if(e.target === phoneModal) {
-                    closeModal('phoneModal');
-                }
-            });
-            
-            // Remove a lógica de submissão do formulário de telefone, pois não será mais usada.
-            // O botão de cancelar deve chamar apenas closeModal('phoneModal') no onclick
-        }
-        
-        // Fechar modal de zoom ao clicar fora
-        if(zoomModal) {
-            zoomModal.addEventListener('click', (e) => {
-                if(e.target === zoomModal) {
-                    closeModal('zoomModal');
-                }
-            });
-        }
-        
-        // IMPORTANTE: Toda a lógica de reações (AJAX) foi MOVIDA para event-reactions.js.
-        // NENHUM CÓDIGO DE REAÇÃO DEVE FICAR AQUI.
-    });
 </script>
 
 {{-- Scripts compilados (Agora o app.js importa o event-reactions.js) --}}
