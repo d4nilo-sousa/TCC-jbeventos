@@ -175,7 +175,7 @@
     
                 <div class="text-center">
                     {{-- PLACEHOLDER PARA O LOGO DO SISTEMA --}}
-                    <img src="{{ asset('imgs/logo_do_sistema.png') }}" 
+                    <img src="{{ asset('imgs/logoJb.png') }}" 
                         alt="Logo do Sistema de Eventos" 
                         class="h-16 mx-auto mb-4 object-contain"
                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/990000/ffffff?text=LOGO'">

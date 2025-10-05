@@ -23,10 +23,7 @@
                     </div>
                 </div>
 
-                <p class="text-gray-800 mb-4 whitespace-pre-wrap line-clamp-3">
-                    {{-- Usamos line-clamp-3 para limitar a pré-visualização --}}
-                    {{ $item->content }}
-                </p>
+                <p class="text-gray-800 mb-4 whitespace-pre-wrap line-clamp-3"> {{ $item->content }}</p>
                 
                 {{-- Imagens do Post (apenas a primeira para pré-visualização) --}}
                 @if (!empty($item->images) && count($item->images) > 0)
