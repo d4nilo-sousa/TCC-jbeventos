@@ -16,6 +16,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PartialController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\EventImageController;
+use App\Http\Controllers\FeedController;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +33,10 @@ Route::get('/', fn() => redirect()->route('login'));
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+
+    //rota do feed
+    Route::get('/feed',[FeedController::class,'index'])->name('feed.index');
+
 
     /*
     |----------------------------------------------------------------------
