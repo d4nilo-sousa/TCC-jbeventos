@@ -16,15 +16,9 @@ class FeedController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Coleta de Eventos (apenas visíveis e não expirados)
-        // Eager Loading: Carrega Curso, Coordenador (com UserAccount), Imagens e Reações.
-        $events = Event::with(['eventCourse.courseCoordinator.userAccount', 'images', 'reactions'])
+        // 1. Coleta de Eventos (apenas visíveis. Removido o filtro de data/expiração)
+        $events = Event::with(['eventCourse', 'eventCoordinator.userAccount', 'images', 'reactions'])
             ->where('visible_event', true)
-            // Filtra eventos agendados para agora ou futuro.
-            ->where(function ($query) {
-                $query->whereNull('event_expired_at')
-                    ->orWhere('event_expired_at', '>', now());
-            })
             ->get()
             ->map(function ($event) {
                 $event->type = 'event';
@@ -34,8 +28,6 @@ class FeedController extends Controller
             });
 
         // 2. Posts serão carregados e gerenciados pelo componente Livewire FeedPosts.
-        // O FeedController NÃO precisa mais buscar posts aqui, mas vamos buscá-los de forma leve para a ordenação inicial.
-
         $posts = Post::select('id', 'created_at')->get() // Busca apenas o necessário para ordenar
             ->map(function ($post) {
                 $post->type = 'post';
@@ -44,7 +36,6 @@ class FeedController extends Controller
             });
 
         // 3. Combina e Ordena (do mais novo/agendado para o mais antigo)
-        // Isso é necessário para manter a ordem mista Eventos/Posts na view.
         $feedItems = $events->merge($posts)
             ->sortByDesc('sort_date')
             ->values();

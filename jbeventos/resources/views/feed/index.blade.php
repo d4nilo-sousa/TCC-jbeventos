@@ -74,7 +74,16 @@
                                     <div class="flex items-center mb-3 text-sm text-gray-500">
                                         <i class="ph-fill ph-graduation-cap mr-2 text-red-500"></i>
                                         Coordenador: <span class="font-semibold text-gray-800 ml-1">
-                                            {{ optional(optional(optional($item->eventCourse)->courseCoordinator)->userAccount)->name ?? $item->eventCourse->course_name ?? 'Curso não definido' }}
+                                            @php
+                                                // 1. Pega o nome do Coordenador que criou o evento (eventCoordinator)
+                                                $coordenadorNome = optional(optional($item->eventCoordinator)->userAccount)->name;
+                                                
+                                                // 2. Pega o nome do Curso associado ao evento (eventCourse)
+                                                $cursoNome = optional($item->eventCourse)->course_name;
+                                            @endphp
+                                            
+                                            {{-- Exibe o nome do Coordenador Criador, se não, o nome do Curso, se não, o fallback --}}
+                                            {{ $coordenadorNome ?? $cursoNome ?? 'Curso não definido' }}
                                         </span>
                                     </div>
                                     
