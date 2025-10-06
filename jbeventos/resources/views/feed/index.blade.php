@@ -58,8 +58,11 @@
                                 
                                 <a href="{{ route('events.show', $item) }}" class="block">
                                     <div class="relative h-64 w-full bg-gray-200"> 
-                                        @if ($item->images->first())
-                                            <img class="w-full h-full object-cover" src="{{ asset('storage/' . $item->images->first()->image_path) }}" alt="{{ $item->event_name }}" loading="lazy">
+                                        @if ($item->event_image)
+                                            <img class="w-full h-full object-cover" 
+                                                src="{{ asset('storage/' . $item->event_image) }}" 
+                                                alt="{{ $item->event_name }}" 
+                                                loading="lazy">
                                         @else
                                             <div class="flex flex-col items-center justify-center w-full h-full text-red-500">
                                                 <i class="ph-bold ph-calendar-blank text-6xl"></i>
@@ -69,7 +72,7 @@
                                         <span class="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">EVENTO</span>
                                     </div>
                                 </a>
-                                
+                                                                
                                 <div class="p-6">
                                     <div class="flex items-center mb-3 text-sm text-gray-500">
                                         <i class="ph-fill ph-graduation-cap mr-2 text-red-500"></i>
