@@ -10,6 +10,7 @@ use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class FeedPosts extends Component
@@ -18,19 +19,25 @@ class FeedPosts extends Component
 
     protected $paginationTheme = 'tailwind';
     
-    // --- PROPRIEDADES ORIGINAIS (Respostas e Modal) ---
+    // --- PROPRIEDADES DE INTERAÇÃO (Respostas e Modal) ---
     public $newReplyContent = []; 
     public ?int $selectedPostId = null;
     public ?Post $expandedPost = null; 
 
-    // --- PROPRIEDADES PARA CRIAÇÃO DE POSTS (Novas) ---
+    // --- PROPRIEDADES PARA CRIAÇÃO DE POSTS ---
     public $isCoordinator = false;
     public $newPostContent = '';
     public $newlyUploadedImages = []; // Arquivos temporários do input
     public $images = []; // Arquivos prontos para upload/preview
-    // ID do curso de destino, definido no mount
     public $newPostCourseId = null; 
     public Collection $coordinatorCourses;
+
+    // --- PROPRIEDADES PARA EDIÇÃO DE POSTS ---
+    public ?int $editingPostId = null; 
+    public $editingPostContent = '';
+    public $newlyUploadedEditingImages = []; // Novos uploads no modal de edição
+    public $editingPostImages = []; // Array que mistura caminhos de storage e temporários
+    public $originalPostImages = []; // Usado para saber quais imagens deletar ao salvar
     // ------------------------------------------
 
     protected function rules()
@@ -42,6 +49,12 @@ class FeedPosts extends Component
         if ($this->isCoordinator) {
             $rules['newPostContent'] = 'required|string|max:5000';
             $rules['images.*'] = 'nullable|image|max:1024';
+        }
+        
+        // Regras para edição
+        if ($this->editingPostId) {
+             $rules['editingPostContent'] = 'required|string|max:5000';
+             $rules['newlyUploadedEditingImages.*'] = 'nullable|image|max:1024';
         }
 
         return $rules;
@@ -75,7 +88,7 @@ class FeedPosts extends Component
         }
     }
     
-    // --- MÉTODOS DE UPLOAD/IMAGEM ---
+    // --- UPLOAD/IMAGEM (Criação) ---
     public function updatedNewlyUploadedImages()
     {
         // Adiciona as imagens recém-selecionadas ao array de preview
@@ -90,6 +103,21 @@ class FeedPosts extends Component
             $this->images = array_values($this->images); 
         }
     }
+
+    // --- UPLOAD/IMAGEM (Edição) ---
+    public function updatedNewlyUploadedEditingImages()
+    {
+        $this->editingPostImages = array_merge($this->editingPostImages, $this->newlyUploadedEditingImages);
+        $this->newlyUploadedEditingImages = [];
+    }
+
+    public function removeEditingImage($index)
+    {
+        if (isset($this->editingPostImages[$index])) {
+            unset($this->editingPostImages[$index]);
+            $this->editingPostImages = array_values($this->editingPostImages);
+        }
+    }
     
     // --- MÉTODO DE CRIAÇÃO DO POST ---
     public function createPost()
@@ -99,7 +127,6 @@ class FeedPosts extends Component
              return;
         }
         
-        // Validação
         $this->validate([
             'newPostContent' => $this->rules()['newPostContent'],
             'images.*' => $this->rules()['images.*'],
@@ -108,7 +135,10 @@ class FeedPosts extends Component
         // 1. Processar upload das imagens
         $imagePaths = [];
         foreach ($this->images as $image) {
-            $imagePaths[] = $image->store('posts', 'public');
+            // Verifica se é um arquivo temporário antes de tentar store()
+            if (is_object($image) && method_exists($image, 'store')) {
+                $imagePaths[] = $image->store('posts', 'public');
+            }
         }
 
         // 2. Criar o Post
@@ -126,9 +156,100 @@ class FeedPosts extends Component
 
         session()->flash('success', 'Post criado com sucesso!');
     }
+    
+    // --- MÉTODOS DE EDIÇÃO ---
+    public function startEditPost(int $postId)
+    {
+        // Garante que APENAS o usuário criador possa editar
+        $post = Post::where('user_id', Auth::id())->findOrFail($postId);
+        
+        $this->editingPostId = $post->id;
+        $this->editingPostContent = $post->content;
+        $this->editingPostImages = $post->images ?? [];
+        $this->originalPostImages = $post->images ?? []; 
+        
+        $this->dispatch('openEditModal');
+    }
+
+    public function saveEditPost()
+    {
+        $post = Post::where('user_id', Auth::id())->findOrFail($this->editingPostId);
+
+        $this->validate([
+            'editingPostContent' => $this->rules()['editingPostContent'],
+            'newlyUploadedEditingImages.*' => $this->rules()['newlyUploadedEditingImages.*'], 
+        ]);
+        
+        $currentImages = [];
+        $newUploads = [];
+
+        // 1. Processar novas imagens e separar caminhos existentes
+        foreach ($this->editingPostImages as $image) {
+            if (is_object($image) && method_exists($image, 'store')) {
+                // É um novo arquivo temporário, fazer upload
+                $newUploads[] = $image->store('posts', 'public');
+            } elseif (is_string($image)) {
+                // É um caminho de arquivo existente no Storage
+                $currentImages[] = $image;
+            }
+        }
+        
+        // 2. Combinar imagens novas e antigas que não foram removidas
+        $finalImages = array_merge($currentImages, $newUploads);
+
+        // 3. Deletar imagens antigas que foram removidas do array
+        $imagesToDelete = array_diff($this->originalPostImages, $currentImages);
+        if (!empty($imagesToDelete)) {
+            Storage::disk('public')->delete($imagesToDelete);
+        }
+
+        // 4. Atualizar o Post
+        $post->update([
+            'content' => $this->editingPostContent,
+            'images' => $finalImages,
+        ]);
+        
+        session()->flash('success', 'Post atualizado com sucesso!');
+        $this->resetEditModal();
+        $this->resetPage();
+    }
+
+    public function resetEditModal()
+    {
+        $this->reset([
+            'editingPostId', 
+            'editingPostContent', 
+            'editingPostImages',
+            'originalPostImages',
+            'newlyUploadedEditingImages',
+        ]);
+        $this->dispatch('closeEditModal');
+    }
+
+    /**
+     * Deleta um post.
+     */
+    public function deletePost(int $postId)
+    {
+        // Garante que APENAS o usuário criador possa deletar
+        $post = Post::where('user_id', Auth::id())->findOrFail($postId);
+        
+        // Deleta as imagens do storage
+        if ($post->images) {
+            Storage::disk('public')->delete($post->images);
+        }
+        
+        $post->delete();
+
+        session()->flash('success', 'Post excluído com sucesso!');
+        $this->resetPage(); 
+        if ($this->selectedPostId === $postId) {
+            $this->closePostModal();
+        }
+    }
     // ------------------------------------
     
-    // --- MÉTODOS ORIGINAIS (Modal) ---
+    // --- MÉTODOS DE RESPOSTAS/MODAL ---
     public function openPostModal(int $postId)
     {
         $this->selectedPostId = $postId;
@@ -141,7 +262,7 @@ class FeedPosts extends Component
     {
         $this->selectedPostId = null;
         $this->expandedPost = null;
-        $this->resetPage(); // Mantido resetPage()
+        $this->resetPage();
     }
 
     public function createReply($postId)
@@ -183,6 +304,7 @@ class FeedPosts extends Component
             ->latest() 
             ->paginate(5);
 
+        // Mapeamento mantido para compatibilidade, embora não seja usado para mistura
         $feedItems = $posts->map(function ($post) {
             $post->type = 'post';
             $post->sort_date = $post->created_at; 
@@ -196,7 +318,7 @@ class FeedPosts extends Component
 
         return view('livewire.feed-posts', [
             'feedItems' => $feedItems,
-            'posts' => $posts, // Variável usada DENTRO do livewire/feed-posts.blade.php
+            'posts' => $posts,
         ]);
     }
 }
