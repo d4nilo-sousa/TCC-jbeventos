@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Event;
-use App\Models\Post;
+use App\Models\Post; // Removido da lógica de feed
 use Illuminate\Support\Facades\Auth;
 
 class FeedController extends Controller
@@ -16,9 +16,10 @@ class FeedController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Coleta de Eventos (apenas visíveis. Removido o filtro de data/expiração)
+        // 1. Coleta de Eventos (apenas visíveis e ordenados pelo agendamento mais recente)
         $events = Event::with(['eventCourse', 'eventCoordinator.userAccount', 'images', 'reactions'])
             ->where('visible_event', true)
+            ->latest('event_scheduled_at') // Ordena eventos por agendamento mais recente
             ->get()
             ->map(function ($event) {
                 $event->type = 'event';
@@ -27,18 +28,11 @@ class FeedController extends Controller
                 return $event;
             });
 
-        // 2. Posts serão carregados e gerenciados pelo componente Livewire FeedPosts.
-        $posts = Post::select('id', 'created_at')->get() // Busca apenas o necessário para ordenar
-            ->map(function ($post) {
-                $post->type = 'post';
-                $post->sort_date = $post->created_at; 
-                return $post;
-            });
+        // 2. Posts: A listagem e paginação está sendo feita inteiramente pelo componente Livewire app/livewire/FeedPosts.php
+        // Não é necessário buscar nem misturar posts aqui.
 
-        // 3. Combina e Ordena (do mais novo/agendado para o mais antigo)
-        $feedItems = $events->merge($posts)
-            ->sortByDesc('sort_date')
-            ->values();
+        // 3. O $feedItems conterá apenas os eventos para a coluna da esquerda.
+        $feedItems = $events->values();
 
         // Lógica para o Modal de Boas-Vindas (usando a sessão)
         $isFirstLogin = !$request->session()->has('has_seen_welcome_modal');
@@ -50,6 +44,7 @@ class FeedController extends Controller
             'feedItems' => $feedItems,
             'isFirstLogin' => $isFirstLogin,
             'user' => $user, 
+            // Variável 'posts' removida.
         ]);
     }
 }

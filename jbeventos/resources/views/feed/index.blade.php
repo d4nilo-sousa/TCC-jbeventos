@@ -34,11 +34,10 @@
             {{-- FILTRAGEM E SEPARAÇÃO DE EVENTOS E POSTS --}}
             @php
                 // Separa os itens do feed em duas coleções distintas para o layout de colunas
-                // O FeedController já filtrou os itens; aqui só os separamos
                 $events = $feedItems->filter(fn($item) => $item->type === 'event');
             @endphp
 
-            @if ($events->isNotEmpty() || true) {{-- Mantemos o layout mesmo se só houver posts (gerenciados pelo Livewire) --}}
+            @if ($events->isNotEmpty() || true)
                 {{-- LAYOUT PRINCIPAL DE DUAS COLUNAS --}}
                 {{-- Aplicado um grid de 2 colunas para telas maiores que 'md' --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -72,7 +71,7 @@
                                         <span class="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">EVENTO</span>
                                     </div>
                                 </a>
-                                                                
+                                            
                                 <div class="p-6">
                                     <div class="flex items-center mb-3 text-sm text-gray-500">
                                         <i class="ph-fill ph-graduation-cap mr-2 text-red-500"></i>
@@ -100,7 +99,6 @@
                                         {{ $item->event_description }}
                                     </p>
                                     
-                                    {{-- REMOVIDO: dark:text-gray-400, dark:border-gray-700 --}}
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-600 border-t border-gray-100 pt-4">
                                         <div class="flex items-center">
                                             <i class="ph-fill ph-calendar-check mr-2 text-red-600"></i>
@@ -112,7 +110,6 @@
                                         </div>
                                     </div>
                                     
-                                    {{-- REMOVIDO: dark:border-gray-700 --}}
                                     <div class="mt-5 flex items-center border-t border-gray-100 pt-4 space-x-6">
                                         
                                         {{-- Botão de Curtir --}}
@@ -149,25 +146,20 @@
                     <div class="space-y-6">
                         <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2"><i class="ph ph-article bg-red-600 text-white rounded-full p-1"></i> Posts</h2>
                         
-                        {{-- INTEGRAÇÃO LIVEWIRE: O componente Livewire FeedPosts fará o loop e a paginação dos posts --}}
+                        {{-- INTEGRAÇÃO LIVEWIRE: O componente Livewire FeedPosts fará o formulário, loop e a paginação dos posts --}}
                         @livewire('feed-posts')
-                        
-                        {{-- Caso o Livewire não consiga renderizar, mantemos um fallback básico (embora o Livewire deva renderizar o seu próprio estado vazio) --}}
-                        @if ($events->isEmpty() && $posts->isEmpty())
-                             <div class="p-4 bg-white rounded-xl shadow border border-gray-100 text-center text-gray-500">Nenhum post para exibir.</div>
-                        @endif
                     </div>
 
                 </div>
             @else
-                {{-- MENSAGEM QUANDO NÃO HOUVER ITENS (Fallback para Livewire em caso de erro no FeedController) --}}
+                {{-- MENSAGEM QUANDO NÃO HOUVER ITENS (Fallback: só há posts ou nada) --}}
                 <div class="max-w-2xl mx-auto space-y-6">
                     <div class="text-center py-10 bg-white rounded-xl shadow-lg border border-gray-200">
                         <i class="ph-bold ph-magnifying-glass text-5xl text-gray-400 mb-4"></i>
                         <p class="text-xl font-semibold text-gray-700">Nenhum conteúdo no feed.</p>
-                        <p class="text-gray-500 mt-2">Parece que ainda não há eventos ou posts recentes. Tente explorar novos cursos!</p>
+                        <p class="text-gray-500 mt-2">Parece que ainda não há eventos recentes. Tente explorar novos cursos!</p>
                         
-                        {{-- Chamada do Livewire para garantir que pelo menos o post form apareça, se for o caso --}}
+                        {{-- Chamada do Livewire para garantir que pelo menos o post form e posts apareçam --}}
                          <div class="mt-6">@livewire('feed-posts')</div>
                     </div>
                 </div>
@@ -192,13 +184,11 @@
                         class="h-16 mx-auto mb-4 object-contain"
                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/990000/ffffff?text=LOGO'">
     
-                    {{-- REMOVIDO: dark:text-white --}}
                     <h3 id="modal-title" class="text-3xl font-extrabold text-gray-900 mb-3">
-                        Bem-vindo(a) à Comunidade!
+                        Bem-vindo(a) ao feed do JB Eventos!
                     </h3>
-                    {{-- REMOVIDO: dark:text-gray-400 --}}
                     <p class="text-gray-600 text-lg mb-8">
-                        Seu portal de eventos e comunicações agora é a tela principal! 
+                        Fique por dentro dos principais eventos e posts da nossa escola! 
                         Encontre todos os eventos, notícias e posts em um só lugar, independente do seu papel na escola.
                     </p>
                     
