@@ -6,21 +6,21 @@
                 <div class="flex items-center">
                     {{-- Logo --}}
                     <div class="shrink-0 flex items-center">
-                        <a href="{{ route('dashboard') }}">
+                        <a href="{{ route('feed.index') }}">
                             <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[7rem] h-auto mx-auto">
                         </a>
                     </div>
 
                     {{-- Links de Navegação Principais (Desktop) --}}
                     <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex items-center">
-                        {{-- Dashboard (Visível para todos) --}}
-                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" class="text-gray-800 hover:text-red-500">
-                            <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
-                        </x-nav-link>
-
-                        {{-- Feed (Adicionado para todos) --}}
+                        {{-- Feed --}}
                         <x-nav-link href="{{ route('feed.index') }}" :active="request()->routeIs('feed.index')" class="text-gray-800 hover:text-red-500">
                             <i class="fa-solid fa-rss mr-2"></i> {{ __('Feed') }}
+                        </x-nav-link>
+
+                        {{-- Dashboard --}}
+                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" class="text-gray-800 hover:text-red-500">
+                            <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
                         </x-nav-link>
 
                         {{-- Explorar (Adicionado para todos) --}}
@@ -224,13 +224,13 @@
         <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
             {{-- Links de Navegação Mobile --}}
             <div class="pt-2 pb-3 space-y-1">
-                <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                    <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
-                </x-responsive-nav-link>
-
-                {{-- Feed (Mobile) --}}
+                {{-- Feed (Mobile ) --}}
                 <x-responsive-nav-link href="{{ route('feed.index') }}" :active="request()->routeIs('feed.index')">
                     <i class="fa-solid fa-rss mr-2"></i> {{ __('Feed') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+                    <i class="fa-solid fa-house-chimney mr-2"></i> {{ __('Dashboard') }}
                 </x-responsive-nav-link>
 
                 {{-- Explorar (Adicionado para todos) --}}
