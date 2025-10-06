@@ -46,16 +46,16 @@ class FortifyServiceProvider extends ServiceProvider
                 // Verifica o tipo do usuário e redireciona para a rota correspondente
                 if ($user->user_type === 'admin') {
                     // Redireciona para o painel do admin
-                    return redirect()->route('admin.dashboard');
+                    return redirect()->route('feed.index');
                 } elseif ($user->user_type === 'coordinator') {
                     // Redireciona para o painel do coordenador
-                    return redirect()->route('coordinator.dashboard');
+                    return redirect()->route('feed.index');
                 } else if ($user->user_type === 'user') {
                     // Redireciona para o painel do usuário comum
-                    return redirect()->route('user.dashboard');
+                    return redirect()->route('feed.index');
                 }
                 // Caso o tipo do usuário não seja nenhum dos anteriores, redireciona para a home padrão
-                return redirect('/home');
+                return redirect()->route('feed.index');
             }
         });
 
