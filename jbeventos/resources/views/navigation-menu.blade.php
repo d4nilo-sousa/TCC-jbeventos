@@ -21,25 +21,25 @@
 
                         {{-- Feed (Ícone Home moderno para Redes Sociais) --}}
                         <x-nav-link href="{{ route('feed.index') }}" :active="request()->routeIs('feed.index')" 
-                                    class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
-                                           {{ request()->routeIs('feed.index') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
+                                     class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
+                                            {{ request()->routeIs('feed.index') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
                             {{-- Ícone de Casa/Home em vez de RSS --}}
                             <i class="fa-solid fa-house text-xl"></i> 
                             <span class="hidden sm:inline ms-2">{{ __('Feed') }}</span>
                         </x-nav-link>
 
-                        {{-- Dashboard (Ícone para uma área de controle/perfil, ou mantenha o anterior se for um 'Home' secundário) --}}
+                        {{-- Dashboard --}}
                         <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')" 
-                                    class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
-                                           {{ request()->routeIs('dashboard') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
+                                     class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
+                                            {{ request()->routeIs('dashboard') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
                             <i class="fa-solid fa-house-chimney text-xl"></i> 
                             <span class="hidden sm:inline ms-2">{{ __('Dashboard') }}</span>
                         </x-nav-link>
 
                         {{-- Explorar --}}
                         <x-nav-link href="{{ route('explore.index') }}" :active="request()->routeIs('explore.*')" 
-                                    class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
-                                           {{ request()->routeIs('explore.*') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
+                                     class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
+                                            {{ request()->routeIs('explore.*') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
                             <i class="fa-solid fa-compass text-xl"></i> 
                             <span class="hidden sm:inline ms-2">{{ __('Explorar') }}</span>
                         </x-nav-link>
@@ -57,7 +57,7 @@
                                 </button>
                                 {{-- Dropdown Content --}}
                                 <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                     class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden" style="display: none;">
+                                    class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden" style="display: none;">
                                     <div class="py-1">
                                         <x-dropdown-link href="{{ route('events.index') }}" :active="request()->routeIs('events.index')">
                                             <i class="fa-solid fa-list mr-2"></i> {{ __('Listar Eventos') }}
@@ -71,7 +71,7 @@
                         @else
                             {{-- Link Eventos (para User e Admin) --}}
                             <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')" 
-                                        class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
+                                         class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
                                                {{ request()->routeIs('events.*') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
                                 <i class="fa-solid fa-calendar-days text-xl"></i> 
                                 <span class="hidden sm:inline ms-2">{{ __('Eventos') }}</span>
@@ -91,7 +91,7 @@
                                 </button>
                                 {{-- Dropdown Content --}}
                                 <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                     class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden" style="display: none;">
+                                    class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden" style="display: none;">
                                     <div class="py-1">
                                         <x-dropdown-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.index')">
                                             <i class="fa-solid fa-list mr-2"></i> {{ __('Listar Cursos') }}
@@ -105,7 +105,7 @@
                         @else
                             {{-- Link Cursos (para Coordenador e User) --}}
                             <x-nav-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.*')" 
-                                        class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
+                                         class="text-lg text-gray-700 hover:text-red-600 transition duration-150 ease-in-out px-3 py-2 rounded-lg 
                                                {{ request()->routeIs('courses.*') ? 'bg-red-50 text-red-600 font-semibold' : 'hover:bg-gray-50' }}">
                                 <i class="fa-solid fa-graduation-cap text-xl"></i> 
                                 <span class="hidden sm:inline ms-2">{{ __('Cursos') }}</span>
@@ -125,7 +125,7 @@
                                 </button>
                                 {{-- Dropdown Content --}}
                                 <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                                     class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden" style="display: none;">
+                                    class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden" style="display: none;">
                                     <div class="py-1">
                                         <x-dropdown-link href="{{ route('coordinators.index') }}" :active="request()->routeIs('coordinators.index')">
                                             <i class="fa-solid fa-list mr-2"></i> {{ __('Listar Coordenadores') }}
@@ -166,19 +166,25 @@
                         </x-dropdown>
                     </div>
 
-                    {{-- Dropdown de Perfil --}}
+                    {{-- Link direto para o Perfil (Ícone de Avatar) --}}
+                    {{-- Este é o método preferido agora --}}
+                    <a href="{{ route('profile.show') }}" class="hidden sm:block">
+                                <img src ="{{ Auth::user()->user_icon_url }}" alt="{{ Auth::user()->name }}" class="size-9 rounded-full object-cover border-2 border-gray-300 hover:border-red-500 transition shadow-md">
+                    </a>
+
+                    {{-- Dropdown de Configurações --}}
                     <div class="relative">
                         <x-dropdown align="right" width="48">
                             <x-slot name="trigger">
                                 @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                {{-- Avatar com foco sutil na cor principal --}}
-                                <button class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-red-500 transition shadow-md">
-                                    <img class="size-9 rounded-full object-cover" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
+                                <button class="flex items-center text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-red-500 transition shadow-md bg-gray-100 px-3 py-2 text-gray-700 hover:bg-gray-200">
+                                    {{-- Ícone de Configurações --}}
+                                    <i class="fa-solid fa-gear text-lg"></i>
                                 </button>
                                 @else
                                 <span class="inline-flex rounded-md">
                                     <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 bg-gray-100 hover:text-red-600 focus:outline-none transition">
-                                        {{ Auth::user()->name }}
+                                        {{ __('Configurações') }}
                                         <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
                                         </svg>
@@ -188,25 +194,21 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                {{-- Informação do Usuário em destaque no topo --}}
-                                <div class="block px-4 py-2 text-sm font-semibold text-red-600 border-b border-gray-100">
-                                    {{ Auth::user()->name }}
+                                {{-- Informação do Usuário no topo --}}
+                                <div class="px-4 py-3 border-b border-gray-100"> 
+                                    <div class="font-bold text-sm text-gray-800">{{ Auth::user()->name }}</div>
+                                    <div class="font-medium text-xs text-gray-500">{{ Auth::user()->email }}</div>
                                 </div>
                                 
-                                <div class="block px-4 py-2 text-xs text-gray-400">
-                                    {{ __('Gerenciar Conta') }}
-                                </div>
+                                {{-- O link Meu Perfil foi removido daqui para evitar redundância --}}
+                                {{-- O acesso ao perfil agora é feito SOMENTE clicando na foto de perfil ao lado --}}
 
-                                <x-dropdown-link href="{{ route('profile.show') }}">
-                                    <i class="fa-solid fa-user-circle mr-2"></i> {{ __('Perfil') }}
-                                </x-dropdown-link>
-                                
-                                <x-dropdown-link href="{{ route('settings') }}">
+                                <x-dropdown-link href="{{ route('settings') }}" class="py-3">
                                     <i class="fa-solid fa-gear mr-2"></i> {{ __('Configurações') }}
                                 </x-dropdown-link>
 
                                 @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
-                                <x-dropdown-link href="{{ route('api-tokens.index') }}">
+                                <x-dropdown-link href="{{ route('api-tokens.index') }}" class="py-3">
                                     <i class="fa-solid fa-key mr-2"></i> {{ __('API Tokens') }}
                                 </x-dropdown-link>
                                 @endif
@@ -216,7 +218,7 @@
                                 <form method="POST" action="{{ route('logout') }}" x-data>
                                     @csrf
                                     {{-- Botão de sair em vermelho para destaque --}}
-                                    <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();" class="text-red-500 hover:bg-red-50">
+                                    <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();" class="text-red-500 hover:bg-red-50 py-3">
                                         <i class="fa-solid fa-right-from-bracket mr-2"></i> {{ __('Sair') }}
                                     </x-dropdown-link>
                                 </form>
