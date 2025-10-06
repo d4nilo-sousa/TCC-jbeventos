@@ -12,6 +12,5 @@ import './image-viewer';
 import './preview-images';
 import './search-highlight';
 import './modal-actions';
-import './upload-dropzone';
 import './tabs-navigation';
 import './delete-images';

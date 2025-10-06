@@ -10,10 +10,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ==== CURSOS ====
     const courseIconInput = document.getElementById('course_icon');
-    const courseIconPreview = document.getElementById('course_icons_preview');
+    // CORRIGIDO: O ID correto é 'course_icon_preview' (sem 's')
+    const courseIconPreview = document.getElementById('course_icon_preview'); 
 
     const courseBannerInput = document.getElementById('course_banner');
-    const courseBannerPreview = document.getElementById('course_banners_preview');
+    // CORRIGIDO: O ID correto é 'course_banner_preview' (sem 's')
+    const courseBannerPreview = document.getElementById('course_banner_preview'); 
 
     // ==== FUNÇÃO GENÉRICA PARA CRIAR ITENS ====
     function createFileItem(file, container, onRemove) {
@@ -102,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function () {
         eventImagesInput.files = dataTransfer.files;
     }
 
-    // ==== FUNÇÃO PARA EXCLUIR IMAGENS EXISTENTES ====
+    // ==== FUNÇÃO PARA EXCLUIR IMAGENS EXISTENTES (EVENTOS) ====
     window.deleteExistingImage = function(id, button) {
         const container = button.closest('div[data-id]');
         if (!container) return;
@@ -124,7 +126,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const file = e.target.files[0];
             if (!file) return;
 
+            // 1. Remove o preview anterior (existente ou novo)
             courseIconPreview.innerHTML = '';
+            
+            // 2. Garante que o input hidden 'remove_course_icon' é resetado
+            document.querySelector('input[name="remove_course_icon"]').value = 0;
+
+            // 3. Cria o preview do novo arquivo
             createFileItem(file, courseIconPreview, () => {
                 courseIconPreview.innerHTML = '';
                 courseIconInput.value = '';
@@ -138,7 +146,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const file = e.target.files[0];
             if (!file) return;
 
+            // 1. Remove o preview anterior (existente ou novo)
             courseBannerPreview.innerHTML = '';
+            
+            // 2. Garante que o input hidden 'remove_course_banner' é resetado
+            document.querySelector('input[name="remove_course_banner"]').value = 0;
+
+            // 3. Cria o preview do novo arquivo
             createFileItem(file, courseBannerPreview, () => {
                 courseBannerPreview.innerHTML = '';
                 courseBannerInput.value = '';

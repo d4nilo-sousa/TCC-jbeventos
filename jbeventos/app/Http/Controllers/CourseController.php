@@ -122,7 +122,7 @@ class CourseController extends Controller
         $course->update($data);
 
         // Redireciona para a lista com mensagem de sucesso
-        return redirect()->route('courses.index')->with('success', 'Curso atualizado com sucesso');
+        return redirect()->route('courses.show', $course->id)->with('success', 'Curso atualizado com sucesso!');
     }
 
     public function destroy(string $id)

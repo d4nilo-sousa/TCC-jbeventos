@@ -70,26 +70,24 @@
                     <div class="flex items-center justify-between">
                         <h1 class="text-xl font-bold text-stone-800">{{ $course->course_name }}</h1>
 
-                       {{-- Botão de Seguir/Deixar de Seguir --}}
-@auth
-    <div>
-        @if (auth()->user()->followedCourses->contains($course->id))
-            <button type="button"
-                class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
-                id="unfollowButton"
-                data-course-id="{{ $course->id }}">
-                ✔ Seguindo
-            </button>
-        @else
-            <button type="button"
-                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
-                id="followButton"
-                data-course-id="{{ $course->id }}">
-                + Seguir
-            </button>
-        @endif
-    </div>
-@endauth
+                        {{-- Botão de Seguir/Deixar de Seguir --}}
+                        @auth
+                            <div data-course-id="{{ $course->id }}">
+                                @if (auth()->user()->followedCourses->contains($course->id))
+                                    <button type="button"
+                                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
+                                        id="unfollowButton" data-course-id="{{ $course->id }}">
+                                        ✔ Seguindo
+                                    </button>
+                                @else
+                                    <button type="button"
+                                        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
+                                        id="followButton" data-course-id="{{ $course->id }}">
+                                        + Seguir
+                                    </button>
+                                @endif
+                            </div>
+                        @endauth
                     </div>
 
                     {{-- Contagem de Membros --}}
@@ -128,7 +126,13 @@
 
                         {{-- Visualização da Descrição --}}
                         <div x-show="!isEditing" class="prose max-w-none text-gray-700 text-sm">
-                            <p class="text-sm text-gray-700">{{ $course->course_description }}</p>
+                            <p class="text-sm text-gray-700">
+                                @if ($course->course_description)
+                                    {{ $course->course_description }}
+                                @else
+                                    (Sem descrição)
+                                @endif
+                            </p>
                         </div>
 
                         {{-- Formulário de Edição (Somente para admin) --}}
@@ -174,7 +178,7 @@
                                 </svg>
                                 Excluir Curso
                             </button>
-                            
+
                             {{-- Formulário de Exclusão --}}
                             <form id="deleteCourseForm" action="{{ route('courses.destroy', $course->id) }}"
                                 method="POST" class="hidden">
@@ -300,3 +304,80 @@
 
 {{-- Scripts compilados --}}
 @vite('resources/js/app.js')
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.querySelector('div[data-course-id]'); // Tenta encontrar o container do botão
+
+        if (container) {
+            container.addEventListener('click', function(e) {
+                const button = e.target.closest('button');
+                if (!button || !button.dataset.courseId) return;
+
+                const courseId = button.dataset.courseId;
+                let method, url;
+
+                if (button.id === 'followButton') {
+                    // Lógica para SEGUIR
+                    method = 'POST';
+                    // Assumindo uma rota como: /courses/123/follow
+                    url = `/courses/${courseId}/follow`;
+                } else if (button.id === 'unfollowButton') {
+                    // Lógica para DEIXAR DE SEGUIR
+                    method = 'DELETE';
+                    // Assumindo uma rota como: /courses/123/unfollow
+                    url = `/courses/${courseId}/unfollow`;
+                } else {
+                    return;
+                }
+
+                // Desabilita o botão para prevenir cliques duplos
+                button.disabled = true;
+
+                fetch(url, {
+                        method: method,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Falha na operação. Status: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // 1. Atualiza o visual do botão
+                        updateButtonState(button, method);
+
+                        // 2. Reabilita o botão
+                        button.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao processar a solicitação. Tente novamente.');
+                        button.disabled = false; // Reabilita em caso de erro
+                    });
+            });
+        }
+
+        function updateButtonState(currentButton, currentMethod) {
+            if (currentMethod === 'POST') {
+                // Se a operação foi POST (Seguir), muda para o estado 'Seguindo'
+                currentButton.id = 'unfollowButton';
+                currentButton.textContent = '✔ Seguindo';
+                currentButton.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                currentButton.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
+            } else if (currentMethod === 'DELETE') {
+                // Se a operação foi DELETE (Deixar de Seguir), muda para o estado 'Seguir'
+                currentButton.id = 'followButton';
+                currentButton.textContent = '+ Seguir';
+                currentButton.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
+                currentButton.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+            }
+        }
+    });
+</script>

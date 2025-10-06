@@ -178,7 +178,8 @@
     </div>
 </x-app-layout>
 
-{{-- Script para as abas --}}
+@vite('resources/js/app.js');
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const tabs = document.querySelectorAll('.tab-content');
@@ -254,18 +255,13 @@
             });
         });
 
-        // Exibe aba inicial com base na rota
         const path = window.location.pathname;
 
-        const eventCreate = path === '/coordinator/events/create';
-        const eventEdit = /^\/coordinator\/events\/\d+\/edit$/.test(path);
-        const courseCreate = path === '/admin/courses/create';
-        const courseEdit = /^\/admin\/courses\/\d+\/edit$/.test(path);
+        const isCreate = path === '/admin/courses/create';
+        const isEdit = /^\/admin\/courses\/\d+\/edit$/.test(path);
 
-        if ((eventEdit || courseCreate || courseEdit) && document.getElementById('tab1')) {
+        if ((isCreate || isEdit) && document.getElementById('tab1')) {
             showTab('tab1');
-        } else if (eventCreate && document.getElementById('tab-media')) {
-            showTab('tab-media');
         }
-    })
+    });
 </script>
