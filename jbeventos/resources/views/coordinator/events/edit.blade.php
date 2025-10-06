@@ -200,10 +200,13 @@
 
                                 <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
                                     @foreach ($event->images as $img)
-                                        <div data-id="{{ $img->id }}">
+                                        <div data-id="{{ $img->id }}"
+                                            data-filename="{{ basename($img->image_path) }}">
                                             <input type="text" value="{{ basename($img->image_path) }}" readonly
                                                 style="cursor: default;">
-                                            <button type="button" onclick="deleteImage({{ $img->id }}, this)"
+
+                                            <button type="button"
+                                                onclick="deleteImage({{ $img->id }}, this, 'event')"
                                                 style="background-color: #007BFF; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
                                                 onmouseenter="this.style.backgroundColor='#0056b3'"
                                                 onmouseleave="this.style.backgroundColor='#007BFF'">
@@ -215,8 +218,6 @@
                                         </div>
                                     @endforeach
                                 </div>
-
-
                                 @error('event_images')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
