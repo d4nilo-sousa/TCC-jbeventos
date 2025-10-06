@@ -137,14 +137,13 @@
                         <div class="space-y-6">
                             <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Imagens do Evento</h3>
 
-                            {{-- Imagem de Capa --}}
                             <div>
                                 <label for="event_image" class="block font-medium text-gray-700 mb-2">Imagem de
                                     Capa</label>
                                 <div id="dropzone-cover"
                                     class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
                                     <input type="file" name="event_image" id="event_image" accept="image/*"
-                                        class="hidden">
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                     <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -176,7 +175,6 @@
                                 </div>
                             </div>
 
-                            {{-- Outras Imagens (Galeria) --}}
                             <div>
                                 <label for="event_images" class="block font-medium text-gray-700 mb-2">Galeria de
                                     Imagens</label>
@@ -184,7 +182,7 @@
                                 <div id="dropzone-gallery"
                                     class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
                                     <input type="file" name="event_images[]" id="event_images" accept="image/*"
-                                        class="hidden" multiple>
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" multiple>
                                     <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -200,10 +198,13 @@
 
                                 <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
                                     @foreach ($event->images as $img)
-                                        <div data-id="{{ $img->id }}">
+                                        <div data-id="{{ $img->id }}"
+                                            data-filename="{{ basename($img->image_path) }}">
                                             <input type="text" value="{{ basename($img->image_path) }}" readonly
                                                 style="cursor: default;">
-                                            <button type="button" onclick="deleteImage({{ $img->id }}, this)"
+
+                                            <button type="button"
+                                                onclick="deleteImage({{ $img->id }}, this, 'event')"
                                                 style="background-color: #007BFF; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
                                                 onmouseenter="this.style.backgroundColor='#0056b3'"
                                                 onmouseleave="this.style.backgroundColor='#007BFF'">
@@ -215,8 +216,6 @@
                                         </div>
                                     @endforeach
                                 </div>
-
-
                                 @error('event_images')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -235,6 +234,7 @@
                                 </button>
                             </div>
                         </div>
+                    </div>
                 </form>
             </div>
         </div>

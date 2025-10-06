@@ -7,24 +7,27 @@ use App\Models\Course;
 
 class CourseFollowController extends Controller
 {
-    //Seguir um Curso
-    public function follow(Course $course){
+    public function follow(Course $course)
+    {
         $user = auth()->user();
         
-        if(!$user->followedCourses->contains($course->id)){ //Verifica se o usuário segue o curso
-            $user->followedCourses()->attach($course->id);
-        }
+        $user->followedCourses()->syncWithoutDetaching([$course->id]);
 
-        return back()->with('success', 'Você está seguindo este curso');
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Você está seguindo este curso.'
+        ]);
     }
 
-    public function unfollow(Course $course){
+    public function unfollow(Course $course)
+    {
         $user = auth()->user();
         
-        if($user->followedCourses->contains($course->id)){ //Verifica se o usuário segue o curso
-            $user->followedCourses()->detach($course->id); //Desvincula o usuário do curso
-        }
+        $user->followedCourses()->detach($course->id); 
 
-        return back()->with('success', ' Vocé deixou de seguir este curso');
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Você deixou de seguir este curso.'
+        ]);
     }
 }

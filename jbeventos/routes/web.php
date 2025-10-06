@@ -15,8 +15,8 @@ use App\Http\Controllers\VisibilityController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\PartialController;
 use App\Http\Controllers\ExploreController;
-use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\FeedController;
+use App\Http\Controllers\ImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -165,5 +165,14 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::post('/courses/{course}/follow', [CourseFollowController::class, 'follow'])->name('courses.follow');
     Route::delete('/courses/{course}/unfollow', [CourseFollowController::class, 'unfollow'])->name('courses.unfollow');
 
-    Route::delete('/event-images/{id}', [EventImageController::class, 'destroy'])->name('event-images.destroy');
+    Route::delete('/event-images/{id}', [ImageController::class, 'destroyEventImage'])
+        ->name('event-images.destroy');
+
+    Route::delete('/course-icons/{id}', [ImageController::class, 'destroyCourseImage'])
+        ->defaults('type', 'icon')
+        ->name('course-icons.destroy');
+
+    Route::delete('/course-banners/{id}', [ImageController::class, 'destroyCourseImage'])
+        ->defaults('type', 'banner')
+        ->name('course-banners.destroy');
 });

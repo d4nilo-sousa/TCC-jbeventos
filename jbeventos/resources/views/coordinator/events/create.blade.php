@@ -72,14 +72,13 @@
                         <div id="tab-media" class="tab-content active space-y-6">
                             <h3 class="text-xl font-semibold text-gray-700 border-b pb-2">Imagens do Evento</h3>
 
-                            {{-- Imagem de Capa --}}
                             <div>
                                 <label for="event_image" class="block font-medium text-gray-700 mb-2">Imagem de
                                     Capa</label>
                                 <div id="dropzone-cover"
                                     class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
                                     <input type="file" name="event_image" id="event_image" accept="image/*"
-                                        class="hidden">
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                                     <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -96,14 +95,13 @@
                                 @enderror
                             </div>
 
-                            {{-- Galeria de Imagens --}}
                             <div>
                                 <label for="event_images" class="block font-medium text-gray-700 mb-2">Galeria de
                                     Imagens</label>
                                 <div id="dropzone-gallery"
                                     class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
                                     <input type="file" name="event_images[]" id="event_images" accept="image/*"
-                                        class="hidden" multiple>
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" multiple>
                                     <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
