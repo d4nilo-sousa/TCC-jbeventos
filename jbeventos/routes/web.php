@@ -17,6 +17,7 @@ use App\Http\Controllers\PartialController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\LandingPageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,9 @@ Route::get('/', fn() => redirect()->route('login'));
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+
+
+    Route::get('/landing', [LandingPageController::class,'index'])->name('landing.index');
 
     //rota do feed
     Route::get('/feed',[FeedController::class,'index'])->name('feed.index');

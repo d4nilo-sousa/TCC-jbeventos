@@ -181,7 +181,7 @@
                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/990000/ffffff?text=LOGO'">
     
                     {{-- REMOVIDO: dark:text-white --}}
-                    <h3 id="modal-title" class="text-3xl font-extrabold text-gray-900 mb-3">
+                    <h3 id="modal-title" class="text-3xl font-extrabold text-gray-900 font-ubuntu mb-3">
                         Bem-vindo(a) à Comunidade!
                     </h3>
                     {{-- REMOVIDO: dark:text-gray-400 --}}

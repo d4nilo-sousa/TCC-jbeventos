@@ -13,7 +13,7 @@
 
             <!-- Título -->
             <div class="text-center mb-5">
-                <h1 class="text-3xl font-thin text-stone-500 font-poppins">Olá, seja bem-vindo!</h1>
+                <h1 class="text-3xl font-thin text-stone-500 font-ubuntu">Olá, seja bem-vindo!</h1>
                 <p class="mt-2 text-sm text-stone-400">Cadastre-se para continuar</p>
                 <hr class="w-1/4 mx-auto">
             </div>
@@ -24,19 +24,19 @@
             <div>
                 <x-label for="name" value="{{ __('Nome') }}" />
                 <x-input id="name" class="block mt-1 w-full placeholder-gray-300 placeholder" type="text"
-                    name="name" :value="old('name')" required autofocus autocomplete="name"
+                    name="name" spellcheck="false" autocomplete="off" :value="old('name')" required autofocus 
                     placeholder="Digite seu nome" />
             </div>
 
             <!-- Gmail -->
             <div class="mt-4">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full placeholder-gray-300" type="email" name="email" :value="old('email')"
-                    placeholder="exemplo@gmail.com" required autocomplete="username" />
+                <x-input id="email" class="block mt-1 w-full placeholder-gray-300" autocomplete="off" spellcheck="false" name="email" :value="old('email')"
+                    placeholder="exemplo@gmail.com" required  />
             </div>
 
             <!-- Campo de senha e confirmar senha -->
-            <div class="flex items-center gap-3 mt-4 mb-6" >
+            <div class="flex items-center gap-3 mt-4 mb-6">
                 <!-- Campo de Senha com botão olho -->
                 <div class="">
                     <x-label for="password" value="{{ __('Senha') }}" />

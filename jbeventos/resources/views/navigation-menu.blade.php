@@ -6,7 +6,7 @@
                 <div class="flex items-center">
                     {{-- Logo --}}
                     <div class="shrink-0 flex items-center">
-                        <a href="{{ route('dashboard') }}">
+                        <a href="{{ route('landing.index') }}">
                             <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[7rem] h-auto mx-auto">
                         </a>
                     </div>

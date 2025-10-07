@@ -28,7 +28,7 @@
             <div class="mt-5">
                 <x-label for="email" value="{{ __('Email') }}" />
                 <x-input id="email" class="block mt-1 w-full placeholder-gray-300 font-ubuntu" type="email" name="email"
-                    :value="old('email')" required autofocus autocomplete="off" placeholder="exemplo@gmail.com" />
+                    :value="old('email')" required autofocus autocomplete="on" placeholder="exemplo@gmail.com" />
             </div>
 
             <!-- Senha -->
@@ -67,7 +67,7 @@
 
             <div class="flex items-center justify-center mt-3">
                 <x-button class="bg-red-600 hover:bg-red-700 w-full h-10">
-                    {{ __('Entrar') }}
+                    {{ __('Login') }}
                 </x-button>
             </div>
         </form>
