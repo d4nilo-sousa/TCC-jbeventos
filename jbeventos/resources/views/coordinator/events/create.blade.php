@@ -141,7 +141,7 @@
                             </h3>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {{-- Nome do evento --}}
+                                {{-- Nome do Evento --}}
                                 <div>
                                     <x-input-label for="event_name" value="Nome do Evento" />
                                     <x-text-input type="text" name="event_name" id="event_name"
@@ -151,7 +151,7 @@
                                     @enderror
                                 </div>
 
-                                {{-- Local do evento --}}
+                                {{-- Local do Evento --}}
                                 <div>
                                     <x-input-label for="event_location" value="Local" />
                                     <x-text-input type="text" name="event_location" id="event_location"
@@ -162,12 +162,24 @@
                                 </div>
                             </div>
 
-                            {{-- Descrição do evento --}}
+                            {{-- Breve Descrição do evento --}}
                             <div>
-                                <x-input-label for="event_description" value="Descrição" />
-                                <textarea name="event_description" id="event_description" rows="4"
-                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('event_description') }}</textarea>
+                                <x-input-label for="event_description" value="Breve Descrição" />
+                                <input type="text" name="event_description" id="event_description" maxlength="90"
+                                    {{-- Altere esse valor para o limite desejado --}} value="{{ old('event_description') }}"
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    required />
                                 @error('event_description')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            {{-- Sobre o Evento --}}
+                            <div>
+                                <x-input-label for="event_info" value="Sobre o Evento" />
+                                <textarea name="event_info" id="event_info" rows="4"
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('event_info') }}</textarea>
+                                @error('event_info')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -222,90 +234,75 @@
                                     @enderror
                                 </div>
 
-                                {{-- Intervalo de Datas --}}
+                                {{-- Exclusão Automática --}}
                                 <div>
-                                    <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Data
-                                        Inicial</label>
-                                    <input type="date" name="start_date" id="start_date"
-                                        value="{{ request('start_date') }}"
-                                        class="w-full rounded-md border-gray-300 text-sm mb-2">
-                                    @error('start_date')
+                                    <x-input-label for="event_expired_at" value="Exclusão Automática" />
+                                    <x-text-input type="datetime-local" name="event_expired_at" id="event_expired_at"
+                                        min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
+                                        value="{{ old('event_expired_at') }}" />
+                                    @error('event_expired_at')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
-                                </div>
-                                <div>
-                                    <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Data
-                                        Final</label>
-                                    <input type="date" name="end_date" id="end_date"
-                                        value="{{ request('end_date') }}"
-                                        class="w-full rounded-md border-gray-300 text-sm">
-                                    <div id="endDateError" class="text-red-600 text-sm mt-1" style="display:none;">A
-                                        data final deve ser pelo menos 1 dia após a data inicial.</div>
-                                    @error('end_date')
-                                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                {{-- Coordenador e Tipo do Evento --}}
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <x-input-label for="coordinator_name" value="Coordenador Responsável" />
-                                        <x-text-input id="coordinator_name" type="text"
-                                            class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
-                                            value="{{ auth()->user()->name }}" readonly disabled />
-                                        <input type="hidden" name="coordinator_id"
-                                            value="{{ auth()->user()->coordinator->id }}">
-                                    </div>
-                                    @php
-                                        $coordinatorType = auth()->user()->coordinator->coordinator_type;
-                                        $eventTypeLabel =
-                                            $coordinatorType === 'course' ? 'Evento de Curso' : 'Evento Geral';
-                                        $courseName =
-                                            $coordinatorType === 'course' &&
-                                            auth()->user()->coordinator->coordinatedCourse
-                                                ? auth()->user()->coordinator->coordinatedCourse->course_name
-                                                : 'Nenhum';
-                                        $courseId =
-                                            $coordinatorType === 'course' &&
-                                            auth()->user()->coordinator->coordinatedCourse
-                                                ? auth()->user()->coordinator->coordinatedCourse->id
-                                                : '';
-                                    @endphp
-                                    <div>
-                                        <x-input-label for="event_type" value="Tipo do Evento" />
-                                        <x-text-input id="coordinator_type" type="text"
-                                            class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
-                                            value="{{ $eventTypeLabel }}" readonly disabled />
-                                        <input type="hidden" name="coordinator_type"
-                                            value="{{ $coordinatorType }}">
-                                    </div>
-                                </div>
-
-                                {{-- Curso do evento (se aplicável) --}}
-                                @if ($coordinatorType === 'course')
-                                    <div class="md:col-span-2">
-                                        <x-input-label for="event_course" value="Curso" />
-                                        <x-text-input id="course_name" type="text"
-                                            class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
-                                            value="{{ $courseName }}" readonly disabled />
-                                        <input type="hidden" name="course_id" value="{{ $courseId }}">
-                                    </div>
-                                @endif
-
-                                <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
-
-                                <div class="flex justify-between">
-                                    <button type="button" data-prev-tab="tab-info"
-                                        class="prev-button inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
-                                        Anterior
-                                    </button>
-                                    {{-- BOTÃO DE SUBMISSÃO --}}
-                                    <button type="submit"
-                                        class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-green-600 hover:bg-green-700 transition ease-in-out duration-150">
-                                        Criar Evento
-                                    </button>
                                 </div>
                             </div>
+
+                            {{-- Coordenador e Tipo do Evento --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <x-input-label for="coordinator_name" value="Coordenador Responsável" />
+                                    <x-text-input id="coordinator_name" type="text"
+                                        class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                        value="{{ auth()->user()->name }}" readonly disabled />
+                                    <input type="hidden" name="coordinator_id"
+                                        value="{{ auth()->user()->coordinator->id }}">
+                                </div>
+                                @php
+                                    $coordinatorType = auth()->user()->coordinator->coordinator_type;
+                                    $eventTypeLabel =
+                                        $coordinatorType === 'course' ? 'Evento de Curso' : 'Evento Geral';
+                                    $courseName =
+                                        $coordinatorType === 'course' && auth()->user()->coordinator->coordinatedCourse
+                                            ? auth()->user()->coordinator->coordinatedCourse->course_name
+                                            : 'Nenhum';
+                                    $courseId =
+                                        $coordinatorType === 'course' && auth()->user()->coordinator->coordinatedCourse
+                                            ? auth()->user()->coordinator->coordinatedCourse->id
+                                            : '';
+                                @endphp
+                                <div>
+                                    <x-input-label for="event_type" value="Tipo do Evento" />
+                                    <x-text-input id="coordinator_type" type="text"
+                                        class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                        value="{{ $eventTypeLabel }}" readonly disabled />
+                                    <input type="hidden" name="coordinator_type" value="{{ $coordinatorType }}">
+                                </div>
+                            </div>
+
+                            {{-- Curso do evento (se aplicável) --}}
+                            @if ($coordinatorType === 'course')
+                                <div class="md:col-span-2">
+                                    <x-input-label for="event_course" value="Curso" />
+                                    <x-text-input id="course_name" type="text"
+                                        class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                        value="{{ $courseName }}" readonly disabled />
+                                    <input type="hidden" name="course_id" value="{{ $courseId }}">
+                                </div>
+                            @endif
+
+                            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
+
+                            <div class="flex justify-between">
+                                <button type="button" data-prev-tab="tab-info"
+                                    class="prev-button inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
+                                    Anterior
+                                </button>
+                                {{-- BOTÃO DE SUBMISSÃO --}}
+                                <button type="submit"
+                                    class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-green-600 hover:bg-green-700 transition ease-in-out duration-150">
+                                    Criar Evento
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 @endif
             </div>

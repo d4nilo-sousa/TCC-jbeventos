@@ -171,7 +171,8 @@ class EventController extends Controller
     {
         $request->validate([
             'event_name' => 'required|unique:events,event_name',
-            'event_description' => 'nullable|string',
+            'event_description' => 'required|string',
+            'event_info' => 'nullable|string|max:2000',
             'event_location' => 'required|string',
             'event_scheduled_at' => 'required|date',
             'event_expired_at' => 'nullable|date_format:Y-m-d\TH:i|after:event_scheduled_at',
@@ -186,11 +187,13 @@ class EventController extends Controller
         $data = $request->only([
             'event_name',
             'event_description',
+            'event_info',              
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
             'visible_event'
         ]);
+
 
         if ($request->hasFile('event_image')) {
             $upload = $request->file('event_image');
