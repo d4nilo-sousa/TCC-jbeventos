@@ -21,11 +21,10 @@
     @endpush
     
     <div class="py-10 bg-gray-50 min-h-screen"> 
-        {{-- Aumentado o max-w para suportar 2 colunas e mx-auto para centralizar --}}
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-16 space-y-6">
 
             <div class="bg-white shadow rounded-xl p-4 sm:p-6 border border-gray-200">
-                <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
+                <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
                 <p class="text-gray-600">
                     Descubra eventos importantes e posts das áreas que você segue.
                 </p>
@@ -39,8 +38,7 @@
 
             @if ($events->isNotEmpty() || true)
                 {{-- LAYOUT PRINCIPAL DE DUAS COLUNAS --}}
-                {{-- Aplicado um grid de 2 colunas para telas maiores que 'md' --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                     
                     {{-- COLUNA ESQUERDA: EVENTOS --}}
                     <div class="space-y-6">
