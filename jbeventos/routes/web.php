@@ -58,7 +58,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
         // CRUD de coordenadores
-        Route::resource('coordinators', CoordinatorController::class);
+        Route::resource('coordinators', CoordinatorController::class)->except(['show']);
 
         // CRUD de cursos
         Route::resource('courses', CourseController::class);
@@ -151,6 +151,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     */
     Route::post('/courses/{course}/follow', [CourseFollowController::class, 'follow'])->name('courses.follow');
     Route::delete('/courses/{course}/unfollow', [CourseFollowController::class, 'unfollow'])->name('courses.unfollow');
+
+    Route::get('/courses/{course}/followers-count', [CourseFollowController::class, 'followersCount'])
+    ->name('courses.followersCount');
 
     Route::delete('/event-images/{id}', [ImageController::class, 'destroyEventImage'])
         ->name('event-images.destroy');

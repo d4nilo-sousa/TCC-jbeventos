@@ -30,4 +30,14 @@ class CourseFollowController extends Controller
             'message' => 'Você deixou de seguir este curso.'
         ]);
     }
+
+    // Novo método para retornar contagem
+    public function followersCount(Course $course)
+    {
+        $count = $course->followers()->count();
+
+        return response()->json([
+            'count' => $count
+        ]);
+    }
 }

@@ -10,54 +10,44 @@ use Illuminate\Support\Facades\Hash;
 
 class CoordinatorController extends Controller
 {
-    // Lista todos os coordenadores com seus dados de usuário relacionados
     public function index()
     {
         $coordinators = Coordinator::with('userAccount')->get();
         return view('admin.coordinators.index', compact('coordinators'));
     }
 
-    // Exibe o formulário para criar um novo coordenador
     public function create()
     {
-        // Se a view de criação precisar de cursos, adicione a busca aqui
         $courses = Course::all();
         return view('admin.coordinators.create', compact('courses'));
     }
 
-    // Armazena um novo coordenador e o usuário associado após validar os dados
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'coordinator_type' => 'required|in:general,course',
-        ]);
 
-        // Cria o usuário coordenador com senha criptografada e verificação de email
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'user_type' => 'coordinator',
-        ]);
+    $email = strtolower($request->input('email'));
 
-        // Cria o coordenador vinculando ao usuário criado
-        Coordinator::create([
-            'user_id' => $user->id,
-            'coordinator_type' => $request->coordinator_type,
-        ]);
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:8',
+        'coordinator_type' => 'required|in:general,course',
+    ]);
 
-        return redirect()->route('coordinators.index')->with('success', 'Coordenador criado com sucesso!');
-    }
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $email,
+        'password' => Hash::make($request->password),
+        'user_type' => 'coordinator',
+    ]);
 
-    // Exibe os detalhes de um coordenador específico
-    public function show(string $id)
-    {
-        $coordinator = Coordinator::with('userAccount')->findOrFail($id);
-        return view('admin.coordinators.show', compact('coordinator'));
-    }
+    Coordinator::create([
+        'user_id' => $user->id,
+        'coordinator_type' => $request->coordinator_type,
+    ]);
+
+    return redirect()->route('coordinators.index')->with('success', 'Coordenador criado com sucesso!');
+}
 
     // Exibe o formulário para editar um coordenador existente
     public function edit(string $id)
