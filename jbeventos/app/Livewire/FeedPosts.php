@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\Builder; // Importação útil para o query builder
 
 class FeedPosts extends Component
 {
@@ -35,9 +36,9 @@ class FeedPosts extends Component
     // --- PROPRIEDADES PARA EDIÇÃO DE POSTS ---
     public ?int $editingPostId = null; 
     public $editingPostContent = '';
-    public $newlyUploadedEditingImages = []; // Novos uploads no modal de edição
-    public $editingPostImages = []; // Array que mistura caminhos de storage e temporários
-    public $originalPostImages = []; // Usado para saber quais imagens deletar ao salvar
+    public $newlyUploadedEditingImages = []; 
+    public $editingPostImages = []; 
+    public $originalPostImages = []; 
     // ------------------------------------------
 
     protected function rules()
@@ -91,7 +92,6 @@ class FeedPosts extends Component
     // --- UPLOAD/IMAGEM (Criação) ---
     public function updatedNewlyUploadedImages()
     {
-        // Adiciona as imagens recém-selecionadas ao array de preview
         $this->images = array_merge($this->images, $this->newlyUploadedImages);
         $this->newlyUploadedImages = [];
     }
@@ -132,24 +132,20 @@ class FeedPosts extends Component
             'images.*' => $this->rules()['images.*'],
         ]);
 
-        // 1. Processar upload das imagens
         $imagePaths = [];
         foreach ($this->images as $image) {
-            // Verifica se é um arquivo temporário antes de tentar store()
             if (is_object($image) && method_exists($image, 'store')) {
                 $imagePaths[] = $image->store('posts', 'public');
             }
         }
 
-        // 2. Criar o Post
         Post::create([
             'user_id' => Auth::id(),
-            'course_id' => $this->newPostCourseId, // Usa o ID pré-definido
+            'course_id' => $this->newPostCourseId, 
             'content' => $this->newPostContent,
             'images' => $imagePaths,
         ]);
 
-        // 3. Limpar formulário e emitir evento
         $this->reset('newPostContent', 'newlyUploadedImages', 'images');
         $this->dispatch('postCreated'); 
         $this->resetPage();
@@ -160,7 +156,6 @@ class FeedPosts extends Component
     // --- MÉTODOS DE EDIÇÃO ---
     public function startEditPost(int $postId)
     {
-        // Garante que APENAS o usuário criador possa editar
         $post = Post::where('user_id', Auth::id())->findOrFail($postId);
         
         $this->editingPostId = $post->id;
@@ -183,27 +178,21 @@ class FeedPosts extends Component
         $currentImages = [];
         $newUploads = [];
 
-        // 1. Processar novas imagens e separar caminhos existentes
         foreach ($this->editingPostImages as $image) {
             if (is_object($image) && method_exists($image, 'store')) {
-                // É um novo arquivo temporário, fazer upload
                 $newUploads[] = $image->store('posts', 'public');
             } elseif (is_string($image)) {
-                // É um caminho de arquivo existente no Storage
                 $currentImages[] = $image;
             }
         }
         
-        // 2. Combinar imagens novas e antigas que não foram removidas
         $finalImages = array_merge($currentImages, $newUploads);
 
-        // 3. Deletar imagens antigas que foram removidas do array
         $imagesToDelete = array_diff($this->originalPostImages, $currentImages);
         if (!empty($imagesToDelete)) {
             Storage::disk('public')->delete($imagesToDelete);
         }
 
-        // 4. Atualizar o Post
         $post->update([
             'content' => $this->editingPostContent,
             'images' => $finalImages,
@@ -231,10 +220,8 @@ class FeedPosts extends Component
      */
     public function deletePost(int $postId)
     {
-        // Garante que APENAS o usuário criador possa deletar
         $post = Post::where('user_id', Auth::id())->findOrFail($postId);
         
-        // Deleta as imagens do storage
         if ($post->images) {
             Storage::disk('public')->delete($post->images);
         }
@@ -250,19 +237,28 @@ class FeedPosts extends Component
     // ------------------------------------
     
     // --- MÉTODOS DE RESPOSTAS/MODAL ---
+
+    /**
+     * Define o post selecionado, carrega o post expandido e abre o modal.
+     */
     public function openPostModal(int $postId)
     {
         $this->selectedPostId = $postId;
         $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
             ->findOrFail($postId);
+        
+        // O evento JS é útil para o Alpine.js garantir que o modal seja exibido.
         $this->dispatch('openPostModal');
     }
 
+    /**
+     * Fecha o modal, limpando as propriedades reativas.
+     */
     public function closePostModal()
     {
         $this->selectedPostId = null;
         $this->expandedPost = null;
-        $this->resetPage();
+        // CORREÇÃO: Removido $this->resetPage() para evitar conflitos na re-renderização.
     }
 
     public function createReply($postId)
@@ -288,6 +284,7 @@ class FeedPosts extends Component
         $this->newReplyContent[$postId] = '';
 
         if ($this->selectedPostId === $postId) {
+            // Recarrega apenas as respostas para mostrar a nova resposta no modal
             $this->expandedPost = $this->expandedPost->fresh(['replies.author']);
         }
 
@@ -304,13 +301,13 @@ class FeedPosts extends Component
             ->latest() 
             ->paginate(5);
 
-        // Mapeamento mantido para compatibilidade, embora não seja usado para mistura
         $feedItems = $posts->map(function ($post) {
             $post->type = 'post';
             $post->sort_date = $post->created_at; 
             return $post;
         });
         
+        // Garante que o post expandido seja recarregado se o ID estiver definido (para evitar desserialização incompleta)
         if ($this->selectedPostId && !$this->expandedPost) {
             $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
                 ->findOrFail($this->selectedPostId);
