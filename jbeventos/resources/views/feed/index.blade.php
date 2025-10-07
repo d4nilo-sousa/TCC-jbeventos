@@ -199,8 +199,6 @@
         </div>
     @endif
     
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <script>
         // Lógica de Reações (Curtir e Salvar)
         function toggleReaction(button) {

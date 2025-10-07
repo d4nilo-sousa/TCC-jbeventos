@@ -24,6 +24,9 @@
         };
     </script>
 
+    <!-- script Phosphor Icons ao layout principal -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script> 
+
     @livewireStyles
 </head>
 
