@@ -24,6 +24,9 @@
         };
     </script>
 
+    <!-- script Phosphor Icons ao layout principal -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script> 
+
     @livewireStyles
 </head>
 
@@ -33,8 +36,9 @@
 
     @props(['backgroundClass' => 'bg-gradient-to-br from-red-400 via-orange-100 to-red-100'])
 
-    <div class="flex-1 bg-gray-100">
+    <div class="flex-1 bg-gray-100 pt-[60px] lg:pt-[70px]">
         @if (isset($header))
+            {{-- Removido o padding da navbar do header, pois o pt já está no div pai --}}
             <header class="bg-white shadow">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
@@ -43,9 +47,11 @@
         @endif
 
         <main class="flex-1">
-            {{ $slot }}
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 py-6">
+                {{ $slot }}
+            </div>
         </main>
-    </div>
+</div>
 
     @stack('modals')
     @livewireScripts

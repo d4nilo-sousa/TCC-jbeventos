@@ -3,97 +3,272 @@
 namespace App\Livewire;
 
 use App\Models\Post;
+use App\Models\Course; 
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On; 
+use Livewire\WithFileUploads;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\Builder; // Importação útil para o query builder
 
 class FeedPosts extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     protected $paginationTheme = 'tailwind';
     
-    // Armazena o conteúdo da nova resposta, indexado pelo ID do Post
+    // --- PROPRIEDADES DE INTERAÇÃO (Respostas e Modal) ---
     public $newReplyContent = []; 
-    
-    // Propriedade para armazenar o ID do post que está expandido no modal
     public ?int $selectedPostId = null;
-
-    // Propriedade para armazenar os dados completos do post selecionado para o modal
     public ?Post $expandedPost = null; 
 
-    // Regras de validação para respostas
-    protected $rules = [
-        'newReplyContent.*' => 'required|string|min:2|max:500', 
-    ];
+    // --- PROPRIEDADES PARA CRIAÇÃO DE POSTS ---
+    public $isCoordinator = false;
+    public $newPostContent = '';
+    public $newlyUploadedImages = []; // Arquivos temporários do input
+    public $images = []; // Arquivos prontos para upload/preview
+    public $newPostCourseId = null; 
+    public Collection $coordinatorCourses;
 
-    // Listeners para eventos JS
-    #[On('postCreated')] 
-    public function render()
+    // --- PROPRIEDADES PARA EDIÇÃO DE POSTS ---
+    public ?int $editingPostId = null; 
+    public $editingPostContent = '';
+    public $newlyUploadedEditingImages = []; 
+    public $editingPostImages = []; 
+    public $originalPostImages = []; 
+    // ------------------------------------------
+
+    protected function rules()
     {
-        // 1. Busca todos os posts do sistema, com Eager Loading para as relações
-        // Mantemos o eager loading leve para a lista principal do feed
-        $posts = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies']) // removi 'replies.author' para otimizar o feed
-            ->latest() 
-            ->paginate(5);
+        $rules = [
+            'newReplyContent.*' => 'required|string|min:2|max:500', 
+        ];
 
-        // 2. Criação do mapa de posts (necessário pois o FeedController combina Posts e Events)
-        $feedItems = $posts->map(function ($post) {
-            $post->type = 'post';
-            $post->sort_date = $post->created_at; 
-            return $post;
-        });
+        if ($this->isCoordinator) {
+            $rules['newPostContent'] = 'required|string|max:5000';
+            $rules['images.*'] = 'nullable|image|max:1024';
+        }
         
-        // Se selectedPostId estiver definido, carregamos o expandedPost completo
-        if ($this->selectedPostId && !$this->expandedPost) {
-            // Carrega o post completo com todas as relações para exibição detalhada no modal
-            $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
-                ->findOrFail($this->selectedPostId);
+        // Regras para edição
+        if ($this->editingPostId) {
+             $rules['editingPostContent'] = 'required|string|max:5000';
+             $rules['newlyUploadedEditingImages.*'] = 'nullable|image|max:1024';
         }
 
-        return view('livewire.feed-posts', [
-            'feedItems' => $feedItems,
-            'posts' => $posts, 
-        ]);
+        return $rules;
+    }
+    
+    public function mount()
+    {
+        $user = Auth::user();
+        
+        $this->isCoordinator = ($user && $user->user_type === 'coordinator');
+        $this->coordinatorCourses = collect();
+
+        if ($this->isCoordinator) {
+            $coordinator = $user->coordinatorRole;
+
+            if ($coordinator) {
+                if ($coordinator->coordinator_type === 'general') {
+                     // Coordenador Geral: Carrega todos os cursos
+                     $this->coordinatorCourses = Course::all(); 
+                } else {
+                    // Coordenador de Curso Específico
+                    $course = $coordinator->coordinatedCourse;
+                    $this->coordinatorCourses = $course ? collect([$course]) : collect();
+                }
+            }
+            
+            // Define o curso de destino como o primeiro curso associado
+            if ($this->coordinatorCourses->isNotEmpty()) {
+                $this->newPostCourseId = $this->coordinatorCourses->first()->id;
+            }
+        }
+    }
+    
+    // --- UPLOAD/IMAGEM (Criação) ---
+    public function updatedNewlyUploadedImages()
+    {
+        $this->images = array_merge($this->images, $this->newlyUploadedImages);
+        $this->newlyUploadedImages = [];
     }
 
-    // Método para abrir o modal e carregar o post
+    public function removeImage($index)
+    {
+        if (isset($this->images[$index])) {
+            unset($this->images[$index]);
+            $this->images = array_values($this->images); 
+        }
+    }
+
+    // --- UPLOAD/IMAGEM (Edição) ---
+    public function updatedNewlyUploadedEditingImages()
+    {
+        $this->editingPostImages = array_merge($this->editingPostImages, $this->newlyUploadedEditingImages);
+        $this->newlyUploadedEditingImages = [];
+    }
+
+    public function removeEditingImage($index)
+    {
+        if (isset($this->editingPostImages[$index])) {
+            unset($this->editingPostImages[$index]);
+            $this->editingPostImages = array_values($this->editingPostImages);
+        }
+    }
+    
+    // --- MÉTODO DE CRIAÇÃO DO POST ---
+    public function createPost()
+    {
+        if (!$this->isCoordinator || !$this->newPostCourseId) {
+             session()->flash('error', 'Você não tem permissão ou curso associado para criar posts.');
+             return;
+        }
+        
+        $this->validate([
+            'newPostContent' => $this->rules()['newPostContent'],
+            'images.*' => $this->rules()['images.*'],
+        ]);
+
+        $imagePaths = [];
+        foreach ($this->images as $image) {
+            if (is_object($image) && method_exists($image, 'store')) {
+                $imagePaths[] = $image->store('posts', 'public');
+            }
+        }
+
+        Post::create([
+            'user_id' => Auth::id(),
+            'course_id' => $this->newPostCourseId, 
+            'content' => $this->newPostContent,
+            'images' => $imagePaths,
+        ]);
+
+        $this->reset('newPostContent', 'newlyUploadedImages', 'images');
+        $this->dispatch('postCreated'); 
+        $this->resetPage();
+
+        session()->flash('success', 'Post criado com sucesso!');
+    }
+    
+    // --- MÉTODOS DE EDIÇÃO ---
+    public function startEditPost(int $postId)
+    {
+        $post = Post::where('user_id', Auth::id())->findOrFail($postId);
+        
+        $this->editingPostId = $post->id;
+        $this->editingPostContent = $post->content;
+        $this->editingPostImages = $post->images ?? [];
+        $this->originalPostImages = $post->images ?? []; 
+        
+        $this->dispatch('openEditModal');
+    }
+
+    public function saveEditPost()
+    {
+        $post = Post::where('user_id', Auth::id())->findOrFail($this->editingPostId);
+
+        $this->validate([
+            'editingPostContent' => $this->rules()['editingPostContent'],
+            'newlyUploadedEditingImages.*' => $this->rules()['newlyUploadedEditingImages.*'], 
+        ]);
+        
+        $currentImages = [];
+        $newUploads = [];
+
+        foreach ($this->editingPostImages as $image) {
+            if (is_object($image) && method_exists($image, 'store')) {
+                $newUploads[] = $image->store('posts', 'public');
+            } elseif (is_string($image)) {
+                $currentImages[] = $image;
+            }
+        }
+        
+        $finalImages = array_merge($currentImages, $newUploads);
+
+        $imagesToDelete = array_diff($this->originalPostImages, $currentImages);
+        if (!empty($imagesToDelete)) {
+            Storage::disk('public')->delete($imagesToDelete);
+        }
+
+        $post->update([
+            'content' => $this->editingPostContent,
+            'images' => $finalImages,
+        ]);
+        
+        session()->flash('success', 'Post atualizado com sucesso!');
+        $this->resetEditModal();
+        $this->resetPage();
+    }
+
+    public function resetEditModal()
+    {
+        $this->reset([
+            'editingPostId', 
+            'editingPostContent', 
+            'editingPostImages',
+            'originalPostImages',
+            'newlyUploadedEditingImages',
+        ]);
+        $this->dispatch('closeEditModal');
+    }
+
+    /**
+     * Deleta um post.
+     */
+    public function deletePost(int $postId)
+    {
+        $post = Post::where('user_id', Auth::id())->findOrFail($postId);
+        
+        if ($post->images) {
+            Storage::disk('public')->delete($post->images);
+        }
+        
+        $post->delete();
+
+        session()->flash('success', 'Post excluído com sucesso!');
+        $this->resetPage(); 
+        if ($this->selectedPostId === $postId) {
+            $this->closePostModal();
+        }
+    }
+    // ------------------------------------
+    
+    // --- MÉTODOS DE RESPOSTAS/MODAL ---
+
+    /**
+     * Define o post selecionado, carrega o post expandido e abre o modal.
+     */
     public function openPostModal(int $postId)
     {
         $this->selectedPostId = $postId;
-        
-        // Carrega o post e suas respostas completas assim que o modal é aberto
-        // O método render() acima garantirá que expandedPost seja carregado com todas as respostas.
         $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
             ->findOrFail($postId);
-
-        // Dispara um evento JS para garantir que o modal seja exibido
+        
+        // O evento JS é útil para o Alpine.js garantir que o modal seja exibido.
         $this->dispatch('openPostModal');
     }
 
-    //Método para fechar o modal
+    /**
+     * Fecha o modal, limpando as propriedades reativas.
+     */
     public function closePostModal()
     {
         $this->selectedPostId = null;
         $this->expandedPost = null;
-        // Limpa a páginação para evitar problemas
-        $this->setPage(1); 
+        // CORREÇÃO: Removido $this->resetPage() para evitar conflitos na re-renderização.
     }
 
-    /**
-     * Cria uma resposta para um Post.
-     */
     public function createReply($postId)
     {
-        // ... (Lógica de validação e criação de resposta mantida) ...
-
         if (!isset($this->newReplyContent[$postId])) {
              $this->newReplyContent[$postId] = '';
         }
 
         $this->validate([
-            "newReplyContent.{$postId}" => 'required|string|min:2|max:500'
+            "newReplyContent.{$postId}" => $this->rules()['newReplyContent.*'] 
         ], [
             "newReplyContent.{$postId}.required" => 'O conteúdo da resposta não pode estar vazio.',
             "newReplyContent.{$postId}.min" => 'A resposta deve ter pelo menos 2 caracteres.',
@@ -106,17 +281,41 @@ class FeedPosts extends Component
             'content' => $this->newReplyContent[$postId],
         ]);
 
-        // Limpa o campo de resposta específico
         $this->newReplyContent[$postId] = '';
 
-        // Se o modal estiver aberto, atualiza expandedPost para incluir a nova resposta
         if ($this->selectedPostId === $postId) {
+            // Recarrega apenas as respostas para mostrar a nova resposta no modal
             $this->expandedPost = $this->expandedPost->fresh(['replies.author']);
         }
 
-        // Recarrega a página de forma reativa para mostrar a nova resposta
         $this->resetPage(); 
         session()->flash('success', 'Resposta enviada com sucesso!');
         $this->dispatch('replyCreated');
+    }
+
+    // --- MÉTODO RENDER ---
+    #[On('postCreated')] 
+    public function render()
+    {
+        $posts = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies']) 
+            ->latest() 
+            ->paginate(5);
+
+        $feedItems = $posts->map(function ($post) {
+            $post->type = 'post';
+            $post->sort_date = $post->created_at; 
+            return $post;
+        });
+        
+        // Garante que o post expandido seja recarregado se o ID estiver definido (para evitar desserialização incompleta)
+        if ($this->selectedPostId && !$this->expandedPost) {
+            $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
+                ->findOrFail($this->selectedPostId);
+        }
+
+        return view('livewire.feed-posts', [
+            'feedItems' => $feedItems,
+            'posts' => $posts,
+        ]);
     }
 }
