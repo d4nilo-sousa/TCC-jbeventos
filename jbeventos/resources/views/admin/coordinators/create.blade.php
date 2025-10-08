@@ -64,19 +64,13 @@
                                 <x-input-label for="name" value="Nome do Coordenador" />
                                 <x-text-input type="text" name="name" id="name" value="{{ old('name') }}"
                                     required />
-                                @error('name')
-                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                @enderror
                             </div>
 
                             {{-- Email --}}
                             <div>
                                 <x-input-label for="email" value="Email" />
-                                <x-text-input type="email" name="email" id="email" value="{{ old('email') }}"
-                                    required />
-                                @error('email')
-                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                @enderror
+                                <x-text-input type="email" name="email" id="email"
+                                    class="lowercase" value="{{ old('email') }}" required />
                             </div>
                         </div>
 
@@ -91,12 +85,15 @@
                                     Gerar
                                 </button>
                             </div>
-                            @error('password')
-                                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                            @enderror
                         </div>
 
-                        <div class="flex justify-end pt-4">
+                        <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
+
+                        <div class="flex justify-between pt-4">
+                            <a href="{{ route('coordinators.index') }}"
+                                class="prev-button inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
+                                Cancelar
+                            </a>
                             <button type="button" data-next-tab="tab-affiliation"
                                 class="next-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 transition ease-in-out duration-150">
                                 Próximo
@@ -125,6 +122,8 @@
                             @enderror
                         </div>
 
+                        <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
+
                         <div class="flex justify-between pt-4">
                             <button type="button" data-prev-tab="tab-basic-info"
                                 class="prev-button inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
@@ -145,67 +144,14 @@
 @vite('resources/js/app.js')
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Lógica de abas (mesma do formulário de eventos)
-        const tabs = document.querySelectorAll('.tab-content');
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const nextButtons = document.querySelectorAll('.next-button');
-        const prevButtons = document.querySelectorAll('.prev-button');
-
-        function showTab(tabId) {
-            tabs.forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(tabId).classList.remove('hidden');
-
-            tabButtons.forEach(button => {
-                const buttonSpan = button.querySelector('span:first-child');
-                if (button.dataset.tabTarget === tabId) {
-                    button.classList.add('active', 'text-gray-700');
-                    buttonSpan.classList.add('bg-blue-50', 'border-blue-500', 'text-blue-600');
-                    buttonSpan.classList.remove('bg-white', 'border-gray-300', 'text-gray-500');
-                } else {
-                    button.classList.remove('active', 'text-gray-700');
-                    buttonSpan.classList.remove('bg-blue-50', 'border-blue-500', 'text-blue-600');
-                    buttonSpan.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
-                }
-            });
-
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('coordinator-form');
+        const emailInput = document.getElementById('email');
+    
+        if (form && emailInput) {
+            form.addEventListener('submit', function () {
+                emailInput.value = emailInput.value.toLowerCase();
             });
         }
-
-        nextButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const currentTab = button.closest('.tab-content');
-                const inputs = currentTab.querySelectorAll('input[required], select[required]');
-                let allInputsValid = true;
-
-                inputs.forEach(input => {
-                    if (!input.checkValidity()) {
-                        allInputsValid = false;
-                        input.reportValidity();
-                    }
-                });
-
-                if (allInputsValid) {
-                    const nextTabId = button.dataset.nextTab;
-                    showTab(nextTabId);
-                }
-            });
-        });
-
-        prevButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const prevTabId = button.dataset.prevTab;
-                showTab(prevTabId);
-            });
-        });
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                showTab(button.dataset.tabTarget);
-            });
-        });
     });
-</script>
+    </script>

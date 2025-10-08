@@ -20,7 +20,7 @@
             {{-- Tag para tipo de evento --}}
             <span
                 class="absolute top-2 right-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
-                {{ $event->event_type === 'course' ? 'Curso' : ($event->event_type === 'general' ? 'Geral' : "") }}
+                {{ $event->event_type === 'course' ? 'Curso' : ($event->event_type === 'general' ? 'Geral' : '') }}
             </span>
 
             {{-- Tag para visibilidade (somente se o usuário é o coordenador e o evento é dele) --}}
@@ -50,13 +50,10 @@
                 <h3 class="event-name-searchable text-lg font-bold text-gray-900 mb-1 leading-tight line-clamp-2">
                     {{ $event->event_name }}
                 </h3>
-                <p class="text-sm text-gray-600 mb-2 line-clamp-2">
-                    @if ($event->event_description)
-                        {{ $event->event_description }}
-                    @else
-                        (Sem descrição)
-                    @endif
+                <p class="text-sm text-gray-600 mb-2 break-words whitespace-normal">
+                    {{ $event->event_description }}
                 </p>
+
 
                 <div class="flex flex-wrap gap-2 text-xs mb-2">
                     @forelse ($event->eventCategories as $category)

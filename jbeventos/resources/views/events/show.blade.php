@@ -166,7 +166,12 @@
             {{-- Description Section (100% de largura) --}}
             <div class="bg-white rounded-2xl shadow-lg p-6 border">
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">Sobre o Evento</h2>
-                <p class="text-gray-700 leading-relaxed">{{ $event->event_description }}</p>
+
+                <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
+
+                <p class="text-gray-700 leading-relaxed break-words whitespace-pre-line">
+                    {{ $event->event_info ?? '(Sem informações sobre o evento)' }}
+                </p>
             </div>
 
             {{-- Reactions Section (100% de largura) --}}

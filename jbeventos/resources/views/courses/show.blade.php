@@ -91,10 +91,19 @@
                     </div>
 
                     {{-- Contagem de Membros --}}
+                    @php
+                        $followersCount = $course->followers()->count();
+                    @endphp
+
                     <p class="text-sm text-gray-500 mt-1">
-                        <span class="font-semibold">{{ $course->followers()->count() }}</span>
-                        {{ Str::plural('Seguidores', $course->followers()->count()) }}
+                        <span class="font-semibold" id="followersCount">{{ $followersCount }}</span>
+                        <span
+                            id="followersText">{{ $followersCount === 0 ? 'Nenhum seguidor' : ($followersCount === 1 ? 'Seguidor' : 'Seguidores') }}</span>
                     </p>
+
+
+
+
 
                     <p class="text-sm text-gray-500 mt-1">
                         <strong class="font-semibold">Coordenador:</strong>
@@ -242,17 +251,27 @@
                     @endif
 
                     {{-- Lista de Eventos --}}
+                    {{-- Lista de Eventos --}}
                     @if ($course->events->isNotEmpty())
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach ($course->events->sortByDesc('event_scheduled_at') as $event)
                                 <a href="{{ route('events.show', $event->id) }}"
                                     class="bg-white rounded-2xl shadow-md border border-gray-200 hover:border-blue-500 transition-colors duration-200 overflow-hidden">
-                                    @if ($event->event_image)
-                                        <div class="w-full h-36">
+
+                                    <div class="relative w-full h-36 rounded-md overflow-hidden bg-gray-100">
+                                        @if ($event->event_image)
                                             <img src="{{ asset('storage/' . $event->event_image) }}"
                                                 alt="Capa do Evento" class="object-cover w-full h-full">
-                                        </div>
-                                    @endif
+                                        @else
+                                            <!-- Placeholder sem imagem -->
+                                            <div
+                                                class="flex flex-col items-center justify-center w-full h-full text-indigo-500 dark:text-indigo-400">
+                                                <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                <p class="mt-2 text-sm">Evento Sem Imagem</p>
+                                            </div>
+                                        @endif
+                                    </div>
+
                                     <div class="p-4">
                                         <h4 class="text-lg font-bold text-stone-800 truncate">{{ $event->event_name }}
                                         </h4>
@@ -263,7 +282,8 @@
                                             </p>
                                         @endif
                                         <p class="text-sm text-gray-600 mt-2 line-clamp-2">
-                                            {{ $event->event_description }}</p>
+                                            {{ $event->event_description }}
+                                        </p>
                                     </div>
                                 </a>
                             @endforeach
@@ -307,7 +327,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const container = document.querySelector('div[data-course-id]'); // Tenta encontrar o container do botão
+        const container = document.querySelector('div[data-course-id]');
+        const followersCountEl = document.getElementById('followersCount');
+        const followersTextEl = document.getElementById('followersText');
 
         if (container) {
             container.addEventListener('click', function(e) {
@@ -318,20 +340,15 @@
                 let method, url;
 
                 if (button.id === 'followButton') {
-                    // Lógica para SEGUIR
                     method = 'POST';
-                    // Assumindo uma rota como: /courses/123/follow
                     url = `/courses/${courseId}/follow`;
                 } else if (button.id === 'unfollowButton') {
-                    // Lógica para DEIXAR DE SEGUIR
                     method = 'DELETE';
-                    // Assumindo uma rota como: /courses/123/unfollow
                     url = `/courses/${courseId}/unfollow`;
                 } else {
                     return;
                 }
 
-                // Desabilita o botão para prevenir cliques duplos
                 button.disabled = true;
 
                 fetch(url, {
@@ -344,40 +361,66 @@
                         },
                     })
                     .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Falha na operação. Status: ' + response.status);
-                        }
+                        if (!response.ok) throw new Error('Falha na operação. Status: ' + response
+                            .status);
                         return response.json();
                     })
                     .then(data => {
-                        // 1. Atualiza o visual do botão
                         updateButtonState(button, method);
-
-                        // 2. Reabilita o botão
-                        button.disabled = false;
+                        // Atualiza o contador de seguidores
+                        updateFollowersCount(courseId);
                     })
                     .catch(error => {
                         console.error('Erro:', error);
                         alert('Erro ao processar a solicitação. Tente novamente.');
-                        button.disabled = false; // Reabilita em caso de erro
+                        button.disabled = false;
                     });
             });
         }
 
         function updateButtonState(currentButton, currentMethod) {
             if (currentMethod === 'POST') {
-                // Se a operação foi POST (Seguir), muda para o estado 'Seguindo'
                 currentButton.id = 'unfollowButton';
                 currentButton.textContent = '✔ Seguindo';
                 currentButton.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
                 currentButton.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
             } else if (currentMethod === 'DELETE') {
-                // Se a operação foi DELETE (Deixar de Seguir), muda para o estado 'Seguir'
                 currentButton.id = 'followButton';
                 currentButton.textContent = '+ Seguir';
                 currentButton.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
                 currentButton.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
             }
+            currentButton.disabled = false;
         }
+
+        function updateFollowersCount(courseId) {
+            fetch(`/courses/${courseId}/followers-count`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro ao atualizar seguidores');
+                    return response.json();
+                })
+                .then(data => {
+                    if (followersCountEl && followersTextEl) {
+                        if (data.count === 0) {
+                            followersCountEl.textContent = '';
+                            followersTextEl.textContent = 'Nenhum seguidor';
+                        } else {
+                            followersCountEl.textContent = data.count;
+                            followersTextEl.textContent = data.count === 1 ? 'Seguidor' : 'Seguidores';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao atualizar contador de seguidores:', error);
+                });
+        }
+
     });
 </script>
+
+<script src="https://unpkg.com/@phosphor-icons/web"></script>

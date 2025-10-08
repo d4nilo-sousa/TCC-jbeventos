@@ -45,6 +45,8 @@
                             <option value="course" {{ $coordinator->coordinator_type == 'course' ? 'selected' : '' }}>Curso</option>
                         </select>
                     </div>
+
+                    <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
                     
                     <div class="flex justify-end space-x-3 mt-8">
                         <a href="{{ route('coordinators.index') }}" class="inline-flex items-center px-6 py-2 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
