@@ -6,7 +6,7 @@
 
             {{-- 1. TÍTULO E BREADCRUMBS (Largura Total) --}}
             <div class="mb-6">
-                <a href="{{ route('events.index') }}" class="text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                <a href="{{ route('events.index') }}" class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
                     <i class="ph-fill ph-arrow-left text-lg"></i> Voltar para o Feed de Eventos
                 </a>
                 <h1 class="text-4xl sm:text-4xl font-extrabold text-gray-900 leading-tight">{{ $event->event_name }}</h1>
@@ -80,7 +80,7 @@
 
                                         // Ajuste das classes de cor conforme a lógica que está no JS (azul)
                                         $activeColor = 'bg-blue-600 text-white border-blue-600';
-                                        $inactiveColor = 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50';
+                                        $inactiveColor = 'bg-white text-red-600 border-blue-500 hover:bg-blue-50';
 
                                         // Exceções para cores de Notificar e Salvar se necessário (mantendo o que foi definido antes)
                                         if ($type === 'notify') {
@@ -123,7 +123,7 @@
                         {{-- DESCRIÇÃO + INFORMAÇÕES ESSENCIAIS (UNIFICADOS) --}}
                         <div class="p-6 sm:p-8 border-t border-gray-100">
                             <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <i class="ph-fill ph-file-text text-blue-600"></i> Sobre o Evento
+                                <i class="ph-fill ph-file-text text-red-600"></i> Sobre o Evento
                             </h2>
                             <div class="text-gray-700 leading-relaxed text-base whitespace-pre-wrap mb-8 pb-4 border-b border-gray-100">
                                 {{ $event->event_description }}
@@ -134,7 +134,7 @@
 
                                 {{-- Data e Hora --}}
                                 <div class="flex items-start gap-3">
-                                    <i class="ph-fill ph-calendar-blank text-2xl text-blue-600 mt-0.5"></i>
+                                    <i class="ph-fill ph-calendar-blank text-2xl text-red-600 mt-0.5"></i>
                                     <div>
                                         <p class="text-sm font-bold text-gray-500">Data e Hora</p>
                                         <p class="text-gray-800 font-semibold">
@@ -148,7 +148,7 @@
 
                                 {{-- Local --}}
                                 <div class="flex items-start gap-3">
-                                    <i class="ph-fill ph-map-pin text-2xl text-blue-600 mt-0.5"></i>
+                                    <i class="ph-fill ph-map-pin text-2xl text-red-600 mt-0.5"></i>
                                     <div>
                                         <p class="text-sm font-bold text-gray-500">Local</p>
                                         <p class="text-gray-800 font-semibold">{{ $event->event_location }}</p>
@@ -157,7 +157,7 @@
 
                                 {{-- Tipo/Curso --}}
                                 <div class="flex items-start gap-3">
-                                    <i class="ph-fill ph-tag text-2xl text-blue-600 mt-0.5"></i>
+                                    <i class="ph-fill ph-tag text-2xl text-red-600 mt-0.5"></i>
                                     <div>
                                         <p class="text-sm font-bold text-gray-500">Tipo de Evento</p>
                                         <span class="font-semibold text-gray-800">
@@ -173,7 +173,7 @@
 
                                 {{-- Coordenador --}}
                                 <div class="flex items-start gap-3">
-                                    <i class="ph-fill ph-user-circle text-2xl text-blue-600 mt-0.5"></i>
+                                    <i class="ph-fill ph-user-circle text-2xl text-red-600 mt-0.5"></i>
                                     <div>
                                         <p class="text-sm font-bold text-gray-500">Promovido por</p>
                                         <p class="text-gray-800 font-semibold">
@@ -189,11 +189,11 @@
                                 {{-- Categorias (Largura Total) --}}
                                 <div class="sm:col-span-2 border-t border-gray-200 pt-4 mt-4">
                                     <p class="text-sm font-bold text-gray-500 mb-2 flex items-center gap-1">
-                                             <i class="ph-fill ph-hash text-base text-blue-600"></i> Categorias:
+                                             <i class="ph-fill ph-hash text-base text-red-600"></i> Categorias:
                                     </p>
                                     <div class="flex flex-wrap gap-2">
                                         @forelse($event->eventCategories as $category)
-                                            <span class="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+                                            <span class="inline-block bg-blue-100 text-red-800 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
                                                 {{ $category->category_name }}
                                             </span>
                                         @empty
@@ -230,7 +230,7 @@
                     {{-- Torna a coluna de comentários fixa em telas grandes. --}}
                     <div class="lg:sticky lg:top-10 bg-white rounded-3xl shadow-xl p-6 border border-gray-100 space-y-4" style="max-height: calc(100vh - 4rem); overflow-y: auto;">
                         <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="ph-fill ph-chats text-blue-600"></i> Comentários ({{ $event->eventComments->count() }})
+                            <i class="ph-fill ph-chats text-red-600"></i> Comentários ({{ $event->eventComments->count() }})
                         </h2>
                         {{-- O Livewire Component de comentários se expandirá para essa largura --}}
                         @livewire('event-comments', ['event' => $event])
