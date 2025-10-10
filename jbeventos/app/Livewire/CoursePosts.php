@@ -12,27 +12,31 @@ use Illuminate\Support\Collection;
 
 class CoursePosts extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads; // Adiciona suporte a paginação e upload de arquivos
 
-    protected $paginationTheme = 'tailwind';
+    protected $paginationTheme = 'tailwind'; // Usa o tema Tailwind para paginação
 
+    // Propriedades do componente
     public Course $course;
     public $newPostContent = '';
     public $newReplyContent = [];
     public $images = [];
     public $newlyUploadedImages = [];
 
+    // Regras de validação
     protected $rules = [
         'newPostContent' => 'required|string|min:5',
         'images.*' => 'image|max:2048',
         'newReplyContent.*' => 'required|string|min:2',
     ];
 
+    // Montagem inicial do componente com o curso
     public function mount(Course $course)
     {
         $this->course = $course;
     }
 
+    // Renderização do componente
     public function render()
     {
         // Agora, o componente busca APENAS os posts e os pagina.
@@ -47,33 +51,42 @@ class CoursePosts extends Component
         ]);
     }
 
-    // ... (restante dos métodos Updated, createPost, createReply, deleteReply, deletePost permanecem os mesmos)
-
+    // Corrigido para ser um listener explícito de mudança (mesmo que wire:model já chame)
     public function updatedNewlyUploadedImages()
     {
-        if (is_array($this->newlyUploadedImages)) {
-            $this->images = array_merge($this->images, $this->newlyUploadedImages);
-        } else {
-            $this->images[] = $this->newlyUploadedImages;
-        }
+        $newFiles = is_array($this->newlyUploadedImages) ? $this->newlyUploadedImages : [$this->newlyUploadedImages];
+        $currentImages = collect($this->images);
 
-        if (count($this->images) > 5) {
-            $this->images = array_slice($this->images, 0, 5);
+        // Adiciona os novos arquivos à coleção de imagens
+        $updatedImages = $currentImages->merge($newFiles);
+
+        if ($updatedImages->count() > 5) {
+            $this->images = $updatedImages->take(5)->all();
             session()->flash('error', 'Você só pode enviar até 5 imagens por post.');
+        } else {
+            $this->images = $updatedImages->all();
         }
 
+        // Limpa a propriedade de upload para permitir novos uploads
         $this->newlyUploadedImages = [];
     }
 
+    // Remove imagem do array de imagens
     public function removeImage($index)
     {
-        unset($this->images[$index]);
-        $this->images = array_values($this->images);
+        if (isset($this->images[$index])) {
+            unset($this->images[$index]);
+            $this->images = array_values($this->images);
+        }
     }
 
+    // Criação de Posts
     public function createPost()
     {
-        $this->validate(['newPostContent' => 'required|string|min:5', 'images.*' => 'image|max:2048']);
+        $this->validate([
+            'newPostContent' => 'required|string|min:5', 
+            'images.*' => 'image|max:2048'
+        ]);
 
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 
@@ -85,7 +98,10 @@ class CoursePosts extends Component
         $imagePaths = [];
         if (!empty($this->images)) {
             foreach ($this->images as $image) {
-                $imagePaths[] = $image->store('post-images', 'public');
+                // Certifica-se de que é uma instância de UploadedFile antes de armazenar
+                if (method_exists($image, 'store')) {
+                    $imagePaths[] = $image->store('post-images', 'public');
+                }
             }
         }
 
@@ -103,6 +119,7 @@ class CoursePosts extends Component
         $this->dispatch('postCreated');
     }
 
+    // Criação de Respostas
     public function createReply($postId)
     {
         $this->validate([
@@ -115,8 +132,11 @@ class CoursePosts extends Component
             'content' => $this->newReplyContent[$postId],
         ]);
 
-        $this->newReplyContent[$postId] = '';
-        $this->resetPage();
+        // Evita que o campo de reply de outros posts seja limpo
+        $this->newReplyContent[$postId] = ''; 
+        // Não é necessário resetPage, pois replies estão aninhados. 
+        // Apenas recarrega o estado do componente.
+        
         session()->flash('success', 'Resposta enviada com sucesso!');
         $this->dispatch('replyCreated');
     }
@@ -126,21 +146,24 @@ class CoursePosts extends Component
         $reply = \App\Models\Reply::findOrFail($replyId);
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 
-        if (auth()->id() === $reply->author->id || auth()->id() === $coordinatorUserId) {
+        // Autor da resposta OU Coordenador do Curso
+        if (auth()->id() === $reply->user_id || auth()->id() === $coordinatorUserId) {
             $reply->delete();
             session()->flash('success', 'Resposta excluída com sucesso.');
-            $this->resetPage();
-            $this->dispatch('replyDeleted');
+            $this->dispatch('replyDeleted'); // Dispara evento para atualizar a interface
         } else {
             session()->flash('error', 'Você não tem permissão para excluir esta resposta.');
         }
     }
 
+
+    // Excluir Post (somente para o autor ou coordenador)
     public function deletePost($postId)
     {
         $post = Post::findOrFail($postId);
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 
+        // Autor do Post OU Coordenador do Curso
         if (auth()->id() === $post->user_id || auth()->id() === $coordinatorUserId) {
             $post->delete();
             session()->flash('success', 'Post excluído com sucesso.');
