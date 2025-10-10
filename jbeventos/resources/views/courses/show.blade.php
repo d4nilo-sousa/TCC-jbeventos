@@ -91,9 +91,9 @@
                     </div>
 
                     {{-- Contagem de Membros --}}
-                    <p class="text-sm text-gray-500 mt-1">
-                        <span class="font-semibold">{{ $course->followers()->count() }}</span>
-                        {{ Str::plural('Seguidores', $course->followers()->count()) }}
+                    <p class="text-sm text-gray-500 mt-1" id="followersCountContainer">
+                        <span class="font-semibold" id="followersCount">{{ $course->followers()->count() }}</span>
+                        <span id="followersPlural">{{ Str::plural('Seguidores', $course->followers()->count()) }}</span>
                     </p>
 
                     <p class="text-sm text-gray-500 mt-1">
@@ -287,8 +287,8 @@
 <div id="deleteModal-{{ $course->id }}"
     class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
-        <p>Tem certeza que deseja excluir este curso? Esta ação não poderá ser desfeita.</p>
+        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão do Curso</h2>
+        <p>Tem certeza que deseja excluir o curso <strong>"{{ $course->course_name }}"</strong>? Esta ação não poderá ser desfeita.</p>
         <div class="mt-6 flex justify-end space-x-2">
             <button onclick="closeModal('deleteModal-{{ $course->id }}')"
                 class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
@@ -302,13 +302,35 @@
     </div>
 </div>
 
-{{-- Scripts compilados --}}
+{{-- Scripts e Funções do Modal --}}
 @vite('resources/js/app.js')
 
+{{-- Script para Seguir/Deixar de Seguir Curso --}}
 <script>
 
     document.addEventListener('DOMContentLoaded', function() {
-        const container = document.querySelector('div[data-course-id]'); // Tenta encontrar o container do botão
+        const container = document.querySelector('div[data-course-id]');
+        
+        // Elementos da contagem de seguidores
+        const followersCountSpan = document.getElementById('followersCount');
+        const followersPluralSpan = document.getElementById('followersPlural');
+
+        // Função para atualizar o texto 'Seguidores'/'Seguidor'
+        function updatePlural(count) {
+            if (!followersPluralSpan) return;
+
+            // Função simples de pluralização em português
+            if (count == 1) { // Mudança para == 1 para englobar strings e números
+                followersPluralSpan.textContent = 'Seguidor';
+            } else {
+                followersPluralSpan.textContent = 'Seguidores';
+            }
+        }
+
+        // Inicializa o texto de pluralização ao carregar
+        if (followersCountSpan) {
+            updatePlural(parseInt(followersCountSpan.textContent.trim()));
+        }
 
         if (container) {
             container.addEventListener('click', function(e) {
@@ -319,20 +341,15 @@
                 let method, url;
 
                 if (button.id === 'followButton') {
-                    // Lógica para SEGUIR
                     method = 'POST';
-                    // Assumindo uma rota como: /courses/123/follow
                     url = `/courses/${courseId}/follow`;
                 } else if (button.id === 'unfollowButton') {
-                    // Lógica para DEIXAR DE SEGUIR
                     method = 'DELETE';
-                    // Assumindo uma rota como: /courses/123/unfollow
                     url = `/courses/${courseId}/unfollow`;
                 } else {
                     return;
                 }
 
-                // Desabilita o botão para prevenir cliques duplos
                 button.disabled = true;
 
                 fetch(url, {
@@ -354,7 +371,14 @@
                         // 1. Atualiza o visual do botão
                         updateButtonState(button, method);
 
-                        // 2. Reabilita o botão
+                        // 2. Atualiza a contagem de seguidores
+                        if (data.followers_count !== undefined && followersCountSpan) {
+                            const newCount = data.followers_count;
+                            followersCountSpan.textContent = newCount;
+                            updatePlural(newCount); // Atualiza o texto "Seguidor/Seguidores"
+                        }
+
+                        // 3. Reabilita o botão
                         button.disabled = false;
                     })
                     .catch(error => {
@@ -367,17 +391,19 @@
 
         function updateButtonState(currentButton, currentMethod) {
             if (currentMethod === 'POST') {
-                // Se a operação foi POST (Seguir), muda para o estado 'Seguindo'
                 currentButton.id = 'unfollowButton';
                 currentButton.textContent = '✔ Seguindo';
-                currentButton.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                // Remove as classes de 'Seguir'
+                currentButton.classList.remove('bg-black', 'hover:bg-red-700', 'text-white'); 
+                // Adiciona as classes de 'Seguindo'
                 currentButton.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
             } else if (currentMethod === 'DELETE') {
-                // Se a operação foi DELETE (Deixar de Seguir), muda para o estado 'Seguir'
                 currentButton.id = 'followButton';
                 currentButton.textContent = '+ Seguir';
+                // Remove as classes de 'Seguindo'
                 currentButton.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
-                currentButton.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                // Adiciona as classes de 'Seguir'
+                currentButton.classList.add('bg-black', 'hover:bg-red-700', 'text-white'); 
             }
         }
     });

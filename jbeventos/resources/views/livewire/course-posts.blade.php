@@ -1,4 +1,13 @@
-<div>
+<div x-data="{ 
+    // Variáveis Alpine para controle dos modais
+    showPostModal: false, 
+    showReplyModal: false,
+    postIdToDelete: null,
+    replyIdToDelete: null,
+    postContentToDelete: '',
+    replyContentToDelete: '' 
+}">
+    
     {{-- Formulário de criação de post (Visível apenas para o Coordenador) --}}
     @if ($isCoordinator)
         <div class="mb-6 p-6 bg-white rounded-xl shadow-lg border border-red-100">
@@ -136,9 +145,15 @@
                             </a>
                         @endif
                         
-                        {{-- Botão de Exclusão (Coordenador ou Autor) --}}
+                        {{-- BOTÃO DE EXCLUSÃO (ATIVA O MODAL) --}}
                         @if(auth()->id() === $post->user_id || $isCoordinator)
-                            <button wire:click="deletePost({{ $post->id }})" wire:confirm="Tem certeza que deseja excluir este post? Todas as respostas serão perdidas."
+                            <button type="button" 
+                                @click="
+                                    postIdToDelete = {{ $post->id }};
+                                    // Limita o conteúdo para a exibição no modal
+                                    postContentToDelete = '{{ Str::limit(str_replace(["\n", "\r"], ' ', addslashes($post->content)), 40, '...') }}';
+                                    showPostModal = true;
+                                "
                                 class="text-red-600 hover:text-red-800 text-xs font-semibold flex items-center gap-1 transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                 Excluir
@@ -166,11 +181,16 @@
                                             @endif
                                             <span class="text-gray-500 font-normal ml-2 text-xs">{{ $reply->created_at->diffForHumans() }}</span>
                                         </p>
-                                        {{-- Botão de Exclusão da Resposta --}}
+                                        {{-- BOTÃO DE EXCLUSÃO DA RESPOSTA (ATIVA O MODAL) --}}
                                         @if(auth()->id() === $reply->author->id || $isCoordinator)
-                                            <button wire:click="deleteReply({{ $reply->id }})" wire:confirm="Deseja realmente excluir esta resposta?"
-                                                    class="text-red-500 hover:text-red-700 text-xs font-semibold p-1 transition">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                            <button type="button" 
+                                                @click="
+                                                    replyIdToDelete = {{ $reply->id }};
+                                                    replyContentToDelete = '{{ Str::limit(str_replace(["\n", "\r"], ' ', addslashes($reply->content)), 25, '...') }}';
+                                                    showReplyModal = true;
+                                                "
+                                                class="text-red-500 hover:text-red-700 text-xs font-semibold p-1 transition">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
                                             </button>
                                         @endif
                                     </div>
@@ -205,5 +225,97 @@
     {{-- Paginação --}}
     <div class="mt-8">
         {{ $posts->links() }}
+    </div>
+
+
+    {{-------------------------------------}}
+    {{-- MODAIS DE EXCLUSÃO --}}
+    {{-------------------------------------}}
+
+    {{-- Modal de Exclusão de POST --}}
+    <div x-show="showPostModal" x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md mx-4"
+            @click.away="showPostModal = false"
+            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter-start="scale-95"
+            x-transition:enter-end="scale-100"
+            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="scale-100"
+            x-transition:leave-end="scale-95">
+            <h2 class="text-xl font-bold mb-4 text-red-600">Confirmar Exclusão do Post</h2>
+            
+            <p class="text-gray-700">Tem certeza que deseja excluir o post 
+                <strong x-text="postContentToDelete ? ('"' + postContentToDelete + '"') : 'selecionado'"></strong>?
+            </p>
+            <p class="text-sm text-red-500 mt-2 font-semibold">
+                Esta ação é irreversível e todas as respostas associadas serão perdidas.
+            </p>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <button @click="showPostModal = false"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
+                    Cancelar
+                </button>
+                
+                {{-- Ação Livewire para exclusão --}}
+                <button 
+                    wire:click="deletePost(postIdToDelete)" 
+                    @click="showPostModal = false"
+                    class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                    Excluir Post
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal de Exclusão de RESPOSTA --}}
+    <div x-show="showReplyModal" x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm mx-4"
+            @click.away="showReplyModal = false"
+            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter-start="scale-95"
+            x-transition:enter-end="scale-100"
+            x-transition:leave="transition ease-in duration-200 transform"
+            x-transition:leave-start="scale-100"
+            x-transition:leave-end="scale-95">
+            <h2 class="text-xl font-bold mb-4 text-red-600">Confirmar Exclusão da Resposta</h2>
+            
+            <p class="text-gray-700">
+                Tem certeza que deseja excluir a resposta 
+                <strong x-text="replyContentToDelete ? ('"' + replyContentToDelete + '"') : 'selecionada'"></strong>?
+            </p>
+            <p class="text-sm text-red-500 mt-2 font-semibold">Esta ação é irreversível.</p>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <button @click="showReplyModal = false"
+                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-semibold">
+                    Cancelar
+                </button>
+                
+                {{-- Ação Livewire para exclusão --}}
+                <button 
+                    wire:click="deleteReply(replyIdToDelete)" 
+                    @click="showReplyModal = false"
+                    class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                    Excluir Resposta
+                </button>
+            </div>
+        </div>
     </div>
 </div>
