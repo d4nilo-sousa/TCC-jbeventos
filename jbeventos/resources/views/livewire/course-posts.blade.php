@@ -5,8 +5,45 @@
     postIdToDelete: null,
     replyIdToDelete: null,
     postContentToDelete: '',
-    replyContentToDelete: '' 
-}">
+    replyContentToDelete: '',
+
+    // VARIÁVEIS PARA LIGHTBOX DE CARROSSEL
+    showLightbox: false,
+    lightboxImageUrls: [], // Lista de todas as URLs do post
+    currentImageIndex: 0,  // Índice da imagem atual no carrossel
+
+    // Função que abre o Lightbox e inicializa o carrossel
+    openLightbox(urls, initialIndex) {
+        // urls é um array de strings [url1, url2, ...]
+        this.lightboxImageUrls = urls;
+        this.currentImageIndex = initialIndex;
+        this.showLightbox = true;
+    },
+
+    // Ações de Navegação
+    nextImage() {
+        if (this.currentImageIndex < this.lightboxImageUrls.length - 1) {
+            this.currentImageIndex++;
+        }
+    },
+
+    prevImage() {
+        if (this.currentImageIndex > 0) {
+            this.currentImageIndex--;
+        }
+    },
+    
+    // Propriedades Computadas para desativação dos botões
+    isFirstImage() {
+        return this.currentImageIndex === 0;
+    },
+    isLastImage() {
+        return this.currentImageIndex === (this.lightboxImageUrls.length - 1);
+    }
+}"
+@keydown.arrow-right.window="nextImage()"
+@keydown.arrow-left.window="prevImage()"
+>
     
     {{-- Formulário de criação de post (Visível apenas para o Coordenador) --}}
     @if ($isCoordinator)
@@ -18,7 +55,7 @@
                 {{-- Área de Texto --}}
                 <textarea wire:model.defer="newPostContent" rows="3"
                     class="w-full border-gray-300 rounded-lg shadow-inner text-base p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-500"
-                    placeholder="Publique uma novidade, um lembrete, etc. (Opcional)"></textarea>
+                    placeholder="Publique uma novidade, um lembrete, etc. (Opcional se houver foto)"></textarea>
                 @error('newPostContent') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
 
                 {{-- Seção de upload e preview de imagens --}}
@@ -50,12 +87,17 @@
                 {{-- Preview de Imagens Selecionadas --}}
                 @if(!empty($images))
                     <div class="flex flex-wrap mt-4 gap-3 border-t pt-3">
+                        @php
+                            // Mapeia as URLs temporárias das novas imagens para o lightbox
+                            $tempUrls = collect($images)->map(fn($img) => $img->temporaryUrl())->toArray();
+                            $tempUrlsJson = json_encode($tempUrls);
+                        @endphp
                         @foreach($images as $index => $image)
                             <div class="relative w-24 h-24 border-2 border-red-300 rounded-lg overflow-hidden shadow-sm">
                                 <img src="{{ $image->temporaryUrl() }}" alt="Preview da imagem {{ $index + 1 }}" 
-                                    class="object-contain w-full h-full bg-gray-100">
+                                    class="object-contain w-full h-full bg-gray-100 cursor-pointer"
+                                    @click="openLightbox({{ $tempUrlsJson }}, {{ $index }})"> {{-- Lightbox inicializa no índice clicado --}}
                                 
-                                {{-- Botão para Remover --}}
                                 <button type="button" wire:click="removeImage({{ $index }})"
                                     class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-red-600 text-white rounded-full p-1 shadow-md hover:bg-red-700 transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -88,41 +130,105 @@
             {{-- Card de Post --}}
             <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-100">
                 
-                {{-- Cabeçalho do Post --}}
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex items-center gap-3">
-                        <img src="{{ $post->author->user_icon_url }}"
-                            class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm">
-                        <div>
-                            <a href="#" class="text-gray-900 font-bold text-base hover:text-red-600 transition">{{ $post->author->name }}</a>
-                            <p class="text-xs text-red-600 font-semibold">
-                                @if($post->user_id === optional(optional($course->courseCoordinator)->userAccount)->id)
-                                    Coordenador do Curso
-                                @else
-                                    Membro do Curso
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                    <span class="text-xs text-gray-500 pt-1">{{ $post->created_at->diffForHumans() }}</span>
-                </div>
+                {{-- Cabeçalho do Post / Modo de Edição (Imagens) --}}
 
                 {{-- Conteúdo do Post / Formulário de Edição do Post --}}
                 @if ($editingPostId === $post->id)
                     {{-- MODO DE EDIÇÃO --}}
                     <form wire:submit.prevent="updatePost" class="mb-4">
                         <textarea wire:model.defer="editingPostContent" rows="4"
-                            class="w-full border-red-300 rounded-lg shadow-inner text-sm p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-500 mb-2"></textarea>
+                            class="w-full border-red-300 rounded-lg shadow-inner text-sm p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-500 mb-2"
+                            placeholder="Edite seu conteúdo aqui (Opcional se houver foto)"></textarea>
                         @error('editingPostContent') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        
+                        {{-- SEÇÃO DE EDIÇÃO DE IMAGENS --}}
+                        <div class="border-t pt-3 mt-3">
+                            <h5 class="text-sm font-semibold mb-2 text-gray-700">Imagens (Máx. 5 no total)</h5>
 
-                        <div class="flex justify-end gap-2">
+                            @php
+                                // Cria a lista de URLs combinadas para o Lightbox no modo de edição
+                                $currentUrls = collect($editingPostCurrentImages)->map(fn($img) => asset('storage/' . $img))->toArray();
+                                $newUrls = collect($editingPostNewImages)->map(fn($img) => $img->temporaryUrl())->toArray();
+                                $allEditingUrls = array_merge($currentUrls, $newUrls);
+                                $allEditingUrlsJson = json_encode($allEditingUrls);
+
+                                $currentImageCount = count($editingPostCurrentImages);
+                            @endphp
+
+                            <div class="flex flex-wrap gap-3 mb-4">
+                                {{-- 1. Preview de IMAGENS ATUAIS (já salvas no DB) --}}
+                                @foreach($editingPostCurrentImages as $index => $imageUrl)
+                                    <div class="relative w-24 h-24 border-2 border-red-500 rounded-lg overflow-hidden shadow-sm">
+                                        @php $fullUrl = asset('storage/' . $imageUrl); @endphp
+                                        <img src="{{ $fullUrl }}" alt="Imagem atual" 
+                                            class="object-contain w-full h-full bg-gray-100 cursor-pointer"
+                                            @click="openLightbox({{ $allEditingUrlsJson }}, {{ $index }})"> {{-- Lightbox inicializa no índice clicado (0 a N) --}}
+                                        
+                                        {{-- Botão para Remover Imagem ATUAL --}}
+                                        <button type="button" wire:click="removeEditingImage({{ $index }}, false)"
+                                            class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-red-600 text-white rounded-full p-1 shadow-md hover:bg-red-700 transition"
+                                            title="Remover Imagem Atual">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @endforeach
+
+                                {{-- 2. Preview de NOVAS IMAGENS (upload temporário) --}}
+                                @foreach($editingPostNewImages as $index => $image)
+                                    <div class="relative w-24 h-24 border-2 border-green-500 rounded-lg overflow-hidden shadow-sm">
+                                        @php $tempUrl = $image->temporaryUrl(); @endphp
+                                        <img src="{{ $tempUrl }}" alt="Nova imagem" 
+                                            class="object-contain w-full h-full bg-gray-100 cursor-pointer"
+                                            @click="openLightbox({{ $allEditingUrlsJson }}, {{ $currentImageCount + $index }})"> {{-- Índice correto = atuais + novas --}}
+                                        
+                                        {{-- Botão para Remover Nova Imagem --}}
+                                        <button type="button" wire:click="removeEditingImage({{ $index }}, true)"
+                                            class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-red-600 text-white rounded-full p-1 shadow-md hover:bg-red-700 transition"
+                                            title="Remover Nova Imagem">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                @endforeach
+                            </div>
+                            
+                            {{-- 3. Botão de Upload de Mais Fotos --}}
+                            @php
+                                $totalImages = count($editingPostCurrentImages) + count($editingPostNewImages);
+                                $remaining = 5 - $totalImages;
+                            @endphp
+
+                            @if($remaining > 0)
+                                <input type="file" wire:model="editingPostNewImages" multiple accept="image/*"
+                                    class="hidden" id="edit-file-upload-{{ $post->id }}">
+                                <label for="edit-file-upload-{{ $post->id }}"
+                                    class="inline-flex items-center gap-2 bg-gray-700 text-white px-3 py-1.5 rounded-full cursor-pointer hover:bg-red-600 transition text-xs font-semibold shadow-md">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                        <polyline points="21 15 16 10 5 21"></polyline>
+                                    </svg>
+                                    Adicionar Fotos (Máx. {{ $remaining }})
+                                </label>
+                            @else
+                                <p class="text-sm text-red-500 font-medium">Limite máximo de 5 fotos atingido.</p>
+                            @endif
+                            @error('editingPostNewImages.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        {{-- FIM SEÇÃO DE EDIÇÃO DE IMAGENS --}}
+
+                        <div class="flex justify-end gap-2 mt-4">
                             <button type="button" wire:click="cancelEdit"
                                 class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-xs font-semibold transition">
                                 Cancelar
                             </button>
                             <button type="submit"
                                 class="px-3 py-1 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 text-xs transition">
-                                Salvar
+                                Salvar Edição
                             </button>
                         </div>
                     </form>
@@ -133,8 +239,8 @@
                     @endif
                 @endif
                 
-                {{-- Imagens do Post --}}
-                @if(!empty($post->images))
+                {{-- Imagens do Post (apenas em modo de visualização) --}}
+                @if(!empty($post->images) && $editingPostId !== $post->id)
                     @php
                         $imageCount = count($post->images);
                         $gridClass = match($imageCount) {
@@ -145,12 +251,17 @@
                             default => 'grid-cols-3', // Mais que 4, layout 3-colunas
                         };
                         $heightClass = $imageCount === 1 ? 'max-h-96' : 'h-40';
+                        
+                        // Mapeia todas as URLs do post para o lightbox
+                        $postUrls = collect($post->images)->map(fn($img) => asset('storage/' . $img))->toArray();
+                        $postUrlsJson = json_encode($postUrls);
                     @endphp
                     <div class="mb-4 grid {{ $gridClass }} gap-3">
-                        @foreach($post->images as $img)
+                        @foreach($post->images as $index => $img)
                             <div class="w-full {{ $heightClass }} rounded-lg overflow-hidden shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition">
                                 <img src="{{ asset('storage/' . $img) }}" alt="Imagem do post" 
-                                    class="w-full h-full object-contain bg-gray-100">
+                                    class="w-full h-full object-contain bg-gray-100 cursor-pointer"
+                                    @click="openLightbox({{ $postUrlsJson }}, {{ $index }})"> {{-- Lightbox: passa TODAS as URLs e o índice clicado --}}
                             </div>
                         @endforeach
                     </div>
@@ -160,7 +271,7 @@
                 <div class="flex justify-between items-center border-t pt-4">
                     <div class="flex gap-4">
                         {{-- Botão de Edição --}}
-                        @if($isCoordinator && auth()->id() === $post->user_id)
+                        @if(auth()->id() === $post->user_id || $isCoordinator)
                             @if ($editingPostId === $post->id)
                                 {{-- Não exibe o botão Editar se já estiver editando --}}
                             @else
@@ -256,7 +367,7 @@
     {{-------------------------------------}}
     {{-- MODAIS DE EXCLUSÃO --}}
     {{-------------------------------------}}
-
+    
     {{-- Modal de Exclusão de POST --}}
     <div x-show="showPostModal" x-cloak
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
@@ -341,6 +452,74 @@
                     Excluir Resposta
                 </button>
             </div>
+        </div>
+    </div>
+    
+    
+    {{-------------------------------------}}
+    {{-- NOVO MODAL LIGHTBOX COM CARROSSEL --}}
+    {{-------------------------------------}}
+    <div x-show="showLightbox" x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90"
+        @click.self="showLightbox = false" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+    >
+        <div class="relative w-full h-full p-4 flex items-center justify-center">
+            
+            {{-- Botão Anterior --}}
+            <button @click.prevent="prevImage()" :disabled="isFirstImage()"
+                class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-40 p-3 rounded-full hover:bg-red-600 transition z-50 disabled:opacity-30 disabled:hover:bg-black"
+                :class="{'cursor-not-allowed': isFirstImage()}"
+                title="Imagem Anterior (Seta Esquerda)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            
+            {{-- Imagem Atual (Conteúdo do Carrossel) --}}
+            <div class="max-w-full max-h-full">
+                <template x-for="(url, index) in lightboxImageUrls" :key="index">
+                    <img x-show="index === currentImageIndex" :src="url" alt="Imagem expandida" 
+                         class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-opacity duration-300"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                    >
+                </template>
+            </div>
+            
+            {{-- Botão Próximo --}}
+            <button @click.prevent="nextImage()" :disabled="isLastImage()"
+                class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-black bg-opacity-40 p-3 rounded-full hover:bg-red-600 transition z-50 disabled:opacity-30 disabled:hover:bg-black"
+                :class="{'cursor-not-allowed': isLastImage()}"
+                title="Próxima Imagem (Seta Direita)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            
+            {{-- Contador de Imagens --}}
+            <div x-show="lightboxImageUrls.length > 1"
+                 class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full text-sm font-semibold z-50">
+                <span x-text="currentImageIndex + 1"></span> de <span x-text="lightboxImageUrls.length"></span>
+            </div>
+
+            {{-- Botão de Fechar --}}
+            <button @click="showLightbox = false"
+                class="absolute top-4 right-4 text-white bg-black bg-opacity-50 p-2 rounded-full hover:bg-red-600 transition z-50"
+                title="Fechar (Esc)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
     </div>
 </div>

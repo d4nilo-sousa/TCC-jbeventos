@@ -16,26 +16,46 @@ class CoursePosts extends Component
 
     protected $paginationTheme = 'tailwind'; // Tema de paginação Tailwind CSS
 
-    // Propriedades do componente
+    // Propriedades de Criação
     public Course $course;
     public $newPostContent = '';
     public $newReplyContent = [];
     public $images = [];
     public $newlyUploadedImages = [];
 
+    // PROPRIEDADES DE EDIÇÃO
     public $editingPostId = null;
-    public $editingPostContent = ''; 
+    public $editingPostContent = '';
+    public $editingPostCurrentImages = []; // Imagens JÁ SALVAS no DB 
+    public $editingPostNewImages = []; // Imagens NOVAS enviadas
+
 
     // Método rules() para validação dinâmica
     protected function rules()
     {
-        return [
+        // Calcula o total de imagens durante a edição
+        $totalEditingImages = count($this->editingPostCurrentImages) + count(is_array($this->editingPostNewImages) ? $this->editingPostNewImages : []);
+        
+        // Define as regras base
+        $rules = [
             'newPostContent' => 'nullable|string|max:500', 
             'images' => 'array|max:5',
             'images.*' => 'image|max:2048', 
             'newReplyContent.*' => 'required|string|min:2|max:100', 
-            'editingPostContent' => 'required|string|min:2|max:300', 
+            
+            // Regras para Edição
+            'editingPostContent' => 'nullable|string|max:300',
+            'editingPostNewImages' => 'array', // Array de novos uploads
+            'editingPostNewImages.*' => 'image|max:2048', // Regra para cada nova imagem
         ];
+
+        // Se o total de imagens na edição exceder 5, retorna um erro de validação (embora a lógica de `updatedEditingPostNewImages` tente evitar isso)
+        if ($totalEditingImages > 5) {
+             // Esta checagem é mais para garantir que a validação não passe,
+             // mas a lógica de limite é controlada principalmente por updatedEditingPostNewImages.
+        }
+
+        return $rules;
     }
 
     // Montagem inicial do componente com o curso
@@ -56,16 +76,21 @@ class CoursePosts extends Component
         ]);
     }
 
-    // Lógica para múltiplas imagens 
+    // --- MÉTODOS DE CRIAÇÃO DE POSTS ---
+
+    // Lógica para múltiplas imagens
     public function updatedNewlyUploadedImages()
     {
         $newFiles = is_array($this->newlyUploadedImages) ? $this->newlyUploadedImages : [$this->newlyUploadedImages];
         $currentImages = collect($this->images);
         $updatedImages = $currentImages->merge($newFiles);
+        $totalAllowed = 5;
 
-        if ($updatedImages->count() > 5) {
-            $this->images = $updatedImages->take(5)->all();
-            session()->flash('error', 'Você só pode enviar até 5 imagens por post.');
+        if ($updatedImages->count() > $totalAllowed) {
+            $take = $totalAllowed - $currentImages->count();
+            // Pega apenas o que falta para completar o limite de 5
+            $this->images = $currentImages->merge(collect($newFiles)->take($take))->all(); 
+            session()->flash('error', "Você só pode enviar até 5 imagens por post. Apenas {$take} foram adicionadas desta vez.");
         } else {
             $this->images = $updatedImages->all();
         }
@@ -73,7 +98,7 @@ class CoursePosts extends Component
         $this->newlyUploadedImages = [];
     }
 
-    // Remove imagem do array de imagens
+    // Remove imagem do array de imagens 
     public function removeImage($index)
     {
         if (isset($this->images[$index])) {
@@ -90,6 +115,7 @@ class CoursePosts extends Component
             'images.*' => 'image|max:2048'
         ]);
 
+        // Checagem Lógica: O post precisa de CONTEÚDO OU IMAGENS
         if (empty(trim($this->newPostContent)) && empty($this->images)) {
              $this->addError('newPostContent', 'O post deve ter conteúdo de texto ou pelo menos uma imagem.');
              return; 
@@ -112,7 +138,8 @@ class CoursePosts extends Component
 
         $this->course->posts()->create([
             'user_id' => auth()->id(),
-            'content' => $this->newPostContent,
+            // Garante que se o conteúdo for só espaços vazios, seja salvo como null
+            'content' => trim($this->newPostContent) ?: null, 
             'images' => $imagePaths,
         ]);
 
@@ -124,57 +151,129 @@ class CoursePosts extends Component
         $this->dispatch('postCreated');
     }
 
-    // --- MÉTODOS DE EDIÇÃO ---
+    // --- MÉTODOS DE EDIÇÃO DE POSTS ---
 
+    // Inicializa o formulário de edição
     public function startEdit($postId) 
     {
         $post = Post::findOrFail($postId);
 
-        // Verifica se o usuário tem permissão para editar (autor ou coordenador)
         $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
         if (auth()->id() !== $post->user_id && !$isCoordinator) {
              session()->flash('error', 'Você não tem permissão para editar este post.');
              return;
         }
 
-        // Inicia a edição
         $this->editingPostId = $postId;
         $this->editingPostContent = $post->content;
+        
+        // Carrega as imagens ATUAIS do post para o array de edição
+        $this->editingPostCurrentImages = $post->images ?? [];
+        $this->editingPostNewImages = []; // Zera as novas imagens de upload
+        $this->resetErrorBag();
     }
+    
+    // Lógica para NOVAS imagens durante a edição
+    public function updatedEditingPostNewImages()
+    {
+        $newFiles = is_array($this->editingPostNewImages) ? $this->editingPostNewImages : [$this->editingPostNewImages];
+        $currentCount = count($this->editingPostCurrentImages);
+        $totalAllowed = 5;
+        $newCount = count($newFiles);
+
+        // Verifica o limite total (atuais + novas)
+        if ($newCount + $currentCount > $totalAllowed) {
+            // Se o upload exceder o limite, pega apenas o que falta para 5
+            $take = $totalAllowed - $currentCount;
+            // Pega as 'take' primeiras da lista de uploads
+            $this->editingPostNewImages = collect($newFiles)->take($take)->all(); 
+            
+            // Se `take` for menor que 1, significa que o limite de 5 já foi atingido, 
+            // então não deve adicionar nada.
+            if ($take < 1) {
+                $this->editingPostNewImages = [];
+                session()->flash('error', "O post já atingiu o limite de 5 imagens. Remova alguma foto para adicionar uma nova.");
+            } else {
+                 session()->flash('error', "Você só pode ter um total de 5 imagens. Apenas $take foram adicionadas.");
+            }
+        }
+    }
+
+    // Remove imagem (existente ou nova) durante a edição
+    public function removeEditingImage($index, $isNew = false)
+    {
+        if ($isNew) {
+            // Remove do array de novas imagens (UploadedFiles)
+            if (isset($this->editingPostNewImages[$index])) {
+                unset($this->editingPostNewImages[$index]);
+                $this->editingPostNewImages = array_values($this->editingPostNewImages);
+            }
+        } else {
+            // Remove do array de imagens atuais (paths no DB)
+            if (isset($this->editingPostCurrentImages[$index])) {
+                unset($this->editingPostCurrentImages[$index]);
+                $this->editingPostCurrentImages = array_values($this->editingPostCurrentImages);
+            }
+        }
+    }
+
 
     public function cancelEdit()
     {
         $this->editingPostId = null;
         $this->editingPostContent = '';
+        $this->editingPostCurrentImages = [];
+        $this->editingPostNewImages = [];
         $this->resetErrorBag();
     }
 
     // Atualização de Post
     public function updatePost()
     {
-        $this->validate([
-            'editingPostContent' => 'required|string|min:2|max:300',
-        ]);
+        // Valida as novas imagens e o conteúdo de texto
+        $this->validate(); 
+
+        // Checagem Lógica: O post precisa de CONTEÚDO OU IMAGENS
+        if (empty(trim($this->editingPostContent)) && empty($this->editingPostCurrentImages) && empty($this->editingPostNewImages)) {
+             $this->addError('editingPostContent', 'O post deve ter conteúdo de texto ou pelo menos uma imagem.');
+             return; 
+        }
 
         $post = Post::findOrFail($this->editingPostId);
-
-        // Verifica se o usuário tem permissão para editar (autor ou coordenador)
         $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
+
         if (auth()->id() !== $post->user_id && !$isCoordinator) {
              session()->flash('error', 'Você não tem permissão para atualizar este post.');
              $this->cancelEdit();
              return;
         }
 
+        // 1. Processa e armazena as NOVAS imagens
+        $newImagePaths = [];
+        if (!empty($this->editingPostNewImages)) {
+            foreach ($this->editingPostNewImages as $image) {
+                if (method_exists($image, 'store')) {
+                    $newImagePaths[] = $image->store('post-images', 'public');
+                }
+            }
+        }
+
+        // 2. Combina as imagens antigas que restaram (após remoção) com as novas
+        $finalImages = array_merge($this->editingPostCurrentImages, $newImagePaths);
+
+        // 3. Atualiza o Post
         $post->update([
-            // Garante que se o conteúdo for apagado, ele seja salvo como '' (string vazia)
+            // Garante que se o conteúdo for só espaços vazios, seja salvo como null
             'content' => trim($this->editingPostContent) ?: null, 
+            'images' => $finalImages,
         ]);
 
         session()->flash('success', 'Post atualizado com sucesso!');
         $this->cancelEdit();
     }
     
+    // --- MÉTODOS DE RESPOSTAS E EXCLUSÃO ---
+
     // Criação de Respostas
     public function createReply($postId)
     {
@@ -194,7 +293,7 @@ class CoursePosts extends Component
         $this->dispatch('replyCreated');
     }
 
-    //
+    // Excluir Resposta
     public function deleteReply($replyId)
     {
         $reply = \App\Models\Reply::findOrFail($replyId);
