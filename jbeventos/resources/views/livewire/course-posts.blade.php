@@ -18,7 +18,7 @@
                 {{-- Área de Texto --}}
                 <textarea wire:model.defer="newPostContent" rows="3"
                     class="w-full border-gray-300 rounded-lg shadow-inner text-base p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-500"
-                    placeholder="Publique uma novidade, um lembrete, etc."></textarea>
+                    placeholder="Publique uma novidade, um lembrete, etc. (Opcional)"></textarea>
                 @error('newPostContent') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
 
                 {{-- Seção de upload e preview de imagens --}}
@@ -52,8 +52,8 @@
                     <div class="flex flex-wrap mt-4 gap-3 border-t pt-3">
                         @foreach($images as $index => $image)
                             <div class="relative w-24 h-24 border-2 border-red-300 rounded-lg overflow-hidden shadow-sm">
-                                {{-- Preview da Imagem --}}
-                                <img src="{{ $image->temporaryUrl() }}" alt="Preview da imagem {{ $index + 1 }}" class="object-cover w-full h-full">
+                                <img src="{{ $image->temporaryUrl() }}" alt="Preview da imagem {{ $index + 1 }}" 
+                                    class="object-contain w-full h-full bg-gray-100">
                                 
                                 {{-- Botão para Remover --}}
                                 <button type="button" wire:click="removeImage({{ $index }})"
@@ -70,7 +70,7 @@
         </div>
     @endif
 
-    {{-- Feedback (movido para fora do loop principal, para melhor visibilidade) --}}
+    {{-- Feedback --}}
     @if (session()->has('success'))
         <div class="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-xl text-sm font-medium shadow-sm" x-data="{ open: true }" x-show="open" x-init="setTimeout(() => { open = false }, 3000)">
             <p>{{ session('success') }}</p>
@@ -91,7 +91,6 @@
                 {{-- Cabeçalho do Post --}}
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex items-center gap-3">
-                        {{-- CORRIGIDO: Usando o acessor user_icon_url --}}
                         <img src="{{ $post->author->user_icon_url }}"
                             class="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm">
                         <div>
@@ -108,9 +107,32 @@
                     <span class="text-xs text-gray-500 pt-1">{{ $post->created_at->diffForHumans() }}</span>
                 </div>
 
-                {{-- Conteúdo do Post --}}
-                <p class="text-gray-700 text-sm mb-4 whitespace-pre-line">{{ $post->content }}</p>
+                {{-- Conteúdo do Post / Formulário de Edição do Post --}}
+                @if ($editingPostId === $post->id)
+                    {{-- MODO DE EDIÇÃO --}}
+                    <form wire:submit.prevent="updatePost" class="mb-4">
+                        <textarea wire:model.defer="editingPostContent" rows="4"
+                            class="w-full border-red-300 rounded-lg shadow-inner text-sm p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-500 mb-2"></textarea>
+                        @error('editingPostContent') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
 
+                        <div class="flex justify-end gap-2">
+                            <button type="button" wire:click="cancelEdit"
+                                class="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-xs font-semibold transition">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                class="px-3 py-1 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 text-xs transition">
+                                Salvar
+                            </button>
+                        </div>
+                    </form>
+                @else
+                    {{-- MODO DE VISUALIZAÇÃO --}}
+                    @if ($post->content)
+                        <p class="text-gray-700 text-sm mb-4 whitespace-pre-line">{{ $post->content }}</p>
+                    @endif
+                @endif
+                
                 {{-- Imagens do Post --}}
                 @if(!empty($post->images))
                     @php
@@ -127,8 +149,8 @@
                     <div class="mb-4 grid {{ $gridClass }} gap-3">
                         @foreach($post->images as $img)
                             <div class="w-full {{ $heightClass }} rounded-lg overflow-hidden shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition">
-                                {{-- CORREÇÃO PRINCIPAL: Usando a variável $img para o caminho da imagem do post --}}
-                                <img src="{{ asset('storage/' . $img) }}" alt="Imagem do post" class="object-cover w-full h-full">
+                                <img src="{{ asset('storage/' . $img) }}" alt="Imagem do post" 
+                                    class="w-full h-full object-contain bg-gray-100">
                             </div>
                         @endforeach
                     </div>
@@ -137,20 +159,24 @@
                 {{-- Rodapé / Ações do Post --}}
                 <div class="flex justify-between items-center border-t pt-4">
                     <div class="flex gap-4">
-                        {{-- Botão de Edição (Somente para Coordenador que postou) --}}
+                        {{-- Botão de Edição --}}
                         @if($isCoordinator && auth()->id() === $post->user_id)
-                            <a href="#" class="text-black hover:text-red-800 text-xs font-semibold flex items-center gap-1 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                Editar
-                            </a>
+                            @if ($editingPostId === $post->id)
+                                {{-- Não exibe o botão Editar se já estiver editando --}}
+                            @else
+                                <button type="button" wire:click="startEdit({{ $post->id }})"
+                                    class="text-black hover:text-red-800 text-xs font-semibold flex items-center gap-1 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    Editar
+                                </button>
+                            @endif
                         @endif
                         
-                        {{-- BOTÃO DE EXCLUSÃO (ATIVA O MODAL) --}}
+                        {{-- BOTÃO DE EXCLUSÃO --}}
                         @if(auth()->id() === $post->user_id || $isCoordinator)
                             <button type="button" 
                                 @click="
                                     postIdToDelete = {{ $post->id }};
-                                    // Limita o conteúdo para a exibição no modal
                                     postContentToDelete = '{{ Str::limit(str_replace(["\n", "\r"], ' ', addslashes($post->content)), 40, '...') }}';
                                     showPostModal = true;
                                 "
@@ -169,7 +195,6 @@
                     <div class="space-y-4">
                         @foreach ($post->replies as $reply)
                             <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
-                                {{-- CORRIGIDO: Usando o acessor user_icon_url --}}
                                 <img src="{{ $reply->author->user_icon_url }}"
                                     class="w-7 h-7 rounded-full object-cover border border-white shadow-sm">
                                 <div class="flex-1 min-w-0">
@@ -181,7 +206,7 @@
                                             @endif
                                             <span class="text-gray-500 font-normal ml-2 text-xs">{{ $reply->created_at->diffForHumans() }}</span>
                                         </p>
-                                        {{-- BOTÃO DE EXCLUSÃO DA RESPOSTA (ATIVA O MODAL) --}}
+                                        {{-- BOTÃO DE EXCLUSÃO DA RESPOSTA --}}
                                         @if(auth()->id() === $reply->author->id || $isCoordinator)
                                             <button type="button" 
                                                 @click="
