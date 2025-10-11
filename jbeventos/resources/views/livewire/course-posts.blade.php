@@ -131,6 +131,25 @@
             <div class="bg-white rounded-xl p-6 shadow-xl border border-gray-100">
                 
                 {{-- Cabeçalho do Post / Modo de Edição (Imagens) --}}
+                {{-- Ele deve aparecer sempre que o post NÃO estiver em modo de edição --}}
+                    @if ($editingPostId !== $post->id)
+                        <div class="flex items-start gap-3 mb-4">
+                            {{-- Foto de Perfil do Autor do Post --}}
+                            <img src="{{ $post->author->user_icon_url }}"
+                                class="w-10 h-10 rounded-full object-cover border-2 border-red-500 shadow-md">
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-gray-900 truncate">
+                                    {{ $post->author->name }}
+                                    {{-- Indicador de Coordenador (se for o coordenador) --}}
+                                    @if($post->user_id === optional(optional($course->courseCoordinator)->userAccount)->id)
+                                        <span class="text-red-600 text-xs font-bold ml-1">(Coordenador)</span>
+                                    @endif
+                                </p>
+                                {{-- Data de Criação do Post --}}
+                                <p class="text-xs text-gray-500">{{ $post->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    @endif
 
                 {{-- Conteúdo do Post / Formulário de Edição do Post --}}
                 @if ($editingPostId === $post->id)
