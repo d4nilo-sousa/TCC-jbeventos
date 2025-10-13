@@ -1,11 +1,5 @@
 <x-app-layout>
     <div class="relative bg-white shadow-xl rounded-lg overflow-hidden max-w-4xl mx-auto my-8">
-        <x-slot name="header">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Perfil de {{ $user->name }}
-            </h2>
-        </x-slot>
-
         {{-- Banner --}}
         <div class="relative h-56 bg-gray-200"
             style="{{ preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner_url) ? 'background-color: ' . $user->user_banner_url : '' }}">

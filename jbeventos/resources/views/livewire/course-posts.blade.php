@@ -135,9 +135,10 @@
                     @if ($editingPostId !== $post->id)
                         <div class="flex items-start gap-3 mb-4">
                             {{-- Foto de Perfil do Autor do Post --}}
+                            <a href="{{ route('profile.view', $post->author) }}">
                             <img src="{{ $post->author->user_icon_url }}"
-                                class="w-10 h-10 rounded-full object-cover border-2 border-red-500 shadow-md">
-                            <div class="flex-1 min-w-0">
+                                class="w-10 h-10 rounded-full object-cover border-2 border-red-500 shadow-md"> </a>
+                            <div class="flex-1 min-w-0"> 
                                 <p class="text-sm font-bold text-gray-900 truncate">
                                     {{ $post->author->name }}
                                     {{-- Indicador de Coordenador (se for o coordenador) --}}
@@ -388,8 +389,9 @@
                             @else
                                 {{-- MODO DE VISUALIZAÇÃO DE RESPOSTA --}}
                                 <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
-                                    <img src="{{ $reply->author->user_icon_url }}"
-                                        class="w-7 h-7 rounded-full object-cover border border-white shadow-sm flex-shrink-0">
+                                    <a href="{{ route('profile.view', $reply->author) }}">
+                                    <img src="{{ $reply->author->user_icon_url }}" 
+                                        class="w-7 h-7 rounded-full object-cover border border-white shadow-sm flex-shrink-0"> </a>
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
                                             <p class="text-sm font-semibold text-gray-800 truncate">
