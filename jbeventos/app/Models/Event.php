@@ -64,10 +64,9 @@ class Event extends Model
         return $this->belongsToMany(User::class, 'event_user_alerts', 'event_id', 'user_id');
     }
 
-    // Relação com o modelo Course
-    public function course()
+    public function courses()
     {
-        return $this->belongsTo(Course::class);
+        return $this->belongsToMany(Course::class, 'course_event');
     }
 
     // Retorna o curso que está assossiado ao evento

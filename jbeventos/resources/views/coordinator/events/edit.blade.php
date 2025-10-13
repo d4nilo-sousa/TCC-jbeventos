@@ -78,7 +78,6 @@
                                 @enderror
                             </div>
 
-
                             <div>
                                 <x-input-label for="event_location" value="Local" />
                                 <x-text-input type="text" name="event_location" id="event_location"
@@ -108,6 +107,39 @@
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
+                            </div>
+
+                            {{-- Seleção de Cursos Adicionais --}}
+                            @php
+                                $coordinator = auth()->user()->coordinator;
+                                $coordinatedCourse = $coordinator->coordinatedCourse;
+                                $defaultCourseId = $coordinatedCourse ? $coordinatedCourse->id : null;
+                                $availableCourses = $allCourses->where('id', '!=', $defaultCourseId);
+                                $selectedCourses = old('courses', $event->courses->pluck('id')->toArray());
+                            @endphp
+
+                            <div class="mt-6">
+                                <x-input-label for="courses" value="Cursos Adicionais (Opcional)" />
+
+                                <div
+                                    class="mt-2 p-3 border border-gray-300 rounded-md shadow-sm h-40 overflow-y-auto bg-white">
+                                    @forelse ($availableCourses as $course)
+                                        <div class="flex items-center mb-1">
+                                            <input id="course-{{ $course->id }}" name="courses[]" type="checkbox"
+                                                value="{{ $course->id }}"
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
+                                            <label for="course-{{ $course->id }}" class="ml-2 text-sm text-gray-700">
+                                                {{ $course->course_name }}
+                                            </label>
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-gray-500">Nenhum curso adicional disponível para seleção.
+                                        </p>
+                                    @endforelse
+                                </div>
+
+                                <x-input-error for="courses" class="mt-2" />
                             </div>
 
                             <div>

@@ -39,9 +39,9 @@ class Course extends Model
         return $this->followers()->count();
     }
 
-    // Relação muitos-para-muitos com Event
-    public function events() {
-        return $this->hasMany(Event::class);
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'course_event');
     }
 
     public function posts(){

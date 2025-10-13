@@ -241,7 +241,7 @@
                 {{-- Conteúdo da aba "Eventos" --}}
                 <div x-show="tab === 'events'">
                     <h2 class="text-xl font-bold text-stone-800 mb-4">Eventos do Curso</h2>
-                    @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator->user_id)
+                    @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
                         <div class="flex justify-end mb-4">
                             <a href="{{ route('events.create', ['course_id' => $course->id]) }}"
                                 class="bg-gray-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">

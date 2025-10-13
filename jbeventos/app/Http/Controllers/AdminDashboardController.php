@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\Reply; 
 use App\Models\Course;
 use App\Models\Comment; 
+use App\Models\Coordinator;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +58,7 @@ class AdminDashboardController extends Controller
         $savedEventsTrend = $calcTrend($savedEventsCount, $savedPrev);
         $postsTrend = $calcTrend($postsCount, $postsPrev);
 
-        // Top Coordenadores
+        // Top Coordenadores (mantido, pois Coordinator tem FK)
         $coordinatorsRanking = Event::select('coordinator_id', DB::raw('count(*) as events_count'))
             ->whereBetween('created_at', [$start, $end])
             ->whereNotNull('coordinator_id')
@@ -70,15 +71,28 @@ class AdminDashboardController extends Controller
         $otherCoordinators = $coordinatorsRanking->skip(3);
         
         // Ranking de Cursos
-        $coursesRanking = Event::select('course_id', DB::raw('count(*) as events_count'))
-            ->whereBetween('created_at', [$start, $end])
-            ->whereNotNull('course_id')
+        // 🎯 CORRIGIDO: O erro indica que a tabela 'event_course' não existe. 
+        // Foi alterado para a convenção alternativa do Laravel: 'course_event'.
+        $coursesRanking = DB::table('course_event')
+            ->select('course_id', DB::raw('count(event_id) as events_count'))
+            // Adiciona a condição de data juntando com a tabela de eventos, se necessário. 
+            // O nome da tabela foi atualizado para 'course_event' na junção também.
+            ->join('events', 'events.id', '=', 'course_event.event_id') 
+            ->whereBetween('events.created_at', [$start, $end])
             ->groupBy('course_id')
             ->orderByDesc('events_count')
-            ->with('eventCourse')
+            ->limit(10) // Limita o ranking para melhor visualização
             ->get();
 
-        $coursesLabels = $coursesRanking->pluck('eventCourse.course_name')->toArray();
+        // Busca o nome dos cursos separadamente
+        $courseIds = $coursesRanking->pluck('course_id');
+        $courseNames = Course::whereIn('id', $courseIds)->pluck('course_name', 'id');
+        
+        // Mapeia o resultado do ranking com os nomes dos cursos
+        $coursesLabels = $coursesRanking->map(function ($rank) use ($courseNames) {
+            return $courseNames[$rank->course_id] ?? 'Curso Desconhecido';
+        })->toArray();
+
         $coursesData = $coursesRanking->pluck('events_count')->toArray();
 
         // Top 5 eventos do mês

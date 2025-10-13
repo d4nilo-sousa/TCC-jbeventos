@@ -134,7 +134,15 @@
                         @if ($event->event_type === 'course')
                             <div>
                                 <p class="font-bold mb-1">Curso Relacionado:</p>
-                                <p>{{ $event->eventCourse->course_name ?? 'Sem Curso' }}</p>
+                                @if ($event->courses->isNotEmpty())
+                                    <ul>
+                                        @foreach ($event->courses as $course)
+                                            <li>{{ $course->course_name }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <p>Nenhum curso associado.</p>
+                                @endif
                             </div>
                         @endif
                         <div>

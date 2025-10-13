@@ -16,7 +16,8 @@ class ExploreController extends Controller
         $search = $request->input('search');
 
         // Lógica de busca e recuperação de dados
-        $events = Event::with('course')
+        // 🎯 ALTERADO: 'course' foi substituído por 'courses' para usar a relação many-to-many (tabela pivot)
+        $events = Event::with('courses')
             ->when($search, function ($query, $search) {
                 return $query->where('event_name', 'like', "%{$search}%")
                              ->orWhere('event_description', 'like', "%{$search}%");
@@ -41,6 +42,7 @@ class ExploreController extends Controller
             ->get();
 
         // Nova lógica para buscar os posts
+        // Nota: Assumindo que 'course' aqui ainda é um relacionamento one-to-many ou belongs-to em Post
         $posts = Post::with('author', 'course')
             ->when($search, function ($query, $search) {
                 return $query->where('content', 'like', "%{$search}%")

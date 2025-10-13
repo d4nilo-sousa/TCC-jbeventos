@@ -13,7 +13,6 @@ trait PasswordValidationRules
     protected function passwordRules(string $userType = 'user'): array
     {
         if ($userType === 'coordinator' || $userType === 'admin') {
-            // Coordenador e Admin: requisitos fortes
             return [
                 'required',
                 'string',
@@ -23,7 +22,6 @@ trait PasswordValidationRules
             ];
         }
 
-        // Usuário comum: só precisa de 8 caracteres
         return [
             'required',
             'string',

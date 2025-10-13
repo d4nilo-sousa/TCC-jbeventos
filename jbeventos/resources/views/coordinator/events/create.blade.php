@@ -256,38 +256,82 @@
                                     <input type="hidden" name="coordinator_id"
                                         value="{{ auth()->user()->coordinator->id }}">
                                 </div>
+
                                 @php
-                                    $coordinatorType = auth()->user()->coordinator->coordinator_type;
+                                    $coordinator = auth()->user()->coordinator;
+                                    $coordinatorType = $coordinator->coordinator_type;
+                                    $coordinatedCourse = $coordinator->coordinatedCourse;
+
                                     $eventTypeLabel =
                                         $coordinatorType === 'course' ? 'Evento de Curso' : 'Evento Geral';
-                                    $courseName =
-                                        $coordinatorType === 'course' && auth()->user()->coordinator->coordinatedCourse
-                                            ? auth()->user()->coordinator->coordinatedCourse->course_name
-                                            : 'Nenhum';
-                                    $courseId =
-                                        $coordinatorType === 'course' && auth()->user()->coordinator->coordinatedCourse
-                                            ? auth()->user()->coordinator->coordinatedCourse->id
-                                            : '';
+
+                                    // Pega o ID e o Nome do curso padrão (se existir)
+                                    $defaultCourseName = $coordinatedCourse
+                                        ? $coordinatedCourse->course_name
+                                        : 'Nenhum';
+                                    $defaultCourseId = $coordinatedCourse ? $coordinatedCourse->id : null;
+
+                                    // Filtra a lista de todos os cursos para excluir o curso padrão
+                                    $availableCourses = $allCourses->where('id', '!=', $defaultCourseId);
+
+                                    // Variável para reter os cursos selecionados em caso de erro de validação (ou edição)
+                                    // Se estiver em uma página de EDIÇÃO, use: $selectedCourses = old('courses', $event->courses->pluck('id')->toArray());
+                                    // Para CRIAÇÃO:
+                                    $selectedCourses = old('courses', []);
                                 @endphp
-                                <div>
-                                    <x-input-label for="event_type" value="Tipo do Evento" />
-                                    <x-text-input id="coordinator_type" type="text"
-                                        class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
-                                        value="{{ $eventTypeLabel }}" readonly disabled />
-                                    <input type="hidden" name="coordinator_type" value="{{ $coordinatorType }}">
+
+                                {{-- ... Bloco de Tipo de Evento/Curso Padrão ... --}}
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {{-- Tipo do Evento --}}
+                                    <div>
+                                        <x-input-label for="event_type" value="Tipo do Evento" />
+                                        <x-text-input id="coordinator_type" type="text"
+                                            class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                            value="{{ $eventTypeLabel }}" readonly disabled />
+                                        <input type="hidden" name="coordinator_type"
+                                            value="{{ $coordinatorType }}">
+                                    </div>
+
+                                    {{-- Curso Padrão do Coordenador (Sempre exibido se for curso) --}}
+                                    @if ($coordinatorType === 'course')
+                                        <div>
+                                            <x-input-label for="default_course" value="Curso Padrão (Obrigatório)" />
+                                            <x-text-input id="default_course_name" type="text"
+                                                class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                                value="{{ $defaultCourseName }}" readonly disabled />
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
-                            {{-- Curso do evento (se aplicável) --}}
-                            @if ($coordinatorType === 'course')
-                                <div class="md:col-span-2">
-                                    <x-input-label for="event_course" value="Curso" />
-                                    <x-text-input id="course_name" type="text"
-                                        class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
-                                        value="{{ $courseName }}" readonly disabled />
-                                    <input type="hidden" name="course_id" value="{{ $courseId }}">
+                            {{-- NOVO CAMPO: Seleção de Outros Cursos como Checkboxes --}}
+                            <div class="mt-4">
+                                <x-input-label for="courses" value="Cursos Adicionais (Opcional)" />
+
+                                {{-- Container para os checkboxes com scroll --}}
+                                <div
+                                    class="mt-2 p-3 border border-gray-300 rounded-md shadow-sm h-40 overflow-y-auto bg-white">
+
+                                    @forelse ($availableCourses as $course)
+                                        <div class="flex items-center mb-1">
+                                            {{-- O nome courses[] garante que o Laravel receba um array de IDs selecionados --}}
+                                            <input id="course-{{ $course->id }}" name="courses[]" type="checkbox"
+                                                value="{{ $course->id }}"
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
+                                            <label for="course-{{ $course->id }}"
+                                                class="ml-2 text-sm text-gray-700">
+                                                {{ $course->course_name }}
+                                            </label>
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-gray-500">Nenhum curso adicional disponível para
+                                            seleção.</p>
+                                    @endforelse
                                 </div>
-                            @endif
+
+                                <x-input-error for="courses" class="mt-2" />
+                            </div>
 
                             <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
 

@@ -28,24 +28,19 @@ class FillMissingEventCoordinators extends Command
      */
     public function handle()
     {
-        // Busca todos os eventos que não possuem coordinator_id
         $events = Event::whereNull('coordinator_id')->get();
         $this->info("Encontrados " . $events->count() . " eventos sem coordenador");
 
         foreach ($events as $event) {
-            // Se o evento for do tipo 'course' e tiver course_id
             if ($event->event_type === 'course' && $event->course_id) {
                 $course = Course::find($event->course_id);
-                // Atualiza o coordinator_id do evento com o coordinator_id do curso
                 if ($course && $course->coordinator_id) {
                     $event->updateQuietly(['coordinator_id' => $course->coordinator_id]);
                     $this->info("Evento {$event->id} atualizado com o coordenador do curso {$course->id}.");
                 }
             }
 
-            // Se o evento for do tipo 'general'
             if ($event->event_type === 'general') {
-                // Atribui o primeiro coordenador do tipo 'general' ao evento
                 $coordinator = Coordinator::where('coordinator_type', 'general')->first();
                 if ($coordinator) {
                     $event->updateQuietly(['coordinator_id' => $coordinator->id]);
