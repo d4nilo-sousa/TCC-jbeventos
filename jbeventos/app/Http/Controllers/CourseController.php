@@ -16,14 +16,22 @@ class CourseController extends Controller
      */
     public function index(Request $request)
     {
-        $courses = Course::query();
+         $courses = Course::query();
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $courses->where('course_name', 'like', "%{$search}%");
+            // Busca case-insensitive e em português
+            $courses->where('course_name', 'like', "%{$search}%"); 
         }
 
-        $courses = $courses->get();
+        // carregando o coordenador para o course-card funcionar
+        $courses = $courses->with('courseCoordinator.userAccount')->get();
+
+        // Lógica para responder à requisição AJAX do views/js/search-highlight.js
+        if ($request->ajax()) {
+            // Retorna apenas a parte da view que contém os cards de curso
+            return view('courses.index', compact('courses'))->render();
+        }
 
         return view('courses.index', compact('courses'));
     }
