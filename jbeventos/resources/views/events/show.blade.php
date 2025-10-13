@@ -189,7 +189,7 @@
                                 {{-- Categorias (Largura Total) --}}
                                 <div class="sm:col-span-2 border-t border-gray-200 pt-4 mt-4">
                                     <p class="text-sm font-bold text-gray-500 mb-2 flex items-center gap-1">
-                                             <i class="ph-fill ph-hash text-base text-red-600"></i> Categorias:
+                                        <i class="ph-fill ph-hash text-base text-red-600"></i> Categorias:
                                     </p>
                                     <div class="flex flex-wrap gap-2">
                                         @forelse($event->eventCategories as $category)
@@ -208,144 +208,20 @@
                             @if (auth()->check() &&
                                 auth()->user()->user_type === 'coordinator' &&
                                 auth()->user()->coordinator->id === $event->coordinator_id)
-                            <div class="pt-4 mt-4 border-t border-gray-200 flex flex-wrap gap-2">
-                                <a href="{{ route('events.edit', $event->id) }}"
-                                    class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
-                                    <i class="fas fa-edit"></i> Editar Evento
-                                </a>
-                                {{-- Botão de Excluir que abre o modal --}}
-                                <button onclick="openModal('deleteModal-{{ $event->id }}')"
-                                    class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
-                                    <i class="fas fa-trash-alt"></i> Excluir Evento
-                                </button>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- Additional Details Card --}}
-                    <div class="bg-white rounded-2xl shadow-lg p-6 border space-y-4 text-gray-700">
-                        <div>
-                            <p class="font-bold mb-1">Coordenador:</p>
-                            <p>
-                                @if (!$event->eventCoordinator || $event->eventCoordinator->coordinator_type !== $event->event_type)
-                                    Nenhum coordenador definido
-                                @else
-                                    {{ $event->eventCoordinator?->userAccount?->name ?? 'N/A' }}
-                                @endif
-                            </p>
-                        </div>
-                        <div>
-                            <p class="font-bold mb-1">Tipo de Evento:</p>
-                            <p>{{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'N/A') }}
-                            </p>
-                        </div>
-                        @if ($event->event_type === 'course')
-                            <div>
-                                <p class="font-bold mb-1">Curso Relacionado:</p>
-                                @if ($event->courses->isNotEmpty())
-                                    <ul>
-                                        @foreach ($event->courses as $course)
-                                            <li>{{ $course->course_name }}</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <p>Nenhum curso associado.</p>
-                                @endif
-                            </div>
-                        @endif
-                        <div>
-                            <p class="font-bold mb-1">Categorias:</p>
-                            <div class="mt-2 flex flex-wrap gap-2">
-                                @forelse($event->eventCategories as $category)
-                                    <span
-                                        class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                                        {{ $category->category_name }}
-                                    </span>
-                                @empty
-                                    <span class="text-gray-400 text-sm">Nenhuma categoria atribuída.</span>
-                                @endforelse
-                            </div>
-                        </div>
-                        {{-- Botão de navegação --}}
-                        <div class="flex justify-start pt-4 border-t border-gray-200">
-                            <a href="{{ route('events.index') }}"
-                                class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
-                                ← Voltar
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div> {{-- FIM do grid grid-cols-1 lg:grid-cols-3 --}}
-
-            {{-- **SEÇÕES EMPILHADAS DE LARGURA TOTAL** --}}
-
-            {{-- Description Section (100% de largura) --}}
-            <div class="bg-white rounded-2xl shadow-lg p-6 border">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Sobre o Evento</h2>
-
-                <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
-
-                <p class="text-gray-700 leading-relaxed break-words whitespace-pre-line">
-                    {{ $event->event_info ?? '(Sem informações sobre o evento)' }}
-                </p>
-            </div>
-
-            {{-- Reactions Section (100% de largura) --}}
-            <div class="bg-white rounded-2xl shadow-lg p-6 border">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="far fa-heart text-red-500"></i> Reações
-                </h2>
-                <div id="reactions" class="flex flex-wrap gap-4">
-                    @foreach (['like' => 'Curtir', 'save' => 'Salvar', 'notify' => 'Notificar'] as $type => $label)
-                        @php
-                            $isActive = in_array($type, $userReactions);
-                            $count = $event->reactions->where('reaction_type', $type)->count();
-                        @endphp
-
-                        <form class="reaction-form" method="POST"
-                            action="{{ route('events.react', ['event' => $event->id]) }}">
-                            @csrf
-                            <input type="hidden" name="reaction_type" value="{{ $type }}">
-
-                            {{-- Lógica para o botão CURTIR (Com contador) --}}
-                            @if ($type === 'like')
-                                <button type="submit" data-type="{{ $type }}"
-                                    data-count="{{ $count }}"
-                                    class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
-                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
-                                    <i class="fas fa-thumbs-up"></i>
-                                    {{ $label }}
-                                    <span
-                                        class="reaction-count text-xs font-semibold px-2 py-1 rounded-full {{ $isActive ? 'bg-white text-blue-600' : 'bg-blue-100' }}">
-                                        {{ $count }}
-                                    </span>
-                                </button>
-
-                                {{-- Lógica para SALVAR e NOTIFICAR (Ação binária sem contador) --}}
-                            @else
-                                <button type="submit" data-type="{{ $type }}"
-                                    class="reaction-btn-toggle flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
-                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
-                                    <i class="fas fa-{{ $type == 'save' ? 'bookmark' : 'bell' }}"></i>
-                                    <span class="toggle-text font-semibold">
-                                        {{ $isActive ? ($type == 'save' ? 'Salvo' : 'Notificando') : $label }}
-                                    </span>
-                                </button>
-                                <div class="mt-8 pt-6 border-t border-gray-200 flex flex-wrap gap-3">
+                                <div class="pt-4 mt-4 border-t border-gray-200 flex flex-wrap gap-2">
                                     <a href="{{ route('events.edit', $event->id) }}"
-                                        class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors text-sm shadow">
+                                        class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
                                         <i class="ph-fill ph-pencil-simple-line"></i> Editar Evento
                                     </a>
+                                    {{-- Botão de Excluir que abre o modal --}}
                                     <button onclick="openModal('deleteModal-{{ $event->id }}')"
-                                        class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors text-sm shadow">
+                                        class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
                                         <i class="ph-fill ph-trash"></i> Excluir Evento
                                     </button>
                                 </div>
                             @endif
-
-                        </div> {{-- FIM da Descrição + Detalhes --}}
+                        </div>
                     </div> {{-- FIM do CARTÃO PRINCIPAL --}}
-
                 </div> {{-- FIM da COLUNA PRINCIPAL (6/12) --}}
 
                 {{-- COLUNA DA DIREITA (COMENTÁRIOS - 6/12 da Largura) --}}
