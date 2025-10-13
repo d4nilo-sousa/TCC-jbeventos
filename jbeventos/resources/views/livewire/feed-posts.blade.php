@@ -79,7 +79,7 @@
         {{-- CARTÃO DE POST --}}
         <div wire:key="post-{{ $post->id }}" 
              class="feed-card bg-white rounded-xl shadow border border-gray-100 p-6 space-y-4 relative 
-                    transition duration-150 ease-in-out hover:shadow-lg hover:border-red-300" {{-- EFEITO DE HOVER APLICADO AQUI --}}>
+                     transition duration-150 ease-in-out hover:shadow-lg hover:border-red-300">
             {{-- DIV CLICÁVEL PARA ABRIR O MODAL --}}
             <div wire:click="openPostModal({{ $post->id }})" class="cursor-pointer"> 
                 
@@ -89,8 +89,7 @@
                         
                         {{-- Botão de Excluir --}}
                         <button 
-                            wire:click.stop="deletePost({{ $post->id }})" {{-- .stop impede o clique de propagar para o card --}}
-                            wire:confirm="Tem certeza que deseja excluir este post?" 
+                            wire:click.stop="confirmPostDeletion({{ $post->id }})" {{-- Chama o método para abrir o modal --}}
                             class="p-2 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition duration-150"
                             title="Excluir Post"
                         >
@@ -142,9 +141,9 @@
                     <div class="grid gap-2 {{ count($post->images) > 1 ? 'grid-cols-2' : 'grid-cols-1' }}">
                         @foreach ($post->images as $imagePath)
                             <img src="{{ asset('storage/' . $imagePath) }}" alt="Post Image" 
-                                  class="w-full h-auto object-cover rounded-lg shadow-md max-h-80 cursor-pointer"
-                                  onclick="event.stopPropagation(); window.open(this.src)" {{-- .stopPropagation() garante que o clique na imagem não abra o modal --}}
-                                  loading="lazy"
+                                    class="w-full h-auto object-cover rounded-lg shadow-md max-h-80 cursor-pointer"
+                                    onclick="event.stopPropagation(); window.open(this.src)" {{-- .stopPropagation() garante que o clique na imagem não abra o modal --}}
+                                    loading="lazy"
                             >
                         @endforeach
                     </div>
@@ -189,7 +188,6 @@
             x-transition:leave="ease-in duration-200" 
             x-transition:leave-start="opacity-100" 
             x-transition:leave-end="opacity-0"
-            {{-- CORREÇÃO DA COR DE FUNDO: O fundo preto translúcido é o padrão, o problema de cor é na área principal do Feed --}}
             class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 sm:p-6" 
             aria-modal="true" role="dialog"
             wire:key="post-modal-{{ $expandedPost->id }}"
@@ -333,7 +331,7 @@
                                                 alt="Post Image" class="w-full h-full object-cover rounded">
                                             
                                             <button type="button" wire:click="removeEditingImage({{ $index }})" 
-                                                    class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 leading-none text-xs hover:bg-red-700">
+                                                     class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 leading-none text-xs hover:bg-red-700">
                                                 &times;
                                             </button>
                                         </div>
@@ -361,17 +359,71 @@
                         
                         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                             <button type="submit" 
-                                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                                            wire:loading.attr="disabled">
+                                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                                                wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="saveEditPost">Salvar Alterações</span>
                                 <span wire:loading wire:target="saveEditPost">Salvando...</span>
                             </button>
                             <button type="button" wire:click="resetEditModal" 
-                                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancelar
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO --}}
+    @if ($confirmingPostDeletionId)
+        <div x-data="{ open: @entangle('confirmingPostDeletionId').not(null) }" x-show="open" 
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-900 bg-opacity-75 z-[200] flex items-center justify-center p-4 sm:p-6"
+            aria-modal="true" role="dialog"
+            x-on:keydown.escape.window="$wire.set('confirmingPostDeletionId', null)">
+
+            <div x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="bg-white rounded-xl shadow-2xl w-full max-w-sm transform transition-all">
+
+                <div class="bg-white p-6 sm:p-8 rounded-xl">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="ph ph-trash text-red-600 text-2xl"></i> {{-- Ícone de Lixeira --}}
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+                                Confirmar Exclusão
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-xl">
+                    <button wire:click="deletePost" type="button" 
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                            wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="deletePost">Excluir</span>
+                        <span wire:loading wire:target="deletePost">Excluindo...</span>
+                    </button>
+                    <button wire:click="$set('confirmingPostDeletionId', null)" type="button" 
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-100 sm:mt-0 sm:w-auto sm:text-sm">
+                        Cancelar
+                    </button>
                 </div>
             </div>
         </div>

@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
-use Illuminate\Database\Eloquent\Builder; // Importação útil para o query builder
+use Illuminate\Database\Eloquent\Builder;
 
 class FeedPosts extends Component
 {
@@ -40,6 +40,11 @@ class FeedPosts extends Component
     public $editingPostImages = []; 
     public $originalPostImages = []; 
     // ------------------------------------------
+
+    // --- PROPRIEDADES PARA EXCLUSÃO DE POSTS ---
+    public ?int $confirmingPostDeletionId = null; 
+    // ----------------------------------------------
+
 
     protected function rules()
     {
@@ -215,11 +220,28 @@ class FeedPosts extends Component
         $this->dispatch('closeEditModal');
     }
 
+    // --- MÉTODOS DE EXCLUSÃO ---
+
     /**
-     * Deleta um post.
+     * Abre o modal de confirmação de exclusão.
      */
-    public function deletePost(int $postId)
+    public function confirmPostDeletion(int $postId)
     {
+        $this->confirmingPostDeletionId = $postId;
+    }
+
+    /**
+     * Deleta um post após a confirmação do modal.
+     */
+    public function deletePost()
+    {
+        $postId = $this->confirmingPostDeletionId; // Armazena o ID antes de limpar
+
+        // Se nenhum post está selecionado, retorna
+        if (!$postId) {
+            return;
+        }
+
         $post = Post::where('user_id', Auth::id())->findOrFail($postId);
         
         if ($post->images) {
@@ -229,11 +251,17 @@ class FeedPosts extends Component
         $post->delete();
 
         session()->flash('success', 'Post excluído com sucesso!');
+        
+        // Limpa o estado da deleção e recarrega
+        $this->confirmingPostDeletionId = null;
         $this->resetPage(); 
+        
+        // Fecha o modal de post expandido se o post deletado estava aberto
         if ($this->selectedPostId === $postId) {
             $this->closePostModal();
         }
     }
+
     // ------------------------------------
     
     // --- MÉTODOS DE RESPOSTAS/MODAL ---
