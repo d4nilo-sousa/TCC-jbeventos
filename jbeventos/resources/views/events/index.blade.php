@@ -109,11 +109,22 @@
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Intervalo de
                                         Datas</label>
-                                    <input type="date" name="start_date" value="{{ request('start_date') }}"
+
+                                    <input type="date" name="start_date"
+                                        value="{{ old('start_date', request('start_date')) }}"
                                         class="w-full rounded-md border-gray-300 text-sm mb-2">
-                                    <input type="date" name="end_date" value="{{ request('end_date') }}"
+                                    @error('start_date')
+                                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                    @enderror
+
+                                    <input type="date" name="end_date"
+                                        value="{{ old('end_date', request('end_date')) }}"
                                         class="w-full rounded-md border-gray-300 text-sm">
+                                    @error('end_date')
+                                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
+
 
                                 {{-- Ordenar por - usando radios para seleção única --}}
                                 <div>

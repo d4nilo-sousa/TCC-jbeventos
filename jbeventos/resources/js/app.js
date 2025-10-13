@@ -3,7 +3,6 @@ import './datetime-validation';
 import './event-reactions';
 import './event-realtime';
 import './filter-menu';
-import './order-menu';
 import './password-generator';
 import './password-validator';
 import './echo';
