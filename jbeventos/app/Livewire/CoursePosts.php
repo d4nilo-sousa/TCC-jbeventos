@@ -4,55 +4,71 @@ namespace App\Livewire;
 
 use App\Models\Course;
 use App\Models\Post;
+use App\Models\Reply;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class CoursePosts extends Component
 {
-    use WithPagination, WithFileUploads; // Traits para paginação e upload de arquivos
+    use WithPagination, WithFileUploads; // traits para paginação e upload de arquivos
 
-    protected $paginationTheme = 'tailwind'; // Tema de paginação Tailwind CSS
+    protected $paginationTheme = 'tailwind'; // tema do Tailwind para paginação
 
-    // Propriedades de Criação
+    // Propriedades de Criação (Post)
     public Course $course;
     public $newPostContent = '';
-    public $newReplyContent = [];
-    public $images = [];
-    public $newlyUploadedImages = [];
+    public $images = []; // Imagens do POST
+    public $newlyUploadedImages = []; // Upload temporário do POST
 
-    // PROPRIEDADES DE EDIÇÃO
+    // Propriedades de Resposta (Reply)
+    public $newReplyContent = [];
+    public $newReplyImage = []; // Upload temporário de imagem para a nova resposta
+
+    // PROPRIEDADES DE EDIÇÃO (Post)
     public $editingPostId = null;
     public $editingPostContent = '';
     public $editingPostCurrentImages = []; // Imagens JÁ SALVAS no DB 
     public $editingPostNewImages = []; // Imagens NOVAS enviadas
 
+    // PROPRIEDADES DE EDIÇÃO (Reply)
+    public $editingReplyId = null;
+    public $editingReplyContent = '';
+    public $editingReplyCurrentImage = null; // Caminho no DB da imagem atual
+    public $editingReplyNewImage = null; // Upload temporário da nova imagem
+
 
     // Método rules() para validação dinâmica
     protected function rules()
     {
-        // Calcula o total de imagens durante a edição
-        $totalEditingImages = count($this->editingPostCurrentImages) + count(is_array($this->editingPostNewImages) ? $this->editingPostNewImages : []);
-        
         // Define as regras base
         $rules = [
+            // Regras de Criação de Post
             'newPostContent' => 'nullable|string|max:500', 
             'images' => 'array|max:5',
-            'images.*' => 'image|max:2048', 
-            'newReplyContent.*' => 'required|string|min:2|max:100', 
-            
-            // Regras para Edição
-            'editingPostContent' => 'nullable|string|max:300',
-            'editingPostNewImages' => 'array', // Array de novos uploads
-            'editingPostNewImages.*' => 'image|max:2048', // Regra para cada nova imagem
-        ];
+            'images.*' => 'image|max:2048', // 2MB
 
-        // Se o total de imagens na edição exceder 5, retorna um erro de validação (embora a lógica de `updatedEditingPostNewImages` tente evitar isso)
-        if ($totalEditingImages > 5) {
-             // Esta checagem é mais para garantir que a validação não passe,
-             // mas a lógica de limite é controlada principalmente por updatedEditingPostNewImages.
+            // Regras de Edição de Post
+            'editingPostContent' => 'nullable|string|max:300',
+            'editingPostNewImages' => 'array', 
+            'editingPostNewImages.*' => 'image|max:2048', 
+
+            // Regras de Criação de Resposta
+            'newReplyContent.*' => 'nullable|string|min:2|max:300', // Aumentei o limite
+            'newReplyImage.*' => 'nullable|image|max:512', // Max 1 imagem por resposta, 512KB
+
+            // Regras de Edição de Resposta
+            'editingReplyContent' => 'nullable|string|max:300',
+            'editingReplyNewImage' => 'nullable|image|max:512',
+        ];
+        
+        // Regra de checagem condicional para Edição de Resposta:
+        // O conteúdo é obrigatório SE não houver imagem atual ou nova.
+        if ($this->editingReplyId) {
+            $rules['editingReplyContent'] = 'required_without_all:editingReplyCurrentImage,editingReplyNewImage|string|max:300';
         }
 
         return $rules;
@@ -76,9 +92,11 @@ class CoursePosts extends Component
         ]);
     }
 
+    // -------------------------------------------------------------------------
     // --- MÉTODOS DE CRIAÇÃO DE POSTS ---
+    // -------------------------------------------------------------------------
 
-    // Lógica para múltiplas imagens
+    // Lógica para múltiplas imagens no post
     public function updatedNewlyUploadedImages()
     {
         $newFiles = is_array($this->newlyUploadedImages) ? $this->newlyUploadedImages : [$this->newlyUploadedImages];
@@ -98,7 +116,7 @@ class CoursePosts extends Component
         $this->newlyUploadedImages = [];
     }
 
-    // Remove imagem do array de imagens 
+    // Remove imagem do array de imagens do Post
     public function removeImage($index)
     {
         if (isset($this->images[$index])) {
@@ -151,9 +169,11 @@ class CoursePosts extends Component
         $this->dispatch('postCreated');
     }
 
+    // -------------------------------------------------------------------------
     // --- MÉTODOS DE EDIÇÃO DE POSTS ---
+    // -------------------------------------------------------------------------
 
-    // Inicializa o formulário de edição
+    // Inicializa o formulário de edição do Post
     public function startEdit($postId) 
     {
         $post = Post::findOrFail($postId);
@@ -163,17 +183,18 @@ class CoursePosts extends Component
              session()->flash('error', 'Você não tem permissão para editar este post.');
              return;
         }
+        
+        // Cancela a edição de resposta, se estiver ativa
+        $this->cancelEditReply(); 
 
         $this->editingPostId = $postId;
         $this->editingPostContent = $post->content;
-        
-        // Carrega as imagens ATUAIS do post para o array de edição
         $this->editingPostCurrentImages = $post->images ?? [];
-        $this->editingPostNewImages = []; // Zera as novas imagens de upload
+        $this->editingPostNewImages = []; 
         $this->resetErrorBag();
     }
     
-    // Lógica para NOVAS imagens durante a edição
+    // Lógica para NOVAS imagens durante a edição do Post
     public function updatedEditingPostNewImages()
     {
         $newFiles = is_array($this->editingPostNewImages) ? $this->editingPostNewImages : [$this->editingPostNewImages];
@@ -188,8 +209,6 @@ class CoursePosts extends Component
             // Pega as 'take' primeiras da lista de uploads
             $this->editingPostNewImages = collect($newFiles)->take($take)->all(); 
             
-            // Se `take` for menor que 1, significa que o limite de 5 já foi atingido, 
-            // então não deve adicionar nada.
             if ($take < 1) {
                 $this->editingPostNewImages = [];
                 session()->flash('error', "O post já atingiu o limite de 5 imagens. Remova alguma foto para adicionar uma nova.");
@@ -199,7 +218,7 @@ class CoursePosts extends Component
         }
     }
 
-    // Remove imagem (existente ou nova) durante a edição
+    // Remove imagem (existente ou nova) durante a edição do Post
     public function removeEditingImage($index, $isNew = false)
     {
         if ($isNew) {
@@ -230,7 +249,6 @@ class CoursePosts extends Component
     // Atualização de Post
     public function updatePost()
     {
-        // Valida as novas imagens e o conteúdo de texto
         $this->validate(); 
 
         // Checagem Lógica: O post precisa de CONTEÚDO OU IMAGENS
@@ -247,6 +265,9 @@ class CoursePosts extends Component
              $this->cancelEdit();
              return;
         }
+
+        // Armazena a lista ORIGINAL de imagens para posterior exclusão
+        $originalImages = $post->images ?? [];
 
         // 1. Processa e armazena as NOVAS imagens
         $newImagePaths = [];
@@ -268,38 +289,169 @@ class CoursePosts extends Component
             'images' => $finalImages,
         ]);
 
+        // 4. Lógica de Limpeza: Exclui as imagens antigas que NÃO estão mais no array final
+        $imagesToDelete = array_diff($originalImages, $this->editingPostCurrentImages);
+
+        foreach ($imagesToDelete as $path) {
+            if (Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->delete($path);
+            }
+        }
+
         session()->flash('success', 'Post atualizado com sucesso!');
         $this->cancelEdit();
     }
     
-    // --- MÉTODOS DE RESPOSTAS E EXCLUSÃO ---
+    // -------------------------------------------------------------------------
+    // --- MÉTODOS DE RESPOSTAS (CRIAÇÃO/EDIÇÃO/EXCLUSÃO) ---
+    // -------------------------------------------------------------------------
 
-    // Criação de Respostas
+    // Criação de Respostas (MODIFICADO para imagem única)
     public function createReply($postId)
     {
+        $contentKey = "newReplyContent.{$postId}";
+        $imageKey = "newReplyImage.{$postId}";
+
+        // Valida o conteúdo e a imagem (se houver)
         $this->validate([
-            "newReplyContent.{$postId}" => 'required|string|min:2'
+            $contentKey => 'required_without:' . $imageKey . '|string|min:2|max:300',
+            $imageKey => 'nullable|image|max:512', // 512KB
         ]);
+        
+        // Checagem Lógica: Precisa de CONTEÚDO OU IMAGEM
+        if (empty(trim(Arr::get($this->newReplyContent, $postId))) && empty(Arr::get($this->newReplyImage, $postId))) {
+             $this->addError($contentKey, 'A resposta deve ter conteúdo de texto ou uma imagem.');
+             return; 
+        }
+
+        $imagePath = null;
+        $imageFile = Arr::get($this->newReplyImage, $postId);
+        
+        if ($imageFile) {
+            $imagePath = $imageFile->store('reply-images', 'public');
+        }
 
         $post = Post::findOrFail($postId);
         $post->replies()->create([
             'user_id' => auth()->id(),
-            'content' => $this->newReplyContent[$postId],
+            'content' => trim(Arr::get($this->newReplyContent, $postId)) ?: null,
+            'image' => $imagePath,
         ]);
 
-        $this->newReplyContent[$postId] = ''; 
+        // Limpa o formulário
+        Arr::forget($this->newReplyContent, $postId); 
+        Arr::forget($this->newReplyImage, $postId);
+        $this->newReplyImage[$postId] = null; // Garante que o input de file seja resetado
         
         session()->flash('success', 'Resposta enviada com sucesso!');
         $this->dispatch('replyCreated');
     }
 
-    // Excluir Resposta
+    // Inicializa o formulário de edição de Resposta
+    public function startEditReply($replyId) 
+    {
+        $reply = \App\Models\Reply::findOrFail($replyId);
+
+        $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
+        if (auth()->id() !== $reply->user_id && !$isCoordinator) {
+             session()->flash('error', 'Você não tem permissão para editar esta resposta.');
+             return;
+        }
+        
+        // Redefine a edição de post, se estiver ativa
+        $this->cancelEdit();
+        
+        $this->editingReplyId = $replyId;
+        $this->editingReplyContent = $reply->content;
+        $this->editingReplyCurrentImage = $reply->image; // Caminho do storage
+        $this->editingReplyNewImage = null;
+        $this->resetErrorBag();
+    }
+    
+    // Cancela a Edição de Resposta
+    public function cancelEditReply()
+    {
+        $this->editingReplyId = null;
+        $this->editingReplyContent = '';
+        $this->editingReplyCurrentImage = null;
+        $this->editingReplyNewImage = null;
+        $this->resetErrorBag();
+    }
+    
+    // Remove a Imagem Atual da Resposta durante a edição
+    public function removeReplyImage()
+    {
+        // Apenas remove do array de edição. A exclusão do arquivo será em updateReply.
+        $this->editingReplyCurrentImage = null; 
+    }
+
+    // Atualiza a Resposta
+    public function updateReply()
+    {
+        $this->validate(); 
+
+        $reply = \App\Models\Reply::findOrFail($this->editingReplyId);
+        $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
+
+        if (auth()->id() !== $reply->user_id && !$isCoordinator) {
+             session()->flash('error', 'Você não tem permissão para atualizar esta resposta.');
+             $this->cancelEditReply();
+             return;
+        }
+        
+        // Checagem Lógica: Precisa de CONTEÚDO OU IMAGEM
+        if (empty(trim($this->editingReplyContent)) && empty($this->editingReplyCurrentImage) && empty($this->editingReplyNewImage)) {
+             $this->addError('editingReplyContent', 'A resposta deve ter conteúdo de texto ou uma imagem.');
+             return; 
+        }
+
+        $originalImage = $reply->image;
+        $newImagePath = $originalImage;
+
+        // 1. Processa nova imagem de upload (se houver)
+        if ($this->editingReplyNewImage) {
+            // Se houver uma nova imagem, armazena
+            $newImagePath = $this->editingReplyNewImage->store('reply-images', 'public');
+            
+            // Exclui a imagem antiga (se houver)
+            if ($originalImage && Storage::disk('public')->exists($originalImage)) {
+                Storage::disk('public')->delete($originalImage);
+            }
+        } 
+        // 2. Lógica para exclusão de imagem
+        elseif ($originalImage && is_null($this->editingReplyCurrentImage)) {
+            // Se a imagem original existia, e a atual foi removida manualmente (editingReplyCurrentImage = null)
+            $newImagePath = null;
+            if (Storage::disk('public')->exists($originalImage)) {
+                Storage::disk('public')->delete($originalImage);
+            }
+        }
+        // 3. Se não houver nova imagem e a imagem atual não foi removida, mantém o caminho original do DB.
+        // Se `editingReplyCurrentImage` for nulo, mas o upload de `editingReplyNewImage` também for nulo, `newImagePath` será nulo.
+
+        // 4. Atualiza a Resposta
+        $reply->update([
+            'content' => trim($this->editingReplyContent) ?: null, 
+            'image' => $newImagePath,
+        ]);
+
+        session()->flash('success', 'Resposta atualizada com sucesso!');
+        $this->cancelEditReply();
+    }
+
+
+    // Excluir Resposta (MODIFICADO para incluir exclusão de imagem)
     public function deleteReply($replyId)
     {
         $reply = \App\Models\Reply::findOrFail($replyId);
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 
         if (auth()->id() === $reply->user_id || auth()->id() === $coordinatorUserId) {
+             // Lógica de Limpeza: Exclui a imagem associada à resposta, se houver
+            if ($reply->image && Storage::disk('public')->exists($reply->image)) {
+                Storage::disk('public')->delete($reply->image);
+            }
+            
             $reply->delete();
             session()->flash('success', 'Resposta excluída com sucesso.');
             $this->dispatch('replyDeleted');
@@ -308,13 +460,30 @@ class CoursePosts extends Component
         }
     }
 
-    // Excluir Post
+    // Excluir Post (MODIFICADO para incluir exclusão de todas as imagens do post E das respostas)
     public function deletePost($postId)
     {
         $post = Post::findOrFail($postId);
         $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
 
         if (auth()->id() === $post->user_id || auth()->id() === $coordinatorUserId) {
+            
+            // Lógica de Limpeza: Exclui as imagens do post
+            if (!empty($post->images)) {
+                foreach ($post->images as $path) {
+                    if (Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+            }
+            
+            // Lógica de Limpeza: Exclui as imagens das respostas
+            foreach ($post->replies as $reply) {
+                 if ($reply->image && Storage::disk('public')->exists($reply->image)) {
+                    Storage::disk('public')->delete($reply->image);
+                }
+            }
+            
             $post->delete();
             session()->flash('success', 'Post excluído com sucesso.');
             $this->resetPage();
