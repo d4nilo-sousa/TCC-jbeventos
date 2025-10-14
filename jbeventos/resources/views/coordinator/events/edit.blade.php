@@ -91,7 +91,7 @@
                                 <div>
                                     <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
                                     <x-text-input type="datetime-local" name="event_scheduled_at"
-                                        id="event_scheduled_at" min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
+                                        id="event_scheduled_at"
                                         value="{{ old('event_scheduled_at', $event->event_scheduled_at ? \Carbon\Carbon::parse($event->event_scheduled_at)->format('Y-m-d\TH:i') : '') }}"
                                         required />
                                     @error('event_scheduled_at')
