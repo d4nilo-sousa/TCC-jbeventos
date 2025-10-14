@@ -67,12 +67,6 @@ class Event extends Model
         return $this->belongsToMany(Course::class, 'course_event');
     }
 
-    // Retorna o curso que está assossiado ao evento
-    public function eventCourse()
-    {
-        return $this->belongsTo(Course::class, 'course_id');
-    }
-
     public function images()
     {
         return $this->hasMany(EventImage::class);

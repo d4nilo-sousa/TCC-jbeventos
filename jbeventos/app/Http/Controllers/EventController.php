@@ -295,7 +295,7 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $user = auth()->user();
-        $event->load(['eventCoordinator.userAccount', 'eventCategories', 'eventCourse']);
+        $event->load(['eventCoordinator.userAccount', 'eventCategories']);
 
         // Carrega a relação de reações do usuário
         if ($user) {
@@ -519,7 +519,7 @@ class EventController extends Controller
         return redirect()->route('events.show', $event->id)
             ->with('success', 'Evento atualizado com sucesso!');
     }
-    
+
     // Exclui um evento
     public function destroy($id)
     {
