@@ -234,13 +234,18 @@
                     </p>
 
                     {{-- Imagens do Post (Todas as imagens) --}}
-                    @if (!empty($expandedPost->images) && count($expandedPost->images) > 0)
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            @foreach($expandedPost->images as $imagePath)
-                                <img src="{{ asset('storage/' . $imagePath) }}" class="rounded-lg object-cover w-full h-auto max-h-96 shadow-md" alt="Imagem do Post">
-                            @endforeach
-                        </div>
-                    @endif
+                    @if (!empty($expandedPost->images) && count($expandedPost->images) > 0)
+                        <div class="space-y-4 mb-6">
+                            @foreach($expandedPost->images as $imagePath)
+                                {{-- NOVO WRAPPER: max-w-full + mx-auto para centralizar o bloco da imagem --}}
+                                <div class="max-w-full h-auto max-h-[80vh] mx-auto rounded-lg overflow-hidden shadow-md">
+                                <img src="{{ asset('storage/' . $imagePath) }}" 
+                                        class="object-contain w-full h-auto max-h-[80vh]" 
+                                        alt="Imagem do Post">
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
 
                     {{-- Seção de Respostas --}}
                     <h4 class="text-xl font-bold text-gray-800 border-t border-gray-100 pt-6 mb-4">{{ $expandedPost->replies->count() }} Respostas</h4>
