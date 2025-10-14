@@ -17,8 +17,7 @@ class FeedController extends Controller
         $user = Auth::user();
 
         // 1. Coleta de Eventos (apenas visíveis e ordenados pelo agendamento mais recente)
-        $events = Event::with(['eventCourse', 'eventCoordinator.userAccount', 'images', 'reactions'])
-            ->where('visible_event', true)
+        $events = Event::with(['eventCoordinator.userAccount', 'images', 'reactions'])
             ->latest('event_scheduled_at') // Ordena eventos por agendamento mais recente
             ->get()
             ->map(function ($event) {

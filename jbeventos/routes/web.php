@@ -11,7 +11,6 @@ use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CourseFollowController;
 use App\Http\Controllers\EventReactionController;
-use App\Http\Controllers\VisibilityController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ExploreController;
 use App\Http\Controllers\FeedController;
@@ -96,8 +95,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
         Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
 
-        // Ocultar Eventos
-        Route::patch('/events/{event}/visibility', [VisibilityController::class, 'updateEvent'])->name('events.updateEvent');
     });
 
     /*
