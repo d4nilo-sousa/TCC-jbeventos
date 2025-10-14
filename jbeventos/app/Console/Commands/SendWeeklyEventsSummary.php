@@ -33,7 +33,6 @@ class SendWeeklyEventsSummary extends Command
 
         $users = User::with(['followedCourses.events' => function ($query) use ($startOfWeek, $endOfWeek) {
             $query->whereBetween('event_scheduled_at', [$startOfWeek, $endOfWeek])
-                  ->where('visible_event', true)
                   ->orderBy('event_scheduled_at');
         }])->get();
 

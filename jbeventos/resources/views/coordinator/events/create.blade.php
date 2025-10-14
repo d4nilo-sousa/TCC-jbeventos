@@ -223,17 +223,16 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {{-- Data e Hora do Evento --}}
-                                <div>
-                                    <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
-                                    <x-text-input type="datetime-local" name="event_scheduled_at"
-                                        id="event_scheduled_at"
-                                        min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
-                                        value="{{ old('event_scheduled_at') }}" required />
-                                    @error('event_scheduled_at')
-                                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
+                               <div>
+                                <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
+                                <x-text-input type="datetime-local" name="event_scheduled_at"
+                                    id="event_scheduled_at"
+                                    value="{{ old('event_scheduled_at') }}" required />
+                                @error('event_scheduled_at')
+                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
                                 {{-- Exclusão Automática --}}
                                 <div>
                                     <x-input-label for="event_expired_at" value="Exclusão Automática" />

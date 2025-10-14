@@ -12,7 +12,6 @@ class Comment extends Model
 
     protected $fillable = [
         'comment',
-        'visible_comment',
         'edited_at',
         'parent_id',
         'media_path',
@@ -21,7 +20,6 @@ class Comment extends Model
     ];
 
     protected $casts = [
-        'visible_comment' => 'boolean',
         'edited_at' => 'datetime',
     ];
 
@@ -109,7 +107,7 @@ class Comment extends Model
             // O relacionamento "reactions" é o que está causando a falha de Foreign Key (1451)
             $comment->reactions()->delete();
 
-             // 2. Excluir Respostas (garante que o deleting hook de cada resposta seja acionado)
+            // 2. Excluir Respostas (garante que o deleting hook de cada resposta seja acionado)
             // Se o comentário for pai, esta iteração garantirá a exclusão em cascata.
             foreach ($comment->replies as $reply) {
                 $reply->delete(); // Isso dispara o hook 'deleting' de cada resposta

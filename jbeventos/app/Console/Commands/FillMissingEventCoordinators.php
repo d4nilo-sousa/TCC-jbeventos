@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Event;
-use App\Models\Course;
 use App\Models\Coordinator;
 
 class FillMissingEventCoordinators extends Command
@@ -32,11 +31,14 @@ class FillMissingEventCoordinators extends Command
         $this->info("Encontrados " . $events->count() . " eventos sem coordenador");
 
         foreach ($events as $event) {
-            if ($event->event_type === 'course' && $event->course_id) {
-                $course = Course::find($event->course_id);
-                if ($course && $course->coordinator_id) {
-                    $event->updateQuietly(['coordinator_id' => $course->coordinator_id]);
-                    $this->info("Evento {$event->id} atualizado com o coordenador do curso {$course->id}.");
+            if ($event->event_type === 'course') {
+                // Verifica todos os cursos relacionados ao evento
+                foreach ($event->courses as $course) {
+                    if ($course->coordinator_id) {
+                        $event->updateQuietly(['coordinator_id' => $course->coordinator_id]);
+                        $this->info("Evento {$event->id} atualizado com o coordenador do curso {$course->id}.");
+                        break; // Para após encontrar o primeiro coordenador válido
+                    }
                 }
             }
 

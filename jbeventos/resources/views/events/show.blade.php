@@ -324,7 +324,7 @@
 
     {{-- Toast simples --}}
     <div id="toast"
-        class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-xl hidden z-50 transition-all duration-300">
+        class="fixed bottom-5 right-5 text-white px-4 py-2 rounded-lg shadow-xl hidden z-50 transition-all duration-300">
         <span id="toast-message" class="font-medium"></span>
     </div>
 

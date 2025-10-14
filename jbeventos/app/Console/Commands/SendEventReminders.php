@@ -26,7 +26,6 @@ class SendEventReminders extends Command
                 $targetStart->copy()->subMinutes(15),
                 $targetStart->copy()->addMinutes(15),
             ])
-            ->where('visible_event', true)
             ->where($reminderField, false)
             ->get();
 

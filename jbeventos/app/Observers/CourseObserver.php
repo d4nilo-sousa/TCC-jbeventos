@@ -12,10 +12,16 @@ class CourseObserver
         // Se o coordinator_id do curso mudou
         if ($course->isDirty('coordinator_id')) {
 
-            // Todos os eventos desse curso que tinham o coordenador antigo ficam null
-            Event::where('course_id', $course->id)
-                ->where('coordinator_id', $course->getOriginal('coordinator_id'))
-                ->update(['coordinator_id' => null]);
+            $oldCoordinatorId = $course->getOriginal('coordinator_id');
+
+            // Busca todos os eventos relacionados ao curso onde o coordenador antigo ainda está
+            $events = $course->events()
+                ->where('coordinator_id', $oldCoordinatorId)
+                ->get();
+
+            foreach ($events as $event) {
+                $event->update(['coordinator_id' => null]);
+            }
         }
     }
 }

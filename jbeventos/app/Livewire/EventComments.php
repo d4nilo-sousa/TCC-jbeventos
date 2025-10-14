@@ -50,7 +50,7 @@ class EventComments extends Component
     ];
 
     // Listeners para atualizar os comentários em tempo real
-    protected $listeners = ['commentAdded' => 'loadComments', 'commentDeleted' => 'loadComments', 'commentHidden' => 'loadComments'];
+    protected $listeners = ['commentAdded' => 'loadComments', 'commentDeleted' => 'loadComments'];
 
     public function mount($event)
     {
@@ -71,8 +71,7 @@ class EventComments extends Component
         $this->comments = Comment::with([
             'user',
             'replies' => function ($query) {
-                $query->where('visible_comment', true) 
-                      ->with(['user', 'reactions'])
+                $query->with(['user', 'reactions'])
                       ->orderBy('created_at', 'asc'); 
             },
             'reactions'
@@ -86,7 +85,6 @@ class EventComments extends Component
             },
         ])
         ->where('event_id', $this->event->id)
-        ->where('visible_comment', true)
         ->whereNull('parent_id')
         ->orderBy('created_at', 'desc')
         ->get();
@@ -118,7 +116,6 @@ class EventComments extends Component
             'event_id' => $this->event->id,
             'parent_id' => null, 
             'media_path' => $mediaPath,
-            'visible_comment' => true,
         ]);
 
         $this->lastActionId = $newComment->id; // Define o ID para rolagem
@@ -156,7 +153,6 @@ class EventComments extends Component
             'event_id' => $this->event->id,
             'parent_id' => $parentId, 
             'media_path' => null,
-            'visible_comment' => true,
         ]);
 
         $this->lastActionId = $parentId; // Rola para o comentário pai
@@ -253,18 +249,6 @@ class EventComments extends Component
         // Reseta o ID para fechar o modal.
         $this->reset('deletingId');
         $this->loadComments();
-    }
-
-    public function hideComment($id)
-    {
-        // Lógica de esconder comentário pelo coordenador (mantida)
-        $comment = Comment::find($id);
-
-        if (Auth::user()->user_type === 'coordinator' && $this->event->coordinator_id === Auth::user()->coordinator->id) {
-            $comment->visible_comment = false;
-            $comment->save();
-            $this->loadComments();
-        }
     }
 
     public function reactToComment($commentId, $type)

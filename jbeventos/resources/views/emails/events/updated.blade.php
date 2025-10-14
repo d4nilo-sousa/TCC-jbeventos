@@ -3,7 +3,9 @@
 
 O evento do curso que você segue foi **atualizado**:
 
-**Curso:** {{ $event->course->course_name }}
+@foreach($event->courses as $course)
+    <p>Curso: {{ $course->course_name }}</p>
+@endforeach
 
 @component('mail::panel')
 @if($event->event_image)

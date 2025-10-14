@@ -1,25 +1,73 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Usaremos '.reaction-form' como base, pois ele é o pai de todos os botões de reação
     const reactionForms = document.querySelectorAll('.reaction-form');
 
-    // Mapeamento para textos de toggle (Salvar e Notificar)
     const toggleLabels = {
         'save': { 'added': 'Salvo', 'removed': 'Salvar' },
         'notify': { 'added': 'Notificando', 'removed': 'Notificar' }
     };
 
+    // Estilos para cada tipo de reação
+    const reactionStyles = {
+        'like': {
+            active: ['bg-red-500', 'text-white', 'border-red-500', 'hover:bg-red-600'],
+            inactive: ['bg-white', 'text-gray-700', 'border-gray-300', 'hover:bg-gray-50'],
+            countActive: ['bg-white', 'text-red-500'],
+            countInactive: ['bg-gray-200', 'text-gray-700']
+        },
+        'save': {
+            active: ['bg-green-500', 'text-white', 'border-green-500', 'hover:bg-green-600'],
+            inactive: ['bg-white', 'text-green-600', 'border-green-300', 'hover:bg-green-50']
+        },
+        'notify': {
+            active: ['bg-yellow-500', 'text-gray-900', 'border-yellow-500', 'hover:bg-yellow-600'],
+            inactive: ['bg-white', 'text-yellow-600', 'border-yellow-300', 'hover:bg-yellow-50']
+        }
+    };
+
+    // Mapeia cores do toast conforme tipo
+    const toastColors = {
+        'like': 'bg-red-500',
+        'save': 'bg-green-500',
+        'notify': 'bg-yellow-500',
+        'default': 'bg-gray-800'
+    };
+
+    // Função para exibir toast com cor por tipo
+    function showToast(message, reactionType = 'default') {
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        // Limpa classes antigas de background
+        toast.classList.remove(...Object.values(toastColors));
+
+        // Aplica nova cor
+        toast.classList.add(toastColors[reactionType] || toastColors.default);
+
+        // Define a mensagem
+        toastMessage.textContent = message;
+
+        // Exibe
+        toast.classList.remove('hidden');
+        toast.classList.add('opacity-100');
+
+        // Esconde após 3s
+        setTimeout(() => {
+            toast.classList.add('hidden');
+            toast.classList.remove('opacity-100');
+        }, 3000);
+    }
+
+    // Manipulador principal
     reactionForms.forEach(form => {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const url = form.action;
             const formData = new FormData(form);
             const reactionType = formData.get('reaction_type');
-            
-            // Seleciona o botão correto (deve ter a classe reaction-btn ou reaction-btn-toggle)
+            const styles = reactionStyles[reactionType];
             const button = form.querySelector('.reaction-btn') || form.querySelector('.reaction-btn-toggle');
-            
-            // Impede cliques múltiplos e dá feedback visual
+
             button.disabled = true;
             button.classList.add('opacity-50', 'cursor-not-allowed');
 
@@ -29,70 +77,57 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        // Garante que o token CSRF está sendo enviado
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 });
 
                 if (!response.ok) {
-                    // Tenta ler o erro do servidor
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
                 const result = await response.json();
-                
-                // --- Lógica de Atualização Visual ---
 
-                // 1. Lógica para CURTIR (com contagem)
+                // Limpa classes anteriores
+                button.classList.remove(...styles.active, ...styles.inactive);
+
                 if (reactionType === 'like') {
                     const countSpan = button.querySelector('.reaction-count');
+                    countSpan.classList.remove(...styles.countActive, ...styles.countInactive);
+
+                    let currentCount = parseInt(countSpan.textContent, 10);
+                    if (isNaN(currentCount)) currentCount = 0;
 
                     if (result.status === 'added') {
-                        // Ativa
-                        button.classList.remove('bg-white', 'text-blue-600', 'border-blue-500', 'hover:bg-blue-50');
-                        button.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                        countSpan.classList.remove('bg-blue-100');
-                        countSpan.classList.add('bg-white', 'text-blue-600');
-                        
-                        countSpan.textContent = parseInt(countSpan.textContent, 10) + 1;
-                        showToast('👍 Você curtiu este evento!');
-
-                    } else if (result.status === 'removed') {
-                        // Desativa
-                        button.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                        button.classList.add('bg-white', 'text-blue-600', 'border-blue-500', 'hover:bg-blue-50');
-                        countSpan.classList.remove('bg-white', 'text-blue-600');
-                        countSpan.classList.add('bg-blue-100');
-
-                        countSpan.textContent = Math.max(0, parseInt(countSpan.textContent, 10) - 1);
-                        showToast('👎 Você descurtiu este evento.');
+                        button.classList.add(...styles.active);
+                        countSpan.classList.add(...styles.countActive);
+                        countSpan.textContent = currentCount + 1;
+                        showToast('👍 Você curtiu este evento!', 'like');
+                    } else {
+                        button.classList.add(...styles.inactive);
+                        countSpan.classList.add(...styles.countInactive);
+                        countSpan.textContent = Math.max(0, currentCount - 1);
+                        showToast('👎 Você descurtiu este evento.', 'like');
                     }
-                } 
-                
-                // 2. Lógica para SALVAR e NOTIFICAR (binário/toggle)
-                else {
+
+                } else {
                     const toggleTextSpan = button.querySelector('.toggle-text');
                     const newLabel = toggleLabels[reactionType][result.status];
-                    
+
                     if (result.status === 'added') {
-                        // Ativo
-                        button.classList.remove('bg-white', 'text-blue-600', 'border-blue-500', 'hover:bg-blue-50');
-                        button.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                        
-                        if (reactionType === 'save') showToast('💾 Evento salvo com sucesso!');
-                        if (reactionType === 'notify') showToast('🔔 Você receberá notificações deste evento.');
-                        
-                    } else if (result.status === 'removed') {
-                        // Inativo
-                        button.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                        button.classList.add('bg-white', 'text-blue-600', 'border-blue-500', 'hover:bg-blue-50');
-                        
-                        if (reactionType === 'save') showToast('📂 Evento removido dos seus salvos.');
-                        if (reactionType === 'notify') showToast('🚫 Você não receberá mais notificações deste evento.');
+                        button.classList.add(...styles.active);
+                        showToast(
+                            reactionType === 'save' ? '💾 Evento salvo com sucesso!' : '🔔 Você receberá notificações deste evento.',
+                            reactionType
+                        );
+                    } else {
+                        button.classList.add(...styles.inactive);
+                        showToast(
+                            reactionType === 'save' ? '📂 Evento removido dos seus salvos.' : '🚫 Você não receberá mais notificações deste evento.',
+                            reactionType
+                        );
                     }
-                    
-                    // Atualiza o texto:
+
                     toggleTextSpan.textContent = newLabel;
                 }
 
@@ -100,12 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Erro ao enviar reação:', error);
                 alert(`Erro ao processar sua reação. Detalhes: ${error.message}.`);
             } finally {
-                // Reabilita o botão
                 button.disabled = false;
                 button.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         });
     });
-    
-    // NOTA: A função showToast() deve ser definida globalmente na view ou neste arquivo, se não estiver em outro lugar.
 });
