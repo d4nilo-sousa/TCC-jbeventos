@@ -79,7 +79,7 @@
         {{-- CARTÃO DE POST --}}
         <div wire:key="post-{{ $post->id }}" 
              class="feed-card bg-white rounded-xl shadow border border-gray-100 p-6 space-y-4 relative 
-                     transition duration-150 ease-in-out hover:shadow-lg hover:border-red-300">
+                    transition duration-150 ease-in-out hover:shadow-lg hover:border-red-300">
             {{-- DIV CLICÁVEL PARA ABRIR O MODAL --}}
             <div wire:click="openPostModal({{ $post->id }})" class="cursor-pointer"> 
                 
@@ -138,13 +138,18 @@
                 
                 {{-- IMAGENS DO POST --}}
                 @if ($post->images && count($post->images) > 0)
-                    <div class="grid gap-2 {{ count($post->images) > 1 ? 'grid-cols-2' : 'grid-cols-1' }}">
+                    {{-- Grid com 1 ou 2 colunas, forçando altura fixa para miniaturas --}}
+                    <div class="grid gap-2 {{ count($post->images) == 1 ? 'grid-cols-1' : 'grid-cols-2' }} mt-3">
                         @foreach ($post->images as $imagePath)
-                            <img src="{{ asset('storage/' . $imagePath) }}" alt="Post Image" 
-                                    class="w-full h-auto object-cover rounded-lg shadow-md max-h-80 cursor-pointer"
-                                    onclick="event.stopPropagation(); window.open(this.src)" {{-- .stopPropagation() garante que o clique na imagem não abra o modal --}}
-                                    loading="lazy"
+                            {{-- Wrapper com altura fixa (h-48) e overflow-hidden para padronizar o bloco --}}
+                            <div class="relative w-full h-48 overflow-hidden rounded-lg shadow-md cursor-pointer"
+                                onclick="event.stopPropagation(); window.open('{{ asset('storage/' . $imagePath) }}')"
                             >
+                                <img src="{{ asset('storage/' . $imagePath) }}" alt="Post Image" 
+                                        class="absolute inset-0 w-full h-full object-cover" {{-- object-cover para preencher e cortar o excesso --}}
+                                        loading="lazy"
+                                >
+                            </div>
                         @endforeach
                     </div>
                 @endif
@@ -234,18 +239,19 @@
                     </p>
 
                     {{-- Imagens do Post (Todas as imagens) --}}
-                    @if (!empty($expandedPost->images) && count($expandedPost->images) > 0)
-                        <div class="space-y-4 mb-6">
-                            @foreach($expandedPost->images as $imagePath)
-                                {{-- NOVO WRAPPER: max-w-full + mx-auto para centralizar o bloco da imagem --}}
-                                <div class="max-w-full h-auto max-h-[80vh] mx-auto rounded-lg overflow-hidden shadow-md">
-                                <img src="{{ asset('storage/' . $imagePath) }}" 
-                                        class="object-contain w-full h-auto max-h-[80vh]" 
+                    @if (!empty($expandedPost->images) && count($expandedPost->images) > 0)
+                        {{-- Contêiner principal: max-h + overflow-y-auto + grid --}}
+                        <div class="grid {{ count($expandedPost->images) == 1 ? 'grid-cols-1' : 'grid-cols-2' }} gap-4 mb-6 max-h-[70vh] overflow-y-auto p-1 -m-1">
+                            @foreach($expandedPost->images as $imagePath)
+                                {{-- Wrapper da Imagem: Altura fixa (h-64) com flex para centralizar o objeto --}}
+                                <div class="max-w-full h-64 mx-auto rounded-lg overflow-hidden shadow-md bg-gray-100 flex items-center justify-center">
+                                <img src="{{ asset('storage/' . $imagePath) }}" 
+                                        class="object-cover w-full h-full"
                                         alt="Imagem do Post">
                                 </div>
-                            @endforeach
-                        </div>
-                    @endif
+                            @endforeach
+                        </div>
+                    @endif
 
                     {{-- Seção de Respostas --}}
                     <h4 class="text-xl font-bold text-gray-800 border-t border-gray-100 pt-6 mb-4">{{ $expandedPost->replies->count() }} Respostas</h4>
@@ -336,7 +342,7 @@
                                                 alt="Post Image" class="w-full h-full object-cover rounded">
                                             
                                             <button type="button" wire:click="removeEditingImage({{ $index }})" 
-                                                     class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 leading-none text-xs hover:bg-red-700">
+                                                    class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 leading-none text-xs hover:bg-red-700">
                                                 &times;
                                             </button>
                                         </div>
@@ -364,13 +370,13 @@
                         
                         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                             <button type="submit" 
-                                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-                                                wire:loading.attr="disabled">
+                                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                                    wire:loading.attr="disabled">
                                 <span wire:loading.remove wire:target="saveEditPost">Salvar Alterações</span>
                                 <span wire:loading wire:target="saveEditPost">Salvando...</span>
                             </button>
                             <button type="button" wire:click="resetEditModal" 
-                                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                                 Cancelar
                             </button>
                         </div>
