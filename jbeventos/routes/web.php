@@ -33,7 +33,7 @@ Route::get('/', fn() => redirect()->route('login'));
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
 
     //rota do feed
-    Route::get('/feed',[FeedController::class,'index'])->name('feed.index');
+    Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');
 
 
     /*
@@ -61,8 +61,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
         //nova rota para exportar pdf
-         Route::post('/dashboard/export-pdf', [AdminDashboardController::class, 'exportPdf'])
-         ->name('admin.dashboard.export.pdf');
+        Route::post('/dashboard/export-pdf', [AdminDashboardController::class, 'exportPdf'])
+            ->name('admin.dashboard.export.pdf');
 
         // CRUD de coordenadores
         Route::resource('coordinators', CoordinatorController::class)->except(['show']);
@@ -94,7 +94,6 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Alterar senha
         Route::get('password/edit', [CoordinatorPasswordController::class, 'edit'])->name('coordinator.password.edit');
         Route::put('password', [CoordinatorPasswordController::class, 'update'])->name('coordinator.password.update');
-
     });
 
     /*
@@ -160,16 +159,15 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::delete('/courses/{course}/unfollow', [CourseFollowController::class, 'unfollow'])->name('courses.unfollow');
 
     Route::get('/courses/{course}/followers-count', [CourseFollowController::class, 'followersCount'])
-    ->name('courses.followersCount');
+        ->name('courses.followersCount');
 
     Route::delete('/event-images/{id}', [ImageController::class, 'destroyEventImage'])
         ->name('event-images.destroy');
 
-    Route::delete('/course-icons/{id}', [ImageController::class, 'destroyCourseImage'])
-        ->defaults('type', 'icon')
-        ->name('course-icons.destroy');
+    // Para excluir imagem do curso
+    Route::delete('/course-icons/{id}', [ImageController::class, 'destroyCourseImage']);
+    Route::delete('/course-banners/{id}', [ImageController::class, 'destroyCourseImage']);
 
-    Route::delete('/course-banners/{id}', [ImageController::class, 'destroyCourseImage'])
-        ->defaults('type', 'banner')
-        ->name('course-banners.destroy');
+    // Para excluir imagem de evento
+    Route::delete('/event-images/{id}', [ImageController::class, 'destroyEventImage']);
 });

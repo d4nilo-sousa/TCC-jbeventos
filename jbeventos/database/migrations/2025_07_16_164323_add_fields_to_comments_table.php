@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('comments', function (Blueprint $table) {
-            $table->timestamp('edited_at')->nullable()->after('visible_comment');
 
             // Para anexar imagens, vídeos ou arquivos
             $table->string('media_path')->nullable()->after('parent_id');

@@ -11,14 +11,12 @@ class ImageController extends Controller
 {
     public function destroyEventImage($id)
     {
-        $image = EventImage::findOrFail($id);
+        $image = EventImage::findOrFail($id); 
 
-        // Apaga o arquivo físico se existir
         if ($image->image_path && file_exists(public_path('storage/' . $image->image_path))) {
-            unlink(public_path('storage/' . $image->image_path));
+            unlink(public_path('storage/' . $image->image_path)); 
         }
 
-        // Remove o registro do banco
         $image->delete();
 
         return response()->json(['success' => true]);
@@ -26,24 +24,22 @@ class ImageController extends Controller
 
     public function destroyCourseImage($id, $type)
     {
-        $course = Course::findOrFail($id);
-
-        // Verifica se o tipo é válido
         if (!in_array($type, ['icon', 'banner'])) {
             return response()->json(['error' => 'Tipo de imagem inválido.'], 400);
         }
 
-        $column = $type === 'icon' ? 'course_icon' : 'course_banner';
-        $path = $course->$column;
+        $course = Course::findOrFail($id); 
 
-        // Apaga o arquivo físico se existir
+        $column = $type === 'icon' ? 'course_icon' : 'course_banner';
+        $path = $course->$column; 
+
         if ($path && file_exists(public_path('storage/' . $path))) {
             unlink(public_path('storage/' . $path));
         }
 
-        // Atualiza o banco
         $course->update([$column => null]);
 
         return response()->json(['success' => true]);
     }
 }
+

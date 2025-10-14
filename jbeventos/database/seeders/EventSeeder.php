@@ -24,10 +24,10 @@ class EventSeeder extends Seeder
 
         // Pega o primeiro curso disponível (para o evento de curso)
         $course = Course::first();
-        
+
         // Pega outros cursos (para simular a associação de múltiplos cursos, se houver)
-        $extraCourse = Course::where('id', '!=', optional($course)->id)->inRandomOrder()->first(); 
-        
+        $extraCourse = Course::where('id', '!=', optional($course)->id)->inRandomOrder()->first();
+
         $categories = Category::all();
 
         // Pega um Coordenador Geral
@@ -36,7 +36,7 @@ class EventSeeder extends Seeder
                 $query->where('user_type', 'coordinator');
             })->first();
 
-        // --- Evento de Curso (com associação obrigatória e opcional) ---
+        // --- Evento de Curso ---
         if ($courseCoordinator && $course && $categories->count() >= 2) {
             $eventCourse = Event::create([
                 'event_name' => 'Evento de Curso (Teste)',
@@ -45,29 +45,22 @@ class EventSeeder extends Seeder
                 'event_scheduled_at' => Carbon::now()->addDays(10),
                 'event_expired_at' => null,
                 'event_image' => null,
-                'visible_event' => true,
                 'event_type' => 'course',
                 'coordinator_id' => $courseCoordinator->id,
-                
-                // REMOVIDO: 'course_id' => $course->id,
             ]);
 
-            // NOVO: Associa o curso obrigatório e, se houver, um curso extra
+            // Associa cursos
             $coursesToAttach = [$course->id];
             if ($extraCourse) {
                 $coursesToAttach[] = $extraCourse->id;
             }
-            
-            // Usa o método courses() e o attach() para inserir na tabela pivô (N:M)
             $eventCourse->courses()->attach($coursesToAttach);
 
-
-            // Associa duas categorias ao evento criado
+            // Associa categorias
             $eventCourse->eventCategories()->attach($categories->pluck('id')->take(2));
-
         }
 
-        // --- Evento Geral (sem associação de curso) ---
+        // --- Evento Geral ---
         if ($generalCoordinator && $categories->count() >= 2) {
             $eventGeneral = Event::create([
                 'event_name' => 'Evento Geral (Teste)',
@@ -76,16 +69,11 @@ class EventSeeder extends Seeder
                 'event_scheduled_at' => Carbon::now()->addDays(10),
                 'event_expired_at' => null,
                 'event_image' => null,
-                'visible_event' => true,
                 'event_type' => 'general',
                 'coordinator_id' => $generalCoordinator->id,
-                
-                // REMOVIDO: 'course_id' => null,
             ]);
-            
-            // NÃO HÁ course_id para eventos gerais, então nada é anexado à tabela pivô 'course_event'
-            
-            // Associa duas categorias ao evento criado
+
+            // Associa categorias
             $eventGeneral->eventCategories()->attach($categories->pluck('id')->take(2));
         }
     }
