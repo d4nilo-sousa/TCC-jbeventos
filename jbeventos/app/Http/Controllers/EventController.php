@@ -32,22 +32,7 @@ class EventController extends Controller
         // Query base com relacionamentos
         $events = Event::with(['courses', 'eventCoordinator.userAccount', 'eventCoordinator.coordinatedCourse', 'eventCategories']);
 
-        // Filtragem por visibilidade do coordenador
-        if ($loggedCoordinator) {
-            if ($request->status === 'visible') {
-                $events = $events->where('coordinator_id', $loggedCoordinator->id)
-                    ->where('visible_event', true);
-            } elseif ($request->status === 'hidden') {
-                $events = $events->where('coordinator_id', $loggedCoordinator->id)
-                    ->where('visible_event', false);
-            } else {
-                $events = $events->where('visible_event', true);
-            }
-        } else {
-            $events = $events->where('visible_event', true);
-        }
-
-        // Filtros adicionais
+        // Filtros por tipo
         if ($request->filled('event_type')) {
             $events = $events->where('event_type', $request->event_type);
         }
@@ -171,7 +156,6 @@ class EventController extends Controller
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
-            'visible_event'
         ]);
 
         // Lógica de upload da imagem principal
@@ -311,7 +295,7 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $user = auth()->user();
-        $event->load(['eventCoordinator.userAccount', 'eventCategories', 'eventCourse']);
+        $event->load(['eventCoordinator.userAccount', 'eventCategories']);
 
         // Carrega a relação de reações do usuário
         if ($user) {
@@ -348,7 +332,6 @@ class EventController extends Controller
         return view('coordinator.events.edit', compact('event', 'categories', 'minExpiredAt', 'eventExpiredAt', 'allCourses'));
     }
 
-    // Atualiza evento
     public function update(Request $request, $id)
     {
         $event = Event::findOrFail($id);
@@ -359,6 +342,7 @@ class EventController extends Controller
         $validated = $request->validate([
             'event_name' => 'required|string|unique:events,event_name,' . $event->id,
             'event_description' => 'nullable|string',
+            'event_info' => 'nullable|string', // <-- ADICIONADO
             'event_location' => 'required|string',
             'event_scheduled_at' => 'required|date',
             'event_expired_at' => 'nullable|date_format:Y-m-d\TH:i|after:event_scheduled_at',
@@ -368,7 +352,6 @@ class EventController extends Controller
             'categories.*' => 'exists:categories,id',
             'courses' => 'nullable|array',
             'courses.*' => 'exists:courses,id',
-            'visible_event' => 'nullable|boolean',
         ]);
 
         // =====================
@@ -387,13 +370,12 @@ class EventController extends Controller
         $data = $request->only([
             'event_name',
             'event_description',
+            'event_info', // <-- ADICIONADO
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
-            'visible_event'
         ]);
 
-        $data['visible_event'] = $request->has('visible_event');
         $data['coordinator_id'] = $coordinator->id;
 
         // =====================

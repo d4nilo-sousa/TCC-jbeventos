@@ -8,7 +8,7 @@
                     <p class="text-3xl sm:text-4xl font-extrabold text-stone-800 tracking-tight drop-shadow-sm">
                         Catálogo de Cursos
                     </p>
-                    <div class="w-16 h-1 bg-blue-500 rounded-full mt-2 shadow-lg"></div>
+                    <div class="w-16 h-1 bg-red-500 rounded-full mt-2 shadow-lg"></div>
                 </div>
 
                 @php
@@ -34,9 +34,9 @@
                         <div class="relative w-full">
                             <input id="searchInput" type="text" name="search" value="{{ request('search') }}"
                                 placeholder="Pesquisar cursos..." autocomplete="off"
-                                class="w-full pl-5 pr-12 py-3 text-gray-800 placeholder-gray-400 border-2 border-gray-300 rounded-full outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
+                                class="w-full pl-5 pr-12 py-3 text-gray-800 placeholder-gray-400 border-2 border-gray-300 rounded-full outline-none focus:ring-2 focus:ring-red-500 transition-shadow">
                             <button type="submit"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-500 rounded-full text-white hover:bg-blue-600 transition-colors">
+                                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
                                     fill="currentColor">
                                     <path fill-rule="evenodd"
@@ -51,28 +51,55 @@
 
             {{-- Mensagens de sucesso --}}
             @if (session('success'))
-                <div class="mb-6 p-4 text-green-700 bg-green-100 rounded-lg shadow-sm">
+                <div class="mb-6 p-4 text-green-700 bg-green-100 rounded-xl shadow-md border border-green-200">
                     {{ session('success') }}
                 </div>
             @endif
 
-            {{-- Lista de cursos --}}
-            <div class="bg-white shadow-xl rounded-2xl p-6 sm:p-9 border border-gray-200">
-                <div id="coursesList" data-url="{{ route('courses.index') }}"
-                    class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
-                    @forelse ($courses as $course)
-                        @include('partials.courses.course-card', ['course' => $course])
-                    @empty
-                        <div id="noCoursesMessage"
-                            class="col-span-full flex flex-col items-center justify-center gap-5 p-10">
-                            <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%]" alt="not-found">
-                            <p class="text-gray-500 text-center">Nenhum curso encontrado...</p>
+            <div id="coursesList" data-url="{{ route('courses.index') }}"
+                class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-4">
+
+                @forelse ($courses as $course)
+                    @include('partials.courses.course-card', ['course' => $course])
+                @empty
+                    <div id="noCoursesMessage"
+                        class="col-span-full flex flex-col items-center justify-center gap-6 text-center w-full my-10 p-16">
+                        <img src="{{ asset('imgs/notFound.png') }}" class="w-auto h-40 object-contain" alt="not-found">
+                        <div>
+                            <p class="text-2xl font-bold text-stone-800">Ops! Nada foi encontrado...</p>
+                            <p class="text-gray-500 mt-2 text-md max-w-lg mx-auto">
+                                Não encontramos nenhum curso com os termos de busca. Tente refinar a pesquisa.
+                            </p>
                         </div>
-                    @endforelse
-                </div>
+                    </div>
+                @endforelse
+
+                {{-- Rodapé dentro da lista, mas col-span-full para ficar no final --}}
+                @if ($courses->isNotEmpty())
+                    <div id="catalogEnd" class="col-span-full text-center py-6 text-gray-500">
+                        Fim do Catálogo
+                    </div>
+                @endif
             </div>
         </div>
+    </div>
 </x-app-layout>
+
+<script>
+    function atualizarListaDeCursos(html) {
+        const coursesList = document.getElementById('coursesList');
+        const footer = document.getElementById('catalogEnd');
+
+        // Atualiza os cursos
+        coursesList.innerHTML = html;
+
+        // Verifica se existe a mensagem de "Nada foi encontrado"
+        const noCourses = document.getElementById('noCoursesMessage');
+        if (footer) {
+            footer.style.display = noCourses ? 'none' : 'block';
+        }
+    }
+</script>
 
 {{-- Scripts compilados --}}
 @vite('resources/js/app.js')

@@ -81,7 +81,7 @@
                                     </button>
                                 @else
                                     <button type="button"
-                                        class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
+                                        class="bg-black hover:bg-red-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
                                         id="followButton" data-course-id="{{ $course->id }}">
                                         + Seguir
                                     </button>
@@ -102,14 +102,11 @@
                     </p>
 
 
-
-
-
                     <p class="text-sm text-gray-500 mt-1">
                         <strong class="font-semibold">Coordenador:</strong>
                         @if ($course->courseCoordinator?->userAccount)
                             <a href="{{ route('profile.view', $course->courseCoordinator->userAccount->id) }}"
-                                class="text-blue-500 hover:underline">
+                                class="text-red-500 hover:underline">
                                 {{ $course->courseCoordinator->userAccount->name }}
                             </a>
                         @else
@@ -168,7 +165,7 @@
                         <div class="mt-6 border-t border-gray-200 pt-4 flex justify-end gap-4">
                             {{-- Botão Editar Curso --}}
                             <a href="{{ route('courses.edit', $course->id) }}"
-                                class="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 border border-blue-300 rounded-full shadow-sm transition-colors duration-200">
+                                class="flex items-center gap-1 px-3 py-1 text-sm text-black hover:text-red-600 border border-black rounded-full shadow-sm transition-colors duration-200">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -208,7 +205,7 @@
                 <div class="border-b border-gray-200 mb-6">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <button @click="tab = 'events'"
-                            :class="{ 'border-blue-500 text-blue-600 font-semibold': tab === 'events', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'events' }"
+                            :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'events', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'events' }"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -222,7 +219,7 @@
                             Eventos
                         </button>
                         <button @click="tab = 'posts'"
-                            :class="{ 'border-blue-500 text-blue-600 font-semibold': tab === 'posts', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'posts' }"
+                            :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'posts', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'posts' }"
                             class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -244,22 +241,20 @@
                     @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
                         <div class="flex justify-end mb-4">
                             <a href="{{ route('events.create', ['course_id' => $course->id]) }}"
-                                class="bg-gray-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">
+                                class="bg-black hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">
                                 + Criar Evento
                             </a>
                         </div>
                     @endif
 
                     {{-- Lista de Eventos --}}
-                    {{-- Lista de Eventos --}}
                     @if ($course->events->isNotEmpty())
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             @foreach ($course->events->sortByDesc('event_scheduled_at') as $event)
                                 <a href="{{ route('events.show', $event->id) }}"
-                                    class="bg-white rounded-2xl shadow-md border border-gray-200 hover:border-blue-500 transition-colors duration-200 overflow-hidden">
-
-                                    <div class="relative w-full h-36 rounded-md overflow-hidden bg-gray-100">
-                                        @if ($event->event_image)
+                                    class="bg-white rounded-2xl shadow-md border border-gray-200 hover:border-red-500 transition-colors duration-200 overflow-hidden">
+                                    @if ($event->event_image)
+                                        <div class="w-full h-36">
                                             <img src="{{ asset('storage/' . $event->event_image) }}"
                                                 alt="Capa do Evento" class="object-cover w-full h-full">
                                         @else
@@ -307,8 +302,8 @@
 <div id="deleteModal-{{ $course->id }}"
     class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
-        <p>Tem certeza que deseja excluir este curso? Esta ação não poderá ser desfeita.</p>
+        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão do Curso</h2>
+        <p>Tem certeza que deseja excluir o curso <strong>"{{ $course->course_name }}"</strong>? Esta ação não poderá ser desfeita.</p>
         <div class="mt-6 flex justify-end space-x-2">
             <button onclick="closeModal('deleteModal-{{ $course->id }}')"
                 class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
@@ -322,14 +317,35 @@
     </div>
 </div>
 
-{{-- Scripts compilados --}}
+{{-- Scripts e Funções do Modal --}}
 @vite('resources/js/app.js')
 
+{{-- Script para Seguir/Deixar de Seguir Curso --}}
 <script>
+
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.querySelector('div[data-course-id]');
-        const followersCountEl = document.getElementById('followersCount');
-        const followersTextEl = document.getElementById('followersText');
+        
+        // Elementos da contagem de seguidores
+        const followersCountSpan = document.getElementById('followersCount');
+        const followersPluralSpan = document.getElementById('followersPlural');
+
+        // Função para atualizar o texto 'Seguidores'/'Seguidor'
+        function updatePlural(count) {
+            if (!followersPluralSpan) return;
+
+            // Função simples de pluralização em português
+            if (count == 1) { // Mudança para == 1 para englobar strings e números
+                followersPluralSpan.textContent = 'Seguidor';
+            } else {
+                followersPluralSpan.textContent = 'Seguidores';
+            }
+        }
+
+        // Inicializa o texto de pluralização ao carregar
+        if (followersCountSpan) {
+            updatePlural(parseInt(followersCountSpan.textContent.trim()));
+        }
 
         if (container) {
             container.addEventListener('click', function(e) {
@@ -367,8 +383,16 @@
                     })
                     .then(data => {
                         updateButtonState(button, method);
-                        // Atualiza o contador de seguidores
-                        updateFollowersCount(courseId);
+
+                        // 2. Atualiza a contagem de seguidores
+                        if (data.followers_count !== undefined && followersCountSpan) {
+                            const newCount = data.followers_count;
+                            followersCountSpan.textContent = newCount;
+                            updatePlural(newCount); // Atualiza o texto "Seguidor/Seguidores"
+                        }
+
+                        // 3. Reabilita o botão
+                        button.disabled = false;
                     })
                     .catch(error => {
                         console.error('Erro:', error);
@@ -382,13 +406,17 @@
             if (currentMethod === 'POST') {
                 currentButton.id = 'unfollowButton';
                 currentButton.textContent = '✔ Seguindo';
-                currentButton.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                // Remove as classes de 'Seguir'
+                currentButton.classList.remove('bg-black', 'hover:bg-red-700', 'text-white'); 
+                // Adiciona as classes de 'Seguindo'
                 currentButton.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
             } else if (currentMethod === 'DELETE') {
                 currentButton.id = 'followButton';
                 currentButton.textContent = '+ Seguir';
+                // Remove as classes de 'Seguindo'
                 currentButton.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
-                currentButton.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                // Adiciona as classes de 'Seguir'
+                currentButton.classList.add('bg-black', 'hover:bg-red-700', 'text-white'); 
             }
             currentButton.disabled = false;
         }

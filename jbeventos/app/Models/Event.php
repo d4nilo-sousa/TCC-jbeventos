@@ -18,7 +18,6 @@ class Event extends Model
         'event_scheduled_at',
         'event_expired_at',
         'event_image',
-        'visible_event',
         'event_type',
         'coordinator_id', // Relacionamento com Coordenador
         'course_id', // Relacionamento com Curso
@@ -30,7 +29,6 @@ class Event extends Model
         return [
             'event_scheduled_at' => 'datetime',
             'event_expired_at' => 'datetime',
-            'visible_event' => 'boolean',
         ];
     }
 
@@ -67,12 +65,6 @@ class Event extends Model
     public function courses()
     {
         return $this->belongsToMany(Course::class, 'course_event');
-    }
-
-    // Retorna o curso que está assossiado ao evento
-    public function eventCourse()
-    {
-        return $this->belongsTo(Course::class, 'course_id');
     }
 
     public function images()
