@@ -17,11 +17,12 @@
         .feed-card {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
+        /* O CSS do modal foi movido para o Tailwind (classes 'opacity-0' e 'scale-95') para melhor performance */
     </style>
     @endpush
     
     <div class="py-10 bg-gray-50 min-h-screen"> 
-        <div class="max-w-screen-2xl mx-auto sm:px-6 lg:px-16 space-y-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-16 space-y-6">
 
             <div class="bg-white shadow rounded-xl p-4 sm:p-6 border border-gray-200">
                 <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
@@ -38,11 +39,13 @@
 
             @if ($events->isNotEmpty() || true)
                 {{-- LAYOUT PRINCIPAL DE DUAS COLUNAS --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12"> 
                     
                     {{-- COLUNA ESQUERDA: EVENTOS --}}
                     <div class="space-y-6">
-                        <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2"><i class="ph ph-calendar-blank bg-red-600 text-white rounded-full p-1"></i> Eventos</h2>
+                        <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2 flex items-center">
+                            <i class="ph ph-calendar-blank bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Eventos
+                        </h2>
                         @forelse ($events as $item)
                             {{-- CARTÃO DE EVENTO --}}
                             @php
@@ -54,8 +57,9 @@
                             <div id="event-{{ $item->id }}" class="feed-card bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-red-200">
                                 
                                 <a href="{{ route('events.show', $item) }}" class="block">
-                                    <div class="relative h-64 w-full bg-gray-200"> 
+                                    <div class="relative w-full aspect-video bg-gray-200"> 
                                         @if ($item->event_image)
+                                            {{-- O 'object-cover' dentro do 'aspect-video' garante que a imagem preencha e mantenha a proporção --}}
                                             <img class="w-full h-full object-cover" 
                                                 src="{{ asset('storage/' . $item->event_image) }}" 
                                                 alt="{{ $item->event_name }}" 
@@ -128,6 +132,7 @@
                                             data-event-id="{{ $item->id }}" 
                                             data-reaction-type="save"
                                             data-is-active="{{ $isSaved ? 'true' : 'false' }}"
+                                            aria-label="{{ $isSaved ? 'Remover dos salvos' : 'Salvar evento' }}"
                                         >
                                             <i class="ph-bold ph-bookmark-simple text-2xl {{ $isSaved ? 'text-yellow-500 ph-fill' : 'hover:text-yellow-500' }}" id="icon-save-{{ $item->id }}"></i>
                                             <span class="text-sm font-medium ml-2 hidden sm:inline">Salvar</span>
@@ -142,7 +147,9 @@
 
                     {{-- COLUNA DIREITA: POSTS (Gerenciada pelo Livewire) --}}
                     <div class="space-y-6">
-                        <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2"><i class="ph ph-article bg-red-600 text-white rounded-full p-1"></i> Posts</h2>
+                        <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2 flex items-center">
+                            <i class="ph ph-article bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Posts
+                        </h2>
                         
                         {{-- INTEGRAÇÃO LIVEWIRE: O componente Livewire FeedPosts fará o formulário, loop e a paginação dos posts --}}
                         @livewire('feed-posts')
@@ -158,7 +165,7 @@
                         <p class="text-gray-500 mt-2">Parece que ainda não há eventos recentes. Tente explorar novos cursos!</p>
                         
                         {{-- Chamada do Livewire para garantir que pelo menos o post form e posts apareçam --}}
-                         <div class="mt-6">@livewire('feed-posts')</div>
+                        <div class="mt-6">@livewire('feed-posts')</div>
                     </div>
                 </div>
             @endif
@@ -171,8 +178,8 @@
     
     
     @if (isset($isFirstLogin) && $isFirstLogin)
-        <div id="welcome-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center transition-opacity duration-300">
-            <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 m-4 transform transition-transform duration-300 scale-100"
+        <div id="welcome-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center transition-opacity duration-300 ease-out opacity-0 pointer-events-none">
+            <div id="welcome-modal-content" class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 m-4 transform transition duration-300 ease-out scale-95"
                 role="dialog" aria-modal="true" aria-labelledby="modal-title">
     
                 <div class="text-center">
@@ -190,7 +197,7 @@
                         Encontre todos os eventos, notícias e posts em um só lugar, independente do seu papel na escola.
                     </p>
                     
-                    <button onclick="document.getElementById('welcome-modal').classList.add('hidden')"
+                    <button onclick="closeWelcomeModal()"
                             class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-3 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg">
                         Começar a Explorar o Feed
                     </button>
@@ -200,6 +207,37 @@
     @endif
     
     <script>
+        // Função unificada para fechar o modal com transição suave
+        function closeWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            if (modal) {
+                // Inicia a animação de saída: opacidade para 0 e escala para 95%
+                modal.classList.remove('opacity-100', 'pointer-events-auto');
+                modal.classList.add('opacity-0'); 
+                document.getElementById('welcome-modal-content').classList.remove('scale-100');
+                document.getElementById('welcome-modal-content').classList.add('scale-95');
+                document.body.style.overflow = ''; // Habilita o scroll do body
+                
+                // Remove o modal do DOM após a transição para limpar o código
+                setTimeout(() => {
+                    modal.remove();
+                }, 300); // 300ms é a duração da transição
+            }
+        }
+        
+        // Função para abrir o modal, usada apenas no DOMContentLoaded
+        function openWelcomeModal() {
+            const modal = document.getElementById('welcome-modal');
+            if (modal) {
+                // Define as classes para o estado final da transição (visível)
+                modal.classList.add('opacity-100', 'pointer-events-auto');
+                modal.classList.remove('opacity-0');
+                document.getElementById('welcome-modal-content').classList.add('scale-100');
+                document.getElementById('welcome-modal-content').classList.remove('scale-95');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
         // Lógica de Reações (Curtir e Salvar)
         function toggleReaction(button) {
             const eventId = button.getAttribute('data-event-id');
@@ -215,42 +253,73 @@
             button.disabled = true;
 
             // 1. Simulação de Otimismo (Atualização imediata na UI)
-            // Atualiza o estado visual
+            const oldIsActive = isActive; // Salva o estado antigo para reversão
             isActive = !isActive;
             button.setAttribute('data-is-active', isActive);
 
             if (reactionType === 'like') {
                 if (isActive) {
-                    icon.classList.remove('ph');
-                    icon.classList.add('ph-fill', 'text-red-500');
-                    countElement.textContent = currentCount + 1;
+                    // Adiciona ph-fill, remove hover
+                    icon.classList.remove('ph', 'hover:text-red-500');
+                    icon.classList.add('ph-fill', 'text-red-500'); // ph-bold já deve estar no HTML, mantive a lógica de JS mais simples
+                    if (countElement) countElement.textContent = currentCount + 1;
                 } else {
+                    // Remove ph-fill, adiciona hover
                     icon.classList.remove('ph-fill', 'text-red-500');
-                    icon.classList.add('ph');
-                    countElement.textContent = currentCount - 1;
+                    icon.classList.add('ph', 'hover:text-red-500');
+                    if (countElement) countElement.textContent = currentCount - 1;
                 }
             } else if (reactionType === 'save') {
-                // Manter o destaque amarelo para Salvar
                 if (isActive) {
-                    icon.classList.remove('ph');
+                    // Adiciona ph-fill, remove hover
+                    icon.classList.remove('ph', 'hover:text-yellow-500');
                     icon.classList.add('ph-fill', 'text-yellow-500');
+                     button.setAttribute('aria-label', 'Remover dos salvos');
                 } else {
+                    // Remove ph-fill, adiciona hover
                     icon.classList.remove('ph-fill', 'text-yellow-500');
-                    icon.classList.add('ph');
+                    icon.classList.add('ph', 'hover:text-yellow-500');
+                    button.setAttribute('aria-label', 'Salvar evento');
                 }
             }
             
+            // Reverte a UI em caso de falha na requisição
+            const undoUiChanges = () => {
+                button.setAttribute('data-is-active', oldIsActive);
+                
+                if (reactionType === 'like') {
+                    if (oldIsActive) { // Reverte para o estado original (ativado)
+                        icon.classList.remove('ph', 'hover:text-red-500');
+                        icon.classList.add('ph-fill', 'text-red-500');
+                        if (countElement) countElement.textContent = currentCount; 
+                    } else { // Reverte para o estado original (desativado)
+                        icon.classList.remove('ph-fill', 'text-red-500');
+                        icon.classList.add('ph', 'hover:text-red-500');
+                        if (countElement) countElement.textContent = currentCount; 
+                    }
+                } else if (reactionType === 'save') {
+                    if (oldIsActive) {
+                        icon.classList.remove('ph', 'hover:text-yellow-500');
+                        icon.classList.add('ph-fill', 'text-yellow-500');
+                         button.setAttribute('aria-label', 'Remover dos salvos');
+                    } else {
+                        icon.classList.remove('ph-fill', 'text-yellow-500');
+                        icon.classList.add('ph', 'hover:text-yellow-500');
+                        button.setAttribute('aria-label', 'Salvar evento');
+                    }
+                }
+            }
+
             // 2. Requisição AJAX (fetch) para o backend
             fetch(`/events/${eventId}/react`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Obrigatório 
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ reaction_type: reactionType })
             })
             .then(response => {
-                // Se a resposta não for OK, reverte a UI
                 if (!response.ok) {
                     throw new Error('Server response not OK');
                 }
@@ -263,31 +332,7 @@
                 console.error(`Erro ao reagir ao evento ${eventId}:`, error);
                 
                 // 3. Reversão de Otimismo (Undo UI update)
-                // Se falhar, reverte o estado visual e a contagem
-                isActive = !isActive;
-                button.setAttribute('data-is-active', isActive);
-                
-                if (reactionType === 'like') {
-                    if (!isActive) { // Reverte para o estado original (desativado)
-                        icon.classList.remove('ph-fill', 'text-red-500');
-                        icon.classList.add('ph');
-                        countElement.textContent = currentCount; // Volta a contagem original
-                    } else { // Reverte para o estado original (ativado)
-                        icon.classList.remove('ph');
-                        icon.classList.add('ph-fill', 'text-red-500');
-                        countElement.textContent = currentCount + 1; // Volta a contagem original
-                    }
-                } else if (reactionType === 'save') {
-                    // Reversão do destaque amarelo
-                    if (!isActive) {
-                        icon.classList.remove('ph-fill', 'text-yellow-500');
-                        icon.classList.add('ph');
-                    } else {
-                        icon.classList.remove('ph');
-                        icon.classList.add('ph-fill', 'text-yellow-500');
-                    }
-                }
-
+                undoUiChanges();
             })
             .finally(() => {
                 button.disabled = false; // Desbloqueia o botão
@@ -295,14 +340,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Inicialização do Modal (mantida)
+            // Inicialização e Animação do Modal (Chamado se o blade o renderizar)
             const modal = document.getElementById('welcome-modal');
-            if (modal && !modal.classList.contains('hidden')) {
-                document.body.style.overflow = 'hidden';
+            if (modal) {
+                // Inicia a animação de entrada do modal 
+                openWelcomeModal();
             }
-            modal?.querySelector('button').addEventListener('click', () => {
-                document.body.style.overflow = '';
-            });
 
             // Adiciona listener aos botões de reação
             document.querySelectorAll('.reaction-button').forEach(button => {
