@@ -7,14 +7,11 @@
 
             {{-- Card de Informações do Curso --}}
             <div class="bg-white rounded-2xl shadow-lg p-6">
-
-                {{-- Banner e ícone --}}
                 <div class="relative mb-8">
+                    {{-- Banner e ícone --}}
                     <div class="w-full h-32 bg-gray-200 rounded-lg overflow-hidden relative group">
                         <img src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
                             alt="Banner do Curso" class="object-cover w-full h-full">
-
-                        {{-- Botão para Trocar o Banner --}}
                         @if (auth()->user()->user_type === 'admin')
                             <form method="POST" action="{{ route('courses.updateBanner', $course->id) }}"
                                 enctype="multipart/form-data"
@@ -28,7 +25,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 9a2 2 0 012-2h.9a2 2 0 001.664-1.11l.888-1.776A2 2 0 0110.112 3h3.776a2 2 0 011.664 1.11l.888 1.776A2 2 0 0018.1 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                            d="M3 9a2 2 0 012-2h.9a2 2 0 001.664-1.11l.888-1.776A2 2 0 0110.112 3h3.776a2 2 0 011.664 1.11l.888 1.776A2 2 20 0018.1 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
@@ -43,7 +40,6 @@
                             alt="Ícone do Curso"
                             class="w-24 h-24 rounded-full border-4 border-white absolute -bottom-10 left-4 object-cover">
 
-                        {{-- Botão para Trocar o Ícone (sempre visível para admin) --}}
                         @if (auth()->user()->user_type === 'admin')
                             <form method="POST" action="{{ route('courses.updateIcon', $course->id) }}"
                                 enctype="multipart/form-data"
@@ -199,44 +195,46 @@
 
         {{-- Coluna da Direita (Tabs de Conteúdo) --}}
         <div class="lg:w-2/3">
-            <div x-data="{ tab: 'events' }" class="bg-white rounded-2xl shadow-lg p-6">
+            <div x-data="{ tab: 'events' }">
 
-                {{-- Navegação por abas --}}
-                <div class="border-b border-gray-200 mb-6">
-                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button @click="tab = 'events'"
-                            :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'events', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'events' }"
-                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2">
-                                </rect>
-                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                <line x1="3" y1="10" x2="21" y2="10"></line>
-                            </svg>
-                            Eventos
-                        </button>
-                        <button @click="tab = 'posts'"
-                            :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'posts', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'posts' }"
-                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
-                            </svg>
-                            Posts
-                        </button>
-                    </nav>
+                {{-- Card de Navegação das Abas --}}
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button @click="tab = 'events'"
+                                :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'events', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'events' }"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2">
+                                    </rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                Eventos
+                            </button>
+                            <button @click="tab = 'posts'"
+                                :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'posts', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'posts' }"
+                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                                Posts
+                            </button>
+                        </nav>
+                    </div>
                 </div>
 
                 {{-- Conteúdo da aba "Eventos" --}}
-                <div x-show="tab === 'events'">
+                <div x-show="tab === 'events'" class="bg-white rounded-2xl shadow-lg p-6">
                     <h2 class="text-xl font-bold text-stone-800 mb-4">Eventos do Curso</h2>
                     @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
                         <div class="flex justify-end mb-4">
@@ -257,15 +255,14 @@
                                         <div class="w-full h-36">
                                             <img src="{{ asset('storage/' . $event->event_image) }}"
                                                 alt="Capa do Evento" class="object-cover w-full h-full">
-                                        @else
-                                            <!-- Placeholder sem imagem -->
-                                            <div
-                                                class="flex flex-col items-center justify-center w-full h-full text-indigo-500 dark:text-indigo-400">
-                                                <i class="ph-bold ph-calendar-blank text-6xl"></i>
-                                                <p class="mt-2 text-sm">Evento Sem Imagem</p>
-                                            </div>
-                                        @endif
-                                    </div>
+                                        </div>
+                                    @else
+                                        <div
+                                            class="flex flex-col items-center justify-center w-full h-36 text-indigo-500 bg-gray-50 dark:text-indigo-400">
+                                            <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                            <p class="mt-2 text-sm">Evento Sem Imagem</p>
+                                        </div>
+                                    @endif
 
                                     <div class="p-4">
                                         <h4 class="text-lg font-bold text-stone-800 truncate">{{ $event->event_name }}
@@ -288,9 +285,11 @@
                         </p>
                     @endif
                 </div>
-
-                {{-- Conteúdo da aba "Posts" --}}
-                <div x-show="tab === 'posts'">
+                
+                {{-- CONTEÚDO DA ABA "POSTS" --}}
+                <div x-show="tab === 'posts'">  
+                    {{-- 1. Lista de Posts (via Livewire) --}}
+                    {{-- Se você estiver usando o Livewire para a lista, ele vai aqui --}}
                     @livewire('course-posts', ['course' => $course])
                 </div>
             </div>
@@ -322,31 +321,20 @@
 
 {{-- Script para Seguir/Deixar de Seguir Curso --}}
 <script>
-
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.querySelector('div[data-course-id]');
-        
-        // Elementos da contagem de seguidores
         const followersCountSpan = document.getElementById('followersCount');
-        const followersPluralSpan = document.getElementById('followersPlural');
+        const followersPluralSpan = document.getElementById('followersText');
 
-        // Função para atualizar o texto 'Seguidores'/'Seguidor'
         function updatePlural(count) {
             if (!followersPluralSpan) return;
-
-            // Função simples de pluralização em português
-            if (count == 1) { // Mudança para == 1 para englobar strings e números
+            if (count == 1) { 
                 followersPluralSpan.textContent = 'Seguidor';
             } else {
                 followersPluralSpan.textContent = 'Seguidores';
             }
         }
-
-        // Inicializa o texto de pluralização ao carregar
-        if (followersCountSpan) {
-            updatePlural(parseInt(followersCountSpan.textContent.trim()));
-        }
-
+        
         if (container) {
             container.addEventListener('click', function(e) {
                 const button = e.target.closest('button');
@@ -383,15 +371,11 @@
                     })
                     .then(data => {
                         updateButtonState(button, method);
-
-                        // 2. Atualiza a contagem de seguidores
                         if (data.followers_count !== undefined && followersCountSpan) {
                             const newCount = data.followers_count;
                             followersCountSpan.textContent = newCount;
-                            updatePlural(newCount); // Atualiza o texto "Seguidor/Seguidores"
+                            updatePlural(newCount);
                         }
-
-                        // 3. Reabilita o botão
                         button.disabled = false;
                     })
                     .catch(error => {
@@ -406,22 +390,21 @@
             if (currentMethod === 'POST') {
                 currentButton.id = 'unfollowButton';
                 currentButton.textContent = '✔ Seguindo';
-                // Remove as classes de 'Seguir'
                 currentButton.classList.remove('bg-black', 'hover:bg-red-700', 'text-white'); 
-                // Adiciona as classes de 'Seguindo'
                 currentButton.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
             } else if (currentMethod === 'DELETE') {
                 currentButton.id = 'followButton';
                 currentButton.textContent = '+ Seguir';
-                // Remove as classes de 'Seguindo'
                 currentButton.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
-                // Adiciona as classes de 'Seguir'
                 currentButton.classList.add('bg-black', 'hover:bg-red-700', 'text-white'); 
             }
             currentButton.disabled = false;
         }
 
         function updateFollowersCount(courseId) {
+            const followersCountEl = document.getElementById('followersCount');
+            const followersTextEl = document.getElementById('followersText');
+
             fetch(`/courses/${courseId}/followers-count`, {
                     method: 'GET',
                     headers: {
@@ -435,7 +418,7 @@
                 .then(data => {
                     if (followersCountEl && followersTextEl) {
                         if (data.count === 0) {
-                            followersCountEl.textContent = '';
+                            followersCountEl.textContent = '0';
                             followersTextEl.textContent = 'Nenhum seguidor';
                         } else {
                             followersCountEl.textContent = data.count;
@@ -446,6 +429,10 @@
                 .catch(error => {
                     console.error('Erro ao atualizar contador de seguidores:', error);
                 });
+        }
+        
+        if (followersCountSpan) {
+            updatePlural(parseInt(followersCountSpan.textContent.trim()));
         }
 
     });
