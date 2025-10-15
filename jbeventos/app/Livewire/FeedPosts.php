@@ -24,6 +24,11 @@ class FeedPosts extends Component
     public $newReplyContent = []; 
     public ?int $selectedPostId = null;
     public ?Post $expandedPost = null; 
+    
+    // --- PROPRIEDADES PARA CARROSSEL ---
+    public $isCarouselOpen = false;
+    public $currentImageIndex = 0; 
+    // ------------------------------------------
 
     // --- PROPRIEDADES PARA CRIAÇÃO DE POSTS ---
     public $isCoordinator = false;
@@ -54,16 +59,29 @@ class FeedPosts extends Component
 
         if ($this->isCoordinator) {
             $rules['newPostContent'] = 'required|string|max:5000';
+            // REGRA: Limita a 2 imagens.
+            $rules['images'] = 'nullable|array|max:2'; 
             $rules['images.*'] = 'nullable|image|max:1024';
         }
         
         // Regras para edição
         if ($this->editingPostId) {
              $rules['editingPostContent'] = 'required|string|max:5000';
+             // REGRA: A soma total de imagens (existentes + novas) não deve exceder 2.
+             $rules['editingPostImages'] = 'nullable|array|max:2';
              $rules['newlyUploadedEditingImages.*'] = 'nullable|image|max:1024';
         }
 
         return $rules;
+    }
+    
+    protected function validationAttributes()
+    {
+        return [
+            'images' => 'imagens do post',
+            'images.*' => 'arquivo de imagem',
+            'editingPostImages' => 'imagens do post',
+        ];
     }
     
     public function mount()
@@ -97,6 +115,16 @@ class FeedPosts extends Component
     // --- UPLOAD/IMAGEM (Criação) ---
     public function updatedNewlyUploadedImages()
     {
+        // Limita a adicionar imagens apenas se o total não exceder 2
+        $totalImages = count($this->images);
+        $newImagesCount = count($this->newlyUploadedImages);
+        
+        if ($totalImages + $newImagesCount > 2) {
+             session()->flash('error_image', 'Você só pode adicionar um máximo de 2 imagens por post.');
+             $this->newlyUploadedImages = []; // Limpa o upload
+             return;
+        }
+        
         $this->images = array_merge($this->images, $this->newlyUploadedImages);
         $this->newlyUploadedImages = [];
     }
@@ -112,10 +140,20 @@ class FeedPosts extends Component
     // --- UPLOAD/IMAGEM (Edição) ---
     public function updatedNewlyUploadedEditingImages()
     {
+        // Limita a adicionar imagens apenas se o total não exceder 2
+        $totalImages = count($this->editingPostImages);
+        $newImagesCount = count($this->newlyUploadedEditingImages);
+        
+        if ($totalImages + $newImagesCount > 2) {
+             session()->flash('error_edit_image', 'Você só pode ter um máximo de 2 imagens no post.');
+             $this->newlyUploadedEditingImages = []; // Limpa o upload
+             return;
+        }
+
         $this->editingPostImages = array_merge($this->editingPostImages, $this->newlyUploadedEditingImages);
         $this->newlyUploadedEditingImages = [];
     }
-
+    
     public function removeEditingImage($index)
     {
         if (isset($this->editingPostImages[$index])) {
@@ -134,6 +172,7 @@ class FeedPosts extends Component
         
         $this->validate([
             'newPostContent' => $this->rules()['newPostContent'],
+            'images' => $this->rules()['images'],
             'images.*' => $this->rules()['images.*'],
         ]);
 
@@ -177,6 +216,7 @@ class FeedPosts extends Component
 
         $this->validate([
             'editingPostContent' => $this->rules()['editingPostContent'],
+            'editingPostImages' => $this->rules()['editingPostImages'], // Validação do limite de 2
             'newlyUploadedEditingImages.*' => $this->rules()['newlyUploadedEditingImages.*'], 
         ]);
         
@@ -274,6 +314,10 @@ class FeedPosts extends Component
         $this->selectedPostId = $postId;
         $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
             ->findOrFail($postId);
+            
+        // Garante que o carrossel esteja fechado ao abrir o modal principal
+        $this->isCarouselOpen = false;
+        $this->currentImageIndex = 0; 
         
         // O evento JS é útil para o Alpine.js garantir que o modal seja exibido.
         $this->dispatch('openPostModal');
@@ -286,8 +330,24 @@ class FeedPosts extends Component
     {
         $this->selectedPostId = null;
         $this->expandedPost = null;
-        // CORREÇÃO: Removido $this->resetPage() para evitar conflitos na re-renderização.
+        $this->isCarouselOpen = false; // Garante que o carrossel feche junto
     }
+    
+    /**
+     * Abre o modal do carrossel no índice da imagem clicada.
+     */
+    public function openCarousel(int $imageIndex)
+    {
+        // Esta checagem garante que só abrimos se houver um post expandido válido
+        if (!$this->expandedPost || empty($this->expandedPost->images)) {
+            return;
+        }
+        
+        // Define o índice inicial e abre o modal do carrossel
+        $this->currentImageIndex = $imageIndex;
+        $this->isCarouselOpen = true;
+    }
+
 
     public function createReply($postId)
     {

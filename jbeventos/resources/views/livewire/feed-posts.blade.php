@@ -10,6 +10,14 @@
             {{ session('error') }}
         </div>
     @endif
+    
+    {{-- Mensagem de erro para limite de imagem na criação --}}
+    @if (session()->has('error_image'))
+        <div class="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md" role="alert">
+            {{ session('error_image') }}
+        </div>
+    @endif
+    
 
     {{-- FORMULÁRIO DE CRIAÇÃO DE POST (Apenas para Coordenadores) --}}
     @if ($isCoordinator)
@@ -38,7 +46,12 @@
                                 file:text-sm file:font-semibold
                                 file:bg-red-50 file:text-red-700
                                 hover:file:bg-red-100"
+                        @if(count($images) >= 2) disabled @endif
                     >
+                    @if(count($images) >= 2)
+                        <p class="text-xs text-yellow-600 mt-1">Limite máximo de 2 imagens atingido.</p>
+                    @endif
+                    @error('images') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
                     @error('images.*') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
                 </div>
 
@@ -155,7 +168,7 @@
                 @endif
                 
                 {{-- BOTÕES DE INTERAÇÃO (Substituído por um span para manter o card clicável) --}}
-                <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-4"> {{-- Adicionei mt-4 para espaçamento --}}
+                <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-4"> 
                     <span class="text-sm font-medium text-gray-600 hover:text-red-600 transition cursor-pointer">
                         Ver {{ $post->replies->count() }} Respostas
                     </span>
@@ -238,21 +251,23 @@
                         {{ $expandedPost->content }}
                     </p>
 
-                    {{-- Imagens do Post (Todas as imagens) --}}
+                    {{-- Miniaturas Clicáveis para Abrir Carrossel --}}
                     @if (!empty($expandedPost->images) && count($expandedPost->images) > 0)
-                        {{-- Contêiner principal: max-h + overflow-y-auto + grid --}}
-                        <div class="grid {{ count($expandedPost->images) == 1 ? 'grid-cols-1' : 'grid-cols-2' }} gap-4 mb-6 max-h-[70vh] overflow-y-auto p-1 -m-1">
-                            @foreach($expandedPost->images as $imagePath)
-                                {{-- Wrapper da Imagem: Altura fixa (h-64) com flex para centralizar o objeto --}}
-                                <div class="max-w-full h-64 mx-auto rounded-lg overflow-hidden shadow-md bg-gray-100 flex items-center justify-center">
-                                <img src="{{ asset('storage/' . $imagePath) }}" 
-                                        class="object-cover w-full h-full"
-                                        alt="Imagem do Post">
+                        {{-- Contêiner do grid de miniaturas --}}
+                        <div class="grid {{ count($expandedPost->images) == 1 ? 'grid-cols-1' : 'grid-cols-2' }} gap-4 mb-6">
+                            @foreach($expandedPost->images as $index => $imagePath)
+                                <div class="relative w-full h-48 overflow-hidden rounded-lg shadow-md cursor-pointer group"
+                                    wire:click="openCarousel({{ $index }})" {{-- Chama o método Livewire openCarousel --}}
+                                >
+                                    <img src="{{ asset('storage/' . $imagePath) }}" 
+                                            class="absolute inset-0 w-full h-full object-cover transition duration-300 group-hover:scale-105" 
+                                            alt="Miniatura do Post {{ $index + 1 }}">
+                                    <div class="absolute inset-0 bg-black bg-opacity-10 group-hover:bg-opacity-0 transition"></div>
                                 </div>
                             @endforeach
                         </div>
                     @endif
-
+                    
                     {{-- Seção de Respostas --}}
                     <h4 class="text-xl font-bold text-gray-800 border-t border-gray-100 pt-6 mb-4">{{ $expandedPost->replies->count() }} Respostas</h4>
                     
@@ -305,6 +320,101 @@
     @endif
     
     {{-- ------------------------------------------------------------------------------------------------ --}}
+    {{-- MODAL CARROSSEL (GALERIA) --}}
+    {{-- ------------------------------------------------------------------------------------------------ --}}
+    @if ($expandedPost && count($expandedPost->images) > 0)
+        <div 
+            x-data="{ 
+                isCarouselOpen: @entangle('isCarouselOpen'),
+                currentIndex: @entangle('currentImageIndex'),
+                images: @js($expandedPost->images),
+                next() {
+                    this.currentIndex = (this.currentIndex + 1) % this.images.length;
+                },
+                prev() {
+                    this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+                },
+                // Permite navegar com as setas do teclado
+                init() {
+                    document.addEventListener('keydown', (e) => {
+                        if (this.isCarouselOpen) {
+                            if (e.key === 'ArrowLeft') {
+                                this.prev();
+                            } else if (e.key === 'ArrowRight') {
+                                this.next();
+                            } else if (e.key === 'Escape') {
+                                this.isCarouselOpen = false;
+                            }
+                        }
+                    });
+                }
+            }" 
+            x-show="isCarouselOpen" 
+            x-transition:enter="ease-out duration-300" 
+            x-transition:enter-start="opacity-0" 
+            x-transition:enter-end="opacity-100" 
+            x-transition:leave="ease-in duration-200" 
+            x-transition:leave-start="opacity-100" 
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black bg-opacity-90 z-[150] flex items-center justify-center p-4" 
+            aria-modal="true" role="dialog"
+            wire:ignore.self {{-- Evita que o Livewire destrua o Alpine.js na atualização --}}
+        >
+            
+            <div x-cloak class="relative w-full h-full max-w-7xl max-h-full">
+
+                {{-- Imagem Central (Carrossel) --}}
+                <div class="relative w-full h-full flex items-center justify-center">
+                    
+                    {{-- Imagem Atual: Note que esta usa object-contain para caber na tela --}}
+                    @foreach($expandedPost->images as $index => $imagePath)
+                        <img 
+                            x-show="currentIndex === {{ $index }}" 
+                            x-transition
+                            src="{{ asset('storage/' . $imagePath) }}" 
+                            alt="Post Image {{ $index + 1 }}" 
+                            class="max-w-full max-h-full object-contain absolute inset-0 m-auto" 
+                            style="transition: opacity 0.3s ease-in-out;"
+                        >
+                    @endforeach
+
+                    {{-- Botão Anterior --}}
+                    <button @click="prev()" 
+                            x-show="images.length > 1"
+                            class="absolute left-0 p-3 sm:p-4 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-r-lg ml-2 transition z-20" 
+                            title="Anterior">
+                        <i class="ph ph-caret-left text-3xl"></i>
+                    </button>
+
+                    {{-- Botão Próximo --}}
+                    <button @click="next()" 
+                            x-show="images.length > 1"
+                            class="absolute right-0 p-3 sm:p-4 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-l-lg mr-2 transition z-20" 
+                            title="Próximo">
+                        <i class="ph ph-caret-right text-3xl"></i>
+                    </button>
+                    
+                </div>
+                
+                {{-- Botão de Fechar --}}
+                <button @click="isCarouselOpen = false" 
+                        class="absolute top-4 right-4 p-2 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full transition z-30" 
+                        title="Fechar">
+                    <i class="ph ph-x text-2xl"></i>
+                </button>
+
+                {{-- Contador de Imagens --}}
+                <div x-show="images.length > 1"
+                    class="absolute bottom-4 left-1/2 transform -translate-x-1/2 p-2 px-4 bg-black bg-opacity-50 text-white rounded-full text-sm z-30">
+                    <span x-text="currentIndex + 1"></span> / <span x-text="images.length"></span>
+                </div>
+
+            </div>
+        </div>
+    @endif
+    
+
+    {{-- ------------------------------------------------------------------------------------------------ --}}
     {{-- MODAL DE EDIÇÃO DE POST --}}
     {{-- ------------------------------------------------------------------------------------------------ --}}
     @if ($editingPostId)
@@ -327,9 +437,18 @@
                             <h3 class="text-xl leading-6 font-medium text-gray-900 border-b pb-2" id="edit-modal-title">
                                 Editar Post
                             </h3>
+                            
+                            {{-- Mensagem de erro para limite de imagem na edição --}}
+                            @if (session()->has('error_edit_image'))
+                                <div class="p-2 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded-md text-sm my-3" role="alert">
+                                    {{ session('error_edit_image') }}
+                                </div>
+                            @endif
+
                             <div class="mt-4">
                                 <textarea wire:model.defer="editingPostContent" rows="5" class="w-full border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50" placeholder="O que você tem para compartilhar?"></textarea>
                                 @error('editingPostContent') <span class="text-red-500 text-sm block mt-1">{{ $message }}</span> @enderror
+                                @error('editingPostImages') <span class="text-red-500 text-sm block mt-1">{{ $message }}</span> @enderror
 
                                 <div class="mt-4 flex flex-wrap gap-2">
                                     @foreach ($editingPostImages as $index => $image)
@@ -362,7 +481,11 @@
                                                 file:text-sm file:font-semibold
                                                 file:bg-blue-50 file:text-blue-700
                                                 hover:file:bg-blue-100"
+                                        @if(count($editingPostImages) >= 2) disabled @endif
                                     >
+                                    @if(count($editingPostImages) >= 2)
+                                        <p class="text-xs text-yellow-600 mt-1">Limite máximo de 2 imagens atingido.</p>
+                                    @endif
                                     @error('newlyUploadedEditingImages.*') <span class="text-red-500 text-sm mt-2 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
