@@ -10,14 +10,14 @@
                             class="object-cover w-full h-full">
                     @else
                         <div
-                            class="flex flex-col items-center justify-center w-full h-full text-indigo-500 dark:text-indigo-400">
+                            class="flex flex-col items-center justify-center w-full h-full text-red-500 dark:text-red-400">
                             <i class="ph-bold ph-calendar-blank text-6xl"></i>
                             <p class="mt-2 text-sm">Evento Sem Imagem</p>
                         </div>
                     @endif
                 </div>
                 <span
-                    class="absolute top-2 right-2 bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
+                    class="absolute top-2 right-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow">
                     {{ $event->event_type === 'course' ? 'Curso' : ($event->event_type === 'general' ? 'Geral' : '') }}
                 </span>
             </div>

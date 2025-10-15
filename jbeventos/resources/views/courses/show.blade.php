@@ -258,7 +258,7 @@
                                         </div>
                                     @else
                                         <div
-                                            class="flex flex-col items-center justify-center w-full h-36 text-indigo-500 bg-gray-50 dark:text-indigo-400">
+                                            class="flex flex-col items-center justify-center w-full h-36 text-red-500 bg-gray-50 dark:text-red-400">
                                             <i class="ph-bold ph-calendar-blank text-6xl"></i>
                                             <p class="mt-2 text-sm">Evento Sem Imagem</p>
                                         </div>
