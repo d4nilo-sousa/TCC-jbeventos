@@ -179,6 +179,20 @@ class User extends Authenticatable
         return '#B0B0B0';
     }
 
+    public function getCoordinatedCourseNameAttribute()
+    {
+        // Verifica se o usuário é um coordenador e se possui um Coordinator associado
+        if ($this->user_type === 'coordinator' && $this->coordinator) {
+            // Tenta carregar o curso coordenado (usando a relação definida no Coordinator.php)
+            $course = $this->coordinator->coordinatedCourse;
+            
+            // Retorna o nome do curso se ele existir
+            return $course ? $course->course_name : null;
+        }
+
+        return null;
+    }
+
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new CustomResetPasswordNotification($token));
