@@ -148,7 +148,7 @@
                     </div>
                 </div>
 
-                {{-- 2. Menus do Lado Direito: Conversas, Perfil e Configurações --}}
+                {{-- 2. Menus do Lado Direito: Conversas, Perfil e Logoff --}}
                 <div class="flex items-center space-x-3 sm:ms-6">
                     
                     {{-- Dropdown de Conversas/Mensagens --}}
@@ -176,53 +176,18 @@
                         <img src ="{{ Auth::user()->user_icon_url }}" alt="{{ Auth::user()->name }}" class="size-9 rounded-full object-cover border-2 border-gray-200 hover:border-red-500 transition shadow-md">
                     </a>
 
-                    {{-- Dropdown de Configurações --}}
-                    <div class="relative">
-                        <x-dropdown align="right" width="48">
-                            <x-slot name="trigger">
-                                @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                <button class="flex items-center size-9 rounded-full justify-center text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none transition shadow-md">
-                                    <i class="ph-fill ph-gear-six text-lg"></i>
-                                </button>
-                                @else
-                                <span class="inline-flex rounded-md">
-                                    <button type="button" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-700 bg-gray-100 hover:text-red-600 focus:outline-none transition">
-                                        {{ __('Configurações') }}
-                                        <svg class="ms-2 -me-0.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </span>
-                                @endif
-                            </x-slot>
-
-                            <x-slot name="content">
-                                <div class="px-4 py-3 border-b border-gray-100"> 
-                                    <div class="font-bold text-sm text-gray-800">{{ Auth::user()->name }}</div>
-                                    <div class="font-medium text-xs text-gray-500">{{ Auth::user()->email }}</div>
-                                </div>
-                                
-                                <x-dropdown-link href="{{ route('settings') }}" class="py-3">
-                                    <i class="ph-duotone ph-gear-six mr-2"></i> {{ __('Configurações') }}
-                                </x-dropdown-link>
-
-                                @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
-                                <x-dropdown-link href="{{ route('api-tokens.index') }}" class="py-3">
-                                    <i class="ph-duotone ph-key mr-2"></i> {{ __('API Tokens') }}
-                                </x-dropdown-link>
-                                @endif
-
-                                <div class="border-t border-gray-200"></div>
-
-                                <form method="POST" action="{{ route('logout') }}" x-data>
-                                    @csrf
-                                    <x-dropdown-link href="{{ route('logout') }}" @click.prevent="$root.submit();" class="text-red-500 hover:bg-red-50 py-3">
-                                        <i class="ph-duotone ph-sign-out mr-2"></i> {{ __('Sair') }}
-                                    </x-dropdown-link>
-                                </form>
-                            </x-slot>
-                        </x-dropdown>
+                    {{-- Botão de Logoff Direto (Desktop) --}}
+                    <div class="hidden sm:block">
+                        <form method="POST" action="{{ route('logout') }}" x-data>
+                            @csrf
+                            <button type="submit" 
+                                class="flex items-center size-9 rounded-full justify-center text-red-500 bg-red-50 hover:bg-red-100 focus:outline-none transition shadow-md">
+                                {{-- Ícone de Sair --}}
+                                <i class="ph-fill ph-sign-out text-lg"></i> 
+                            </button>
+                        </form>
                     </div>
+
                 </div>
 
                 {{-- Hamburger (Mobile) (MANTIDO) --}}
@@ -299,7 +264,7 @@
                 @endif
             </div>
 
-            {{-- Conta do Usuário Mobile (MANTIDO) --}}
+            {{-- Conta do Usuário Mobile --}}
             <div class="pt-4 pb-3 border-t border-gray-200">
                 <div class="flex items-center px-4">
                     @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
@@ -317,9 +282,13 @@
                     <x-responsive-nav-link href="{{ route('profile.show') }}" :active="request()->routeIs('profile.show')" class="text-gray-700 hover:bg-red-50 hover:text-red-600">
                         <i class="ph-duotone ph-user-circle mr-3 w-5 text-center"></i> {{ __('Perfil') }}
                     </x-responsive-nav-link>
-                    <x-responsive-nav-link href="{{ route('settings') }}" :active="request()->routeIs('settings')" class="text-gray-700 hover:bg-red-50 hover:text-red-600">
-                        <i class="ph-duotone ph-gear-six mr-3 w-5 text-center"></i> {{ __('Configurações') }}
-                    </x-responsive-nav-link>
+                    
+                    {{-- Opcional: API Tokens no Mobile --}}
+                    @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
+                        <x-responsive-nav-link href="{{ route('api-tokens.index') }}" :active="request()->routeIs('api-tokens.index')" class="text-gray-700 hover:bg-red-50 hover:text-red-600">
+                            <i class="ph-duotone ph-key mr-3 w-5 text-center"></i> {{ __('API Tokens') }}
+                        </x-responsive-nav-link>
+                    @endif
                     
                     <form method="POST" action="{{ route('logout') }}" x-data>
                         @csrf
