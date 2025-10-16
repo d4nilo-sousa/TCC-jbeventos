@@ -40,13 +40,31 @@ class ProfileController extends Controller
     {
         $eventsCreated = collect(); // Inicia uma coleção vazia
         
-        // Verifica se o usuário é um coordenador antes de buscar os eventos
+        // Busca eventos criados, se for coordenador
         if ($user->user_type === 'coordinator' && $user->coordinator) {
             $eventsCreated = $user->coordinator->managedEvents()->orderBy('event_scheduled_at', 'desc')->get();
         }
+        
+        // Busca eventos que o usuário participou (curtiu)
+        $participatedEvents = $this->getParticipatedEvents($user);
 
         // Passa as variáveis para a view.
-        return view('profile.public', compact('user', 'eventsCreated'));
+        return view('profile.public', compact('user', 'eventsCreated', 'participatedEvents'));
+    }
+    
+    /**
+     * NOVO: Retorna eventos em que o usuário deu "like" ou "confirmou presença" (assumindo que 'like' é uma forma de participação).
+     */
+    private function getParticipatedEvents(User $user)
+    {
+        // Usando a reação 'like' como indicador de participação
+        return Event::whereHas('reactions', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                  ->whereIn('reaction_type', ['like']); 
+        })
+        ->orderBy('event_scheduled_at', 'desc')
+        ->limit(10) // Limita a 10 para não sobrecarregar
+        ->get();
     }
     
     /**
@@ -58,9 +76,9 @@ class ProfileController extends Controller
 
         // Verifique se o evento já foi salvo
         $exists = EventUserReaction::where('user_id', $user->id)
-                                    ->where('event_id', $event->id)
-                                    ->where('reaction_type', 'save')
-                                    ->exists();
+                                   ->where('event_id', $event->id)
+                                   ->where('reaction_type', 'save')
+                                   ->exists();
 
         if (!$exists) {  
             // Crie uma nova reação do tipo 'save'
@@ -84,9 +102,9 @@ class ProfileController extends Controller
 
         // Encontra e deleta a reação do tipo 'save'
         EventUserReaction::where('user_id', $user->id)
-                        ->where('event_id', $event->id)
-                        ->where('reaction_type', 'save')
-                        ->delete();
+                         ->where('event_id', $event->id)
+                         ->where('reaction_type', 'save')
+                         ->delete();
 
         return back()->with('success', 'Evento removido dos salvos.');
     }
@@ -115,7 +133,7 @@ class ProfileController extends Controller
     }
 
 
-     //Atualiza a foto de perfil com um dos ícones padrão.
+    // Atualiza a foto de perfil com um dos ícones padrão.
     public function updateDefaultPhoto(Request $request)
     {
         $user = auth()->user();
@@ -156,6 +174,7 @@ class ProfileController extends Controller
         // Salva a nova imagem
         $path = $request->file('user_icon')->store('profile_photos', 'public');
         $user->user_icon = $path; // Salva "profile_photos/abc.jpg"
+        $user->user_icon_default = null; // Garante que o ícone padrão não seja usado
         $user->save();
 
         return back()->with('success', 'Foto de perfil atualizada!'); // Redireciona de volta para a tela de perfil
@@ -186,12 +205,13 @@ class ProfileController extends Controller
     public function updateBio(Request $request)
     {
         // Valida a biografia
-        $request->validate([
-            'bio' => 'nullable|string|max:500',
+        $validated = $request->validate([
+            // Transforma null em string vazia para melhor consistência
+            'bio' => 'nullable|string|max:500', 
         ]);
 
-        $user = auth()->user(); // Obtem o usuário autenticado
-        $user->bio = $request->bio; // Atualiza a biografia
+        $user = auth()->user();
+        $user->bio = $validated['bio']; 
         $user->save(); // Salva as alterações
 
         return back()->with('success', 'Biografia atualizada!');
