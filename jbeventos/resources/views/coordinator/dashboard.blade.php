@@ -99,7 +99,7 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-medium text-gray-600">Qtd. de salvamentos em seus Eventos</h3>
+                        <h3 class="text-sm font-medium text-gray-600">Qtd. de Salvamentos em Seus Eventos</h3>
                         <p class="text-3xl font-bold text-gray-800 mt-1">{{ $saves }}</p>
                     </div>
                 </div>

@@ -2,11 +2,11 @@
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div class="mt-1">
-                    <p class="text-3xl sm:text-4xl font-extrabold text-stone-800 mt-3 tracking-tight drop-shadow-sm">
-                        Todos os Eventos
-                    </p>
-                    <div class="w-16 h-1 bg-red-500 rounded-full mt-2 shadow-lg"></div>
-                </div>
+                <p class="text-3xl sm:text-4xl font-extrabold text-stone-800 mt-3 tracking-tight drop-shadow-sm">
+                    Todos os Eventos
+                </p>
+                <div class="w-16 h-1 bg-red-500 rounded-full mt-2 shadow-lg"></div>
+            </div>
 
             <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
                 <form method="GET" action="{{ route('events.index') }}" class="w-full flex-grow">
@@ -40,7 +40,7 @@
                     <div id="filterMenu"
                         class="absolute right-0 z-20 mt-2 w-64 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden">
                         <form method="GET" action="{{ route('events.index') }}" class="p-4 space-y-4">
-                            
+
                             @if (request('search'))
                                 <input type="hidden" name="search" value="{{ request('search') }}">
                             @endif
@@ -75,8 +75,7 @@
                                             <input type="checkbox" name="course_id[]" value="{{ $course->id }}"
                                                 {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}
                                                 class="form-checkbox text-red-600 rounded">
-                                            <span
-                                                class="ml-2 text-sm text-gray-600">{{ $course->course_name }}</span>
+                                            <span class="ml-2 text-sm text-gray-600">{{ $course->course_name }}</span>
                                         </label>
                                     @endforeach
                                 </div>
@@ -89,8 +88,7 @@
                                     @if (isset($categories))
                                         @foreach ($categories as $category)
                                             <label class="inline-flex items-center">
-                                                <input type="checkbox" name="category_id[]"
-                                                    value="{{ $category->id }}"
+                                                <input type="checkbox" name="category_id[]" value="{{ $category->id }}"
                                                     {{ in_array($category->id, $selectedCategories) ? 'checked' : '' }}
                                                     class="form-checkbox text-red-600 rounded">
                                                 <span
@@ -166,13 +164,13 @@
         </div>
 
         {{-- Events List (Container de AJAX) --}}
-        <div id="events-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {{-- Use APENAS o loop, sem o @empty, pois a mensagem é tratada no Controller/AJAX --}}
+        <div id="events-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 justify-items-center">
+            {{-- Loop dos eventos --}}
             @foreach ($events as $event)
                 @include('partials.events.event-card', ['event' => $event])
             @endforeach
 
-            {{-- Se for a primeira carga e a coleção estiver vazia, adicione a mensagem AQUI manualmente --}}
+            {{-- Mensagem se não houver eventos --}}
             @if ($events->isEmpty() && !request()->ajax())
                 <div id="no-events-message" class="col-span-full flex flex-col items-center justify-center p-12">
                     <img src="{{ asset('imgs/notFound.png') }}" alt="Nenhum evento encontrado"

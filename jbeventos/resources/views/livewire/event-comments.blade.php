@@ -53,7 +53,7 @@
     
         {{-- Botão de Comentar --}}
         <button wire:click="addComment"
-            class="bg-red-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-lg disabled:bg-blue-300"
+            class="bg-red-500 hover:bg-red-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-lg disabled:bg-gray-300"
             wire:loading.attr="disabled" wire:target="addComment, media">
             <span wire:loading.remove wire:target="addComment, media">Comentar</span>
             <span wire:loading wire:target="addComment, media">

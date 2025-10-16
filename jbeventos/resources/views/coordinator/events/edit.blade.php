@@ -52,19 +52,9 @@
 
                             <div>
                                 <x-input-label for="event_name" value="Nome do Evento" />
-                                <x-text-input type="text" name="event_name" id="event_name"
+                                <x-text-input type="text" name="event_name" id="event_name" maxlength="50"
                                     value="{{ old('event_name', $event->event_name) }}" required />
                                 @error('event_name')
-                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <x-input-label for="event_description" value="Breve Descrição" />
-                                <input type="text" name="event_description" id="event_description" maxlength="90"
-                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    value="{{ old('event_description', $event->event_description) }}" required />
-                                @error('event_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>

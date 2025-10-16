@@ -61,7 +61,7 @@
                                         @endif
                                         <div class="absolute bottom-4 right-4 flex gap-2 z-0 pointer-events-auto">
                                             <div id="indicator"
-                                                class="bg-black/60 text-white text-sm px-3 py-1 rounded-full font-medium">
+                                                class="bg-black/60 text-white text-sm px-3 py-1 rounded-full font-medium mt-2">
                                                 1 / {{ $event->images->count() }}
                                             </div>
                                             <button id="zoomBtn"
@@ -74,7 +74,7 @@
                                 @else
                                     <div class="aspect-video w-full flex items-center justify-center bg-gray-100">
                                         <span class="text-gray-400 text-lg flex items-center gap-2">
-                                            <i class="ph-fill ph-image text-2xl"></i> Sem imagem de galeria
+                                            <i class="ph-fill ph-image text-2xl"></i> Sem Imagem de Galeria
                                         </span>
                                     </div>
                                 @endif
