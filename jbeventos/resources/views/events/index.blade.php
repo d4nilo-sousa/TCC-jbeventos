@@ -1,7 +1,12 @@
 <x-app-layout>
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
-            <h2 class="text-2xl font-bold text-gray-800">Todos os Eventos</h2>
+            <div class="mt-1">
+                    <p class="text-3xl sm:text-4xl font-extrabold text-stone-800 mt-3 tracking-tight drop-shadow-sm">
+                        Todos os Eventos
+                    </p>
+                    <div class="w-16 h-1 bg-red-500 rounded-full mt-2 shadow-lg"></div>
+                </div>
 
             <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
                 <form method="GET" action="{{ route('events.index') }}" class="w-full flex-grow">
