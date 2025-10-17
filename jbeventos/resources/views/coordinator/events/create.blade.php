@@ -2,6 +2,18 @@
     <div class="py-6">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
+                {{-- Título da Página --}}
+                <div class="flex flex-col items-center justify-center mb-10 text-center">
+                    <div class="p-3 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-red-600" viewBox="0 0 256 256" fill="currentColor">
+                            <path
+                                d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48V56a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"
+                            />
+                        </svg>
+                    </div>
+                    <h1 class="text-3xl font-bold text-gray-800">Criar Novo Evento</h1>
+                    <p class="mt-2 text-gray-600">Preencha os detalhes do evento abaixo</p>
+                </div>
 
                 {{-- Exibição de erros de validação do Laravel/PHP --}}
                 @if ($errors->any())
@@ -41,23 +53,23 @@
                     <div class="flex justify-center mb-8">
                         <div class="flex items-center space-x-4">
                             <button type="button" data-tab-target="tab-media"
-                                class="tab-button active flex items-center space-x-2 text-gray-400 font-medium transition-colors duration-200">
+                                class="tab-button active flex items-center space-x-2 text-red-400 font-medium transition-colors duration-200">
                                 <span
-                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 transition-colors duration-200">1</span>
+                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-red-300 text-red-500 transition-colors duration-200">1</span>
                                 <span class="hidden sm:inline">Mídias</span>
                             </button>
                             <span class="w-16 h-px bg-gray-300"></span>
                             <button type="button" data-tab-target="tab-info"
                                 class="tab-button flex items-center space-x-2 text-gray-400 font-medium transition-colors duration-200">
                                 <span
-                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 transition-colors duration-200">2</span>
+                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-red-300 text-red-500 transition-colors duration-200">2</span>
                                 <span class="hidden sm:inline">Informações</span>
                             </button>
                             <span class="w-16 h-px bg-gray-300"></span>
                             <button type="button" data-tab-target="tab-details"
-                                class="tab-button flex items-center space-x-2 text-gray-400 font-medium transition-colors duration-200">
+                                class="tab-button flex items-center space-x-2 text-red-400 font-medium transition-colors duration-200">
                                 <span
-                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 transition-colors duration-200">3</span>
+                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-red-300 text-red-500 transition-colors duration-200">3</span>
                                 <span class="hidden sm:inline">Detalhes</span>
                             </button>
                         </div>
@@ -76,15 +88,15 @@
                                 <label for="event_image" class="block font-medium text-gray-700 mb-2">Imagem de
                                     Capa</label>
                                 <div id="dropzone-cover"
-                                    class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
+                                    class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-red-500 hover:bg-gray-50">
                                     <input type="file" name="event_image" id="event_image" accept="image/*"
                                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors"
+                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-red-500 transition-colors"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-blue-500 transition-colors">
+                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-red-500 transition-colors">
                                         <span class="font-semibold">Arraste e solte</span> ou clique para enviar a
                                         imagem de capa.
                                     </p>
@@ -99,17 +111,17 @@
                                 <label for="event_images" class="block font-medium text-gray-700 mb-2">Galeria de
                                     Imagens</label>
                                 <div id="dropzone-gallery"
-                                    class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-blue-500 hover:bg-gray-50">
+                                    class="group relative flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer transition-all duration-300 hover:border-red-500 hover:bg-gray-50">
                                     <input type="file" name="event_images[]" id="event_images" accept="image/*"
                                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" multiple>
-                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-blue-500 transition-colors"
+                                    <svg class="h-10 w-10 text-gray-400 group-hover:text-red-500 transition-colors"
                                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 11V5" />
                                     </svg>
-                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-blue-500 transition-colors">
+                                    <p class="mt-2 text-sm text-gray-500 group-hover:text-red-500 transition-colors">
                                         <span class="font-semibold">Arraste e solte</span> ou clique para adicionar mais
                                         imagens.
                                     </p>
@@ -129,23 +141,24 @@
                                 </a>
 
                                 <button type="button" data-next-tab="tab-info"
-                                    class="next-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 transition ease-in-out duration-150">
+                                    class="next-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition ease-in-out duration-150">
                                     Próximo
                                 </button>
                             </div>
                         </div>
 
-                        {{-- Aba 2: Informações do Evento --}}
+                        {{-- Aba 2: Informações do Evento (Campos de Nome e Local em largura total) --}}
                         <div id="tab-info" class="tab-content hidden space-y-6">
                             <h3 class="text-xl font-semibold text-gray-700 border-b pb-2">Informações do Evento
                             </h3>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {{-- Nome do Evento --}}
+                            {{-- Nome do Evento --}}
+                            <div class="space-y-6">
                                 <div>
                                     <x-input-label for="event_name" value="Nome do Evento" />
+                                    {{-- Garante largura total com w-full (já está dentro do x-text-input, mas reforçamos o div pai) --}}
                                     <x-text-input type="text" name="event_name" id="event_name" maxlength="50"
-                                        value="{{ old('event_name') }}" required />
+                                        value="{{ old('event_name') }}" class="w-full" required />
                                     @error('event_name')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -154,8 +167,9 @@
                                 {{-- Local do Evento --}}
                                 <div>
                                     <x-input-label for="event_location" value="Local" />
+                                    {{-- Garante largura total com w-full --}}
                                     <x-text-input type="text" name="event_location" id="event_location"
-                                        value="{{ old('event_location') }}" required />
+                                        value="{{ old('event_location') }}" class="w-full" required />
                                     @error('event_location')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -166,7 +180,7 @@
                             <div>
                                 <x-input-label for="event_info" value="Sobre o Evento" />
                                 <textarea name="event_info" id="event_info" rows="4"
-                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">{{ old('event_info') }}</textarea>
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('event_info') }}</textarea>
                                 @error('event_info')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -178,9 +192,9 @@
                                 <div class="mt-2 flex flex-wrap gap-4">
                                     @foreach ($categories as $category)
                                         <label
-                                            class="inline-flex items-center space-x-2 transition-colors duration-200 ease-in-out cursor-pointer hover:text-blue-600">
+                                            class="inline-flex items-center space-x-2 transition-colors duration-200 ease-in-out cursor-pointer hover:text-red-600">
                                             <input type="checkbox" name="categories[]" value="{{ $category->id }}"
-                                                class="rounded text-blue-600 border-gray-300 focus:ring-blue-500"
+                                                class="rounded text-red-600 border-gray-300 focus:ring-red-500"
                                                 {{ in_array($category->id, old('categories', [])) ? 'checked' : '' }}>
                                             <span class="text-sm">{{ $category->category_name }}</span>
                                         </label>
@@ -199,7 +213,7 @@
                                     Anterior
                                 </button>
                                 <button type="button" data-next-tab="tab-details"
-                                    class="next-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-blue-600 hover:bg-blue-700 transition ease-in-out duration-150">
+                                    class="next-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition ease-in-out duration-150">
                                     Próximo
                                 </button>
                             </div>
@@ -211,16 +225,16 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {{-- Data e Hora do Evento --}}
-                               <div>
-                                <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
-                                <x-text-input type="datetime-local" name="event_scheduled_at"
-                                    id="event_scheduled_at"
-                                    value="{{ old('event_scheduled_at') }}" required />
-                                @error('event_scheduled_at')
-                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-                            
+                                <div>
+                                    <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
+                                    <x-text-input type="datetime-local" name="event_scheduled_at"
+                                        id="event_scheduled_at"
+                                        value="{{ old('event_scheduled_at') }}" required />
+                                    @error('event_scheduled_at')
+                                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                                
                                 {{-- Exclusão Automática --}}
                                 <div>
                                     <x-input-label for="event_expired_at" value="Exclusão Automática" />
@@ -235,10 +249,11 @@
 
                             {{-- Coordenador e Tipo do Evento --}}
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {{-- Coordenador Responsável (Campo Fixo/Desabilitado com novo estilo) --}}
                                 <div>
                                     <x-input-label for="coordinator_name" value="Coordenador Responsável" />
                                     <x-text-input id="coordinator_name" type="text"
-                                        class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                        class="block mt-1 w-full bg-gray-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
                                         value="{{ auth()->user()->name }}" readonly disabled />
                                     <input type="hidden" name="coordinator_id"
                                         value="{{ auth()->user()->coordinator->id }}">
@@ -262,29 +277,27 @@
                                     $availableCourses = $allCourses->where('id', '!=', $defaultCourseId);
 
                                     // Variável para reter os cursos selecionados em caso de erro de validação (ou edição)
-                                    // Se estiver em uma página de EDIÇÃO, use: $selectedCourses = old('courses', $event->courses->pluck('id')->toArray());
-                                    // Para CRIAÇÃO:
                                     $selectedCourses = old('courses', []);
                                 @endphp
 
                                 {{-- ... Bloco de Tipo de Evento/Curso Padrão ... --}}
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {{-- Tipo do Evento --}}
+                                    {{-- Tipo do Evento (Campo Fixo/Desabilitado com novo estilo) --}}
                                     <div>
                                         <x-input-label for="event_type" value="Tipo do Evento" />
                                         <x-text-input id="coordinator_type" type="text"
-                                            class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                            class="block mt-1 w-full bg-gray-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
                                             value="{{ $eventTypeLabel }}" readonly disabled />
                                         <input type="hidden" name="coordinator_type"
                                             value="{{ $coordinatorType }}">
                                     </div>
 
-                                    {{-- Curso Padrão do Coordenador (Sempre exibido se for curso) --}}
+                                    {{-- Curso Padrão do Coordenador (Sempre exibido se for curso) (Campo Fixo/Desabilitado com novo estilo) --}}
                                     @if ($coordinatorType === 'course')
                                         <div>
                                             <x-input-label for="default_course" value="Curso Padrão (Obrigatório)" />
                                             <x-text-input id="default_course_name" type="text"
-                                                class="block mt-1 w-full bg-gray-100 cursor-not-allowed"
+                                                class="block mt-1 w-full bg-gray-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
                                                 value="{{ $defaultCourseName }}" readonly disabled />
                                         </div>
                                     @endif
@@ -304,7 +317,7 @@
                                             {{-- O nome courses[] garante que o Laravel receba um array de IDs selecionados --}}
                                             <input id="course-{{ $course->id }}" name="courses[]" type="checkbox"
                                                 value="{{ $course->id }}"
-                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                                                class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500"
                                                 {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
                                             <label for="course-{{ $course->id }}"
                                                 class="ml-2 text-sm text-gray-700">
@@ -329,7 +342,7 @@
                                 </button>
                                 {{-- BOTÃO DE SUBMISSÃO --}}
                                 <button type="submit"
-                                    class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-green-600 hover:bg-green-700 transition ease-in-out duration-150">
+                                    class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition ease-in-out duration-150">
                                     Criar Evento
                                 </button>
                             </div>
