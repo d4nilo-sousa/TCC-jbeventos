@@ -158,7 +158,7 @@
                                     <x-input-label for="event_name" value="Nome do Evento" />
                                     {{-- Garante largura total com w-full (já está dentro do x-text-input, mas reforçamos o div pai) --}}
                                     <x-text-input type="text" name="event_name" id="event_name" maxlength="50"
-                                        value="{{ old('event_name') }}" class="w-full" required />
+                                        value="{{ old('event_name') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" required />
                                     @error('event_name')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -169,7 +169,7 @@
                                     <x-input-label for="event_location" value="Local" />
                                     {{-- Garante largura total com w-full --}}
                                     <x-text-input type="text" name="event_location" id="event_location"
-                                        value="{{ old('event_location') }}" class="w-full" required />
+                                        value="{{ old('event_location') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" required />
                                     @error('event_location')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -178,10 +178,10 @@
 
                             {{-- Sobre o Evento --}}
                             <div>
-                                <x-input-label for="event_info" value="Sobre o Evento" />
-                                <textarea name="event_info" id="event_info" rows="4"
-                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('event_info') }}</textarea>
-                                @error('event_info')
+                                <x-input-label for="event_description" value="Sobre o Evento" />
+                                <textarea name="event_description" id="event_description" rows="4"
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('event_description') }}</textarea>
+                                @error('event_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -229,7 +229,7 @@
                                     <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
                                     <x-text-input type="datetime-local" name="event_scheduled_at"
                                         id="event_scheduled_at"
-                                        value="{{ old('event_scheduled_at') }}" required />
+                                        value="{{ old('event_scheduled_at') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" required />
                                     @error('event_scheduled_at')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -240,7 +240,7 @@
                                     <x-input-label for="event_expired_at" value="Exclusão Automática" />
                                     <x-text-input type="datetime-local" name="event_expired_at" id="event_expired_at"
                                         min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
-                                        value="{{ old('event_expired_at') }}" />
+                                        value="{{ old('event_expired_at') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" />
                                     @error('event_expired_at')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -253,7 +253,7 @@
                                 <div>
                                     <x-input-label for="coordinator_name" value="Coordenador Responsável" />
                                     <x-text-input id="coordinator_name" type="text"
-                                        class="block mt-1 w-full bg-gray-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                        class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
                                         value="{{ auth()->user()->name }}" readonly disabled />
                                     <input type="hidden" name="coordinator_id"
                                         value="{{ auth()->user()->coordinator->id }}">
@@ -286,7 +286,7 @@
                                     <div>
                                         <x-input-label for="event_type" value="Tipo do Evento" />
                                         <x-text-input id="coordinator_type" type="text"
-                                            class="block mt-1 w-full bg-gray-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                            class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
                                             value="{{ $eventTypeLabel }}" readonly disabled />
                                         <input type="hidden" name="coordinator_type"
                                             value="{{ $coordinatorType }}">
@@ -297,7 +297,7 @@
                                         <div>
                                             <x-input-label for="default_course" value="Curso Padrão (Obrigatório)" />
                                             <x-text-input id="default_course_name" type="text"
-                                                class="block mt-1 w-full bg-gray-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                                class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
                                                 value="{{ $defaultCourseName }}" readonly disabled />
                                         </div>
                                     @endif
