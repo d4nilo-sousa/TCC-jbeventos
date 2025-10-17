@@ -53,7 +53,7 @@
     
         {{-- Botão de Comentar --}}
         <button wire:click="addComment"
-            class="bg-red-500 hover:bg-red-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-lg disabled:bg-gray-300"
+            class="bg-red-500 hover:bg-red-400 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-lg disabled:bg-red-300"
             wire:loading.attr="disabled" wire:target="addComment, media">
             <span wire:loading.remove wire:target="addComment, media">Comentar</span>
             <span wire:loading wire:target="addComment, media">
@@ -77,7 +77,7 @@
         {{-- ATENÇÃO: Se $isEditing for TRUE, o conteúdo de exibição abaixo NÃO será mostrado. --}}
         @if ($isEditing)
             <div class="mt-0" id="edit-form-{{ $comment->id }}">
-                <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-300 shadow-inner">
+                <div class="bg-green-50 p-4 rounded-lg border border-green-300 shadow-inner">
                     <div class="mb-3 text-sm text-gray-600 flex items-center justify-between">
                         <span class="font-bold text-yellow-800 flex items-center">
                             <i class="ph-fill ph-pencil-simple text-lg mr-1"></i>

@@ -18,7 +18,7 @@
 
     {{-- Detalhes do Curso --}}
     <div class="flex flex-col flex-grow w-full px-1">
-        <h3 class="course-title font-extrabold text-xl text-stone-800 mb-1 truncate">
+        <h3 class="font-extrabold text-xl text-stone-800 mb-1 truncate">
             {{ $course->course_name }}
         </h3>
         <p class="text-sm text-gray-500 mb-4 flex-grow">

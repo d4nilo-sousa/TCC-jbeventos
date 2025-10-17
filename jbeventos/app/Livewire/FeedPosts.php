@@ -11,6 +11,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile; 
 
 class FeedPosts extends Component
 {
@@ -25,12 +26,21 @@ class FeedPosts extends Component
     public $isCarouselOpen = false;
     public $currentImageIndex = 0;
 
+    // --- PROPRIEDADES DE POSTAGEM (ATUALIZADAS) ---
     public $isCoordinator = false;
     public $newPostContent = '';
-    public $newlyUploadedImages = [];
-    public $images = [];
+    
+    // PROPRIEDADE MEDIA ADICIONADA: AGORA O COMPONENTE SABE O QUE É $media
+    /** @var TemporaryUploadedFile|null */
+    public $media = null; 
+    
+    // Estas propriedades não são mais necessárias para o novo upload único
+    // public $newlyUploadedImages = []; 
+    // public $images = []; 
+    
     public $newPostCourseId = null;
     public Collection $coordinatorCourses;
+    // ---------------------------------------------
 
     public ?int $editingPostId = null;
     public $editingPostContent = '';
@@ -48,8 +58,7 @@ class FeedPosts extends Component
 
         if ($this->isCoordinator) {
             $rules['newPostContent'] = 'nullable|string|max:5000';
-            $rules['images'] = 'nullable|array|max:5';
-            $rules['images.*'] = 'nullable|image|max:1024';
+            $rules['media'] = 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip'; 
         }
 
         if ($this->editingPostId) {
@@ -64,12 +73,11 @@ class FeedPosts extends Component
     protected function validationAttributes()
     {
         return [
-            'images' => 'imagens do post',
-            'images.*' => 'arquivo de imagem',
+            'media' => 'arquivo anexado', 
             'editingPostImages' => 'imagens do post',
         ];
     }
-
+    
     public function mount()
     {
         $user = Auth::user();
@@ -93,30 +101,7 @@ class FeedPosts extends Component
             }
         }
     }
-
-    public function updatedNewlyUploadedImages()
-    {
-        $totalImages = count($this->images);
-        $newImagesCount = count($this->newlyUploadedImages);
-
-        if ($totalImages + $newImagesCount > 5) {
-            session()->flash('error_image', 'Você só pode adicionar um máximo de 5 imagens por post.');
-            $this->newlyUploadedImages = [];
-            return;
-        }
-
-        $this->images = array_merge($this->images, $this->newlyUploadedImages);
-        $this->newlyUploadedImages = [];
-    }
-
-    public function removeImage($index)
-    {
-        if (isset($this->images[$index])) {
-            unset($this->images[$index]);
-            $this->images = array_values($this->images);
-        }
-    }
-
+    
     public function updatedNewlyUploadedEditingImages()
     {
         $totalImages = count($this->editingPostImages);
@@ -149,15 +134,19 @@ class FeedPosts extends Component
 
         $this->validate();
 
-        if (empty(trim($this->newPostContent)) && empty($this->images)) {
-            session()->flash('error', 'O post deve ter texto ou imagem.');
+        if (empty(trim($this->newPostContent)) && is_null($this->media)) {
+            session()->flash('error', 'O post deve ter texto ou um arquivo anexado.');
             return;
         }
 
         $imagePaths = [];
-        foreach ($this->images as $image) {
-            if (is_object($image) && method_exists($image, 'store')) {
-                $imagePaths[] = $image->store('posts', 'public');
+        $filePath = null;
+
+        if ($this->media) {
+            $filePath = $this->media->store('posts', 'public');
+            
+            if (in_array($this->media->extension(), ['jpeg', 'png', 'jpg', 'gif'])) {
+                 $imagePaths[] = $filePath;
             }
         }
 
@@ -165,10 +154,10 @@ class FeedPosts extends Component
             'user_id' => Auth::id(),
             'course_id' => $this->newPostCourseId,
             'content' => $this->newPostContent,
-            'images' => $imagePaths,
+            'images' => $imagePaths, 
         ]);
 
-        $this->reset('newPostContent', 'newlyUploadedImages', 'images');
+        $this->reset('newPostContent', 'media'); 
         $this->dispatch('postCreated');
         $this->resetPage();
 
@@ -272,7 +261,7 @@ class FeedPosts extends Component
 
         $this->isCarouselOpen = false;
         $this->currentImageIndex = 0;
-        $this->dispatch('openPostModal');
+
     }
 
     public function closePostModal()
@@ -280,6 +269,8 @@ class FeedPosts extends Component
         $this->selectedPostId = null;
         $this->expandedPost = null;
         $this->isCarouselOpen = false;
+
+        $this->dispatch('close-post-modal');
     }
 
     public function openCarousel(int $imageIndex)

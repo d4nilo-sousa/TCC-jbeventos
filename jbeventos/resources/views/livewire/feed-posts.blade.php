@@ -23,37 +23,30 @@
                     <span class="text-red-500 text-sm">{{ $message }}</span>
                 @enderror
 
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    {{-- Upload --}}
-                    <div>
-                        <input type="file" wire:model="newlyUploadedImages" multiple accept="image/*"
-                            id="file-upload" class="hidden" @if (count($images) >= 5) disabled @endif>
-                        <label for="file-upload"
-                            class="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-full cursor-pointer hover:bg-red-700 transition font-semibold text-sm shadow-md">
-                            <i class="ph ph-image"></i> Adicionar Fotos (Máx. 5)
-                        </label>
+                <div class="flex items-center gap-3">
 
-                        @if (count($images) >= 5)
-                            <p class="text-xs text-yellow-600 mt-1">Limite máximo de 5 imagens atingido.</p>
-                        @endif
-                    </div>
-
-                    {{-- Preview --}}
-                    @if ($images)
-                        <div class="flex flex-wrap gap-2">
-                            @foreach ($images as $index => $image)
-                                <div class="relative w-20 h-20">
-                                    @if (is_object($image) && method_exists($image, 'temporaryUrl'))
-                                        <img src="{{ $image->temporaryUrl() }}" alt="Preview"
-                                            class="w-full h-full object-cover rounded-lg shadow">
-                                    @endif
-                                    <button type="button" wire:click="removeImage({{ $index }})"
-                                        class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full p-1 leading-none text-xs hover:bg-red-700">
-                                        &times;
-                                    </button>
-                                </div>
-                            @endforeach
+                    {{-- Campo de upload de mídia --}}
+                    <label for="media-upload" class="cursor-pointer">
+                        <div
+                            class="flex items-center gap-2 text-sm text-gray-600 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors shadow-sm">
+                            <i class="ph-fill ph-paperclip text-lg"></i>
+                            {{-- Exibe o nome do arquivo ou o texto padrão --}}
+                            <span
+                                class="truncate max-w-[150px] font-medium">{{ $media ? $media->getClientOriginalName() : 'Adicionar arquivo' }}</span>
                         </div>
+                        {{-- Input real do Livewire --}}
+                        <input type="file" id="media-upload" wire:model="media" class="hidden">
+                    </label>
+
+                    {{-- Informações do Arquivo e Botão de Remover --}}
+                    @if ($media)
+                        <span class="text-sm text-gray-500 whitespace-nowrap">
+                            ({{ number_format($media->getSize() / 1024 / 1024, 2) }} MB)
+                        </span>
+                        <button type="button" wire:click="$set('media', null)"
+                            class="text-red-400 hover:text-red-600 text-xs transition-colors" title="Remover arquivo">
+                            <i class="ph-fill ph-x-circle text-lg"></i>
+                        </button>
                     @endif
                 </div>
 
@@ -75,22 +68,6 @@
             class="feed-card bg-white rounded-2xl shadow-md border border-gray-100 p-5 space-y-4 relative transition hover:shadow-lg hover:border-red-300">
             <div wire:click="openPostModal({{ $post->id }})" class="cursor-pointer">
 
-                {{-- Ações --}}
-                @if (Auth::id() === $post->user_id)
-                    <div class="absolute top-3 right-3 flex gap-2 z-10">
-                        <button wire:click.stop="confirmPostDeletion({{ $post->id }})"
-                            class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition"
-                            title="Excluir Post">
-                            <i class="ph ph-trash text-lg"></i>
-                        </button>
-                        <button wire:click.stop="startEditPost({{ $post->id }})"
-                            class="p-2 text-gray-500 hover:text-blue-700 hover:bg-blue-50 rounded-full transition"
-                            title="Editar Post">
-                            <i class="ph ph-pencil-simple text-lg"></i>
-                        </button>
-                    </div>
-                @endif
-
                 <div class="flex items-start space-x-3 {{ Auth::id() === $post->user_id ? 'pt-6' : '' }}">
                     <img src="{{ $post->author->user_icon_url }}" alt="{{ $post->author->name }}"
                         class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 hover:border-red-500 transition shadow-sm">
@@ -111,26 +88,54 @@
                     </div>
                 </div>
 
-                <p class="text-gray-800 whitespace-pre-wrap leading-relaxed">{{ $post->content }}</p>
+                <div class="flex justify-between items-center border-t border-gray-100 pt-3 mt-5">
+                    {{-- A div de borda e justify-between original não fazia sentido sem itens no meio, 
+                    então simplifiquei a margem/padding para o conteúdo --}}
+                    <p class="text-gray-800 whitespace-pre-wrap leading-relaxed mb-2">{{ $post->content }}</p>
+                </div>
 
-                {{-- Imagens --}}
-                @if ($post->images && count($post->images) > 0)
-                    <div class="grid {{ count($post->images) == 1 ? 'grid-cols-1' : 'grid-cols-2' }} gap-2 mt-2">
-                        @foreach ($post->images as $imagePath)
-                            <div class="relative w-full h-48 overflow-hidden rounded-xl shadow-md cursor-pointer group"
-                                onclick="event.stopPropagation(); window.open('{{ asset('storage/' . $imagePath) }}')">
-                                <img src="{{ asset('storage/' . $imagePath) }}"
-                                    class="absolute inset-0 w-full h-full object-contain bg-gray-100 rounded-xl transition duration-300 group-hover:scale-105"
-                                    alt="Imagem do Post {{ $loop->index + 1 }}">
+                {{-- -------------------------------------------------------------------------------- --}}
+                {{-- Mídia do Post (Imagens, Vídeos ou Arquivos) --}}
+                {{-- Assumimos que o caminho do arquivo único está em $post->images[0] --}}
+                {{-- -------------------------------------------------------------------------------- --}}
+                @if (!empty($post->images) && count($post->images) > 0)
+                    @php
+                        // Pega o caminho do primeiro item do array de imagens
+                        $mediaPath = $post->images[0];
+                        $extension = strtolower(pathinfo($mediaPath, PATHINFO_EXTENSION));
+                    @endphp
+
+                    <div class="mt-3">
+                        @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
+                            {{-- Exibe Imagem --}}
+                            <div class="max-w-full rounded-xl shadow-md cursor-pointer group">
+                                {{-- ALTERAÇÃO AQUI: `w-full` e removemos `object-cover` e `h-full` fixo --}}
+                                <img src="{{ asset('storage/' . $mediaPath) }}"
+                                    class="w-full h-auto rounded-xl shadow-md border transition duration-300"
+                                    alt="Imagem anexada">
                             </div>
-                        @endforeach
+                        @elseif($extension === 'mp4')
+                            {{-- Exibe Vídeo --}}
+                            <video controls class="max-w-full rounded-xl shadow-md border">
+                                <source src="{{ asset('storage/' . $mediaPath) }}" type="video/mp4">
+                                Seu navegador não suporta a tag de vídeo.
+                            </video>
+                        @else
+                            {{-- Exibe Link para Outros Arquivos (PDF, DOC, ZIP, etc.) --}}
+                            <a href="{{ asset('storage/' . $mediaPath) }}" target="_blank"
+                                class="text-blue-600 hover:text-red-600 underline text-sm flex items-center gap-1 bg-gray-50 p-3 rounded-xl max-w-max transition-colors shadow-sm">
+                                <i class="ph-fill ph-file-text text-base"></i> Ver arquivo:
+                                **{{ pathinfo($mediaPath, PATHINFO_BASENAME) }}**
+                            </a>
+                        @endif
                     </div>
                 @endif
 
                 <div class="flex justify-between items-center border-t border-gray-100 pt-3 mt-3">
-                    <span class="text-sm font-medium text-gray-600 hover:text-red-600 transition cursor-pointer">
+                    <button type="button" class="text-sm font-medium text-gray-600 hover:text-red-600 transition"
+                        wire:click.stop="openPostModal({{ $post->id }})">
                         Ver {{ $post->replies->count() }} respostas
-                    </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -149,9 +154,10 @@
     {{-- MODAL DE EXPANSÃO (RESPOSTAS) --}}
     {{-- ============================================================ --}}
     @if ($selectedPostId && $expandedPost)
-        <div x-data="{ show: @entangle('selectedPostId').not(null) }" x-show="show" x-transition.opacity.duration.300ms
+        {{-- ALTERAÇÃO CRÍTICA: x-data="{ show: true }" e x-init simplificado --}}
+        <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms x-init="window.addEventListener('close-post-modal', () => show = false);"
             class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6"
-            aria-modal="true" role="dialog" wire:key="post-modal-{{ $expandedPost->id }}"
+            aria-modal="true" role="dialog" wire:key="post-modal-{{ $expandedPost->id }}" wire:ignore.self
             x-on:keydown.escape.window="$wire.closePostModal()">
 
             <div x-transition
@@ -162,7 +168,7 @@
                     class="sticky top-0 bg-white/95 backdrop-blur-sm p-4 border-b border-gray-100 z-10 flex justify-between items-center">
                     <h3 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
                         <i class="ph ph-chats text-red-600 text-2xl"></i>
-                        Detalhes do Post
+                        Respostas do Post
                     </h3>
                     <button wire:click="closePostModal"
                         class="text-gray-500 hover:text-red-600 transition p-2 rounded-full hover:bg-gray-100">
@@ -170,53 +176,16 @@
                     </button>
                 </div>
 
-                {{-- Corpo do Modal --}}
-                <div class="p-6 space-y-6">
-
-                    {{-- Autor --}}
-                    <div class="flex items-center gap-3">
-                        <img src="{{ $expandedPost->author->user_icon_url }}" alt="{{ $expandedPost->author->name }}"
-                            class="w-12 h-12 rounded-full object-cover border border-gray-200">
-                        <div>
-                            <h4 class="font-semibold text-gray-900 text-lg">{{ $expandedPost->author->name }}</h4>
-                            <p class="text-sm text-gray-500">
-                                {{ $expandedPost->created_at->format('d/m/Y H:i') }}
-                                @if ($expandedPost->course)
-                                    • <span
-                                        class="text-red-600 font-medium">{{ $expandedPost->course->course_name }}</span>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-
-                    {{-- Conteúdo --}}
-                    <p class="text-gray-800 text-base whitespace-pre-wrap leading-relaxed">
-                        {{ $expandedPost->content }}
-                    </p>
-
-                    {{-- Imagens --}}
-                    @if (!empty($expandedPost->images))
-                        <div
-                            class="grid {{ count($expandedPost->images) == 1 ? 'grid-cols-1' : 'grid-cols-2' }} gap-3">
-                            @foreach ($expandedPost->images as $index => $imagePath)
-                                <div class="relative w-full h-48 overflow-hidden rounded-xl shadow-md cursor-pointer group"
-                                    wire:click="openCarousel({{ $index }})">
-                                    <img src="{{ asset('storage/' . $imagePath) }}"
-                                        class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                                        alt="Imagem do Post {{ $index + 1 }}">
-                                    <div class="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition"></div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-
+                {{-- Corpo --}}
+                <div class="p-4 space-y-6">
                     {{-- Respostas --}}
-                    <h4 class="text-lg font-semibold text-gray-800 border-t border-gray-100 pt-4">
+                    <h4 class="text-lg font-semibold text-gray-800">
+                        {{-- A linha e a cor da borda foram removidas --}}
                         {{ $expandedPost->replies->count() }}
                         Resposta{{ $expandedPost->replies->count() != 1 ? 's' : '' }}
                     </h4>
 
-                    {{-- Formulário de resposta --}}
+                    {{-- Formulário --}}
                     <form wire:submit="createReply({{ $expandedPost->id }})" class="space-y-2">
                         <div class="flex gap-2">
                             <img src="{{ Auth::user()->user_icon_url }}" alt="{{ Auth::user()->name }}"
@@ -259,59 +228,6 @@
                             </p>
                         @endforelse
                     </div>
-
-                </div>
-            </div>
-        </div>
-    @endif
-
-    {{-- ============================================================ --}}
-    {{-- MODAL CARROSSEL (GALERIA) --}}
-    {{-- ============================================================ --}}
-    @if ($expandedPost && count($expandedPost->images) > 0)
-        <div x-data="{
-            isCarouselOpen: @entangle('isCarouselOpen'),
-            currentIndex: @entangle('currentImageIndex'),
-            images: @js($expandedPost->images),
-            next() { this.currentIndex = (this.currentIndex + 1) % this.images.length; },
-            prev() { this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length; },
-            init() {
-                document.addEventListener('keydown', (e) => {
-                    if (this.isCarouselOpen) {
-                        if (e.key === 'ArrowLeft') this.prev();
-                        else if (e.key === 'ArrowRight') this.next();
-                        else if (e.key === 'Escape') this.isCarouselOpen = false;
-                    }
-                });
-            }
-        }" x-show="isCarouselOpen" x-transition.opacity.duration.300ms
-            class="fixed inset-0 bg-black/90 backdrop-blur-sm z-[150] flex items-center justify-center p-4"
-            aria-modal="true" role="dialog" wire:ignore.self>
-
-            <div x-cloak class="relative w-full h-full max-w-7xl max-h-full flex items-center justify-center">
-                @foreach ($expandedPost->images as $index => $imagePath)
-                    <img x-show="currentIndex === {{ $index }}" x-transition
-                        src="{{ asset('storage/' . $imagePath) }}" alt="Imagem {{ $index + 1 }}"
-                        class="max-w-full max-h-full object-contain absolute inset-0 m-auto transition-all duration-300">
-                @endforeach
-
-                <button @click="prev()" x-show="images.length > 1"
-                    class="absolute left-4 p-3 bg-black/30 hover:bg-black/50 text-white rounded-full transition z-20">
-                    <i class="ph ph-caret-left text-3xl"></i>
-                </button>
-                <button @click="next()" x-show="images.length > 1"
-                    class="absolute right-4 p-3 bg-black/30 hover:bg-black/50 text-white rounded-full transition z-20">
-                    <i class="ph ph-caret-right text-3xl"></i>
-                </button>
-
-                <button @click="isCarouselOpen = false"
-                    class="absolute top-4 right-4 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full transition z-30">
-                    <i class="ph ph-x text-2xl"></i>
-                </button>
-
-                <div x-show="images.length > 1"
-                    class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white text-sm px-4 py-1 rounded-full">
-                    <span x-text="currentIndex + 1"></span> / <span x-text="images.length"></span>
                 </div>
             </div>
         </div>
