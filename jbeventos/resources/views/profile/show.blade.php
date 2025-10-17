@@ -200,7 +200,7 @@
                                         <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
                                             <i class="ph ph-package text-4xl text-gray-400"></i>
                                             <p class="text-gray-500 text-sm mt-2">Você ainda não criou nenhum evento. Está na hora de começar!</p>
-                                            <a href="{{ route('coordinator.events.create') }}" class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                            <a href="{{ route('events.create') }}" class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
                                                 <i class="ph ph-plus-circle text-sm mr-1"></i> Crie seu primeiro evento!
                                             </a>
                                         </div>
