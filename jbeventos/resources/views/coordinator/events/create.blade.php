@@ -4,8 +4,8 @@
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
                 {{-- Título da Página --}}
                 <div class="flex flex-col items-center justify-center mb-10 text-center">
-                    <div class="p-3 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-red-600" viewBox="0 0 256 256" fill="currentColor">
+                    <div class="p-4 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center w-16 h-16">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600" viewBox="0 0 256 256" fill="currentColor">
                             <path
                                 d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48V56a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"
                             />
@@ -49,31 +49,57 @@
                         </div>
                     </div>
                 @else
-                    {{-- Barra de navegação das abas --}}
-                    <div class="flex justify-center mb-8">
-                        <div class="flex items-center space-x-4">
+                    {{-- BARRA DE NAVEGAÇÃO DAS ABAS --}}
+                    <div class="flex items-center justify-center mb-10 text-center">
+                        <div class="flex items-center space-x-2 sm:space-x-4">
+                            {{-- Aba 1: Mídias --}}
                             <button type="button" data-tab-target="tab-media"
-                                class="tab-button active flex items-center space-x-2 text-red-400 font-medium transition-colors duration-200">
+                                class="tab-button active flex flex-col items-center group transition-colors duration-300">
                                 <span
-                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-red-300 text-red-500 transition-colors duration-200">1</span>
-                                <span class="hidden sm:inline">Mídias</span>
+                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-300 bg-white text-gray-500 transition-all duration-300 
+                                    group-[.active]:bg-red-600 group-[.active]:border-red-600 group-[.active]:text-white">
+                                    1
+                                </span>
+                                <span
+                                    class="mt-2 text-xs font-medium text-gray-500 group-[.active]:text-red-600 hidden sm:inline">
+                                    Mídias
+                                </span>
                             </button>
-                            <span class="w-16 h-px bg-gray-300"></span>
+
+                            <span class="w-8 h-px bg-gray-300 transition-colors duration-300"></span>
+
+                            {{-- Aba 2: Informações --}}
                             <button type="button" data-tab-target="tab-info"
-                                class="tab-button flex items-center space-x-2 text-gray-400 font-medium transition-colors duration-200">
+                                class="tab-button inactive flex flex-col items-center group transition-colors duration-300">
                                 <span
-                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-red-300 text-red-500 transition-colors duration-200">2</span>
-                                <span class="hidden sm:inline">Informações</span>
+                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-300 bg-white text-gray-500 transition-all duration-300 
+                                    group-[.active]:bg-red-600 group-[.active]:border-red-600 group-[.active]:text-white">
+                                    2
+                                </span>
+                                <span
+                                    class="mt-2 text-xs font-medium text-gray-500 group-[.active]:text-red-600 hidden sm:inline">
+                                    Informações
+                                </span>
                             </button>
-                            <span class="w-16 h-px bg-gray-300"></span>
+
+                            <span class="w-8 h-px bg-gray-300 transition-colors duration-300"></span>
+
+                            {{-- Aba 3: Detalhes --}}
                             <button type="button" data-tab-target="tab-details"
-                                class="tab-button flex items-center space-x-2 text-red-400 font-medium transition-colors duration-200">
+                                class="tab-button inactive flex flex-col items-center group transition-colors duration-300">
                                 <span
-                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-red-300 text-red-500 transition-colors duration-200">3</span>
-                                <span class="hidden sm:inline">Detalhes</span>
+                                    class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-300 bg-white text-gray-500 transition-all duration-300 
+                                    group-[.active]:bg-red-600 group-[.active]:border-red-600 group-[.active]:text-white">
+                                    3
+                                </span>
+                                <span
+                                    class="mt-2 text-xs font-medium text-gray-500 group-[.active]:text-red-600 hidden sm:inline">
+                                    Detalhes
+                                </span>
                             </button>
                         </div>
                     </div>
+
 
                     {{-- Formulário de Criação --}}
                     <form id="event-form" action="{{ route('events.store') }}" method="POST"
@@ -83,7 +109,6 @@
                         {{-- Aba 1: Mídias --}}
                         <div id="tab-media" class="tab-content active space-y-6">
                             <h3 class="text-xl font-semibold text-gray-700 border-b pb-2">Imagens do Evento</h3>
-
                             <div>
                                 <label for="event_image" class="block font-medium text-gray-700 mb-2">Imagem de
                                     Capa</label>

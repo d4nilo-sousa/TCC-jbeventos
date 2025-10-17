@@ -316,3 +316,175 @@
 </x-app-layout>
 
 @vite('resources/js/app.js')
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab-content');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const nextButtons = document.querySelectorAll('.next-button');
+        const prevButtons = document.querySelectorAll('.prev-button');
+
+        // Função para atualizar o estado visual das abas
+        function updateTabState(button, isActive) {
+            const circle = button.querySelector('span:first-child');
+            const text = button.querySelector('span:last-child');
+
+            if (isActive) {
+                // Estado Ativo (Vermelho)
+                circle.classList.add('border-red-500', 'bg-red-500', 'text-white');
+                circle.classList.remove('border-gray-300', 'bg-white', 'text-gray-500');
+                text.classList.add('text-red-600', 'font-medium');
+                text.classList.remove('text-gray-600');
+            } else {
+                // Estado Inativo (Cinza)
+                circle.classList.remove('border-red-500', 'bg-red-500', 'text-white');
+                circle.classList.add('border-gray-300', 'bg-white', 'text-gray-500');
+                text.classList.remove('text-red-600', 'font-medium');
+                text.classList.add('text-gray-600');
+            }
+        }
+
+        // Função para exibir a aba desejada
+        function showTab(tabId) {
+            tabs.forEach(tab => tab.classList.add('hidden'));
+            const activeTab = document.getElementById(tabId);
+            if (activeTab) {
+                activeTab.classList.remove('hidden');
+            }
+
+            tabButtons.forEach(button => {
+                const isActive = button.dataset.tabTarget === tabId;
+                updateTabState(button, isActive);
+            });
+
+            // Rola para o topo da página ao trocar de aba
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Navegação para a próxima aba
+        nextButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const currentTab = button.closest('.tab-content');
+                const nextTabId = button.dataset.nextTab;
+
+                // Validação dos campos obrigatórios visíveis na aba atual
+                const inputs = currentTab?.querySelectorAll('input:required, textarea:required, select:required');
+                let allInputsValid = true;
+
+                if (inputs) {
+                    for (const input of inputs) {
+                        // Verifica se o campo está visível e vazio
+                        if (!input.value.trim() && !input.getAttribute('disabled')) {
+                            input.focus();
+                            allInputsValid = false;
+                            break;
+                        }
+                    }
+                }
+
+                // Se todos os campos estiverem válidos, vá para a próxima aba
+                if (allInputsValid && nextTabId) {
+                    showTab(nextTabId);
+                } else if (!allInputsValid) {
+                    // Força a exibição das mensagens de validação do HTML5
+                    const form = document.getElementById('event-edit-form'); // Assumindo 'event-edit-form' como ID do formulário de eventos
+                    if (form) {
+                        form.reportValidity();
+                    }
+                }
+            });
+        });
+
+        // Navegação para a aba anterior
+        prevButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const prevTabId = button.dataset.prevTab;
+                if (prevTabId) {
+                    showTab(prevTabId);
+                }
+            });
+        });
+
+        // Navegação por clique nos botões de aba (círculos 1 e 2)
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const target = button.dataset.tabTarget;
+                if (target) {
+                    // Permite trocar de aba apenas clicando (sem validação forçada)
+                    showTab(target);
+                }
+            });
+        });
+
+        // Lógica para pré-visualização de novas imagens
+        function setupImagePreview(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const previewContainer = document.getElementById(previewId);
+
+            if (input) {
+                input.addEventListener('change', function() {
+                    previewContainer.innerHTML = ''; // Limpa previews antigos
+                    
+                    // Remove o preview da imagem existente ao carregar uma nova
+                    const existingPreview = document.getElementById(`existing-${inputId.replace('event_', '')}-preview`);
+                    if (existingPreview) {
+                        existingPreview.remove(); 
+                    }
+                    
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        const reader = new FileReader();
+
+                        reader.onload = function(e) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.alt = file.name;
+                            img.className = 'w-32 h-32 object-cover rounded-md border border-gray-200 shadow-sm';
+                            
+                            const nameSpan = document.createElement('span');
+                            nameSpan.className = 'text-sm text-gray-600 mt-2 truncate max-w-full';
+                            nameSpan.textContent = file.name;
+
+                            const fileWrapper = document.createElement('div');
+                            fileWrapper.className = 'flex flex-col items-center p-2';
+                            fileWrapper.appendChild(img);
+                            fileWrapper.appendChild(nameSpan);
+                            
+                            previewContainer.appendChild(fileWrapper);
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        }
+        
+        setupImagePreview('event_icon', 'event_icons_preview'); // Adapte para o ID do ícone de evento
+        setupImagePreview('event_banner', 'event_banners_preview'); // Adapte para o ID do banner de evento
+        
+        // Lógica para remover imagem existente
+        window.removeExistingImage = function(button, filePath, type) {
+            const container = button.closest('div');
+            // Adapte o ID do input oculto para `remove_event_icon` e `remove_event_banner`
+            const inputId = `remove_event_${type}_input`; 
+            const hiddenInput = document.getElementById(inputId);
+
+            if (confirm(`Tem certeza que deseja remover a imagem ${type}?`)) {
+                // Remove o container de pré-visualização da imagem existente
+                container.remove();
+
+                // Marca o campo oculto para indicar que a imagem deve ser removida no backend
+                hiddenInput.value = '1';
+
+            }
+        }
+
+
+        // Inicializa a primeira aba ao carregar a página
+        if (document.getElementById('tab1')) {
+            showTab('tab1');
+        }
+    });
+</script>
