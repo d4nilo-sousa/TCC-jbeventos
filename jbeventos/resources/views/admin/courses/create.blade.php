@@ -3,16 +3,12 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
                 {{-- Título da Página --}}
-                <div class="flex flex-col items-center justify-center mb-10 text-center">
+                 <div class="flex flex-col items-center justify-center mb-10 text-center">
                     <div class="p-3 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-red-600" viewBox="0 0 256 256"
-                            fill="currentColor">
-                            <path
-                                d="M216,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM40,64H128v48H40Zm136,112H56V136h120v40Zm40-112H168v48h48Z" />
-                        </svg>
+                        <i class="ph ph-book-bookmark text-red-600 text-4xl"></i>
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-800">Criar Novo Curso</h1>
-                    <p class="mt-2 text-gray-600">Preencha o formulário abaixo para adicionar um novo curso ao sistema.</p>
+                    <h1 class="text-3xl font-bold text-gray-800">Criar Curso</h1>
+                    <p class="mt-2 text-gray-600">Crie um novo curso e preencha as suas informações.</p>
                 </div>
 
                 {{-- Exibição de erros --}}
