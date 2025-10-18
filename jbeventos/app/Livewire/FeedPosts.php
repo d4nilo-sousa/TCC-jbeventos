@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Post;
 use App\Models\Course;
+use App\Models\Reply; 
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
@@ -11,7 +12,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile; 
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class FeedPosts extends Component
 {
@@ -26,29 +27,28 @@ class FeedPosts extends Component
     public $isCarouselOpen = false;
     public $currentImageIndex = 0;
 
-    // --- PROPRIEDADES DE POSTAGEM (ATUALIZADAS) ---
+    // --- PROPRIEDADES DE CRIAÇÃO DE POST ---
     public $isCoordinator = false;
     public $newPostContent = '';
-    
-    // PROPRIEDADE MEDIA ADICIONADA: AGORA O COMPONENTE SABE O QUE É $media
     /** @var TemporaryUploadedFile|null */
-    public $media = null; 
-    
-    // Estas propriedades não são mais necessárias para o novo upload único
-    // public $newlyUploadedImages = []; 
-    // public $images = []; 
-    
+    public $media = null;
     public $newPostCourseId = null;
     public Collection $coordinatorCourses;
-    // ---------------------------------------------
 
+    // --- PROPRIEDADES DE EDIÇÃO DE POST ---
     public ?int $editingPostId = null;
     public $editingPostContent = '';
-    public $newlyUploadedEditingImages = [];
-    public $editingPostImages = [];
-    public $originalPostImages = [];
+    /** @var TemporaryUploadedFile|null */
+    public $editingMedia = null;
+    public $originalMediaPath = null;
 
     public ?int $confirmingPostDeletionId = null;
+
+    // --- PROPRIEDADES NOVAS PARA EDIÇÃO/EXCLUSÃO DE RESPOSTA ---
+    public ?int $editingReplyId = null;
+    public $editingReplyContent = '';
+    public ?int $confirmingReplyDeletionId = null;
+    // -----------------------------------------------------------
 
     protected function rules()
     {
@@ -56,15 +56,19 @@ class FeedPosts extends Component
             'newReplyContent.*' => 'required|string|min:2|max:500',
         ];
 
+        // NOVO: Regra de validação para o conteúdo da edição da resposta
+        if ($this->editingReplyId) {
+            $rules['editingReplyContent'] = 'required|string|min:2|max:500';
+        }
+
         if ($this->isCoordinator) {
             $rules['newPostContent'] = 'nullable|string|max:5000';
-            $rules['media'] = 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip'; 
+            $rules['media'] = 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip';
         }
 
         if ($this->editingPostId) {
             $rules['editingPostContent'] = 'nullable|string|max:5000';
-            $rules['editingPostImages'] = 'nullable|array|max:5';
-            $rules['newlyUploadedEditingImages.*'] = 'nullable|image|max:1024';
+            $rules['editingMedia'] = 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip';
         }
 
         return $rules;
@@ -73,11 +77,12 @@ class FeedPosts extends Component
     protected function validationAttributes()
     {
         return [
-            'media' => 'arquivo anexado', 
-            'editingPostImages' => 'imagens do post',
+            'media' => 'arquivo anexado',
+            'editingMedia' => 'novo arquivo anexado',
+            'editingReplyContent' => 'conteúdo da resposta', // NOVO
         ];
     }
-    
+
     public function mount()
     {
         $user = Auth::user();
@@ -101,30 +106,8 @@ class FeedPosts extends Component
             }
         }
     }
-    
-    public function updatedNewlyUploadedEditingImages()
-    {
-        $totalImages = count($this->editingPostImages);
-        $newImagesCount = count($this->newlyUploadedEditingImages);
 
-        if ($totalImages + $newImagesCount > 5) {
-            session()->flash('error_edit_image', 'Você só pode ter um máximo de 5 imagens no post.');
-            $this->newlyUploadedEditingImages = [];
-            return;
-        }
-
-        $this->editingPostImages = array_merge($this->editingPostImages, $this->newlyUploadedEditingImages);
-        $this->newlyUploadedEditingImages = [];
-    }
-
-    public function removeEditingImage($index)
-    {
-        if (isset($this->editingPostImages[$index])) {
-            unset($this->editingPostImages[$index]);
-            $this->editingPostImages = array_values($this->editingPostImages);
-        }
-    }
-
+    // Método para CRIAR POST (mantido)
     public function createPost()
     {
         if (!$this->isCoordinator || !$this->newPostCourseId) {
@@ -144,25 +127,25 @@ class FeedPosts extends Component
 
         if ($this->media) {
             $filePath = $this->media->store('posts', 'public');
-            
-            if (in_array($this->media->extension(), ['jpeg', 'png', 'jpg', 'gif'])) {
-                 $imagePaths[] = $filePath;
-            }
+
+            $imagePaths[] = $filePath;
         }
 
         Post::create([
             'user_id' => Auth::id(),
             'course_id' => $this->newPostCourseId,
             'content' => $this->newPostContent,
-            'images' => $imagePaths, 
+            'images' => $imagePaths,
         ]);
 
-        $this->reset('newPostContent', 'media'); 
+        $this->reset('newPostContent', 'media');
         $this->dispatch('postCreated');
         $this->resetPage();
 
         session()->flash('success', 'Post criado com sucesso!');
     }
+
+    // --- MÉTODOS DE EDIÇÃO ATUALIZADOS PARA ARQUIVO ÚNICO ---
 
     public function startEditPost(int $postId)
     {
@@ -170,8 +153,10 @@ class FeedPosts extends Component
 
         $this->editingPostId = $post->id;
         $this->editingPostContent = $post->content;
-        $this->editingPostImages = $post->images ?? [];
-        $this->originalPostImages = $post->images ?? [];
+
+        $this->originalMediaPath = !empty($post->images) ? $post->images[0] : null;
+
+        $this->editingMedia = null;
 
         $this->dispatch('openEditModal');
     }
@@ -181,27 +166,25 @@ class FeedPosts extends Component
         $post = Post::where('user_id', Auth::id())->findOrFail($this->editingPostId);
 
         $this->validate([
-            'editingPostContent' => $this->rules()['editingPostContent'],
-            'editingPostImages' => $this->rules()['editingPostImages'],
-            'newlyUploadedEditingImages.*' => $this->rules()['newlyUploadedEditingImages.*'],
+            'editingPostContent' => 'nullable|string|max:5000',
+            'editingMedia' => 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip',
         ]);
 
-        $currentImages = [];
-        $newUploads = [];
+        $finalImages = [];
+        $shouldDeleteOriginal = false;
 
-        foreach ($this->editingPostImages as $image) {
-            if (is_object($image) && method_exists($image, 'store')) {
-                $newUploads[] = $image->store('posts', 'public');
-            } elseif (is_string($image)) {
-                $currentImages[] = $image;
-            }
+        if ($this->editingMedia) {
+            $newPath = $this->editingMedia->store('posts', 'public');
+            $finalImages = [$newPath];
+            $shouldDeleteOriginal = !is_null($this->originalMediaPath);
+        } elseif (!is_null($this->originalMediaPath)) {
+            $finalImages = [$this->originalMediaPath];
         }
 
-        $finalImages = array_merge($currentImages, $newUploads);
-
-        $imagesToDelete = array_diff($this->originalPostImages, $currentImages);
-        if (!empty($imagesToDelete)) {
-            Storage::disk('public')->delete($imagesToDelete);
+        if ($shouldDeleteOriginal && $this->originalMediaPath) {
+            Storage::disk('public')->delete($this->originalMediaPath);
+        } elseif (is_null($this->originalMediaPath) && !is_null($post->images)) {
+            Storage::disk('public')->delete($post->images);
         }
 
         $post->update([
@@ -214,17 +197,24 @@ class FeedPosts extends Component
         $this->resetPage();
     }
 
+    public function removeEditingMedia()
+    {
+        $this->originalMediaPath = null;
+        $this->editingMedia = null;
+    }
+
     public function resetEditModal()
     {
         $this->reset([
             'editingPostId',
             'editingPostContent',
-            'editingPostImages',
-            'originalPostImages',
-            'newlyUploadedEditingImages',
+            'editingMedia',
+            'originalMediaPath',
         ]);
         $this->dispatch('closeEditModal');
     }
+
+    // --- MÉTODOS DE EXCLUSÃO DE POST ---
 
     public function confirmPostDeletion(int $postId)
     {
@@ -253,6 +243,8 @@ class FeedPosts extends Component
         }
     }
 
+    // --- MÉTODOS DE MODAL DE POST ---
+
     public function openPostModal(int $postId)
     {
         $this->selectedPostId = $postId;
@@ -262,6 +254,9 @@ class FeedPosts extends Component
         $this->isCarouselOpen = false;
         $this->currentImageIndex = 0;
 
+        // NOVO: Reseta o estado de edição/exclusão da resposta ao abrir o modal
+        $this->resetEditReply();
+        $this->confirmingReplyDeletionId = null;
     }
 
     public function closePostModal()
@@ -269,6 +264,10 @@ class FeedPosts extends Component
         $this->selectedPostId = null;
         $this->expandedPost = null;
         $this->isCarouselOpen = false;
+
+        // NOVO: Reseta o estado de edição/exclusão da resposta ao fechar
+        $this->resetEditReply();
+        $this->confirmingReplyDeletionId = null;
 
         $this->dispatch('close-post-modal');
     }
@@ -282,6 +281,8 @@ class FeedPosts extends Component
         $this->currentImageIndex = $imageIndex;
         $this->isCarouselOpen = true;
     }
+
+    // --- MÉTODOS DE RESPOSTA (REPLY) ---
 
     public function createReply($postId)
     {
@@ -310,12 +311,105 @@ class FeedPosts extends Component
         $this->dispatch('replyCreated');
     }
 
+    // ==========================================================
+    // MÉTODOS NOVOS PARA EDIÇÃO E EXCLUSÃO DE RESPOSTA (REPLY)
+    // ==========================================================
+
+    /**
+     * Inicia o modo de edição para uma resposta específica.
+     */
+    public function startEditReply(int $replyId)
+    {
+        $reply = Reply::where('user_id', Auth::id())->findOrFail($replyId);
+
+        $this->editingReplyId = $replyId;
+        $this->editingReplyContent = $reply->content;
+    }
+
+    /**
+     * Salva o conteúdo editado da resposta.
+     */
+    public function saveEditReply()
+    {
+        $this->validate([
+            'editingReplyContent' => 'required|string|min:2|max:500',
+        ]);
+
+        $reply = Reply::where('user_id', Auth::id())->findOrFail($this->editingReplyId);
+
+        $reply->content = $this->editingReplyContent;
+        $reply->save();
+
+        session()->flash('success', 'Resposta editada com sucesso!');
+
+        // Atualiza a lista de respostas no modal
+        $this->expandedPost->refresh();
+
+        $this->resetEditReply();
+    }
+
+    /**
+     * Reseta as propriedades de edição de resposta.
+     */
+    public function resetEditReply()
+    {
+        $this->reset([
+            'editingReplyId',
+            'editingReplyContent',
+        ]);
+    }
+
+    /**
+     * Abre o modal de confirmação para exclusão de resposta.
+     */
+    public function confirmReplyDeletion(int $replyId)
+    {
+        $this->confirmingReplyDeletionId = $replyId;
+    }
+
+    /**
+     * Executa a exclusão da resposta.
+     * Permite que o dono da resposta ou o dono do post excluam.
+     */
+    public function deleteReply()
+    {
+        $replyId = $this->confirmingReplyDeletionId;
+        if (!$replyId) return;
+
+        $reply = Reply::with('post')->find($replyId);
+
+        if (!$reply) {
+            session()->flash('error', 'Resposta não encontrada.');
+            $this->confirmingReplyDeletionId = null;
+            return;
+        }
+
+        // Permite deletar se for dono da resposta ou dono do post
+        if ($reply->user_id !== auth()->id() && $reply->post->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $reply->delete();
+
+        session()->flash('success', 'Resposta excluída com sucesso!');
+
+        $this->confirmingReplyDeletionId = null;
+
+        // Atualiza a lista de respostas no modal
+        if ($this->expandedPost) {
+            $this->expandedPost = $this->expandedPost->fresh(['replies.author']);
+        }
+
+        $this->resetPage();
+    }
+    // ==========================================================
+
     #[On('postCreated')]
     public function render()
     {
         $posts = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies'])
             ->latest()
-            ->paginate(5);
+            ->get();
 
         $feedItems = $posts->map(function ($post) {
             $post->type = 'post';
@@ -326,6 +420,11 @@ class FeedPosts extends Component
         if ($this->selectedPostId && !$this->expandedPost) {
             $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
                 ->findOrFail($this->selectedPostId);
+        }
+
+        // NOVO: Garantir que a propriedade editingReplyContent seja definida se estiver editando
+        if ($this->editingReplyId && empty($this->editingReplyContent)) {
+            $this->startEditReply($this->editingReplyId);
         }
 
         return view('livewire.feed-posts', [

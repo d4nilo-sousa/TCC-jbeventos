@@ -1,12 +1,10 @@
 <x-app-layout title="Feed Principal">
     @push('styles')
         <style>
-            /* Estilos básicos para o feed */
             .reaction-button {
                 transition: color 0.15s ease-in-out, transform 0.1s ease-in-out;
                 padding: 0.5rem;
                 border-radius: 9999px;
-                /* Arredondado completo */
             }
 
             .reaction-button:hover {
@@ -19,19 +17,21 @@
 
             .feed-card {
                 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                width: 100%;
+                /* Preenche 100% da coluna */
+                max-width: none;
+                /* Remove limite fixo */
             }
-
-            /* O CSS do modal foi movido para o Tailwind (classes 'opacity-0' e 'scale-95') para melhor performance */
         </style>
     @endpush
 
     <div class="py-10 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-16 space-y-6">
+        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
             <div class="bg-white shadow rounded-xl p-4 sm:p-6 border border-gray-200">
                 <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
                 <p class="text-gray-600">
-                    Descubra eventos importantes e posts das áreas que você segue.
+                    Fique por dentro dos eventos e posts disponíveis no sistema.
                 </p>
             </div>
 
@@ -43,131 +43,120 @@
 
             @if ($events->isNotEmpty() || true)
                 {{-- LAYOUT PRINCIPAL DE DUAS COLUNAS --}}
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="grid grid-cols-1 lg:grid-cols-[64%_36%] gap-8">
 
-                    {{-- COLUNA ESQUERDA: EVENTOS --}}
                     <div class="space-y-6">
                         <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2 flex items-center">
                             <i class="ph ph-calendar-blank bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i>
                             Eventos
                         </h2>
-                        @forelse ($events as $item)
-                            <div id="event-{{ $item->id }}"
-                                class="feed-card w-full bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-red-200 flex flex-col">
 
-                                {{-- Imagem --}}
-                                <a href="{{ route('events.show', $item) }}" class="block">
-                                    <div class="relative w-full aspect-video bg-gray-200">
-                                        @if ($item->event_image)
-                                            <img class="w-full h-full object-cover"
-                                                src="{{ asset('storage/' . $item->event_image) }}"
-                                                alt="{{ $item->event_name }}" loading="lazy">
-                                        @else
-                                            <div
-                                                class="flex flex-col items-center justify-center w-full h-full text-red-500">
-                                                <i class="ph-bold ph-calendar-blank text-6xl"></i>
-                                                <p class="mt-2 text-sm">Evento Sem Imagem</p>
-                                            </div>
-                                        @endif
-                                        <span
-                                            class="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                                            {{ $item->event_type === 'course' ? 'CURSO' : ($item->event_type === 'general' ? 'GERAL' : '') }}
-                                        </span>
-                                    </div>
-                                </a>
+                        @php
+                            // Define a altura máxima do container (em pixels ou vh)
+                            $maxHeight = '115vh';
+                        @endphp
 
-                                {{-- Conteúdo --}}
-                                <div class="p-6 flex flex-col gap-2"> <!-- gap-4 → gap-2 -->
-                                    <div class="flex items-center mb-1 text-sm text-gray-500"> <!-- mb-3 → mb-1 -->
-                                        <i class="ph-fill ph-graduation-cap mr-2 text-red-500"></i>
-                                        Coordenador: <span class="font-semibold text-gray-800 ml-1">
-                                            @php
-                                                // 1. Pega o nome do Coordenador que criou o evento (eventCoordinator)
-                                                $coordenadorNome = optional(optional($item->eventCoordinator)->userAccount)->name;
-                                                
-                                                // 2. Pega o nome do Curso associado ao evento (eventCourse)
-                                                $cursoNome = optional($item->eventCourse)->course_name;
-                                            @endphp
-                                            
-                                            {{-- Exibe o nome do Coordenador Criador, se não, o nome do Curso, se não, o fallback --}}
-                                            {{ $coordenadorNome ?? $cursoNome ?? 'Curso não definido' }}
-                                        </span>
-                                    </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto"
+                            style="max-height: {{ $maxHeight }};">
+                            @forelse ($events as $item)
+                                <div id="event-{{ $item->id }}"
+                                    class="feed-card w-full sm:w-[95%] bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-red-200 flex flex-col">
 
+                                    <!-- IMAGEM DO EVENTO -->
                                     <a href="{{ route('events.show', $item) }}" class="block">
-                                        <h2 class="text-2xl font-bold text-gray-900 hover:text-red-600 transition">
-                                            {{ $item->event_name }}
-                                        </h2>
+                                        <div class="relative w-full aspect-video bg-gray-200">
+                                            @if ($item->event_image)
+                                                <img class="w-full h-full object-cover"
+                                                    src="{{ asset('storage/' . $item->event_image) }}"
+                                                    alt="{{ $item->event_name }}" loading="lazy">
+                                            @else
+                                                <div
+                                                    class="flex flex-col items-center justify-center w-full h-full text-red-500">
+                                                    <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                    <p class="mt-2 text-sm">Evento Sem Imagem</p>
+                                                </div>
+                                            @endif
+                                            <span
+                                                class="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                                                {{ $item->event_type === 'course' ? 'CURSO' : ($item->event_type === 'general' ? 'GERAL' : '') }}
+                                            </span>
+                                        </div>
                                     </a>
 
-                                <div class="flex flex-wrap gap-2 mt-1  text-sm"> <!-- text-xs → text-sm -->
-                                    @forelse ($item->eventCategories as $category)
-                                        <span
-                                            class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full border border-gray-200 mb-3">
-                                            <!-- px-2 py-1 → px-3 py-2 -->
-                                            {{ $category->category_name }}
-                                        </span>
-                                    @empty
-                                        <span
-                                            class="bg-gray-100 text-gray-700 px-3 py-2 rounded-full border border-gray-200">
-                                            Sem Categoria
-                                        </span>
-                                    @endforelse
-                                </div>
+                                    <!-- CONTEÚDO -->
+                                    <div class="p-6 flex flex-col gap-2">
+                                        <div class="flex items-center mb-1 text-sm text-gray-500">
+                                            <i class="ph-fill ph-graduation-cap mr-2 text-red-500"></i>
+                                            Coordenador: <span class="font-semibold text-gray-800 ml-1">
+                                                {{ optional(optional($item->eventCoordinator)->userAccount)->name ?? (optional($item->eventCourse)->course_name ?? 'Curso não definido') }}
+                                            </span>
+                                        </div>
 
-                                {{-- Datas e Local --}}
+                                        <a href="{{ route('events.show', $item) }}" class="block">
+                                            <h2 class="text-2xl font-bold text-gray-900 hover:text-red-600 transition">
+                                                {{ $item->event_name }}</h2>
+                                        </a>
+
+                                        <div class="flex flex-wrap gap-2 mt-1 text-sm">
+                                            @forelse ($item->eventCategories as $category)
+                                                <span
+                                                    class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full border border-gray-200 mb-3">{{ $category->category_name }}</span>
+                                            @empty
+                                                <span
+                                                    class="bg-gray-100 text-gray-700 px-3 py-2 rounded-full border border-gray-200">Sem
+                                                    Categoria</span>
+                                            @endforelse
+                                        </div>
+
+                                        <div
+                                            class="flex flex-col gap-2 text-sm text-gray-600 border-t border-gray-100 pt-4">
+                                            <div class="flex items-center gap-2">
+                                                <i class="ph-fill ph-map-pin text-red-600 text-lg"></i>
+                                                <span>{{ $item->event_location }}</span>
+                                            </div>
+
+                                            <div class="flex items-center gap-2">
+                                                <i class="ph-fill ph-calendar-check text-red-600 text-lg"></i>
+                                                <span>{{ \Carbon\Carbon::parse($item->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            @empty
                                 <div
-                                    class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 border-t border-gray-100 pt-4">
-                                    <!-- Local e Data -->
-                                    <div class="flex items-center gap-2">
-                                        <i class="ph-fill ph-map-pin text-red-600 text-lg"></i>
-                                        <span>{{ $item->event_location }}</span>
-                                    </div>
-                                    <br>
-                                    <div class="flex items-center gap-2">
-                                        <i class="ph-fill ph-calendar-check text-red-600 text-lg"></i>
-                                        <span>{{ \Carbon\Carbon::parse($item->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}</span>
-                                    </div>
+                                    class="p-4 bg-white rounded-xl shadow border border-gray-100 text-center text-gray-500 col-span-2">
+                                    Nenhum evento para exibir.
                                 </div>
-                            </div>
+                            @endforelse
+                        </div>
                     </div>
-                @empty
-                    <div class="p-4 bg-white rounded-xl shadow border border-gray-100 text-center text-gray-500">
-                        Nenhum evento para exibir.
+                    {{-- COLUNA DIREITA: POSTS (Gerenciada pelo Livewire) --}}
+                    <div class="space-y-6">
+                        <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2 flex items-center">
+                            <i class="ph ph-article bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Posts
+                        </h2>
+
+                        {{-- INTEGRAÇÃO LIVEWIRE: O componente Livewire FeedPosts fará o formulário, loop e a paginação dos posts --}}
+                        @livewire('feed-posts')
                     </div>
-            @endforelse
+
+                </div>
+            @else
+                {{-- MENSAGEM QUANDO NÃO HOUVER ITENS (Fallback: só há posts ou nada) --}}
+                <div class="max-w-2xl mx-auto space-y-6">
+                    <div class="text-center py-10 bg-white rounded-xl shadow-lg border border-gray-200">
+                        <i class="ph-bold ph-magnifying-glass text-5xl text-gray-400 mb-4"></i>
+                        <p class="text-xl font-semibold text-gray-700">Nenhum conteúdo no feed.</p>
+                        <p class="text-gray-500 mt-2">Parece que ainda não há eventos recentes. Tente explorar novos
+                            cursos!</p>
+
+                        {{-- Chamada do Livewire para garantir que pelo menos o post form e posts apareçam --}}
+                        <div class="mt-6">@livewire('feed-posts')</div>
+                    </div>
+                </div>
+            @endif
         </div>
-
-        {{-- COLUNA DIREITA: POSTS (Gerenciada pelo Livewire) --}}
-        <div class="space-y-6">
-            <h2 class="text-2xl font-bold text-gray-800 border-b border-gray-200 pb-2 flex items-center">
-                <i class="ph ph-article bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Posts
-            </h2>
-
-            {{-- INTEGRAÇÃO LIVEWIRE: O componente Livewire FeedPosts fará o formulário, loop e a paginação dos posts --}}
-            @livewire('feed-posts')
-        </div>
-
-    </div>
-@else
-    {{-- MENSAGEM QUANDO NÃO HOUVER ITENS (Fallback: só há posts ou nada) --}}
-    <div class="max-w-2xl mx-auto space-y-6">
-        <div class="text-center py-10 bg-white rounded-xl shadow-lg border border-gray-200">
-            <i class="ph-bold ph-magnifying-glass text-5xl text-gray-400 mb-4"></i>
-            <p class="text-xl font-semibold text-gray-700">Nenhum conteúdo no feed.</p>
-            <p class="text-gray-500 mt-2">Parece que ainda não há eventos recentes. Tente explorar novos
-                cursos!</p>
-
-            {{-- Chamada do Livewire para garantir que pelo menos o post form e posts apareçam --}}
-            <div class="mt-6">@livewire('feed-posts')</div>
-        </div>
-    </div>
-    @endif
-
-    <div class="text-center py-6 text-gray-500">
-        <p>Você chegou ao final do feed.</p>
-    </div>
-    </div>
     </div>
 
 
