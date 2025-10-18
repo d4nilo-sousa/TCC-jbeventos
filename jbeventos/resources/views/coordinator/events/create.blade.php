@@ -54,7 +54,7 @@
                         <div class="flex items-center space-x-2 sm:space-x-4">
                             {{-- Aba 1: Mídias --}}
                             <button type="button" data-tab-target="tab-media"
-                                class="tab-button active flex flex-col items-center group transition-colors duration-300">
+                                class="tab-button flex flex-col items-center group transition-colors duration-300">
                                 <span
                                     class="w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-300 bg-white text-gray-500 transition-all duration-300 
                                     group-[.active]:bg-red-600 group-[.active]:border-red-600 group-[.active]:text-white">

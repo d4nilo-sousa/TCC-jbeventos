@@ -46,12 +46,10 @@
                         <button type="button" data-tab-target="tab1"
                             class="tab-button flex items-center focus:outline-none transition-all duration-300">
                             <span
-                                class="inline-flex items-center justify-center w-8 h-8 font-bold rounded-full transition-colors duration-300 
-                                border border-red-300 bg-red-50 text-red-600 
-                                active-tab-style">
+                                class="inline-flex items-center justify-center w-8 h-8 font-bold rounded-full transition-colors duration-300 active-tab-style">
                                 1
                             </span>
-                            <span class="ml-2 text-sm md:text-base text-gray-700 active-tab-text-style">
+                            <span class="ml-2 text-sm md:text-base active-tab-text-style">
                                 Informações
                             </span>
                         </button>
@@ -62,9 +60,7 @@
                         <button type="button" data-tab-target="tab2"
                             class="tab-button flex items-center focus:outline-none transition-all duration-300 text-gray-500 hover:text-red-500">
                             <span
-                                class="inline-flex items-center justify-center w-8 h-8 font-bold rounded-full transition-colors duration-300 
-                                border border-gray-300 bg-white text-gray-500 
-                                active:border-red-500 active:bg-red-50 active:text-red-600">
+                                class="inline-flex items-center justify-center w-8 h-8 font-bold rounded-full transition-colors duration-300 border border-gray-300 bg-white text-gray-500">
                                 2
                             </span>
                             <span class="ml-2 text-sm md:text-base">
@@ -92,7 +88,7 @@
                             {{-- CAMPO 2: Sobre o Evento --}}
                             <div class="mb-4">
                                 <x-input-label for="event_description" value="Sobre o Evento" class="text-left mb-1 block" />
-                                <textarea name="event_description" id="event_description" rows="4"
+                                <textarea name="event_description" id="event_description" rows="4" required
                                     class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500 text-left block">{{ old('event_description', $event->event_description) }}</textarea>
                                 @error('event_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -226,21 +222,23 @@
                                     </p>
                                 </div>
 
-                                <input type="hidden" name="remove_event_image" value="0">
+                                {{-- Campo oculto para remover imagem existente --}}
+                                <input type="hidden" name="remove_event_image" id="remove_event_image_input" value="0">
 
-                                {{-- Botão de Excluir Imagem --}}
+                                {{-- Botão de Excluir Imagem ATUAL (Se existir) --}}
                                 <div id="event_image_preview" class="mt-4 flex flex-col items-center gap-2">
                                     @if ($event->event_image)
-                                        <div data-filename="{{ basename($event->event_image) }}"
-                                            style="display: flex; align-items: center; gap: 10px;">
-                                            <input type="text" value="{{ basename($event->event_image) }}"
-                                                readonly style="cursor: default;">
-                                            <button type="button"
-                                                onclick="this.closest('div[data-filename]').remove(); document.querySelector('input[name=remove_event_image]').value = 1;"
-                                                style="background-color: #DC2626; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
-                                                onmouseenter="this.style.backgroundColor='#B91C1C'"
-                                                onmouseleave="this.style.backgroundColor='#DC2626'">
-                                                Excluir
+                                        <div id="existing-event_image-preview" data-filename="{{ basename($event->event_image) }}"
+                                            class="flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-gray-50">
+                                            <span class="text-sm text-gray-700 truncate max-w-xs">{{ basename($event->event_image) }}</span>
+                                            <button type="button" data-file-id="{{ $event->id }}"
+                                                data-type="event_image"
+                                                class="remove-existing-image-button flex items-center justify-center w-6 h-6 text-white bg-red-600 rounded-full hover:bg-red-700 transition duration-150">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                    xmlns="http://www.w3.org/2000/svg">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
                                             </button>
                                         </div>
                                     @endif
@@ -269,26 +267,32 @@
                                     </p>
                                 </div>
 
-                                {{-- Botões de Excluir Galeria --}}
+                                {{-- Pré-visualização e Exclusão da Galeria --}}
                                 <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
-                                    @foreach ($event->images as $img)
-                                        <div data-id="{{ $img->id }}"
-                                            data-filename="{{ basename($img->image_path) }}">
-                                            <input type="text" value="{{ basename($img->image_path) }}" readonly
-                                                style="cursor: default;">
-
-                                            <button type="button" onclick="deleteImage({{ $img->id }}, this, 'event')"
-                                                style="background-color: #DC2626; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;"
-                                                onmouseenter="this.style.backgroundColor='#B91C1C'"
-                                                onmouseleave="this.style.backgroundColor='#DC2626'">
-                                                Excluir
-                                            </button>
-
-                                            <input type="hidden" name="keep_event_images[]"
-                                                value="{{ $img->id }}">
-                                        </div>
-                                    @endforeach
+                                    {{-- Campos ocultos para manter imagens existentes --}}
+                                    <div id="existing-event_images-gallery" class="flex flex-wrap gap-2 justify-center">
+                                        @foreach ($event->images as $img)
+                                            <div data-id="{{ $img->id }}"
+                                                data-filename="{{ basename($img->image_path) }}"
+                                                class="flex flex-col items-center p-2 border border-gray-200 rounded-md bg-gray-50">
+                                                <span class="text-xs text-gray-700 truncate w-24 mb-1">{{ basename($img->image_path) }}</span>
+                                                <button type="button" data-image-id="{{ $img->id }}"
+                                                    class="remove-gallery-image-button flex items-center justify-center w-6 h-6 text-white bg-red-600 rounded-full hover:bg-red-700 transition duration-150">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                        xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                                {{-- Manter o input hidden para enviar ao backend quais IDs manter --}}
+                                                <input type="hidden" name="keep_event_images[]" value="{{ $img->id }}"
+                                                    data-image-id="{{ $img->id }}" class="keep-image-input">
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    {{-- Previews de novos arquivos serão adicionados aqui --}}
                                 </div>
+
                                 @error('event_images')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -315,176 +319,4 @@
     </div>
 </x-app-layout>
 
-@vite('resources/js/app.js')
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.tab-content');
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const nextButtons = document.querySelectorAll('.next-button');
-        const prevButtons = document.querySelectorAll('.prev-button');
-
-        // Função para atualizar o estado visual das abas
-        function updateTabState(button, isActive) {
-            const circle = button.querySelector('span:first-child');
-            const text = button.querySelector('span:last-child');
-
-            if (isActive) {
-                // Estado Ativo (Vermelho)
-                circle.classList.add('border-red-500', 'bg-red-500', 'text-white');
-                circle.classList.remove('border-gray-300', 'bg-white', 'text-gray-500');
-                text.classList.add('text-red-600', 'font-medium');
-                text.classList.remove('text-gray-600');
-            } else {
-                // Estado Inativo (Cinza)
-                circle.classList.remove('border-red-500', 'bg-red-500', 'text-white');
-                circle.classList.add('border-gray-300', 'bg-white', 'text-gray-500');
-                text.classList.remove('text-red-600', 'font-medium');
-                text.classList.add('text-gray-600');
-            }
-        }
-
-        // Função para exibir a aba desejada
-        function showTab(tabId) {
-            tabs.forEach(tab => tab.classList.add('hidden'));
-            const activeTab = document.getElementById(tabId);
-            if (activeTab) {
-                activeTab.classList.remove('hidden');
-            }
-
-            tabButtons.forEach(button => {
-                const isActive = button.dataset.tabTarget === tabId;
-                updateTabState(button, isActive);
-            });
-
-            // Rola para o topo da página ao trocar de aba
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        // Navegação para a próxima aba
-        nextButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const currentTab = button.closest('.tab-content');
-                const nextTabId = button.dataset.nextTab;
-
-                // Validação dos campos obrigatórios visíveis na aba atual
-                const inputs = currentTab?.querySelectorAll('input:required, textarea:required, select:required');
-                let allInputsValid = true;
-
-                if (inputs) {
-                    for (const input of inputs) {
-                        // Verifica se o campo está visível e vazio
-                        if (!input.value.trim() && !input.getAttribute('disabled')) {
-                            input.focus();
-                            allInputsValid = false;
-                            break;
-                        }
-                    }
-                }
-
-                // Se todos os campos estiverem válidos, vá para a próxima aba
-                if (allInputsValid && nextTabId) {
-                    showTab(nextTabId);
-                } else if (!allInputsValid) {
-                    // Força a exibição das mensagens de validação do HTML5
-                    const form = document.getElementById('event-edit-form'); // Assumindo 'event-edit-form' como ID do formulário de eventos
-                    if (form) {
-                        form.reportValidity();
-                    }
-                }
-            });
-        });
-
-        // Navegação para a aba anterior
-        prevButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const prevTabId = button.dataset.prevTab;
-                if (prevTabId) {
-                    showTab(prevTabId);
-                }
-            });
-        });
-
-        // Navegação por clique nos botões de aba (círculos 1 e 2)
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const target = button.dataset.tabTarget;
-                if (target) {
-                    // Permite trocar de aba apenas clicando (sem validação forçada)
-                    showTab(target);
-                }
-            });
-        });
-
-        // Lógica para pré-visualização de novas imagens
-        function setupImagePreview(inputId, previewId) {
-            const input = document.getElementById(inputId);
-            const previewContainer = document.getElementById(previewId);
-
-            if (input) {
-                input.addEventListener('change', function() {
-                    previewContainer.innerHTML = ''; // Limpa previews antigos
-                    
-                    // Remove o preview da imagem existente ao carregar uma nova
-                    const existingPreview = document.getElementById(`existing-${inputId.replace('event_', '')}-preview`);
-                    if (existingPreview) {
-                        existingPreview.remove(); 
-                    }
-                    
-                    if (this.files && this.files[0]) {
-                        const file = this.files[0];
-                        const reader = new FileReader();
-
-                        reader.onload = function(e) {
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.alt = file.name;
-                            img.className = 'w-32 h-32 object-cover rounded-md border border-gray-200 shadow-sm';
-                            
-                            const nameSpan = document.createElement('span');
-                            nameSpan.className = 'text-sm text-gray-600 mt-2 truncate max-w-full';
-                            nameSpan.textContent = file.name;
-
-                            const fileWrapper = document.createElement('div');
-                            fileWrapper.className = 'flex flex-col items-center p-2';
-                            fileWrapper.appendChild(img);
-                            fileWrapper.appendChild(nameSpan);
-                            
-                            previewContainer.appendChild(fileWrapper);
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
-        }
-        
-        setupImagePreview('event_icon', 'event_icons_preview'); // Adapte para o ID do ícone de evento
-        setupImagePreview('event_banner', 'event_banners_preview'); // Adapte para o ID do banner de evento
-        
-        // Lógica para remover imagem existente
-        window.removeExistingImage = function(button, filePath, type) {
-            const container = button.closest('div');
-            // Adapte o ID do input oculto para `remove_event_icon` e `remove_event_banner`
-            const inputId = `remove_event_${type}_input`; 
-            const hiddenInput = document.getElementById(inputId);
-
-            if (confirm(`Tem certeza que deseja remover a imagem ${type}?`)) {
-                // Remove o container de pré-visualização da imagem existente
-                container.remove();
-
-                // Marca o campo oculto para indicar que a imagem deve ser removida no backend
-                hiddenInput.value = '1';
-
-            }
-        }
-
-
-        // Inicializa a primeira aba ao carregar a página
-        if (document.getElementById('tab1')) {
-            showTab('tab1');
-        }
-    });
-</script>
+@vite('resources/js/tab-navigation.js')

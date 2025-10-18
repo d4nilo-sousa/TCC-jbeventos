@@ -36,6 +36,7 @@
                 @endif
 
                 {{-- Formulário --}}
+                {{-- ID atualizado para 'course-edit-form' --}}
                 <form id="course-edit-form" action="{{ route('courses.update', $course->id) }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
@@ -47,6 +48,7 @@
 
                             <button type="button" data-tab-target="tab1"
                                 class="tab-button flex flex-col items-center group active">
+                                {{-- A classe 'active' será gerenciada pelo JS --}}
                                 <span
                                     class="inline-flex items-center justify-center w-8 h-8 font-bold rounded-full border-2 border-red-500 text-white bg-red-500 transition-all duration-300">1</span>
                                 <span
@@ -80,7 +82,7 @@
 
                             <div>
                                 <x-input-label for="course_description" value="Descrição" />
-                                <textarea name="course_description" id="course_description" rows="4"
+                                <textarea name="course_description" id="course_description" rows="4" required
                                     class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('course_description', $course->course_description) }}</textarea>
                                 @error('course_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -135,7 +137,7 @@
                         <div class="space-y-6">
                             <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Imagens do Curso</h3>
 
-                            {{-- Ícone do Curso --}}
+                            {{-- Ícone do Curso (course_icon) --}}
                             <div>
                                 <x-input-label for="course_icon" value="Ícone do Curso" />
                                 <div id="dropzone-icon"
@@ -155,12 +157,14 @@
 
                                 <div id="course_icons_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
                                     @if ($course->course_icon)
-                                        <div id="existing-icon-preview"
-                                            class="flex items-center p-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm">
+                                        {{-- ID adaptado para funcionar com setupImagePreview --}}
+                                        <div id="existing-course_icon-preview"
+                                            class="flex items-center p-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm"
+                                            data-filename="{{ basename($course->course_icon) }}">
                                             <span class="text-sm text-gray-700 mr-2">{{ basename($course->course_icon) }}</span>
-                                            <button type="button" data-type="icon"
-                                                class="delete-image-btn w-6 h-6 flex items-center justify-center text-red-600 hover:text-red-800 transition-colors rounded-full"
-                                                onclick="removeExistingImage(this, '{{ $course->course_icon }}', 'icon')">
+                                            {{-- Classe e data-type adaptados para o JS --}}
+                                            <button type="button" data-type="course_icon"
+                                                class="remove-existing-image-button w-6 h-6 flex items-center justify-center text-red-600 hover:text-red-800 transition-colors rounded-full">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
@@ -173,7 +177,7 @@
                                 @enderror
                             </div>
 
-                            {{-- Banner do Curso --}}
+                            {{-- Banner do Curso (course_banner) --}}
                             <div>
                                 <x-input-label for="course_banner" value="Banner do Curso" />
                                 <div id="dropzone-banner"
@@ -195,12 +199,14 @@
 
                                 <div id="course_banners_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
                                     @if ($course->course_banner)
-                                        <div id="existing-banner-preview"
-                                            class="flex items-center p-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm">
+                                        {{-- ID adaptado para funcionar com setupImagePreview --}}
+                                        <div id="existing-course_banner-preview"
+                                            class="flex items-center p-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm"
+                                            data-filename="{{ basename($course->course_banner) }}">
                                             <span class="text-sm text-gray-700 mr-2">{{ basename($course->course_banner) }}</span>
-                                            <button type="button" data-type="banner"
-                                                class="delete-image-btn w-6 h-6 flex items-center justify-center text-red-600 hover:text-red-800 transition-colors rounded-full"
-                                                onclick="removeExistingImage(this, '{{ $course->course_banner }}', 'banner')">
+                                            {{-- Classe e data-type adaptados para o JS --}}
+                                            <button type="button" data-type="course_banner"
+                                                class="remove-existing-image-button w-6 h-6 flex items-center justify-center text-red-600 hover:text-red-800 transition-colors rounded-full">
                                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                 </svg>
@@ -233,173 +239,5 @@
     </div>
 </x-app-layout>
 
-@vite('resources/js/app.js');
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.tab-content');
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const nextButtons = document.querySelectorAll('.next-button');
-        const prevButtons = document.querySelectorAll('.prev-button');
-
-        function updateTabState(button, isActive) {
-            const circle = button.querySelector('span:first-child');
-            const text = button.querySelector('span:last-child');
-
-            if (isActive) {
-                // Estado Ativo (Vermelho)
-                circle.classList.add('border-red-500', 'bg-red-500', 'text-white');
-                circle.classList.remove('border-gray-300', 'bg-white', 'text-gray-500');
-                text.classList.add('text-red-600', 'font-medium');
-                text.classList.remove('text-gray-600');
-            } else {
-                // Estado Inativo (Cinza)
-                circle.classList.remove('border-red-500', 'bg-red-500', 'text-white');
-                circle.classList.add('border-gray-300', 'bg-white', 'text-gray-500');
-                text.classList.remove('text-red-600', 'font-medium');
-                text.classList.add('text-gray-600');
-            }
-        }
-
-        function showTab(tabId) {
-            tabs.forEach(tab => tab.classList.add('hidden'));
-            const activeTab = document.getElementById(tabId);
-            if (activeTab) {
-                activeTab.classList.remove('hidden');
-            }
-
-            tabButtons.forEach(button => {
-                const isActive = button.dataset.tabTarget === tabId;
-                updateTabState(button, isActive);
-            });
-
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        nextButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const currentTab = button.closest('.tab-content');
-                const nextTabId = button.dataset.nextTab;
-
-                // Validação dos campos obrigatórios visíveis na aba atual
-                const inputs = currentTab?.querySelectorAll('input:required, textarea:required, select:required');
-                let allInputsValid = true;
-
-                if (inputs) {
-                    for (const input of inputs) {
-                        // Verifica se o campo está visível
-                        if (!input.value.trim() && !input.getAttribute('disabled')) {
-                            // Campo obrigatório vazio
-                            input.focus();
-                            // Opcional: Adicionar uma classe de erro para destacar o campo
-                            allInputsValid = false;
-                            break;
-                        }
-                    }
-                }
-
-                // Se todos os campos estiverem válidos, vá para a próxima aba
-                if (allInputsValid && nextTabId) {
-                    showTab(nextTabId);
-                } else if (!allInputsValid) {
-                    // Força a exibição das mensagens de validação do HTML5
-                    const form = document.getElementById('course-edit-form');
-                    if (form) {
-                        form.reportValidity();
-                    }
-                }
-            });
-        });
-
-        prevButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const prevTabId = button.dataset.prevTab;
-                if (prevTabId) {
-                    showTab(prevTabId);
-                }
-            });
-        });
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const target = button.dataset.tabTarget;
-                if (target) {
-                    // Permite trocar de aba apenas clicando (sem validação forçada)
-                    showTab(target);
-                }
-            });
-        });
-
-        // Lógica para pré-visualização de novas imagens
-        function setupImagePreview(inputId, previewId) {
-            const input = document.getElementById(inputId);
-            const previewContainer = document.getElementById(previewId);
-
-            if (input) {
-                input.addEventListener('change', function() {
-                    previewContainer.innerHTML = ''; // Limpa previews antigos
-                    const existingPreview = document.getElementById(`existing-${inputId.replace('course_', '')}-preview`);
-                    if (existingPreview) {
-                        existingPreview.remove(); // Remove o preview da imagem existente ao carregar uma nova
-                    }
-                    if (this.files && this.files[0]) {
-                        const file = this.files[0];
-                        const reader = new FileReader();
-
-                        reader.onload = function(e) {
-                            const img = document.createElement('img');
-                            img.src = e.target.result;
-                            img.alt = file.name;
-                            img.className = 'w-32 h-32 object-cover rounded-md border border-gray-200 shadow-sm';
-                            
-                            const nameSpan = document.createElement('span');
-                            nameSpan.className = 'text-sm text-gray-600 mt-2 truncate max-w-full';
-                            nameSpan.textContent = file.name;
-
-                            const fileWrapper = document.createElement('div');
-                            fileWrapper.className = 'flex flex-col items-center p-2';
-                            fileWrapper.appendChild(img);
-                            fileWrapper.appendChild(nameSpan);
-                            
-                            previewContainer.appendChild(fileWrapper);
-                        }
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
-        }
-        
-        setupImagePreview('course_icon', 'course_icons_preview');
-        setupImagePreview('course_banner', 'course_banners_preview');
-        
-        // Lógica para remover imagem existente
-        window.removeExistingImage = function(button, filePath, type) {
-            const container = button.closest('div');
-            const inputId = `remove_course_${type}_input`;
-            const hiddenInput = document.getElementById(inputId);
-
-            if (confirm(`Tem certeza que deseja remover a imagem ${type}?`)) {
-                // Remove o container de pré-visualização da imagem existente
-                container.remove();
-
-                // Marca o campo oculto para indicar que a imagem deve ser removida no backend
-                hiddenInput.value = '1';
-
-                // Opcional: Adiciona novamente o dropzone
-                const dropzone = document.getElementById(`dropzone-${type}`);
-                if (dropzone) {
-                    dropzone.classList.remove('hidden'); 
-                }
-            }
-        }
-
-
-        // Inicializa a primeira aba ao carregar a página
-        if (document.getElementById('tab1')) {
-            showTab('tab1');
-        }
-    });
-</script>
+{{-- Importa o script JS adaptado --}}
+@vite('resources/js/tabs-navigation-and-images.js')

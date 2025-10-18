@@ -3,12 +3,16 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
                 {{-- Título da Página --}}
-                 <div class="flex flex-col items-center justify-center mb-10 text-center">
+                <div class="flex flex-col items-center justify-center mb-10 text-center">
                     <div class="p-3 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center">
-                        <i class="ph ph-book-bookmark text-red-600 text-4xl"></i>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-red-600" viewBox="0 0 256 256"
+                            fill="currentColor">
+                            <path
+                                d="M216,48H40A16,16,0,0,0,24,64V192a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM40,64H128v48H40Zm136,112H56V136h120v40Zm40-112H168v48h48Z" />
+                        </svg>
                     </div>
-                    <h1 class="text-3xl font-bold text-gray-800">Criar Curso</h1>
-                    <p class="mt-2 text-gray-600">Crie um novo curso e preencha as suas informações.</p>
+                    <h1 class="text-3xl font-bold text-gray-800">Criar Novo Curso</h1>
+                    <p class="mt-2 text-gray-600">Preencha as informações para cadastrar um novo curso.</p>
                 </div>
 
                 {{-- Exibição de erros --}}
@@ -32,11 +36,12 @@
                 @endif
 
                 {{-- Formulário --}}
-                <form id="course-create-form" action="{{ route('courses.store') }}" method="POST"
+                <form id="course-edit-form" action="{{ route('courses.store') }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
+                    {{-- @method('POST') é implícito, não é necessário --}}
 
-                    {{-- Abas (Refatoradas para o novo estilo) --}}
+                    {{-- Abas --}}
                     <div class="flex items-center justify-center mb-10">
                         <div class="flex items-center space-x-2 md:space-x-8">
 
@@ -65,7 +70,8 @@
 
                             <div>
                                 <x-input-label for="course_name" value="Nome do Curso" />
-                                <x-text-input type="text" name="course_name" id="course_name" class="w-full focus:border-red-500 focus:ring-red-500"
+                                <x-text-input type="text" name="course_name" id="course_name"
+                                    class="w-full focus:border-red-500 focus:ring-red-500"
                                     value="{{ old('course_name') }}" required />
                                 @error('course_name')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -74,7 +80,7 @@
 
                             <div>
                                 <x-input-label for="course_description" value="Descrição" />
-                                <textarea name="course_description" id="course_description" rows="4"
+                                <textarea name="course_description" id="course_description" rows="4" required
                                     class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('course_description') }}</textarea>
                                 @error('course_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -88,9 +94,13 @@
                                     <option value="">Nenhum</option>
                                     @foreach ($coordinators as $coordinator)
                                         @if ($coordinator->coordinator_type === 'course')
-                                            @php $isDisabled = $coordinator->coordinatedCourse !== null; @endphp
-                                            <option value="{{ $coordinator->id }}" @selected(old('coordinator_id') == $coordinator->id)
-                                                @disabled($isDisabled)>
+                                            @php
+                                                $isSelected = old('coordinator_id') == $coordinator->id;
+                                                // Lógica de disabled mais simples, pois não há curso existente
+                                                $isDisabled = $coordinator->coordinatedCourse;
+                                            @endphp
+                                            <option value="{{ $coordinator->id }}" {{ $isSelected ? 'selected' : '' }}
+                                                {{ $isDisabled ? 'disabled' : '' }}>
                                                 {{ $coordinator->userAccount->name ?? 'Sem nome' }}
                                                 @if ($isDisabled)
                                                     ({{ $coordinator->coordinatedCourse->course_name }})
@@ -123,6 +133,7 @@
                         <div class="space-y-6">
                             <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Imagens do Curso</h3>
 
+                            {{-- Ícone do Curso (course_icon) --}}
                             <div>
                                 <x-input-label for="course_icon" value="Ícone do Curso" />
                                 <div id="dropzone-icon"
@@ -137,12 +148,14 @@
                                     <p class="mt-2 text-sm text-gray-500 group-hover:text-red-500">Arraste e solte ou
                                         clique para enviar um ícone.</p>
                                 </div>
-                                <div id="course_icons_preview" class="mt-4 flex flex-wrap gap-2 justify-center"></div>
-                                @error('course_icons')
+                                <div id="course_icons_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
+                                </div>
+                                @error('course_icon')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
+                            {{-- Banner do Curso (course_banner) --}}
                             <div>
                                 <x-input-label for="course_banner" value="Banner do Curso" />
                                 <div id="dropzone-banner"
@@ -159,8 +172,9 @@
                                     <p class="mt-2 text-sm text-gray-500 group-hover:text-red-500">Arraste e solte ou
                                         clique para enviar um banner.</p>
                                 </div>
-                                <div id="course_banners_preview" class="mt-4 flex flex-wrap gap-2 justify-center"></div>
-                                @error('course_banners')
+                                <div id="course_banners_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
+                                </div>
+                                @error('course_banner')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -174,7 +188,7 @@
                                 Anterior
                             </button>
                             <button type="submit"
-                                class="create-button px-6 py-2 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700 transition-colors duration-200">
+                                class="submit-button px-6 py-2 bg-red-600 text-white rounded-md font-semibold hover:bg-red-700 transition-colors duration-200">
                                 Criar Curso
                             </button>
                         </div>
@@ -185,113 +199,5 @@
     </div>
 </x-app-layout>
 
-@vite('resources/js/app.js');
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('.tab-content');
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const nextButtons = document.querySelectorAll('.next-button');
-        const prevButtons = document.querySelectorAll('.prev-button');
-
-        function updateTabState(button, isActive) {
-            const circle = button.querySelector('span:first-child');
-            const text = button.querySelector('span:last-child');
-
-            if (isActive) {
-                // Estado Ativo (Vermelho)
-                circle.classList.add('border-red-500', 'bg-red-500', 'text-white');
-                circle.classList.remove('border-gray-300', 'bg-white', 'text-gray-500');
-                text.classList.add('text-red-600');
-                text.classList.remove('text-gray-600');
-            } else {
-                // Estado Inativo (Cinza)
-                circle.classList.remove('border-red-500', 'bg-red-500', 'text-white');
-                circle.classList.add('border-gray-300', 'bg-white', 'text-gray-500');
-                text.classList.remove('text-red-600');
-                text.classList.add('text-gray-600');
-            }
-        }
-
-        function showTab(tabId) {
-            tabs.forEach(tab => tab.classList.add('hidden'));
-            const activeTab = document.getElementById(tabId);
-            if (activeTab) {
-                activeTab.classList.remove('hidden');
-            }
-
-            tabButtons.forEach(button => {
-                const isActive = button.dataset.tabTarget === tabId;
-                updateTabState(button, isActive);
-            });
-
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        nextButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const currentTab = button.closest('.tab-content');
-                const nextTabId = button.dataset.nextTab;
-
-                // Validação dos campos obrigatórios visíveis na aba atual
-                const inputs = currentTab?.querySelectorAll('input:required, textarea:required, select:required');
-                let allInputsValid = true;
-
-                if (inputs) {
-                    for (const input of inputs) {
-                        // Verifica se o campo está visível
-                        if (!input.value.trim() && !input.getAttribute('disabled')) {
-                            // Campo obrigatório vazio
-                            input.focus();
-                            // Opcional: Adicionar uma classe de erro para destacar o campo
-                            allInputsValid = false;
-                            break;
-                        }
-                    }
-                }
-                
-                // Se todos os campos estiverem válidos, vá para a próxima aba
-                if (allInputsValid && nextTabId) {
-                    showTab(nextTabId);
-                } else if (!allInputsValid) {
-                    // Força a exibição das mensagens de validação do HTML5
-                    const form = document.getElementById('course-create-form');
-                    if (form) {
-                        form.reportValidity();
-                    }
-                }
-            });
-        });
-
-        prevButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const prevTabId = button.dataset.prevTab;
-                if (prevTabId) {
-                    showTab(prevTabId);
-                }
-            });
-        });
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const target = button.dataset.tabTarget;
-                if (target) {
-                    // Permite trocar de aba apenas clicando (sem validação forçada)
-                    showTab(target);
-                }
-            });
-        });
-
-        const path = window.location.pathname;
-
-        const isCreate = path === '/admin/courses/create';
-        const isEdit = /^\/admin\/courses\/\d+\/edit$/.test(path);
-
-        if ((isCreate || isEdit) && document.getElementById('tab1')) {
-            showTab('tab1');
-        }
-    });
-</script>
+{{-- Importa o script JS adaptado --}}
+@vite('resources/js/tabs-navigation-and-images.js')
