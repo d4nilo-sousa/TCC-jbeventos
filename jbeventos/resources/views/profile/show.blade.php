@@ -1,6 +1,6 @@
 <x-app-layout>
-    {{-- Variável Alpine para controlar o Modal de Configurações --}}
-    <div x-data="{ settingsModalOpen: false }">
+    {{-- Variável Alpine para controlar o Modal de Configurações e o Dropdown de Ícones Padrão --}}
+    <div x-data="{ settingsModalOpen: false, defaultIconsOpen: false }">
         
         {{-- Container Principal --}}
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -45,7 +45,7 @@
 
                         {{-- Avatar, Nome e Tipo do Usuário --}}
                         <div class="px-6 -mt-16 flex items-end space-x-6 pb-6 border-b border-gray-200">
-                            {{-- Bloco do Avatar --}}
+                            {{-- Bloco do Avatar e Botões de Edição --}}
                             <div class="flex flex-col items-center">
                                 <div class="relative w-36 h-36 rounded-full border-6 border-white bg-gray-300 shadow-xl">
                                     <img src="{{ $user->user_icon_url }}" alt="Avatar"
@@ -63,6 +63,53 @@
                                         </form>
                                     @endif
                                 </div>
+
+                                {{-- BOTÃO E POP-UP PARA AVATARES PADRÃO --}}
+                                @if(auth()->id() === $user->id)
+                                    <div class="relative mt-2" @click.away="defaultIconsOpen = false">
+                                        <button @click="defaultIconsOpen = !defaultIconsOpen"
+                                            class="flex items-center text-xs text-gray-600 hover:text-red-500 transition-colors duration-200 px-3 py-1 rounded-full bg-gray-50 hover:bg-red-50 border border-gray-200">
+                                            <i class="ph ph-users-three text-sm mr-1"></i>
+                                            Avatares Padrão
+                                        </button>
+
+                                        {{-- Pop-up de Seleção de Avatares --}}
+                                        <div x-cloak x-show="defaultIconsOpen"
+                                            x-transition:enter="transition ease-out duration-100"
+                                            x-transition:enter-start="transform opacity-0 scale-95"
+                                            x-transition:enter-end="transform opacity-100 scale-100"
+                                            x-transition:leave="transition ease-in duration-75"
+                                            x-transition:leave-start="transform opacity-100 scale-100"
+                                            x-transition:leave-end="transform opacity-0 scale-95"
+                                            class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-52 origin-top-right bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 p-4 z-10">
+                                            <p class="text-xs font-semibold text-gray-700 mb-2 border-b pb-1">Selecione um ícone padrão:</p>
+                                            <div class="grid grid-cols-4 gap-2">
+                                                @php
+                                                    $defaultIcons = [
+                                                        'avatar_default_1.svg',
+                                                        'avatar_default_2.svg',
+                                                        'avatar_default_3.png',
+                                                        'avatar_default_4.png',
+                                                    ];
+                                                @endphp
+
+                                                @foreach ($defaultIcons as $icon)
+                                                    {{-- Formulário para cada avatar --}}
+                                                    <form method="POST" action="{{ route('profile.updateDefaultPhoto') }}" class="inline-block">
+                                                        @csrf
+                                                        <input type="hidden" name="user_icon_default" value="{{ $icon }}">
+                                                        <button type="submit"
+                                                            class="w-full h-full rounded-full border-2 p-1 transition-all duration-150 {{ $user->user_icon_default === $icon ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-200 hover:border-red-300' }}"
+                                                            title="Usar {{ $icon }}">
+                                                            <img src="{{ asset('imgs/' . $icon) }}" alt="{{ $icon }}"
+                                                                class="w-full h-full rounded-full object-cover">
+                                                        </button>
+                                                    </form>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
 
                             {{-- Nome e Tipo do Usuário --}}
@@ -312,7 +359,7 @@
                                 </button>
                             </form>
                         </div>
-                
+                    
                     @endif
                     
                 </div>
