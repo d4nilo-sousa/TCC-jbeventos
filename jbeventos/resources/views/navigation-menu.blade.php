@@ -171,10 +171,33 @@
                         </x-dropdown>
                     </div>
 
+                    <div class="hidden sm:block relative" x-data="{ profileTooltip: false }">
                     {{-- Link direto para o Perfil (Ícone de Avatar) --}}
-                    <a href="{{ route('profile.show') }}" class="hidden sm:block">
+                    <a href="{{ route('profile.show') }}" 
+                        class="block"
+                        @mouseenter="profileTooltip = true"
+                        @mouseleave="profileTooltip = false"
+                        @focus="profileTooltip = true"
+                        @blur="profileTooltip = false"
+                    >
                         <img src ="{{ Auth::user()->user_icon_url }}" alt="{{ Auth::user()->name }}" class="size-9 rounded-full object-cover border-2 border-gray-200 hover:border-red-500 transition shadow-md">
                     </a>
+
+                    {{-- Tooltip/Popover com Nome e Email --}}
+                    <div x-cloak x-show="profileTooltip" 
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0 scale-95 transform"
+                        x-transition:enter-end="opacity-100 scale-100 transform"
+                        x-transition:leave="transition ease-in duration-75"
+                        x-transition:leave-start="opacity-100 scale-100 transform"
+                        x-transition:leave-end="opacity-0 scale-95 transform"
+                        class="absolute right-0 mt-3 w-48 bg-white p-3 rounded-xl shadow-2xl border border-gray-100 z-50 pointer-events-none" 
+                        style="min-width: max-content;"
+                    >
+                        <div class="text-sm font-bold text-gray-800 truncate">{{ Auth::user()->name }}</div>
+                        <div class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</div>
+                    </div>
+                </div>
 
                     {{-- Botão de Logoff Direto (Desktop) --}}
                     <div class="hidden sm:block">
