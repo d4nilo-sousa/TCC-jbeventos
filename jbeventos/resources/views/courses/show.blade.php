@@ -1,10 +1,11 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-8">
+    {{-- Layout Principal: 4 colunas virtuais (1/4 para o curso, 3/4 para o conteúdo) --}}
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col xl:flex-row gap-8">
 
         {{-- ===================================================================================== --}}
-        {{-- COLUNA DA ESQUERDA (Informações do Curso) | Fixo/Sticky no Desktop --}}
+        {{-- COLUNA DA ESQUERDA (Informações do Curso) --}}
         {{-- ===================================================================================== --}}
-        <div class="lg:w-1/3 space-y-6 lg:sticky lg:top-8 self-start">
+        <div class="xl:w-1/4 lg:w-1/3 space-y-6 xl:sticky xl:top-8 self-start">
 
             {{-- Card de Informações do Curso --}}
             <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
@@ -167,17 +168,20 @@
         </div>
         
         {{-- ===================================================================================== --}}
-        {{-- COLUNA DA DIREITA (Eventos e Posts) | Layout de Grade em 2 Colunas (XL) --}}
+        {{-- COLUNA DA DIREITA (Eventos e Posts) utilizando grid interno de 2 colunas --}}
         {{-- ===================================================================================== --}}
-        <div class="lg:w-2/3">
+        <div class="xl:w-3/4 lg:w-2/3">
+            
+            {{-- GRID INTERNO (layout de duas colunas) --}}
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 
-                {{-- COLUNA CENTRAL (EVENTOS) --}}
+                {{-- COLUNA 1 - EVENTOS --}}
                 <div>
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
-                            <i class="ph-bold ph-calendar-blank text-red-600"></i> Próximos Eventos
+                            <i class="ph ph-calendar-blank bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Eventos
                         </h2>
+                        {{-- Botão de Criar Evento, visível apenas para o Coordenador atribuído --}}
                         @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
                             <a href="{{ route('events.create', ['course_id' => $course->id]) }}"
                                 class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full shadow-md transition-colors duration-200 text-sm flex items-center gap-1">
@@ -188,46 +192,47 @@
 
                     {{-- Lista de Eventos --}}
                     @if ($course->events->isNotEmpty())
-                        <div class="space-y-4">
+                        <div class="grid grid-cols-1 gap-4">
                             @foreach ($course->events->sortByDesc('event_scheduled_at') as $event)
+                                {{-- CARD DE EVENTO (Vertical) --}}
                                 <a href="{{ route('events.show', $event->id) }}"
-                                    class="block bg-white rounded-xl shadow-lg border border-gray-100 hover:border-red-500 transition-colors duration-200 overflow-hidden group">
-                                    <div class="flex">
-                                        {{-- Imagem ou Placeholder --}}
-                                        @if ($event->event_image)
-                                            <div class="w-2/5 h-32 flex-shrink-0">
-                                                <img src="{{ asset('storage/' . $event->event_image) }}"
-                                                    alt="Capa do Evento" class="object-cover w-full h-full">
-                                            </div>
-                                        @else
-                                            <div
-                                                class="w-2/5 h-32 flex-shrink-0 flex flex-col items-center justify-center text-red-500 bg-gray-50 dark:text-red-400 border-r border-gray-200">
-                                                <i class="ph-bold ph-calendar-blank text-3xl"></i>
-                                                <p class="mt-1 text-xs text-gray-500">Sem Imagem</p>
+                                    class="block bg-white rounded-xl shadow-lg border border-gray-100 hover:border-red-500 transition-colors duration-200 overflow-hidden group h-full flex flex-col">
+                                    
+                                    {{-- Imagem ou Placeholder (Topo do Card) --}}
+                                    @if ($event->event_image)
+                                        <div class="w-full h-32">
+                                            <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                alt="Capa do Evento" class="object-cover w-full h-full">
+                                        </div>
+                                    @else
+                                        <div
+                                            class="w-full h-32 flex flex-col items-center justify-center text-red-500 bg-gray-50 border-b border-gray-200">
+                                            <i class="ph-bold ph-calendar-blank text-4xl"></i>
+                                            <p class="mt-1 text-xs text-gray-500">Sem Imagem</p>
+                                        </div>
+                                    @endif
+
+                                    <div class="p-4 space-y-2 flex-grow">
+                                        {{-- Título --}}
+                                        <h4 class="text-base font-bold text-stone-800 line-clamp-2 pb-2 group-hover:text-red-600 transition">
+                                            {{ $event->event_name }}
+                                        </h4>
+                                        
+                                        {{-- Data e Hora --}}
+                                        @if ($event->event_scheduled_at)
+                                            <div class="flex items-center gap-2 text-xs text-gray-500">
+                                                <i class="ph-fill ph-clock-clockwise text-red-600 text-base flex-shrink-0"></i>
+                                                <span>{{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}</span>
                                             </div>
                                         @endif
 
-                                        <div class="p-4 space-y-1 w-3/5">
-                                            <h4 class="text-base font-bold text-stone-800 line-clamp-2 group-hover:text-red-600 transition">
-                                                {{ $event->event_name }}
-                                            </h4>
-                                            
-                                            {{-- Data e Hora --}}
-                                            @if ($event->event_scheduled_at)
-                                                <div class="flex items-center gap-2 text-xs text-gray-500">
-                                                    <i class="ph-fill ph-clock-clockwise text-red-600 text-base flex-shrink-0"></i>
-                                                    <span>{{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}</span>
-                                                </div>
-                                            @endif
-
-                                            {{-- Localização --}}
-                                            @if ($event->event_location)
-                                                <div class="flex items-center gap-2 text-sm text-gray-700">
-                                                    <i class="ph-fill ph-map-pin text-red-600 text-base flex-shrink-0"></i>
-                                                    <span class="truncate text-xs">{{ $event->event_location }}</span>
-                                                </div>
-                                            @endif
-                                        </div>
+                                        {{-- Localização --}}
+                                        @if ($event->event_location)
+                                            <div class="flex items-center gap-2 text-sm text-gray-700">
+                                                <i class="ph-fill ph-map-pin text-red-600 text-base flex-shrink-0"></i>
+                                                <span class="truncate text-xs">{{ $event->event_location }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </a>
                             @endforeach
@@ -240,14 +245,12 @@
                     @endif
                 </div>
 
-                {{-- COLUNA LATERAL (POSTS/MURAL) --}}
+                {{-- COLUNA 2 - POSTS --}}
                 <div>
                     <h2 class="text-2xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                        <i class="ph-bold ph-file-text text-red-600"></i> Mural de Posts
+                        <i class="ph ph-article bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Posts
                     </h2>
                     
-                    {{-- Lista de Posts (via Livewire) --}}
-                    {{-- O componente Livewire lida com a criação e listagem dos posts --}}
                     @livewire('course-posts', ['course' => $course])
                 </div>
             </div>
@@ -344,7 +347,7 @@
                     })
                     .then(response => {
                         if (!response.ok) {
-                             throw new Error('Falha na operação. Status: ' + response.status);
+                            throw new Error('Falha na operação. Status: ' + response.status);
                         }
                         return response.json();
                     })
@@ -370,7 +373,7 @@
             if (currentMethod === 'POST') {
                 currentButton.id = 'unfollowButton';
                 currentButton.innerHTML = '<i class="ph-fill ph-heart text-white text-base"></i> Seguindo';
-                currentButton.classList.remove('bg-gray-200', 'hover:bg-red-500', 'text-gray-700'); 
+                currentButton.classList.remove('bg-gray-200', 'hover:bg-red-500', 'text-gray-700', 'hover:text-white');
                 currentButton.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white');
             } else if (currentMethod === 'DELETE') {
                 currentButton.id = 'followButton';
