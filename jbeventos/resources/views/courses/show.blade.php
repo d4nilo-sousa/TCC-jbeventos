@@ -1,6 +1,6 @@
 <x-app-layout>
     {{-- Container principal com layout de duas colunas --}}
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-[64%_36%] gap-8">
 
         {{-- Coluna da Esquerda (Informações do Curso) --}}
         <div class="lg:w-1/3 space-y-6 lg:sticky lg:top-8 self-start">
@@ -194,7 +194,7 @@
         </div>
 
         {{-- Coluna da Direita (Tabs de Conteúdo) --}}
-        <div class="lg:w-2/3">
+        <div class="lg:w-2/4">
             <div x-data="{ tab: 'events' }">
 
                 {{-- Card de Navegação das Abas --}}

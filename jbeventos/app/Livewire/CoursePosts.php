@@ -2,494 +2,434 @@
 
 namespace App\Livewire;
 
-use App\Models\Course;
 use App\Models\Post;
-use App\Models\Reply;
+use App\Models\Course;
+use App\Models\Reply; 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class CoursePosts extends Component
 {
-    use WithPagination, WithFileUploads; // traits para paginação e upload de arquivos
+    use WithPagination, WithFileUploads;
 
-    protected $paginationTheme = 'tailwind'; // tema do Tailwind para paginação
+    protected $paginationTheme = 'tailwind';
 
-    // Propriedades de Criação (Post)
-    public Course $course;
-    public $newPostContent = '';
-    public $images = []; // Imagens do POST
-    public $newlyUploadedImages = []; // Upload temporário do POST
-
-    // Propriedades de Resposta (Reply)
     public $newReplyContent = [];
-    public $newReplyImage = []; // Upload temporário de imagem para a nova resposta
+    public ?int $selectedPostId = null;
+    public ?Post $expandedPost = null;
 
-    // PROPRIEDADES DE EDIÇÃO (Post)
-    public $editingPostId = null;
+    public $isCarouselOpen = false;
+    public $currentImageIndex = 0;
+
+    // --- PROPRIEDADES DE CRIAÇÃO DE POST ---
+    public $isCoordinator = false;
+    public $newPostContent = '';
+    /** @var TemporaryUploadedFile|null */
+    public $media = null;
+    public $newPostCourseId = null;
+    public Collection $coordinatorCourses;
+
+    // --- PROPRIEDADES DE EDIÇÃO DE POST ---
+    public ?int $editingPostId = null;
     public $editingPostContent = '';
-    public $editingPostCurrentImages = []; // Imagens JÁ SALVAS no DB 
-    public $editingPostNewImages = []; // Imagens NOVAS enviadas
+    /** @var TemporaryUploadedFile|null */
+    public $editingMedia = null;
+    public $originalMediaPath = null;
 
-    // PROPRIEDADES DE EDIÇÃO (Reply)
-    public $editingReplyId = null;
+    public ?int $confirmingPostDeletionId = null;
+
+    // --- PROPRIEDADES NOVAS PARA EDIÇÃO/EXCLUSÃO DE RESPOSTA ---
+    public ?int $editingReplyId = null;
     public $editingReplyContent = '';
-    public $editingReplyCurrentImage = null; // Caminho no DB da imagem atual
-    public $editingReplyNewImage = null; // Upload temporário da nova imagem
+    public ?int $confirmingReplyDeletionId = null;
+    // -----------------------------------------------------------
 
-
-    // Método rules() para validação dinâmica
     protected function rules()
     {
-        // Define as regras base
         $rules = [
-            // Regras de Criação de Post
-            'newPostContent' => 'nullable|string|max:500', 
-            'images' => 'array|max:5',
-            'images.*' => 'image|max:2048', // 2MB
-
-            // Regras de Edição de Post
-            'editingPostContent' => 'nullable|string|max:300',
-            'editingPostNewImages' => 'array', 
-            'editingPostNewImages.*' => 'image|max:2048', 
-
-            // Regras de Criação de Resposta
-            'newReplyContent.*' => 'nullable|string|min:2|max:300', // Aumentei o limite
-            'newReplyImage.*' => 'nullable|image|max:512', // Max 1 imagem por resposta, 512KB
-
-            // Regras de Edição de Resposta
-            'editingReplyContent' => 'nullable|string|max:300',
-            'editingReplyNewImage' => 'nullable|image|max:512',
+            'newReplyContent.*' => 'required|string|min:2|max:500',
         ];
-        
-        // Regra de checagem condicional para Edição de Resposta:
-        // O conteúdo é obrigatório SE não houver imagem atual ou nova.
+
+        // NOVO: Regra de validação para o conteúdo da edição da resposta
         if ($this->editingReplyId) {
-            $rules['editingReplyContent'] = 'required_without_all:editingReplyCurrentImage,editingReplyNewImage|string|max:300';
+            $rules['editingReplyContent'] = 'required|string|min:2|max:500';
+        }
+
+        if ($this->isCoordinator) {
+            $rules['newPostContent'] = 'nullable|string|max:5000';
+            $rules['media'] = 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip';
+        }
+
+        if ($this->editingPostId) {
+            $rules['editingPostContent'] = 'nullable|string|max:5000';
+            $rules['editingMedia'] = 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip';
         }
 
         return $rules;
     }
 
-    // Montagem inicial do componente com o curso
-    public function mount(Course $course)
+    protected function validationAttributes()
     {
-        $this->course = $course;
+        return [
+            'media' => 'arquivo anexado',
+            'editingMedia' => 'novo arquivo anexado',
+            'editingReplyContent' => 'conteúdo da resposta', // NOVO
+        ];
     }
 
-    // Renderização do componente
-    public function render()
+    public function mount()
     {
-        $posts = $this->course->posts()->with('author', 'replies.author')->latest()->paginate(5);
-        $isCoordinator = auth()->check() && optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
+        $user = Auth::user();
+        $this->isCoordinator = ($user && $user->user_type === 'coordinator');
+        $this->coordinatorCourses = collect();
 
-        return view('livewire.course-posts', [
-            'posts' => $posts,
-            'isCoordinator' => $isCoordinator,
-        ]);
-    }
+        if ($this->isCoordinator) {
+            $coordinator = $user->coordinatorRole;
 
-    // -------------------------------------------------------------------------
-    // --- MÉTODOS DE CRIAÇÃO DE POSTS ---
-    // -------------------------------------------------------------------------
+            if ($coordinator) {
+                if ($coordinator->coordinator_type === 'general') {
+                    $this->coordinatorCourses = Course::all();
+                } else {
+                    $course = $coordinator->coordinatedCourse;
+                    $this->coordinatorCourses = $course ? collect([$course]) : collect();
+                }
+            }
 
-    // Lógica para múltiplas imagens no post
-    public function updatedNewlyUploadedImages()
-    {
-        $newFiles = is_array($this->newlyUploadedImages) ? $this->newlyUploadedImages : [$this->newlyUploadedImages];
-        $currentImages = collect($this->images);
-        $updatedImages = $currentImages->merge($newFiles);
-        $totalAllowed = 5;
-
-        if ($updatedImages->count() > $totalAllowed) {
-            $take = $totalAllowed - $currentImages->count();
-            // Pega apenas o que falta para completar o limite de 5
-            $this->images = $currentImages->merge(collect($newFiles)->take($take))->all(); 
-            session()->flash('error', "Você só pode enviar até 5 imagens por post. Apenas {$take} foram adicionadas desta vez.");
-        } else {
-            $this->images = $updatedImages->all();
-        }
-
-        $this->newlyUploadedImages = [];
-    }
-
-    // Remove imagem do array de imagens do Post
-    public function removeImage($index)
-    {
-        if (isset($this->images[$index])) {
-            unset($this->images[$index]);
-            $this->images = array_values($this->images);
+            if ($this->coordinatorCourses->isNotEmpty()) {
+                $this->newPostCourseId = $this->coordinatorCourses->first()->id;
+            }
         }
     }
 
-    // Criação de Posts
+    // Método para CRIAR POST (mantido)
     public function createPost()
     {
-        $this->validate([
-            'newPostContent' => 'nullable|string|max:500', 
-            'images.*' => 'image|max:2048'
-        ]);
-
-        // Checagem Lógica: O post precisa de CONTEÚDO OU IMAGENS
-        if (empty(trim($this->newPostContent)) && empty($this->images)) {
-             $this->addError('newPostContent', 'O post deve ter conteúdo de texto ou pelo menos uma imagem.');
-             return; 
+        if (!$this->isCoordinator || !$this->newPostCourseId) {
+            session()->flash('error', 'Você não tem permissão ou curso associado para criar posts.');
+            return;
         }
 
-        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
-        if (auth()->id() !== $coordinatorUserId) {
-            session()->flash('error', 'Somente o coordenador pode criar posts.');
+        $this->validate();
+
+        if (empty(trim($this->newPostContent)) && is_null($this->media)) {
+            session()->flash('error', 'O post deve ter texto ou um arquivo anexado.');
             return;
         }
 
         $imagePaths = [];
-        if (!empty($this->images)) {
-            foreach ($this->images as $image) {
-                if (method_exists($image, 'store')) {
-                    $imagePaths[] = $image->store('post-images', 'public');
-                }
-            }
+        $filePath = null;
+
+        if ($this->media) {
+            $filePath = $this->media->store('posts', 'public');
+
+            $imagePaths[] = $filePath;
         }
 
-        $this->course->posts()->create([
-            'user_id' => auth()->id(),
-            // Garante que se o conteúdo for só espaços vazios, seja salvo como null
-            'content' => trim($this->newPostContent) ?: null, 
+        Post::create([
+            'user_id' => Auth::id(),
+            'course_id' => $this->newPostCourseId,
+            'content' => $this->newPostContent,
             'images' => $imagePaths,
         ]);
 
-        $this->newPostContent = '';
-        $this->images = [];
+        $this->reset('newPostContent', 'media');
+        $this->dispatch('postCreated');
         $this->resetPage();
 
         session()->flash('success', 'Post criado com sucesso!');
-        $this->dispatch('postCreated');
     }
 
-    // -------------------------------------------------------------------------
-    // --- MÉTODOS DE EDIÇÃO DE POSTS ---
-    // -------------------------------------------------------------------------
+    // --- MÉTODOS DE EDIÇÃO ATUALIZADOS PARA ARQUIVO ÚNICO ---
 
-    // Inicializa o formulário de edição do Post
-    public function startEdit($postId) 
+    public function startEditPost(int $postId)
     {
-        $post = Post::findOrFail($postId);
+        $post = Post::where('user_id', Auth::id())->findOrFail($postId);
 
-        $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
-        if (auth()->id() !== $post->user_id && !$isCoordinator) {
-             session()->flash('error', 'Você não tem permissão para editar este post.');
-             return;
-        }
-        
-        // Cancela a edição de resposta, se estiver ativa
-        $this->cancelEditReply(); 
-
-        $this->editingPostId = $postId;
+        $this->editingPostId = $post->id;
         $this->editingPostContent = $post->content;
-        $this->editingPostCurrentImages = $post->images ?? [];
-        $this->editingPostNewImages = []; 
-        $this->resetErrorBag();
-    }
-    
-    // Lógica para NOVAS imagens durante a edição do Post
-    public function updatedEditingPostNewImages()
-    {
-        $newFiles = is_array($this->editingPostNewImages) ? $this->editingPostNewImages : [$this->editingPostNewImages];
-        $currentCount = count($this->editingPostCurrentImages);
-        $totalAllowed = 5;
-        $newCount = count($newFiles);
 
-        // Verifica o limite total (atuais + novas)
-        if ($newCount + $currentCount > $totalAllowed) {
-            // Se o upload exceder o limite, pega apenas o que falta para 5
-            $take = $totalAllowed - $currentCount;
-            // Pega as 'take' primeiras da lista de uploads
-            $this->editingPostNewImages = collect($newFiles)->take($take)->all(); 
-            
-            if ($take < 1) {
-                $this->editingPostNewImages = [];
-                session()->flash('error', "O post já atingiu o limite de 5 imagens. Remova alguma foto para adicionar uma nova.");
-            } else {
-                 session()->flash('error', "Você só pode ter um total de 5 imagens. Apenas $take foram adicionadas.");
-            }
-        }
+        $this->originalMediaPath = !empty($post->images) ? $post->images[0] : null;
+
+        $this->editingMedia = null;
+
+        $this->dispatch('openEditModal');
     }
 
-    // Remove imagem (existente ou nova) durante a edição do Post
-    public function removeEditingImage($index, $isNew = false)
+    public function saveEditPost()
     {
-        if ($isNew) {
-            // Remove do array de novas imagens (UploadedFiles)
-            if (isset($this->editingPostNewImages[$index])) {
-                unset($this->editingPostNewImages[$index]);
-                $this->editingPostNewImages = array_values($this->editingPostNewImages);
-            }
-        } else {
-            // Remove do array de imagens atuais (paths no DB)
-            if (isset($this->editingPostCurrentImages[$index])) {
-                unset($this->editingPostCurrentImages[$index]);
-                $this->editingPostCurrentImages = array_values($this->editingPostCurrentImages);
-            }
-        }
-    }
+        $post = Post::where('user_id', Auth::id())->findOrFail($this->editingPostId);
 
+        $this->validate([
+            'editingPostContent' => 'nullable|string|max:5000',
+            'editingMedia' => 'nullable|file|max:5120|mimes:jpeg,png,jpg,gif,pdf,doc,docx,zip',
+        ]);
 
-    public function cancelEdit()
-    {
-        $this->editingPostId = null;
-        $this->editingPostContent = '';
-        $this->editingPostCurrentImages = [];
-        $this->editingPostNewImages = [];
-        $this->resetErrorBag();
-    }
+        $finalImages = [];
+        $shouldDeleteOriginal = false;
 
-    // Atualização de Post
-    public function updatePost()
-    {
-        $this->validate(); 
-
-        // Checagem Lógica: O post precisa de CONTEÚDO OU IMAGENS
-        if (empty(trim($this->editingPostContent)) && empty($this->editingPostCurrentImages) && empty($this->editingPostNewImages)) {
-             $this->addError('editingPostContent', 'O post deve ter conteúdo de texto ou pelo menos uma imagem.');
-             return; 
+        if ($this->editingMedia) {
+            $newPath = $this->editingMedia->store('posts', 'public');
+            $finalImages = [$newPath];
+            $shouldDeleteOriginal = !is_null($this->originalMediaPath);
+        } elseif (!is_null($this->originalMediaPath)) {
+            $finalImages = [$this->originalMediaPath];
         }
 
-        $post = Post::findOrFail($this->editingPostId);
-        $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
-
-        if (auth()->id() !== $post->user_id && !$isCoordinator) {
-             session()->flash('error', 'Você não tem permissão para atualizar este post.');
-             $this->cancelEdit();
-             return;
+        if ($shouldDeleteOriginal && $this->originalMediaPath) {
+            Storage::disk('public')->delete($this->originalMediaPath);
+        } elseif (is_null($this->originalMediaPath) && !is_null($post->images)) {
+            Storage::disk('public')->delete($post->images);
         }
 
-        // Armazena a lista ORIGINAL de imagens para posterior exclusão
-        $originalImages = $post->images ?? [];
-
-        // 1. Processa e armazena as NOVAS imagens
-        $newImagePaths = [];
-        if (!empty($this->editingPostNewImages)) {
-            foreach ($this->editingPostNewImages as $image) {
-                if (method_exists($image, 'store')) {
-                    $newImagePaths[] = $image->store('post-images', 'public');
-                }
-            }
-        }
-
-        // 2. Combina as imagens antigas que restaram (após remoção) com as novas
-        $finalImages = array_merge($this->editingPostCurrentImages, $newImagePaths);
-
-        // 3. Atualiza o Post
         $post->update([
-            // Garante que se o conteúdo for só espaços vazios, seja salvo como null
-            'content' => trim($this->editingPostContent) ?: null, 
+            'content' => $this->editingPostContent,
             'images' => $finalImages,
         ]);
 
-        // 4. Lógica de Limpeza: Exclui as imagens antigas que NÃO estão mais no array final
-        $imagesToDelete = array_diff($originalImages, $this->editingPostCurrentImages);
+        session()->flash('success', 'Post atualizado com sucesso!');
+        $this->resetEditModal();
+        $this->resetPage();
+    }
 
-        foreach ($imagesToDelete as $path) {
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
+    public function removeEditingMedia()
+    {
+        $this->originalMediaPath = null;
+        $this->editingMedia = null;
+    }
+
+    public function resetEditModal()
+    {
+        $this->reset([
+            'editingPostId',
+            'editingPostContent',
+            'editingMedia',
+            'originalMediaPath',
+        ]);
+        $this->dispatch('closeEditModal');
+    }
+
+    // --- MÉTODOS DE EXCLUSÃO DE POST ---
+
+    public function confirmPostDeletion(int $postId)
+    {
+        $this->confirmingPostDeletionId = $postId;
+    }
+
+    public function deletePost()
+    {
+        $postId = $this->confirmingPostDeletionId;
+        if (!$postId) return;
+
+        $post = Post::where('user_id', Auth::id())->findOrFail($postId);
+
+        if ($post->images) {
+            Storage::disk('public')->delete($post->images);
         }
 
-        session()->flash('success', 'Post atualizado com sucesso!');
-        $this->cancelEdit();
-    }
-    
-    // -------------------------------------------------------------------------
-    // --- MÉTODOS DE RESPOSTAS (CRIAÇÃO/EDIÇÃO/EXCLUSÃO) ---
-    // -------------------------------------------------------------------------
+        $post->delete();
 
-    // Criação de Respostas (MODIFICADO para imagem única)
+        session()->flash('success', 'Post excluído com sucesso!');
+        $this->confirmingPostDeletionId = null;
+        $this->resetPage();
+
+        if ($this->selectedPostId === $postId) {
+            $this->closePostModal();
+        }
+    }
+
+    // --- MÉTODOS DE MODAL DE POST ---
+
+    public function openPostModal(int $postId)
+    {
+        $this->selectedPostId = $postId;
+        $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
+            ->findOrFail($postId);
+
+        $this->isCarouselOpen = false;
+        $this->currentImageIndex = 0;
+
+        // NOVO: Reseta o estado de edição/exclusão da resposta ao abrir o modal
+        $this->resetEditReply();
+        $this->confirmingReplyDeletionId = null;
+    }
+
+    public function closePostModal()
+    {
+        $this->selectedPostId = null;
+        $this->expandedPost = null;
+        $this->isCarouselOpen = false;
+
+        // NOVO: Reseta o estado de edição/exclusão da resposta ao fechar
+        $this->resetEditReply();
+        $this->confirmingReplyDeletionId = null;
+
+        $this->dispatch('close-post-modal');
+    }
+
+    public function openCarousel(int $imageIndex)
+    {
+        if (!$this->expandedPost || empty($this->expandedPost->images)) {
+            return;
+        }
+
+        $this->currentImageIndex = $imageIndex;
+        $this->isCarouselOpen = true;
+    }
+
+    // --- MÉTODOS DE RESPOSTA (REPLY) ---
+
     public function createReply($postId)
     {
-        $contentKey = "newReplyContent.{$postId}";
-        $imageKey = "newReplyImage.{$postId}";
+        if (!isset($this->newReplyContent[$postId])) {
+            $this->newReplyContent[$postId] = '';
+        }
 
-        // Valida o conteúdo e a imagem (se houver)
         $this->validate([
-            $contentKey => 'required_without:' . $imageKey . '|string|min:2|max:300',
-            $imageKey => 'nullable|image|max:512', // 512KB
+            "newReplyContent.{$postId}" => $this->rules()['newReplyContent.*']
         ]);
-        
-        // Checagem Lógica: Precisa de CONTEÚDO OU IMAGEM
-        if (empty(trim(Arr::get($this->newReplyContent, $postId))) && empty(Arr::get($this->newReplyImage, $postId))) {
-             $this->addError($contentKey, 'A resposta deve ter conteúdo de texto ou uma imagem.');
-             return; 
-        }
-
-        $imagePath = null;
-        $imageFile = Arr::get($this->newReplyImage, $postId);
-        
-        if ($imageFile) {
-            $imagePath = $imageFile->store('reply-images', 'public');
-        }
 
         $post = Post::findOrFail($postId);
         $post->replies()->create([
             'user_id' => auth()->id(),
-            'content' => trim(Arr::get($this->newReplyContent, $postId)) ?: null,
-            'image' => $imagePath,
+            'content' => $this->newReplyContent[$postId],
         ]);
 
-        // Limpa o formulário
-        Arr::forget($this->newReplyContent, $postId); 
-        Arr::forget($this->newReplyImage, $postId);
-        $this->newReplyImage[$postId] = null; // Garante que o input de file seja resetado
-        
+        $this->newReplyContent[$postId] = '';
+
+        if ($this->selectedPostId === $postId) {
+            $this->expandedPost = $this->expandedPost->fresh(['replies.author']);
+        }
+
+        $this->resetPage();
         session()->flash('success', 'Resposta enviada com sucesso!');
         $this->dispatch('replyCreated');
     }
 
-    // Inicializa o formulário de edição de Resposta
-    public function startEditReply($replyId) 
-    {
-        $reply = \App\Models\Reply::findOrFail($replyId);
+    // ==========================================================
+    // MÉTODOS NOVOS PARA EDIÇÃO E EXCLUSÃO DE RESPOSTA (REPLY)
+    // ==========================================================
 
-        $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
-        if (auth()->id() !== $reply->user_id && !$isCoordinator) {
-             session()->flash('error', 'Você não tem permissão para editar esta resposta.');
-             return;
-        }
-        
-        // Redefine a edição de post, se estiver ativa
-        $this->cancelEdit();
-        
+    /**
+     * Inicia o modo de edição para uma resposta específica.
+     */
+    public function startEditReply(int $replyId)
+    {
+        $reply = Reply::where('user_id', Auth::id())->findOrFail($replyId);
+
         $this->editingReplyId = $replyId;
         $this->editingReplyContent = $reply->content;
-        $this->editingReplyCurrentImage = $reply->image; // Caminho do storage
-        $this->editingReplyNewImage = null;
-        $this->resetErrorBag();
-    }
-    
-    // Cancela a Edição de Resposta
-    public function cancelEditReply()
-    {
-        $this->editingReplyId = null;
-        $this->editingReplyContent = '';
-        $this->editingReplyCurrentImage = null;
-        $this->editingReplyNewImage = null;
-        $this->resetErrorBag();
-    }
-    
-    // Remove a Imagem Atual da Resposta durante a edição
-    public function removeReplyImage()
-    {
-        // Apenas remove do array de edição. A exclusão do arquivo será em updateReply.
-        $this->editingReplyCurrentImage = null; 
     }
 
-    // Atualiza a Resposta
-    public function updateReply()
+    /**
+     * Salva o conteúdo editado da resposta.
+     */
+    public function saveEditReply()
     {
-        $this->validate(); 
-
-        $reply = \App\Models\Reply::findOrFail($this->editingReplyId);
-        $isCoordinator = optional(optional($this->course->courseCoordinator)->userAccount)->id === auth()->id();
-
-        if (auth()->id() !== $reply->user_id && !$isCoordinator) {
-             session()->flash('error', 'Você não tem permissão para atualizar esta resposta.');
-             $this->cancelEditReply();
-             return;
-        }
-        
-        // Checagem Lógica: Precisa de CONTEÚDO OU IMAGEM
-        if (empty(trim($this->editingReplyContent)) && empty($this->editingReplyCurrentImage) && empty($this->editingReplyNewImage)) {
-             $this->addError('editingReplyContent', 'A resposta deve ter conteúdo de texto ou uma imagem.');
-             return; 
-        }
-
-        $originalImage = $reply->image;
-        $newImagePath = $originalImage;
-
-        // 1. Processa nova imagem de upload (se houver)
-        if ($this->editingReplyNewImage) {
-            // Se houver uma nova imagem, armazena
-            $newImagePath = $this->editingReplyNewImage->store('reply-images', 'public');
-            
-            // Exclui a imagem antiga (se houver)
-            if ($originalImage && Storage::disk('public')->exists($originalImage)) {
-                Storage::disk('public')->delete($originalImage);
-            }
-        } 
-        // 2. Lógica para exclusão de imagem
-        elseif ($originalImage && is_null($this->editingReplyCurrentImage)) {
-            // Se a imagem original existia, e a atual foi removida manualmente (editingReplyCurrentImage = null)
-            $newImagePath = null;
-            if (Storage::disk('public')->exists($originalImage)) {
-                Storage::disk('public')->delete($originalImage);
-            }
-        }
-        // 3. Se não houver nova imagem e a imagem atual não foi removida, mantém o caminho original do DB.
-        // Se `editingReplyCurrentImage` for nulo, mas o upload de `editingReplyNewImage` também for nulo, `newImagePath` será nulo.
-
-        // 4. Atualiza a Resposta
-        $reply->update([
-            'content' => trim($this->editingReplyContent) ?: null, 
-            'image' => $newImagePath,
+        $this->validate([
+            'editingReplyContent' => 'required|string|min:2|max:500',
         ]);
 
-        session()->flash('success', 'Resposta atualizada com sucesso!');
-        $this->cancelEditReply();
+        $reply = Reply::where('user_id', Auth::id())->findOrFail($this->editingReplyId);
+
+        $reply->content = $this->editingReplyContent;
+        $reply->save();
+
+        session()->flash('success', 'Resposta editada com sucesso!');
+
+        // Atualiza a lista de respostas no modal
+        $this->expandedPost->refresh();
+
+        $this->resetEditReply();
     }
 
-
-    // Excluir Resposta (MODIFICADO para incluir exclusão de imagem)
-    public function deleteReply($replyId)
+    /**
+     * Reseta as propriedades de edição de resposta.
+     */
+    public function resetEditReply()
     {
-        $reply = \App\Models\Reply::findOrFail($replyId);
-        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
-
-        if (auth()->id() === $reply->user_id || auth()->id() === $coordinatorUserId) {
-             // Lógica de Limpeza: Exclui a imagem associada à resposta, se houver
-            if ($reply->image && Storage::disk('public')->exists($reply->image)) {
-                Storage::disk('public')->delete($reply->image);
-            }
-            
-            $reply->delete();
-            session()->flash('success', 'Resposta excluída com sucesso.');
-            $this->dispatch('replyDeleted');
-        } else {
-            session()->flash('error', 'Você não tem permissão para excluir esta resposta.');
-        }
+        $this->reset([
+            'editingReplyId',
+            'editingReplyContent',
+        ]);
     }
 
-    // Excluir Post (MODIFICADO para incluir exclusão de todas as imagens do post E das respostas)
-    public function deletePost($postId)
+    /**
+     * Abre o modal de confirmação para exclusão de resposta.
+     */
+    public function confirmReplyDeletion(int $replyId)
     {
-        $post = Post::findOrFail($postId);
-        $coordinatorUserId = optional(optional($this->course->courseCoordinator)->userAccount)->id;
+        $this->confirmingReplyDeletionId = $replyId;
+    }
 
-        if (auth()->id() === $post->user_id || auth()->id() === $coordinatorUserId) {
-            
-            // Lógica de Limpeza: Exclui as imagens do post
-            if (!empty($post->images)) {
-                foreach ($post->images as $path) {
-                    if (Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
-                    }
-                }
-            }
-            
-            // Lógica de Limpeza: Exclui as imagens das respostas
-            foreach ($post->replies as $reply) {
-                 if ($reply->image && Storage::disk('public')->exists($reply->image)) {
-                    Storage::disk('public')->delete($reply->image);
-                }
-            }
-            
-            $post->delete();
-            session()->flash('success', 'Post excluído com sucesso.');
-            $this->resetPage();
-            $this->dispatch('postDeleted');
-        } else {
-            session()->flash('error', 'Você não tem permissão para excluir este post.');
+    /**
+     * Executa a exclusão da resposta.
+     * Permite que o dono da resposta ou o dono do post excluam.
+     */
+    public function deleteReply()
+    {
+        $replyId = $this->confirmingReplyDeletionId;
+        if (!$replyId) return;
+
+        $reply = Reply::with('post')->find($replyId);
+
+        if (!$reply) {
+            session()->flash('error', 'Resposta não encontrada.');
+            $this->confirmingReplyDeletionId = null;
+            return;
         }
+
+        // Permite deletar se for dono da resposta ou dono do post
+        if ($reply->user_id !== auth()->id() && $reply->post->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $reply->delete();
+
+        session()->flash('success', 'Resposta excluída com sucesso!');
+
+        $this->confirmingReplyDeletionId = null;
+
+        // Atualiza a lista de respostas no modal
+        if ($this->expandedPost) {
+            $this->expandedPost = $this->expandedPost->fresh(['replies.author']);
+        }
+
+        $this->resetPage();
+    }
+    // ==========================================================
+
+    #[On('postCreated')]
+    public function render()
+    {
+        $posts = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies'])
+            ->latest()
+            ->get();
+
+        $feedItems = $posts->map(function ($post) {
+            $post->type = 'post';
+            $post->sort_date = $post->created_at;
+            return $post;
+        });
+
+        if ($this->selectedPostId && !$this->expandedPost) {
+            $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
+                ->findOrFail($this->selectedPostId);
+        }
+
+        // NOVO: Garantir que a propriedade editingReplyContent seja definida se estiver editando
+        if ($this->editingReplyId && empty($this->editingReplyContent)) {
+            $this->startEditReply($this->editingReplyId);
+        }
+
+        return view('livewire.feed-posts', [
+            'feedItems' => $feedItems,
+            'posts' => $posts,
+        ]);
     }
 }

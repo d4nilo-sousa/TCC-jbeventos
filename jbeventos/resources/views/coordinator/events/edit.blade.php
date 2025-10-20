@@ -40,23 +40,23 @@
                     @csrf
                     @method('PUT')
 
-                    {{-- Abas de Navegação --}}
                     <div class="flex items-center justify-center mb-10">
-                        {{-- Tab 1: Informações --}}
+                        {{-- Tab 1: Informações (ATIVA: Fundo Vermelho, Borda Vermelha, Texto Branco) --}}
                         <button type="button" data-tab-target="tab1"
                             class="tab-button flex items-center focus:outline-none transition-all duration-300">
                             <span
-                                class="inline-flex items-center justify-center w-8 h-8 font-bold rounded-full transition-colors duration-300 active-tab-style">
+                                class="inline-flex items-center justify-center w-8 h-8 font-bold rounded-full transition-colors duration-300 border border-gray-300 bg-white text-gray-500">
+                                {{-- **CLASSE ADICIONADA: border border-red-600** --}}
                                 1
                             </span>
-                            <span class="ml-2 text-sm md:text-base active-tab-text-style">
+                            <span class="ml-2 text-sm md:text-base text-red-600">
                                 Informações
                             </span>
                         </button>
 
                         <div class="border-t border-gray-300 w-20 mx-3 transition-colors duration-300"></div>
 
-                        {{-- Tab 2: Imagens --}}
+                        {{-- Tab 2: Imagens (INATIVA: Fundo Branco, Borda Cinza, Texto Cinza) --}}
                         <button type="button" data-tab-target="tab2"
                             class="tab-button flex items-center focus:outline-none transition-all duration-300 text-gray-500 hover:text-red-500">
                             <span
@@ -87,8 +87,9 @@
 
                             {{-- CAMPO 2: Sobre o Evento --}}
                             <div class="mb-4">
-                                <x-input-label for="event_description" value="Sobre o Evento" class="text-left mb-1 block" />
-                                <textarea name="event_description" id="event_description" rows="4" required
+                                <x-input-label for="event_description" value="Sobre o Evento"
+                                    class="text-left mb-1 block" />
+                                <textarea name="event_description" id="event_description" rows="4"
                                     class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500 text-left block">{{ old('event_description', $event->event_description) }}</textarea>
                                 @error('event_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -139,29 +140,32 @@
                                 $selectedCourses = old('courses', $event->courses->pluck('id')->toArray());
                             @endphp
 
-                            <div class="mt-6">
-                                <x-input-label for="courses" value="Cursos Adicionais (Opcional)" />
+                            @if ($event->event_type === 'course')
+                                <div class="mt-6">
+                                    <x-input-label for="courses" value="Cursos Adicionais (Opcional)" />
 
-                                <div
-                                    class="mt-2 p-3 border border-gray-300 rounded-md shadow-sm h-40 overflow-y-auto bg-white">
-                                    @forelse ($availableCourses as $course)
-                                        <div class="flex items-center mb-1">
-                                            <input id="course-{{ $course->id }}" name="courses[]" type="checkbox"
-                                                value="{{ $course->id }}"
-                                                class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500"
-                                                {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
-                                            <label for="course-{{ $course->id }}" class="ml-2 text-sm text-gray-700">
-                                                {{ $course->course_name }}
-                                            </label>
-                                        </div>
-                                    @empty
-                                        <p class="text-sm text-gray-500">Nenhum curso adicional disponível para seleção.
-                                        </p>
-                                    @endforelse
+                                    <div
+                                        class="mt-2 p-3 border border-gray-300 rounded-md shadow-sm h-40 overflow-y-auto bg-white">
+                                        @forelse ($availableCourses as $course)
+                                            <div class="flex items-center mb-1">
+                                                <input id="course-{{ $course->id }}" name="courses[]" type="checkbox"
+                                                    value="{{ $course->id }}"
+                                                    class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500"
+                                                    {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
+                                                <label for="course-{{ $course->id }}"
+                                                    class="ml-2 text-sm text-gray-700">
+                                                    {{ $course->course_name }}
+                                                </label>
+                                            </div>
+                                        @empty
+                                            <p class="text-sm text-gray-500">Nenhum curso adicional disponível para
+                                                seleção.</p>
+                                        @endforelse
+                                    </div>
+
+                                    <x-input-error for="courses" class="mt-2" />
                                 </div>
-
-                                <x-input-error for="courses" class="mt-2" />
-                            </div>
+                            @endif
 
                             {{-- Categorias do Evento --}}
                             <div>
@@ -183,7 +187,7 @@
                             </div>
                         </div>
 
-                        <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mt-5"></h3>
+                        <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mt-7"></h3>
 
                         <div class="flex justify-between mt-8">
                             <a href="{{ route('events.show', $event->id) }}"
@@ -199,6 +203,7 @@
                         </div>
                     </div>
 
+                    {{-- Aba 2 --}}
                     <div id="tab2" class="tab-content hidden">
                         <div class="space-y-6">
                             <h3 class="text-2xl font-semibold text-gray-800 border-b pb-2 mb-6">Imagens do Evento</h3>
@@ -222,24 +227,16 @@
                                     </p>
                                 </div>
 
-                                {{-- Campo oculto para remover imagem existente --}}
-                                <input type="hidden" name="remove_event_image" id="remove_event_image_input" value="0">
+                                <input type="hidden" name="remove_event_image" id="remove_event_image_input"
+                                    value="0">
 
-                                {{-- Botão de Excluir Imagem ATUAL (Se existir) --}}
-                                <div id="event_image_preview" class="mt-4 flex flex-col items-center gap-2">
+                                <div id="event_image_preview" class="mt-4 flex flex-wrap gap-4">
+                                    {{-- Novo container APENAS para os dados iniciais da capa, renderizado pelo JS --}}
                                     @if ($event->event_image)
-                                        <div id="existing-event_image-preview" data-filename="{{ basename($event->event_image) }}"
-                                            class="flex items-center gap-2 p-2 border border-gray-200 rounded-md bg-gray-50">
-                                            <span class="text-sm text-gray-700 truncate max-w-xs">{{ basename($event->event_image) }}</span>
-                                            <button type="button" data-file-id="{{ $event->id }}"
-                                                data-type="event_image"
-                                                class="remove-existing-image-button flex items-center justify-center w-6 h-6 text-white bg-red-600 rounded-full hover:bg-red-700 transition duration-150">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                                    xmlns="http://www.w3.org/2000/svg">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
-                                            </button>
+                                        {{-- O ID 'existing-event_image-preview' é o que o JS irá procurar --}}
+                                        <div id="existing-event_image-preview" data-file-id="{{ $event->id }}"
+                                            data-filename="{{ basename($event->event_image) }}" class="hidden">
+                                            {{-- Mantenha hidden. O JS lerá e removerá. --}}
                                         </div>
                                     @endif
                                 </div>
@@ -267,50 +264,38 @@
                                     </p>
                                 </div>
 
-                                {{-- Pré-visualização e Exclusão da Galeria --}}
-                                <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
-                                    {{-- Campos ocultos para manter imagens existentes --}}
-                                    <div id="existing-event_images-gallery" class="flex flex-wrap gap-2 justify-center">
-                                        @foreach ($event->images as $img)
-                                            <div data-id="{{ $img->id }}"
-                                                data-filename="{{ basename($img->image_path) }}"
-                                                class="flex flex-col items-center p-2 border border-gray-200 rounded-md bg-gray-50">
-                                                <span class="text-xs text-gray-700 truncate w-24 mb-1">{{ basename($img->image_path) }}</span>
-                                                <button type="button" data-image-id="{{ $img->id }}"
-                                                    class="remove-gallery-image-button flex items-center justify-center w-6 h-6 text-white bg-red-600 rounded-full hover:bg-red-700 transition duration-150">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M6 18L18 6M6 6l12 12"></path>
-                                                    </svg>
-                                                </button>
-                                                {{-- Manter o input hidden para enviar ao backend quais IDs manter --}}
-                                                <input type="hidden" name="keep_event_images[]" value="{{ $img->id }}"
-                                                    data-image-id="{{ $img->id }}" class="keep-image-input">
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                    {{-- Previews de novos arquivos serão adicionados aqui --}}
+                                <div id="event_images_preview" class="mt-4 flex flex-wrap gap-4"></div>
+
+                                {{-- Container que será preenchido pelo JS para as imagens existentes --}}
+                                {{-- O ID original 'event_images_preview' é para novos uploads. Usamos um novo ID temporário --}}
+                                <div id="existing-event_images-gallery" class="hidden"> {{-- Adicione 'hidden' para não aparecer antes do JS renderizar --}}
+                                    @foreach ($event->images as $img)
+                                        {{-- Div com os dados cruciais para o JS --}}
+                                        <div data-id="{{ $img->id }}"
+                                            data-filename="{{ basename($img->image_path) }}">
+                                        </div>
+                                    @endforeach
                                 </div>
-
-                                @error('event_images')
-                                    <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-                                @enderror
                             </div>
 
-                            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mt-7"></h3>
+                            @error('event_images')
+                                <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                            <div class="flex items-center justify-between mt-6">
-                                <button type="button" data-prev-tab="tab1"
-                                    class="prev-button px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300 transition-colors duration-200">
-                                    Anterior
-                                </button>
-                                {{-- Botão de Submeter --}}
-                                <button type="submit"
-                                    class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition ease-in-out duration-150">
-                                    Atualizar Evento
-                                </button>
-                            </div>
+                        <h3 class="text-xl font-semibold text-gray-700 border-b pb-2 mt-7"></h3>
+
+                        {{-- Botões somente na Aba 2 --}}
+                        <div class="flex items-center justify-between mt-6">
+                            <button type="button" data-prev-tab="tab1"
+                                class="prev-button px-6 py-2 bg-gray-200 text-gray-700 rounded-md font-semibold hover:bg-gray-300 transition-colors duration-200">
+                                Anterior
+                            </button>
+
+                            <button type="submit"
+                                class="submit-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition ease-in-out duration-150">
+                                Atualizar Evento
+                            </button>
                         </div>
                     </div>
                 </form>

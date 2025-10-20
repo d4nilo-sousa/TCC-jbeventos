@@ -161,6 +161,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::get('/courses/{course}/followers-count', [CourseFollowController::class, 'followersCount'])
         ->name('courses.followersCount');
 
+    Route::delete('/events/{event_id}/cover', [ImageController::class, 'removeCoverImage'])
+        ->name('events.remove_cover');
+
     Route::delete('/event-images/{id}', [ImageController::class, 'destroyEventImage'])
         ->name('event-images.destroy');
 

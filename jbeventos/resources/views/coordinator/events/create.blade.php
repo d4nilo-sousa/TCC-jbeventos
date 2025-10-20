@@ -5,10 +5,10 @@
                 {{-- Título da Página --}}
                 <div class="flex flex-col items-center justify-center mb-10 text-center">
                     <div class="p-4 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center w-16 h-16">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600" viewBox="0 0 256 256" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600" viewBox="0 0 256 256"
+                            fill="currentColor">
                             <path
-                                d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48V56a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z"
-                            />
+                                d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48V56a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z" />
                         </svg>
                     </div>
                     <h1 class="text-3xl font-bold text-gray-800">Criar Novo Evento</h1>
@@ -126,7 +126,7 @@
                                         imagem de capa.
                                     </p>
                                 </div>
-                                <div id="event_image_preview" class="mt-4 flex justify-center"></div>
+                                <div id="event_image_preview" class="mt-4 flex justify-start"></div>
                                 @error('event_image')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
@@ -147,28 +147,29 @@
                                             d="M12 11V5" />
                                     </svg>
                                     <p class="mt-2 text-sm text-gray-500 group-hover:text-red-500 transition-colors">
-                                        <span class="font-semibold">Arraste e solte</span> ou clique para adicionar mais
+                                        <span class="font-semibold">Arraste e solte</span> ou clique para adicionar
+                                        mais
                                         imagens.
                                     </p>
                                 </div>
-                                <div id="event_images_preview" class="mt-4 flex flex-wrap gap-2 justify-center"></div>
+                                <div id="event_images_preview" class="mt-4 flex justify-start gap-4"></div>
                                 @error('event_images')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror
-                            </div>
 
-                            <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
+                                <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
 
-                            <div class="flex justify-between">
-                                <a href="{{ route('events.index') }}"
-                                    class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
-                                    Cancelar
-                                </a>
+                                <div class="flex justify-between mt-5">
+                                    <a href="{{ route('events.index') }}"
+                                        class="inline-flex items-center px-6 py-3 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 bg-white hover:bg-gray-100 transition ease-in-out duration-150">
+                                        Cancelar
+                                    </a>
 
-                                <button type="button" data-next-tab="tab-info"
-                                    class="next-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition ease-in-out duration-150">
-                                    Próximo
-                                </button>
+                                    <button type="button" data-next-tab="tab-info"
+                                        class="next-button inline-flex items-center px-6 py-3 border border-transparent rounded-md font-semibold text-sm text-white bg-red-600 hover:bg-red-700 transition ease-in-out duration-150">
+                                        Próximo
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -183,7 +184,9 @@
                                     <x-input-label for="event_name" value="Nome do Evento" />
                                     {{-- Garante largura total com w-full (já está dentro do x-text-input, mas reforçamos o div pai) --}}
                                     <x-text-input type="text" name="event_name" id="event_name" maxlength="50"
-                                        value="{{ old('event_name') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" required />
+                                        value="{{ old('event_name') }}"
+                                        class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                        required />
                                     @error('event_name')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -194,16 +197,14 @@
                                     <x-input-label for="event_location" value="Local" />
                                     {{-- Garante largura total com w-full --}}
                                     <x-text-input type="text" name="event_location" id="event_location"
-                                        value="{{ old('event_location') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" required />
+                                        value="{{ old('event_location') }}"
+                                        class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                        required />
                                     @error('event_location')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
-
-                            <label for="event_description">Descrição do Evento:</label>
-                            <input type="text" id="event_description" name="event_description"
-                                placeholder="Digite a descrição do evento" class="border p-2 rounded w-full">
 
 
                             {{-- Sobre o Evento --}}
@@ -258,8 +259,9 @@
                                 <div>
                                     <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
                                     <x-text-input type="datetime-local" name="event_scheduled_at"
-                                        id="event_scheduled_at"
-                                        value="{{ old('event_scheduled_at') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" required />
+                                        id="event_scheduled_at" value="{{ old('event_scheduled_at') }}"
+                                        class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500"
+                                        required />
                                     @error('event_scheduled_at')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror
@@ -270,7 +272,8 @@
                                     <x-input-label for="event_expired_at" value="Exclusão Automática" />
                                     <x-text-input type="datetime-local" name="event_expired_at" id="event_expired_at"
                                         min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
-                                        value="{{ old('event_expired_at') }}" class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" />
+                                        value="{{ old('event_expired_at') }}"
+                                        class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" />
                                     @error('event_expired_at')
                                         <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                     @enderror

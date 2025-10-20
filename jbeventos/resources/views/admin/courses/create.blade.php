@@ -80,7 +80,7 @@
 
                             <div>
                                 <x-input-label for="course_description" value="Descrição" />
-                                <textarea name="course_description" id="course_description" rows="4" required
+                                <textarea name="course_description" id="course_description" rows="4"
                                     class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('course_description') }}</textarea>
                                 @error('course_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
