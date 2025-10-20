@@ -2,6 +2,7 @@
     <div class="py-6">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
+
                 {{-- Título da Página --}}
                 <div class="flex flex-col items-center justify-center mb-10 text-center">
                     <div class="p-4 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center w-16 h-16">
@@ -173,6 +174,7 @@
                             </div>
                         </div>
 
+
                         {{-- Aba 2: Informações do Evento (Campos de Nome e Local em largura total) --}}
                         <div id="tab-info" class="tab-content hidden space-y-6">
                             <h3 class="text-xl font-semibold text-gray-700 border-b pb-2">Informações do Evento
@@ -254,12 +256,15 @@
                         <div id="tab-details" class="tab-content hidden space-y-6">
                             <h3 class="text-xl font-semibold text-gray-700 border-b pb-2">Datas e Afiliação</h3>
 
+                            {{-- CAMPOS DE DATAS --}}
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {{-- Data e Hora do Evento --}}
                                 <div>
                                     <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
                                     <x-text-input type="datetime-local" name="event_scheduled_at"
-                                        id="event_scheduled_at" value="{{ old('event_scheduled_at') }}"
+                                        id="event_scheduled_at" {{-- Adiciona a restrição mínima para ser a hora atual, evitando eventos passados --}}
+                                        min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
+                                        value="{{ old('event_scheduled_at') }}"
                                         class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500"
                                         required />
                                     @error('event_scheduled_at')
@@ -269,9 +274,9 @@
 
                                 {{-- Exclusão Automática --}}
                                 <div>
-                                    <x-input-label for="event_expired_at" value="Exclusão Automática" />
+                                    <x-input-label for="event_expired_at" value="Exclusão Automática (Opcional)" />
                                     <x-text-input type="datetime-local" name="event_expired_at" id="event_expired_at"
-                                        min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
+                                        {{-- Mantém a restrição mínima padrão (hora atual) que será sobrescrita pelo JS --}} min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
                                         value="{{ old('event_expired_at') }}"
                                         class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500" />
                                     @error('event_expired_at')
@@ -280,9 +285,9 @@
                                 </div>
                             </div>
 
-                            {{-- Coordenador e Tipo do Evento --}}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {{-- Coordenador Responsável (Campo Fixo/Desabilitado com novo estilo) --}}
+                            {{-- Coordenador, Tipo do Evento e Curso --}}
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {{-- Coordenador Responsável (1/3) --}}
                                 <div>
                                     <x-input-label for="coordinator_name" value="Coordenador Responsável" />
                                     <x-text-input id="coordinator_name" type="text"
@@ -313,58 +318,58 @@
                                     $selectedCourses = old('courses', []);
                                 @endphp
 
-                                {{-- ... Bloco de Tipo de Evento/Curso Padrão ... --}}
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {{-- Tipo do Evento (Campo Fixo/Desabilitado com novo estilo) --}}
+                                {{-- Tipo do Evento (1/3) --}}
+                                <div class="w-[150px]">
+                                    <x-input-label for="event_type" value="Tipo do Evento" />
+                                    <x-text-input id="coordinator_type" type="text"
+                                        class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                        value="{{ $eventTypeLabel }}" readonly disabled />
+                                    <input type="hidden" name="coordinator_type" value="{{ $coordinatorType }}">
+                                </div>
+
+                                {{-- Curso Padrão do Coordenador (1/3 - Visível apenas se for 'course') --}}
+                                @if ($coordinatorType === 'course')
                                     <div>
-                                        <x-input-label for="event_type" value="Tipo do Evento" />
-                                        <x-text-input id="coordinator_type" type="text"
+                                        <x-input-label for="default_course" value="Curso Padrão (Obrigatório)" />
+                                        <x-text-input id="default_course_name" type="text"
                                             class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
-                                            value="{{ $eventTypeLabel }}" readonly disabled />
-                                        <input type="hidden" name="coordinator_type"
-                                            value="{{ $coordinatorType }}">
+                                            value="{{ $defaultCourseName }}" readonly disabled />
+                                        {{-- Garante que o curso padrão seja enviado --}}
+                                        @if ($defaultCourseId)
+                                            <input type="hidden" name="courses[]" value="{{ $defaultCourseId }}">
+                                        @endif
                                     </div>
-
-                                    {{-- Curso Padrão do Coordenador (Sempre exibido se for curso) (Campo Fixo/Desabilitado com novo estilo) --}}
-                                    @if ($coordinatorType === 'course')
-                                        <div>
-                                            <x-input-label for="default_course" value="Curso Padrão (Obrigatório)" />
-                                            <x-text-input id="default_course_name" type="text"
-                                                class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
-                                                value="{{ $defaultCourseName }}" readonly disabled />
-                                        </div>
-                                    @endif
-                                </div>
+                                @endif
                             </div>
 
-                            {{-- NOVO CAMPO: Seleção de Outros Cursos como Checkboxes --}}
-                            <div class="mt-4">
-                                <x-input-label for="courses" value="Cursos Adicionais (Opcional)" />
+                            @if ($coordinatorType === 'course')
+                                {{-- NOVO CAMPO: Seleção de Outros Cursos como Checkboxes --}}
+                                <div class="mt-4">
+                                    <x-input-label for="courses" value="Cursos Adicionais (Opcional)" />
 
-                                {{-- Container para os checkboxes com scroll --}}
-                                <div
-                                    class="mt-2 p-3 border border-gray-300 rounded-md shadow-sm h-40 overflow-y-auto bg-white">
-
-                                    @forelse ($availableCourses as $course)
-                                        <div class="flex items-center mb-1">
-                                            {{-- O nome courses[] garante que o Laravel receba um array de IDs selecionados --}}
-                                            <input id="course-{{ $course->id }}" name="courses[]" type="checkbox"
-                                                value="{{ $course->id }}"
-                                                class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500"
-                                                {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
-                                            <label for="course-{{ $course->id }}"
-                                                class="ml-2 text-sm text-gray-700">
-                                                {{ $course->course_name }}
-                                            </label>
-                                        </div>
-                                    @empty
-                                        <p class="text-sm text-gray-500">Nenhum curso adicional disponível para
-                                            seleção.</p>
-                                    @endforelse
+                                    {{-- Container para os checkboxes com scroll --}}
+                                    <div
+                                        class="mt-2 p-3 border border-gray-300 rounded-md shadow-sm h-40 overflow-y-auto bg-white">
+                                        @forelse ($availableCourses as $course)
+                                            <div class="flex items-center mb-1">
+                                                {{-- O nome courses[] garante que o Laravel receba um array de IDs selecionados --}}
+                                                <input id="course-{{ $course->id }}" name="courses[]"
+                                                    type="checkbox" value="{{ $course->id }}"
+                                                    class="rounded border-gray-300 text-red-600 shadow-sm focus:ring-red-500"
+                                                    {{ in_array($course->id, $selectedCourses) ? 'checked' : '' }}>
+                                                <label for="course-{{ $course->id }}"
+                                                    class="ml-2 text-sm text-gray-700">
+                                                    {{ $course->course_name }}
+                                                </label>
+                                            </div>
+                                        @empty
+                                            <p class="text-sm text-gray-500">Nenhum curso adicional disponível para
+                                                seleção.</p>
+                                        @endforelse
+                                    </div>
                                 </div>
-
                                 <x-input-error for="courses" class="mt-2" />
-                            </div>
+                            @endif
 
                             <h3 class="text-xl font-semibold text-gray-700 border-b pb-2"></h3>
 

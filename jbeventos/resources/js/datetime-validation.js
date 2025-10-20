@@ -31,12 +31,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
+    /**
+     * Atualiza o atributo 'min' do campo event_expired_at (Exclusão Automática)
+     * para ser sempre 1 minuto após o event_scheduled_at.
+     */
     function updateExpiredMin() {
         if (scheduledInput && scheduledInput.value && expiredInput) {
             const scheduledDate = new Date(scheduledInput.value);
             const minString = getMinExpiredDateString(scheduledDate);
-            expiredInput.min = minString;
+            
+            // Define o mínimo que o navegador irá respeitar
+            expiredInput.min = minString; 
 
+            // Limpa o valor se a data agendada for alterada para um momento posterior
             if (expiredInput.value && new Date(expiredInput.value) < new Date(minString)) {
                 expiredInput.value = '';
             }
@@ -45,7 +52,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (scheduledInput) {
         scheduledInput.addEventListener('change', updateExpiredMin);
-        updateExpiredMin();
+        // Garante que o mínimo seja configurado na carga inicial
+        updateExpiredMin(); 
+    }
+
+    // ----------------------------
+    // PREVINE DIGITAÇÃO INVÁLIDA NO EVENT_EXPIRED_AT (Feedback Imediato)
+    // ----------------------------
+    if (expiredInput && scheduledInput) {
+        expiredInput.addEventListener('input', function () {
+            if (!scheduledInput.value) return;
+
+            const scheduledDate = new Date(scheduledInput.value);
+            const minExpiredDate = new Date(scheduledDate.getTime() + 60000);
+
+            const inputDate = new Date(expiredInput.value);
+            
+            // Se o valor inserido for inválido, limpa o campo
+            if (expiredInput.value && inputDate < minExpiredDate) {
+                 expiredInput.value = ''; 
+                 // Opcional: Adicionar feedback visual aqui, como 'border-red-500'
+            }
+        });
     }
 
     // ----------------------------
@@ -74,19 +102,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ----------------------------
-    // VALIDAÇÃO NO SUBMIT
+    // VALIDAÇÃO NO SUBMIT (Alerta de Exclusão Automática Removido)
     // ----------------------------
     form.addEventListener('submit', function (e) {
-        // Exclusão automática
+        // Exclusão automática (apenas fallback: limpa o campo e impede o envio)
         if (scheduledInput && expiredInput && scheduledInput.value && expiredInput.value) {
             const scheduledDate = new Date(scheduledInput.value);
             const minExpiredDate = new Date(scheduledDate.getTime() + 60000);
             const expiredDate = new Date(expiredInput.value);
 
             if (expiredDate < minExpiredDate) {
-                alert('O horário de encerramento deve ser pelo menos 1 minuto após o agendamento.');
+                // **Removido o alert() para bloquear silenciosamente no front-end**
                 e.preventDefault();
-                expiredInput.value = '';
+                expiredInput.value = ''; // Limpa o valor inválido
                 return;
             }
         }
