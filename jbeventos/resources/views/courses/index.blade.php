@@ -5,7 +5,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5 mb-10">
             {{-- Título --}}
             <div class="mt-1">
-                <p class="text-3xl sm:text-4xl font-extrabold text-stone-800 tracking-tight drop-shadow-sm">
+                <p class="text-3xl sm:text-4xl mt-5 font-extrabold text-stone-800 tracking-tight drop-shadow-sm">
                     Catálogo de Cursos
                 </p>
                 <div class="w-16 h-1 bg-red-500 rounded-full mt-2 shadow-lg"></div>
