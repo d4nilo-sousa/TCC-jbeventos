@@ -1,441 +1,327 @@
 <x-app-layout>
-    {{-- Container principal com layout de duas colunas --}}
-    <div class="grid grid-cols-1 lg:grid-cols-[64%_36%] gap-8">
+    {{-- Container principal com layout de duas colunas (da fix_course_index_page) --}}
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col xl:flex-row gap-8">
 
-        {{-- Coluna da Esquerda (Informações do Curso) --}}
-        <div class="lg:w-1/3 space-y-6 lg:sticky lg:top-8 self-start">
+        {{-- =============================== --}}
+        {{-- COLUNA ESQUERDA — Informações (Mantida) --}}
+        {{-- =============================== --}}
+        <div class="xl:w-1/3 lg:w-2/5 space-y-6 xl:sticky xl:top-8 self-start">
 
-            {{-- Card de Informações do Curso --}}
-            <div class="bg-white rounded-2xl shadow-lg p-6">
-                <div class="relative mb-8">
-                    {{-- Banner e ícone --}}
-                    <div class="w-full h-32 bg-gray-200 rounded-lg overflow-hidden relative group">
+            {{-- Card de Informações (ampliado) --}}
+            <div class="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
+                {{-- Banner --}}
+                <div class="relative mb-10">
+                    <div class="w-full h-40 bg-gray-200 rounded-xl overflow-hidden group">
                         <img src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
                             alt="Banner do Curso" class="object-cover w-full h-full">
+
                         @if (auth()->user()->user_type === 'admin')
                             <form method="POST" action="{{ route('courses.updateBanner', $course->id) }}"
                                 enctype="multipart/form-data"
-                                class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                 @csrf
                                 @method('PUT')
                                 <input type="file" name="course_banner" id="bannerUpload" class="hidden"
                                     onchange="this.form.submit()">
                                 <button type="button" onclick="document.getElementById('bannerUpload').click()"
-                                    class="bg-white px-3 py-1 text-sm rounded-full shadow-md hover:bg-gray-100 transition flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 9a2 2 0 012-2h.9a2 2 0 001.664-1.11l.888-1.776A2 2 0 0110.112 3h3.776a2 2 0 011.664 1.11l.888 1.776A2 2 20 0018.1 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    Trocar Banner
+                                    class="bg-white/90 backdrop-blur-sm px-3 py-1 text-xs rounded-full shadow hover:bg-gray-100 transition font-medium flex items-center gap-1">
+                                    <i class="ph-bold ph-image-square text-sm"></i> Trocar Banner
                                 </button>
                             </form>
                         @endif
                     </div>
 
+                    {{-- Ícone --}}
                     <div class="relative">
                         <img src="{{ $course->course_icon ? asset('storage/' . $course->course_icon) : asset('images/default-icon.png') }}"
                             alt="Ícone do Curso"
-                            class="w-24 h-24 rounded-full border-4 border-white absolute -bottom-10 left-4 object-cover">
+                            class="w-28 h-28 rounded-full border-4 border-white absolute -bottom-12 left-6 object-cover shadow-md">
 
                         @if (auth()->user()->user_type === 'admin')
                             <form method="POST" action="{{ route('courses.updateIcon', $course->id) }}"
-                                enctype="multipart/form-data"
-                                class="absolute -bottom-10 left-20 transition-opacity duration-300 opacity-100">
+                                enctype="multipart/form-data" class="absolute -bottom-10 left-32">
                                 @csrf
                                 @method('PUT')
                                 <input type="file" name="course_icon" id="iconUpload" class="hidden"
                                     onchange="this.form.submit()">
                                 <button type="button" onclick="document.getElementById('iconUpload').click()"
-                                    class="bg-white text-xs px-2 py-1 rounded-full shadow-md hover:bg-gray-100 transition flex items-center gap-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                    Editar
+                                    class="bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md hover:bg-red-600 transition flex items-center gap-1">
+                                    <i class="ph-bold ph-pencil-simple text-sm"></i>
                                 </button>
                             </form>
                         @endif
                     </div>
                 </div>
 
-                <div class="mt-4 pt-10">
-                    <div class="flex items-center justify-between">
-                        <h1 class="text-xl font-bold text-stone-800">{{ $course->course_name }}</h1>
+                {{-- Dados do Curso --}}
+                <div class="mt-10 space-y-3">
+                    <h1 class="text-3xl font-extrabold text-stone-800 leading-tight">{{ $course->course_name }}</h1>
 
-                        {{-- Botão de Seguir/Deixar de Seguir --}}
-                        @auth
-                            <div data-course-id="{{ $course->id }}">
-                                @if (auth()->user()->followedCourses->contains($course->id))
-                                    <button type="button"
-                                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
-                                        id="unfollowButton" data-course-id="{{ $course->id }}">
-                                        ✔ Seguindo
-                                    </button>
-                                @else
-                                    <button type="button"
-                                        class="bg-black hover:bg-red-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow transition"
-                                        id="followButton" data-course-id="{{ $course->id }}">
-                                        + Seguir
-                                    </button>
-                                @endif
-                            </div>
-                        @endauth
-                    </div>
-
-                    {{-- Contagem de Membros --}}
-                    @php
-                        $followersCount = $course->followers()->count();
-                    @endphp
-
-                    <p class="text-sm text-gray-500 mt-1">
-                        <span class="font-semibold" id="followersCount">{{ $followersCount }}</span>
-                        <span
-                            id="followersText">{{ $followersCount === 0 ? 'Nenhum seguidor' : ($followersCount === 1 ? 'Seguidor' : 'Seguidores') }}</span>
-                    </p>
-
-
-                    <p class="text-sm text-gray-500 mt-1">
-                        <strong class="font-semibold">Coordenador:</strong>
+                    {{-- Coordenador --}}
+                    <p class="text-sm text-gray-600 flex items-center gap-1">
+                        <i class="ph-fill ph-crown text-red-500 text-lg"></i>
+                        <strong>Coordenador:</strong>
                         @if ($course->courseCoordinator?->userAccount)
                             <a href="{{ route('profile.view', $course->courseCoordinator->userAccount->id) }}"
-                                class="text-red-500 hover:underline">
+                               class="text-red-600 hover:underline font-medium">
                                 {{ $course->courseCoordinator->userAccount->name }}
                             </a>
                         @else
-                            Nenhum coordenador definido
+                            <span class="font-medium text-gray-500">Não definido</span>
                         @endif
                     </p>
 
-                    {{-- Campo de Descrição (Adicionado) --}}
-                    <div x-data="{ isEditing: false, description: '{{ addslashes($course->course_description) }}' }">
-                        <h3 class="text-base font-semibold text-stone-800 mt-4 mb-2 flex items-center gap-2">
-                            Descrição do Curso
-                            @if (auth()->user()->user_type === 'admin')
-                                <button x-show="!isEditing" @click="isEditing = true"
-                                    class="text-gray-400 hover:text-blue-500 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
+                    {{-- Seguidores --}}
+                    @php $followersCount = $course->followers()->count(); @endphp
+                    <p class="text-sm text-gray-500 flex items-center gap-1">
+                        <i class="ph-fill ph-users text-red-500 text-lg"></i>
+                        <span class="font-bold" id="followersCount">{{ $followersCount }}</span>
+                        <span id="followersText">
+                            {{ $followersCount === 0 ? 'Nenhum seguidor' : ($followersCount === 1 ? 'Seguidor' : 'Seguidores') }}
+                        </span>
+                    </p>
+
+                    {{-- Botão Seguir --}}
+                    @auth
+                        <div data-course-id="{{ $course->id }}">
+                            @if (auth()->user()->followedCourses->contains($course->id))
+                                <button id="unfollowButton" data-course-id="{{ $course->id }}"
+                                    class="mt-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-5 py-2 rounded-full shadow-md transition flex items-center gap-1">
+                                    <i class="ph-fill ph-heart text-white text-base"></i> Seguindo
+                                </button>
+                            @else
+                                <button id="followButton" data-course-id="{{ $course->id }}"
+                                    class="mt-3 bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 text-sm font-medium px-5 py-2 rounded-full shadow-md transition flex items-center gap-1">
+                                    <i class="ph-bold ph-heart text-red-600 text-base"></i> Seguir
                                 </button>
                             @endif
-                        </h3>
-
-                        {{-- Visualização da Descrição --}}
-                        <div x-show="!isEditing" class="prose max-w-none text-gray-700 text-sm">
-                            <p class="text-sm text-gray-700">
-                                @if ($course->course_description)
-                                    {{ $course->course_description }}
-                                @else
-                                    (Sem descrição)
-                                @endif
-                            </p>
                         </div>
+                    @endauth
+                </div>
 
-                        {{-- Formulário de Edição (Somente para admin) --}}
+                {{-- Descrição --}}
+                <div x-data="{ isEditing: false, description: '{{ addslashes($course->course_description) }}' }"
+                    class="mt-8 border-t border-gray-200 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-base font-bold text-stone-800">Descrição</h3>
                         @if (auth()->user()->user_type === 'admin')
-                            <form x-show="isEditing" action="{{ route('courses.updateDescription', $course->id) }}"
-                                method="POST" @submit.prevent="$el.submit()">
-                                @csrf
-                                @method('PUT')
-                                <textarea x-model="description" name="course_description" rows="5"
-                                    class="w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm"></textarea>
-                                <div class="mt-2 flex gap-2 justify-end">
-                                    <button type="button"
-                                        @click="isEditing = false; description = '{{ addslashes($course->course_description) }}'"
-                                        class="px-3 py-1 text-sm text-gray-700 border border-gray-300 rounded-full hover:bg-gray-100 transition">Cancelar</button>
-                                    <button type="submit"
-                                        class="px-3 py-1 text-sm text-white bg-blue-600 rounded-full hover:bg-blue-700 transition">Salvar</button>
-                                </div>
-                            </form>
+                            <button x-show="!isEditing" @click="isEditing = true"
+                                class="text-gray-400 hover:text-red-500 transition">
+                                <i class="ph-bold ph-pencil-simple text-base"></i>
+                            </button>
                         @endif
                     </div>
 
-                    {{-- Container de Ações do Admin (Edit/Delete Course) --}}
+                    <div x-show="!isEditing" class="text-sm text-gray-700 leading-relaxed">
+                        @if ($course->course_description)
+                            {{ $course->course_description }}
+                        @else
+                            <em class="text-gray-400">(Sem descrição no momento)</em>
+                        @endif
+                    </div>
+
                     @if (auth()->user()->user_type === 'admin')
-                        <div class="mt-6 border-t border-gray-200 pt-4 flex justify-end gap-4">
-                            {{-- Botão Editar Curso --}}
-                            <a href="{{ route('courses.edit', $course->id) }}"
-                                class="flex items-center gap-1 px-3 py-1 text-sm text-black hover:text-red-600 border border-black rounded-full shadow-sm transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                                Editar Curso
-                            </a>
-
-                            {{-- Botão Excluir Curso (abre modal) --}}
-                            <button type="button" onclick="openModal('deleteModal-{{ $course->id }}')"
-                                class="flex items-center gap-1 px-3 py-1 text-sm text-red-600 hover:text-red-700 border border-red-300 rounded-full shadow-sm transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3" />
-                                </svg>
-                                Excluir Curso
-                            </button>
-
-                            {{-- Formulário de Exclusão --}}
-                            <form id="deleteCourseForm" action="{{ route('courses.destroy', $course->id) }}"
-                                method="POST" class="hidden">
-                                @csrf
-                                @method('DELETE')
-                            </form>
-                        </div>
+                        <form x-show="isEditing" action="{{ route('courses.updateDescription', $course->id) }}"
+                            method="POST" @submit.prevent="$el.submit()">
+                            @csrf
+                            @method('PUT')
+                            <textarea x-model="description" name="course_description" rows="4"
+                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-sm shadow-sm"></textarea>
+                            <div class="mt-3 flex gap-2 justify-end">
+                                <button type="button"
+                                    @click="isEditing = false; description = '{{ addslashes($course->course_description) }}'"
+                                    class="px-3 py-1 text-sm text-gray-700 border border-gray-300 rounded-full hover:bg-gray-100 transition">Cancelar</button>
+                                <button type="submit"
+                                    class="px-3 py-1 text-sm text-white bg-red-600 rounded-full hover:bg-red-700 transition">Salvar</button>
+                            </div>
+                        </form>
                     @endif
                 </div>
+
+                {{-- BOTÕES Editar e Excluir Curso --}}
+                @if (auth()->user()->user_type === 'admin')
+                    <div class="mt-6 flex gap-3">
+                        <a href="{{ route('courses.edit', $course->id) }}"
+                           class="flex-1 bg-gray-600 hover:bg-gray-900 text-white text-sm font-semibold py-2 rounded-full text-center transition">
+                            <i class="ph-bold ph-pencil-simple mr-1"></i> Editar Curso
+                        </a>
+                        <button onclick="openModal('deleteModal-{{ $course->id }}')"
+                                class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 rounded-full transition">
+                            <i class="ph-bold ph-trash mr-1"></i> Excluir Curso
+                        </button>
+                    </div>
+                @endif
             </div>
         </div>
 
-        {{-- Coluna da Direita (Tabs de Conteúdo) --}}
-        <div class="lg:w-2/4">
-            <div x-data="{ tab: 'events' }">
-
-                {{-- Card de Navegação das Abas --}}
-                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                    <div class="border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                            <button @click="tab = 'events'"
-                                :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'events', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'events' }"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2">
-                                    </rect>
-                                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                                </svg>
-                                Eventos
-                            </button>
-                            <button @click="tab = 'posts'"
-                                :class="{ 'border-red-500 text-red-600 font-semibold': tab === 'posts', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': tab !== 'posts' }"
-                                class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
-                                Posts
-                            </button>
-                        </nav>
+        {{-- =============================== --}}
+        {{-- COLUNA DIREITA — Conteúdos (Da fix_course_index_page, substituindo as abas) --}}
+        {{-- =============================== --}}
+        <div class="xl:w-2/3 lg:w-3/5 space-y-10">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {{-- EVENTOS --}}
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+                            <i class="ph ph-calendar-blank text-red-600 text-lg"></i> Eventos
+                        </h2>
                     </div>
-                </div>
 
-                {{-- Conteúdo da aba "Eventos" --}}
-                <div x-show="tab === 'events'" class="bg-white rounded-2xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-stone-800 mb-4">Eventos do Curso</h2>
-                    @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
-                        <div class="flex justify-end mb-4">
-                            <a href="{{ route('events.create', ['course_id' => $course->id]) }}"
-                                class="bg-black hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200">
-                                + Criar Evento
-                            </a>
-                        </div>
-                    @endif
-
-                    {{-- Lista de Eventos --}}
                     @if ($course->events->isNotEmpty())
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 gap-4">
                             @foreach ($course->events->sortByDesc('event_scheduled_at') as $event)
-                                <a href="{{ route('events.show', $event->id) }}"
-                                    class="bg-white rounded-2xl shadow-md border border-gray-200 hover:border-red-500 transition-colors duration-200 overflow-hidden">
-                                    @if ($event->event_image)
-                                        <div class="w-full h-36">
-                                            <img src="{{ asset('storage/' . $event->event_image) }}"
-                                                alt="Capa do Evento" class="object-cover w-full h-full">
-                                        </div>
-                                    @else
-                                        <div
-                                            class="flex flex-col items-center justify-center w-full h-36 text-red-500 bg-gray-50 dark:text-red-400">
-                                            <i class="ph-bold ph-calendar-blank text-6xl"></i>
-                                            <p class="mt-2 text-sm">Evento Sem Imagem</p>
-                                        </div>
-                                    @endif
-
-                                    <div class="p-4">
-                                        <h4 class="text-lg font-bold text-stone-800 truncate">{{ $event->event_name }}
-                                        </h4>
-                                        @if ($event->event_scheduled_at)
-                                            <p class="text-sm text-gray-500 mt-1">
-                                                {{ $event->event_scheduled_at->format('d/m/Y') }} às
-                                                {{ $event->event_scheduled_at->format('H:i') }}
-                                            </p>
-                                        @endif
-                                        <p class="text-sm text-gray-600 mt-2 line-clamp-2">
-                                            {{ $event->event_description }}
+                            <a href="{{ route('events.show', $event->id) }}"
+                            class="flex bg-white rounded-xl shadow-sm border border-gray-100 hover:border-red-400 transition overflow-hidden group">
+                                {{-- Imagem do evento --}}
+                                @if ($event->event_image)
+                                    <img src="{{ asset('storage/' . $event->event_image) }}" 
+                                        alt="{{ $event->event_name }}"
+                                        class="object-cover w-28 h-28 rounded-l-xl">
+                                @else
+                                    <div class="flex flex-col items-center justify-center w-28 h-28 bg-gray-100 rounded-l-xl text-red-500">
+                                        <i class="ph-bold ph-calendar-blank text-3xl"></i>
+                                        <p class="mt-1 text-[11px] text-gray-500 text-center leading-tight">
+                                            Sem imagem
                                         </p>
                                     </div>
-                                </a>
+                                @endif
+
+                                {{-- Conteúdo do card --}}
+                                <div class="p-4 flex-1 flex flex-col justify-center">
+                                    <h4 class="text-base font-semibold text-stone-800 line-clamp-2 group-hover:text-red-600 transition">
+                                        {{ $event->event_name }}
+                                    </h4>
+                                    @if ($event->event_scheduled_at)
+                                        <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                            <i class="ph-fill ph-clock-clockwise text-red-600 text-sm"></i>
+                                            {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </a>
                             @endforeach
+
                         </div>
                     @else
-                        <p class="text-gray-500 text-center text-sm">Nenhum evento foi criado para este curso ainda.
-                        </p>
+                        <div class="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
+                            <i class="ph-bold ph-calendar-x text-5xl text-gray-300 mb-2"></i>
+                            <p class="text-gray-500 text-sm">Nenhum evento criado ainda.</p>
+                        </div>
                     @endif
                 </div>
-                
-                {{-- CONTEÚDO DA ABA "POSTS" --}}
-                <div x-show="tab === 'posts'">  
-                    {{-- 1. Lista de Posts (via Livewire) --}}
-                    {{-- Se você estiver usando o Livewire para a lista, ele vai aqui --}}
+
+                {{-- POSTS --}}
+                <div>
+                    <h2 class="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+                        <i class="ph ph-article text-red-600 text-lg"></i> Posts
+                    </h2>
                     @livewire('course-posts', ['course' => $course])
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Botão flutuante Criar Evento --}}
+    @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
+        <a href="{{ route('events.create', ['course_id' => $course->id]) }}"
+           class="fixed bottom-8 right-8 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-3 rounded-full shadow-lg transition flex items-center gap-2 group"
+           title="Criar evento">
+            <i class="ph-bold ph-plus text-lg"></i>
+            <span class="hidden sm:inline-block group-hover:inline-block transition">Criar Evento</span>
+        </a>
+    @endif
 </x-app-layout>
 
-{{-- Modal de Exclusão para Curso --}}
+{{-- =============================== --}}
+{{-- MODAL E SCRIPTS --}}
+{{-- =============================== --}}
 <div id="deleteModal-{{ $course->id }}"
-    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-        <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão do Curso</h2>
-        <p>Tem certeza que deseja excluir o curso <strong>"{{ $course->course_name }}"</strong>? Esta ação não poderá ser desfeita.</p>
-        <div class="mt-6 flex justify-end space-x-2">
+    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation();">
+        <h2 class="text-xl font-bold mb-4 text-red-600 flex items-center gap-2">
+            <i class="ph-bold ph-warning-circle text-2xl"></i> Confirmar Exclusão
+        </h2>
+        <p class="text-gray-700">Tem certeza que deseja excluir o curso <strong>"{{ $course->course_name }}"</strong>? Esta ação é irreversível.</p>
+        <div class="mt-6 flex justify-end space-x-3">
             <button onclick="closeModal('deleteModal-{{ $course->id }}')"
-                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                    class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 font-medium transition">Cancelar</button>
             <form action="{{ route('courses.destroy', $course->id) }}" method="POST">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
-                    Exclusão</button>
+                <button type="submit"
+                        class="px-4 py-2 text-sm bg-red-600 text-white rounded-full hover:bg-red-700 font-medium transition">Confirmar</button>
             </form>
         </div>
     </div>
 </div>
 
-{{-- Scripts e Funções do Modal --}}
 @vite('resources/js/app.js')
-
-{{-- Script para Seguir/Deixar de Seguir Curso --}}
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const container = document.querySelector('div[data-course-id]');
-        const followersCountSpan = document.getElementById('followersCount');
-        const followersPluralSpan = document.getElementById('followersText');
-
-        function updatePlural(count) {
-            if (!followersPluralSpan) return;
-            if (count == 1) { 
-                followersPluralSpan.textContent = 'Seguidor';
-            } else {
-                followersPluralSpan.textContent = 'Seguidores';
-            }
-        }
-        
-        if (container) {
-            container.addEventListener('click', function(e) {
-                const button = e.target.closest('button');
-                if (!button || !button.dataset.courseId) return;
-
-                const courseId = button.dataset.courseId;
-                let method, url;
-
-                if (button.id === 'followButton') {
-                    method = 'POST';
-                    url = `/courses/${courseId}/follow`;
-                } else if (button.id === 'unfollowButton') {
-                    method = 'DELETE';
-                    url = `/courses/${courseId}/unfollow`;
-                } else {
-                    return;
-                }
-
-                button.disabled = true;
-
-                fetch(url, {
-                        method: method,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content'),
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                    })
-                    .then(response => {
-                        if (!response.ok) throw new Error('Falha na operação. Status: ' + response
-                            .status);
-                        return response.json();
-                    })
-                    .then(data => {
-                        updateButtonState(button, method);
-                        if (data.followers_count !== undefined && followersCountSpan) {
-                            const newCount = data.followers_count;
-                            followersCountSpan.textContent = newCount;
-                            updatePlural(newCount);
-                        }
-                        button.disabled = false;
-                    })
-                    .catch(error => {
-                        console.error('Erro:', error);
-                        alert('Erro ao processar a solicitação. Tente novamente.');
-                        button.disabled = false;
-                    });
-            });
-        }
-
-        function updateButtonState(currentButton, currentMethod) {
-            if (currentMethod === 'POST') {
-                currentButton.id = 'unfollowButton';
-                currentButton.textContent = '✔ Seguindo';
-                currentButton.classList.remove('bg-black', 'hover:bg-red-700', 'text-white'); 
-                currentButton.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
-            } else if (currentMethod === 'DELETE') {
-                currentButton.id = 'followButton';
-                currentButton.textContent = '+ Seguir';
-                currentButton.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700');
-                currentButton.classList.add('bg-black', 'hover:bg-red-700', 'text-white'); 
-            }
-            currentButton.disabled = false;
-        }
-
-        function updateFollowersCount(courseId) {
-            const followersCountEl = document.getElementById('followersCount');
-            const followersTextEl = document.getElementById('followersText');
-
-            fetch(`/courses/${courseId}/followers-count`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Erro ao atualizar seguidores');
-                    return response.json();
-                })
-                .then(data => {
-                    if (followersCountEl && followersTextEl) {
-                        if (data.count === 0) {
-                            followersCountEl.textContent = '0';
-                            followersTextEl.textContent = 'Nenhum seguidor';
-                        } else {
-                            followersCountEl.textContent = data.count;
-                            followersTextEl.textContent = data.count === 1 ? 'Seguidor' : 'Seguidores';
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao atualizar contador de seguidores:', error);
-                });
-        }
-        
-        if (followersCountSpan) {
-            updatePlural(parseInt(followersCountSpan.textContent.trim()));
-        }
-
-    });
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 </script>
 
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
+{{-- Script seguir/deixar de seguir --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('div[data-course-id]');
+    const followersCountSpan = document.getElementById('followersCount');
+    const followersPluralSpan = document.getElementById('followersText');
+
+    function updatePlural(count) {
+        if (!followersPluralSpan) return;
+        followersPluralSpan.textContent = count === 1 ? 'Seguidor' : 'Seguidores';
+    }
+
+    if (container) {
+        container.addEventListener('click', async e => {
+            const button = e.target.closest('button');
+            if (!button || !button.dataset.courseId) return;
+
+            const courseId = button.dataset.courseId;
+            const isFollow = button.id === 'followButton';
+            const url = `/courses/${courseId}/${isFollow ? 'follow' : 'unfollow'}`;
+            const method = isFollow ? 'POST' : 'DELETE';
+
+            button.disabled = true;
+            const original = button.innerHTML;
+            button.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> Processando';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!res.ok) throw new Error('Erro');
+                const data = await res.json();
+                followersCountSpan.textContent = data.followers_count;
+                updatePlural(data.followers_count);
+                toggleButton(button, isFollow);
+            } catch (err) {
+                alert('Erro ao processar solicitação.');
+                button.innerHTML = original;
+            } finally {
+                button.disabled = false;
+            }
+        });
+    }
+
+    function toggleButton(btn, followed) {
+        if (followed) {
+            btn.id = 'unfollowButton';
+            btn.innerHTML = '<i class="ph-fill ph-heart text-white"></i> Seguindo';
+            btn.className = 'mt-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow-md transition';
+        } else {
+            btn.id = 'followButton';
+            btn.innerHTML = '<i class="ph-bold ph-heart text-red-600"></i> Seguir';
+            btn.className = 'mt-2 bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow-md transition';
+        }
+    }
+
+    updatePlural(parseInt(followersCountSpan.textContent.trim()));
+});
+</script>
