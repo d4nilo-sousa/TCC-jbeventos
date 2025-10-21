@@ -3,23 +3,21 @@ window.deleteImage = function(id, btn, type) {
 
     // Define a URL de exclusão
     if (type === 'icon') {
-        // Rota: DELETE /courses/{id}/icon (Chama destroyCourseImage)
-        url = `/courses/${id}/icon`; 
+        // Rota CORRIGIDA: DELETE /courses/{id}/image/icon (Chama destroyCourseImage)
+        url = `/courses/${id}/image/icon`; // <-- MUDANÇA AQUI
     } else if (type === 'banner') {
-        // Rota: DELETE /courses/{id}/banner (Chama destroyCourseImage)
-        url = `/courses/${id}/banner`; 
-    } else if (type === 'event_cover') { // <-- NOVO TIPO ADICIONADO AQUI
-        // Rota: DELETE /events/{event_id}/cover (Chama removeCoverImage)
-        // O 'id' deve ser o ID do Evento
+        // Rota CORRIGIDA: DELETE /courses/{id}/image/banner (Chama destroyCourseImage)
+        url = `/courses/${id}/image/banner`; // <-- MUDANÇA AQUI
+    } else if (type === 'event_cover') { 
+        // Rota: DELETE /events/{event_id}/cover
         url = `/events/${id}/cover`; 
     } else if (type === 'event') {
-        // Rota: DELETE /event-images/{id} (Chama destroyEventImage - para GALERIA)
-        // O 'id' deve ser o ID da EventImage
+        // Rota: DELETE /event-images/{id}
         url = `/event-images/${id}`; 
     } else {
         // Caso o tipo não seja válido
-        alert('Tipo de imagem inválido.');
-        return;
+    alert('Tipo de imagem inválido.');
+    return;// Caso o tipo não seja válido
     }
 
     // 1. Remove o elemento da tela imediatamente antes do fetch (para dar feedback rápido)

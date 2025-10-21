@@ -2,28 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event; // Necessário para a capa do evento (event_image)
+use App\Models\Event; 
 use App\Models\EventImage;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log; // Para logar erros
+use Illuminate\Support\Facades\Log;
 
 class ImageController extends Controller
 {
     /**
+     * Helper para verificar se o usuário logado é Administrador.
+     * Baseado na coluna 'user_type' na tabela 'users'.
+     */
+    private function userIsAdmin(): bool
+    {
+        // Retorna true se o usuário estiver logado E o user_type for 'admin'
+        return optional(auth()->user())->user_type === 'admin';
+    }
+
+    /**
      * Exclui uma imagem da GALERIA (EventImage model) do evento via AJAX.
      * Esta rota é: DELETE /event-images/{id}
+     * Permissão: SOMENTE Coordenador do Evento.
      */
     public function destroyEventImage($id): JsonResponse
     {
         $image = EventImage::findOrFail($id);
-        $event = $image->event; // Assume que EventImage tem uma relação belongsTo com Event
+        $event = $image->event; 
 
         // 1. AUTORIZAÇÃO: Verifica se o usuário logado é o coordenador do evento
-        $coordinator = auth()->user()->coordinator;
-        if (!$coordinator || !$event || $event->coordinator_id !== $coordinator->id) {
+        // Usamos optional() para evitar erro se auth()->user() for null
+        $coordinatorId = optional(auth()->user()->coordinator)->id;
+        
+        // Verifica se existe coordenador logado E se o ID do coordenador do evento bate
+        if (!$coordinatorId || !$event || $event->coordinator_id !== $coordinatorId) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -32,7 +46,6 @@ class ImageController extends Controller
         // 2. Exclusão de Arquivo com Storage (Padrão Laravel)
         if ($path) {
             try {
-                // Usa Storage para garantir a exclusão no disco correto
                 Storage::disk('public')->delete($path);
             } catch (\Exception $e) {
                 Log::warning("Falha ao excluir o arquivo {$path} da galeria do evento {$event->id}.");
@@ -49,16 +62,16 @@ class ImageController extends Controller
 
     /**
      * Exclui a imagem de CAPA (coluna event_image) de um evento via AJAX.
-     * Esta rota deve ser criada, ex: DELETE /events/{event_id}/cover
+     * Permissão: SOMENTE Coordenador do Evento.
      */
     public function removeCoverImage($event_id): JsonResponse
     {
-        // Usa o modelo Event e o ID do evento
         $event = Event::findOrFail($event_id);
         
         // 1. AUTORIZAÇÃO: Verifica se o usuário logado é o coordenador do evento
-        $coordinator = auth()->user()->coordinator;
-        if (!$coordinator || $event->coordinator_id !== $coordinator->id) {
+        $coordinatorId = optional(auth()->user()->coordinator)->id;
+        
+        if (!$coordinatorId || $event->coordinator_id !== $coordinatorId) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -84,7 +97,7 @@ class ImageController extends Controller
 
     /**
      * Exclui o ÍCONE ou BANNER de um curso via AJAX.
-     * Esta rota deve ser criada, ex: DELETE /courses/{id}/{type}
+     * Permissão: SOMENTE Administrador.
      */
     public function destroyCourseImage($id, $type): JsonResponse
     {
@@ -93,20 +106,27 @@ class ImageController extends Controller
         }
 
         $course = Course::findOrFail($id); 
+        
+        // ***************************************************************
+        // NOVO: AUTORIZAÇÃO APENAS PARA ADMINISTRADOR (user_type = 'admin')
+        $userIsAdmin = $this->userIsAdmin();
 
-        // 1. AUTORIZAÇÃO: Verifica se o usuário logado é o coordenador do curso
-        $coordinator = auth()->user()->coordinator;
-        if (!$coordinator || $course->coordinator_id !== $coordinator->id) {
-             return response()->json(['message' => 'Unauthorized'], 403);
+        if (!$userIsAdmin) {
+            // Loga a tentativa de acesso negado para ajudar no diagnóstico
+            $userId = optional(auth()->user())->id;
+            $userType = optional(auth()->user())->user_type ?? 'guest'; // Pega o tipo de usuário para o log
+            Log::warning("403 Acesso Negado em {$type} do curso {$id}. UserID: {$userId}. Tipo de Usuário: {$userType}. Requer Admin.");
+             
+            return response()->json(['message' => 'Unauthorized: Only Administrator can delete course image.'], 403);
         }
-
+        // ***************************************************************
+        
         $column = $type === 'icon' ? 'course_icon' : 'course_banner';
         $path = $course->$column; 
 
         // 2. Exclusão de Arquivo com Storage (Padrão Laravel)
         if ($path) {
             try {
-                // Substitui a chamada 'unlink(public_path(...))' pela Facade Storage
                 Storage::disk('public')->delete($path);
             } catch (\Exception $e) {
                 Log::warning("Falha ao excluir o {$type} do curso {$id}: {$path}.");

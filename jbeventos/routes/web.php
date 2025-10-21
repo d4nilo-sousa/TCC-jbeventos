@@ -167,9 +167,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::delete('/event-images/{id}', [ImageController::class, 'destroyEventImage'])
         ->name('event-images.destroy');
 
-    // Para excluir imagem do curso
-    Route::delete('/course-icons/{id}', [ImageController::class, 'destroyCourseImage']);
-    Route::delete('/course-banners/{id}', [ImageController::class, 'destroyCourseImage']);
+   // web.php:
+// Certifique-se de que a rota de delete do curso está assim:
+Route::delete('/courses/{id}/image/{type}', [App\Http\Controllers\ImageController::class, 'destroyCourseImage'])
+->where('type', 'icon|banner')
+->name('courses.destroy_image');
 
     // Para excluir imagem de evento
     Route::delete('/event-images/{id}', [ImageController::class, 'destroyEventImage']);

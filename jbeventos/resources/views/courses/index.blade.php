@@ -74,15 +74,6 @@
                 </div>
             @endforelse
         </div>
-
-        {{-- Footer de Fim do Catálogo --}}
-        @if ($courses->isNotEmpty())
-            <div id="catalogEnd" class="mt-16 mb-4 flex justify-center items-center">
-                <p class="text-gray-400 text-sm font-semibold tracking-wide border-t border-gray-300 pt-4 px-8">
-                    Fim do Catálogo
-                </p>
-            </div>
-        @endif
     </div>
 </x-app-layout>
 
