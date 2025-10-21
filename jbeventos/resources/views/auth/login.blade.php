@@ -57,8 +57,8 @@
     
                 <div class="flex items-center justify-center">
                     @if (Route::has('password.request'))
-                        <a class="underline text-sm text-stone-600" href="{{ route('password.request') }}">
-                            {{ __('Esqueceu sua senha?') }}
+                        <a class="no-underline style text-sm text-blue-500" href="{{ route('password.request') }}">
+                            {{ __('Esqueci minha senha') }}
                         </a>
                     @endif
                 </div>

@@ -28,7 +28,7 @@
                 </p>
                 <a href="{{ route('register') }}"
                     class="inline-block text-white bg-red-700 font-semibold px-6 py-2 rounded-full hover:bg-red-800 transition">
-                    Criar conta
+                    Criar conta!
                 </a>
             @elseif (Route::is('register'))
                 <h2 class="text-3xl font-bold mb-3">Já possui uma conta?</h2>

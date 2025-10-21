@@ -6,8 +6,6 @@
             </a>
         </x-slot>
 
-
-
         <form method="POST" action="{{ route('register') }}">
             @csrf
 
@@ -31,12 +29,12 @@
             <!-- Gmail -->
             <div class="mt-4">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full placeholder-gray-300" type="email" name="email" :value="old('email')"
-                    placeholder="exemplo@gmail.com" required autocomplete="username" />
+                <x-input id="email" class="block mt-1 w-full placeholder-gray-300" type="email" name="email"
+                    :value="old('email')" placeholder="exemplo@gmail.com" required autocomplete="username" />
             </div>
 
             <!-- Campo de senha e confirmar senha -->
-            <div class="flex items-center gap-3 mt-4 mb-6" >
+            <div class="flex items-center gap-3 mt-4 mb-6">
                 <!-- Campo de Senha com botão olho -->
                 <div class="">
                     <x-label for="password" value="{{ __('Senha') }}" />
@@ -108,7 +106,7 @@
                     {{ __('Criar Conta') }}
                 </x-button>
             </div>
-            </div>
+
         </form>
 
     </x-authentication-card>
