@@ -141,7 +141,7 @@
                 @if (auth()->user()->user_type === 'admin')
                     <div class="mt-6 flex gap-3">
                         <a href="{{ route('courses.edit', $course->id) }}"
-                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-full text-center transition">
+                           class="flex-1 bg-gray-600 hover:bg-gray-900 text-white text-sm font-semibold py-2 rounded-full text-center transition">
                             <i class="ph-bold ph-pencil-simple mr-1"></i> Editar Curso
                         </a>
                         <button onclick="openModal('deleteModal-{{ $course->id }}')"
