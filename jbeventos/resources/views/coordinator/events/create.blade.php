@@ -262,9 +262,7 @@
                                 <div>
                                     <x-input-label for="event_scheduled_at" value="Data e Hora do Evento" />
                                     <x-text-input type="datetime-local" name="event_scheduled_at"
-                                        id="event_scheduled_at" {{-- Adiciona a restrição mínima para ser a hora atual, evitando eventos passados --}}
-                                        min="{{ \Carbon\Carbon::now()->format('Y-m-d\TH:i') }}"
-                                        value="{{ old('event_scheduled_at') }}"
+                                        id="event_scheduled_at" value="{{ old('event_scheduled_at') }}"
                                         class="w-full border-gray-300 focus:border-red-500 focus:ring-red-500"
                                         required />
                                     @error('event_scheduled_at')
@@ -285,62 +283,79 @@
                                 </div>
                             </div>
 
-                            {{-- Coordenador, Tipo do Evento e Curso --}}
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {{-- Coordenador Responsável (1/3) --}}
-                                <div>
-                                    <x-input-label for="coordinator_name" value="Coordenador Responsável" />
-                                    <x-text-input id="coordinator_name" type="text"
-                                        class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
-                                        value="{{ auth()->user()->name }}" readonly disabled />
-                                    <input type="hidden" name="coordinator_id"
-                                        value="{{ auth()->user()->coordinator->id }}">
-                                </div>
+                            {{-- Coordenador, Tipo do Evento e (opcionalmente) Curso --}}
+                            @php
+                                $coordinator = auth()->user()->coordinator;
+                                $coordinatorType = $coordinator->coordinator_type;
+                                $coordinatedCourse = $coordinator->coordinatedCourse;
 
-                                @php
-                                    $coordinator = auth()->user()->coordinator;
-                                    $coordinatorType = $coordinator->coordinator_type;
-                                    $coordinatedCourse = $coordinator->coordinatedCourse;
+                                $eventTypeLabel = $coordinatorType === 'course' ? 'Evento de Curso' : 'Evento Geral';
 
-                                    $eventTypeLabel =
-                                        $coordinatorType === 'course' ? 'Evento de Curso' : 'Evento Geral';
+                                $defaultCourseName = $coordinatedCourse ? $coordinatedCourse->course_name : 'Nenhum';
+                                $defaultCourseId = $coordinatedCourse ? $coordinatedCourse->id : null;
 
-                                    // Pega o ID e o Nome do curso padrão (se existir)
-                                    $defaultCourseName = $coordinatedCourse
-                                        ? $coordinatedCourse->course_name
-                                        : 'Nenhum';
-                                    $defaultCourseId = $coordinatedCourse ? $coordinatedCourse->id : null;
+                                $availableCourses = $allCourses->where('id', '!=', $defaultCourseId);
+                                $selectedCourses = old('courses', []);
+                            @endphp
 
-                                    // Filtra a lista de todos os cursos para excluir o curso padrão
-                                    $availableCourses = $allCourses->where('id', '!=', $defaultCourseId);
+                            @if ($coordinatorType === 'course')
+                                {{-- Layout com 3 campos: Coordenador, Tipo do Evento e Curso --}}
+                                <div class="flex flex-wrap items-end justify-between">
+                                    {{-- Coordenador Responsável --}}
+                                    <div class="w-[280px]">
+                                        <x-input-label for="coordinator_name" value="Coordenador Responsável" />
+                                        <x-text-input id="coordinator_name" type="text"
+                                            class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                            value="{{ auth()->user()->name }}" readonly disabled />
+                                        <input type="hidden" name="coordinator_id"
+                                            value="{{ auth()->user()->coordinator->id }}">
+                                    </div>
 
-                                    // Variável para reter os cursos selecionados em caso de erro de validação (ou edição)
-                                    $selectedCourses = old('courses', []);
-                                @endphp
+                                    {{-- Tipo do Evento --}}
+                                    <div class="w-[150px] ml-[1.3rem]">
+                                        <x-input-label for="event_type" value="Tipo do Evento" />
+                                        <x-text-input id="coordinator_type" type="text"
+                                            class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                            value="{{ $eventTypeLabel }}" readonly disabled />
+                                        <input type="hidden" name="coordinator_type"
+                                            value="{{ $coordinatorType }}">
+                                    </div>
 
-                                {{-- Tipo do Evento (1/3) --}}
-                                <div class="w-[150px]">
-                                    <x-input-label for="event_type" value="Tipo do Evento" />
-                                    <x-text-input id="coordinator_type" type="text"
-                                        class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
-                                        value="{{ $eventTypeLabel }}" readonly disabled />
-                                    <input type="hidden" name="coordinator_type" value="{{ $coordinatorType }}">
-                                </div>
-
-                                {{-- Curso Padrão do Coordenador (1/3 - Visível apenas se for 'course') --}}
-                                @if ($coordinatorType === 'course')
-                                    <div>
+                                    {{-- Curso Padrão --}}
+                                    <div class="w-[280px] ml-auto">
                                         <x-input-label for="default_course" value="Curso Padrão (Obrigatório)" />
                                         <x-text-input id="default_course_name" type="text"
                                             class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
                                             value="{{ $defaultCourseName }}" readonly disabled />
-                                        {{-- Garante que o curso padrão seja enviado --}}
                                         @if ($defaultCourseId)
                                             <input type="hidden" name="courses[]" value="{{ $defaultCourseId }}">
                                         @endif
                                     </div>
-                                @endif
-                            </div>
+                                </div>
+                            @else
+                                {{-- Layout com 2 campos: Coordenador e Tipo do Evento --}}
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {{-- Coordenador Responsável --}}
+                                    <div>
+                                        <x-input-label for="coordinator_name" value="Coordenador Responsável" />
+                                        <x-text-input id="coordinator_name" type="text"
+                                            class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                            value="{{ auth()->user()->name }}" readonly disabled />
+                                        <input type="hidden" name="coordinator_id"
+                                            value="{{ auth()->user()->coordinator->id }}">
+                                    </div>
+
+                                    {{-- Tipo do Evento --}}
+                                    <div>
+                                        <x-input-label for="event_type" value="Tipo do Evento" />
+                                        <x-text-input id="coordinator_type" type="text"
+                                            class="block mt-1 w-full bg-red-200 text-gray-700 font-medium cursor-not-allowed border-gray-400"
+                                            value="{{ $eventTypeLabel }}" readonly disabled />
+                                        <input type="hidden" name="coordinator_type"
+                                            value="{{ $coordinatorType }}">
+                                    </div>
+                                </div>
+                            @endif
 
                             @if ($coordinatorType === 'course')
                                 {{-- NOVO CAMPO: Seleção de Outros Cursos como Checkboxes --}}

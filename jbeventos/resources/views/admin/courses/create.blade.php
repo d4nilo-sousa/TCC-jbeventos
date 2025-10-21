@@ -148,7 +148,7 @@
                                     <p class="mt-2 text-sm text-gray-500 group-hover:text-red-500">Arraste e solte ou
                                         clique para enviar um ícone.</p>
                                 </div>
-                                <div id="course_icons_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
+                                <div id="course_icon_preview" class="mt-4 flex justify-start">
                                 </div>
                                 @error('course_icon')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -172,7 +172,7 @@
                                     <p class="mt-2 text-sm text-gray-500 group-hover:text-red-500">Arraste e solte ou
                                         clique para enviar um banner.</p>
                                 </div>
-                                <div id="course_banners_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
+                                <div id="course_banner_preview" class="mt-4 flex justify-start">
                                 </div>
                                 @error('course_banner')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>

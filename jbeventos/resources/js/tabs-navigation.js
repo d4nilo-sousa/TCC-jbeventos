@@ -92,53 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ================================
-    // 2. Pré-visualização e Remoção de Imagens
-    // ================================
-
-    function setupImagePreview(inputId, previewId) {
-        const input = document.getElementById(inputId);
-        const previewContainer = document.getElementById(previewId);
-        const existingPreviewId = `existing-${inputId}-preview`;
-
-        if (!input || !previewContainer) return;
-
-        input.addEventListener('change', function() {
-            previewContainer.innerHTML = '';
-
-            const existingPreview = document.getElementById(existingPreviewId);
-            if (existingPreview) existingPreview.remove();
-
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'flex flex-col items-center p-2 new-file-preview';
-
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.alt = input.files[0].name;
-                    img.className = 'w-32 h-32 object-cover rounded-md border border-gray-200 shadow-sm';
-
-                    const span = document.createElement('span');
-                    span.textContent = input.files[0].name;
-                    span.className = 'text-sm text-gray-600 mt-2 truncate max-w-full w-32 text-center';
-
-                    wrapper.appendChild(img);
-                    wrapper.appendChild(span);
-                    previewContainer.appendChild(wrapper);
-                };
-                reader.readAsDataURL(this.files[0]);
-
-                const removeInput = document.getElementById(`remove_${inputId}_input`);
-                if (removeInput) removeInput.value = '0';
-            }
-        });
-    }
-
-    setupImagePreview('course_icon', 'course_icons_preview');
-    setupImagePreview('course_banner', 'course_banners_preview');
-
     function removeImage(button, type) {
         const container = button.closest('div');
         const hiddenInput = document.getElementById(`remove_${type}_input`);

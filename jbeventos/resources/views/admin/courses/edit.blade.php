@@ -82,7 +82,7 @@
 
                             <div>
                                 <x-input-label for="course_description" value="Descrição" />
-                                <textarea name="course_description" id="course_description" rows="4" required
+                                <textarea name="course_description" id="course_description" rows="4"
                                     class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('course_description', $course->course_description) }}</textarea>
                                 @error('course_description')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
@@ -153,22 +153,15 @@
                                         clique para enviar um ícone.</p>
                                 </div>
 
-                                <input type="hidden" name="remove_course_icon" id="remove_course_icon_input" value="0">
+                                <input type="hidden" name="remove_course_icon" id="remove_course_icon_input"
+                                    value="0">
 
-                                <div id="course_icons_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
+                                <div id="course_icon_preview" class="mt-4 flex justify-start">
                                     @if ($course->course_icon)
                                         {{-- ID adaptado para funcionar com setupImagePreview --}}
-                                        <div id="existing-course_icon-preview"
-                                            class="flex items-center p-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm"
-                                            data-filename="{{ basename($course->course_icon) }}">
-                                            <span class="text-sm text-gray-700 mr-2">{{ basename($course->course_icon) }}</span>
-                                            {{-- Classe e data-type adaptados para o JS --}}
-                                            <button type="button" data-type="course_icon"
-                                                class="remove-existing-image-button w-6 h-6 flex items-center justify-center text-red-600 hover:text-red-800 transition-colors rounded-full">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
+                                        <div id="existing-course_icon-preview" data-file-id="{{ $course->id }}"
+                                            data-filename="{{ basename($course->course_icon) }}" class="hidden">
+                                            {{-- Mantenha hidden. O JS lerá e removerá. --}}
                                         </div>
                                     @endif
                                 </div>
@@ -195,22 +188,15 @@
                                         clique para enviar um banner.</p>
                                 </div>
 
-                                <input type="hidden" name="remove_course_banner" id="remove_course_banner_input" value="0">
+                                <input type="hidden" name="remove_course_banner" id="remove_course_banner_input"
+                                    value="0">
 
-                                <div id="course_banners_preview" class="mt-4 flex flex-wrap gap-2 justify-center">
+                                <div id="course_banner_preview" class="mt-4 flex justify-start">
                                     @if ($course->course_banner)
                                         {{-- ID adaptado para funcionar com setupImagePreview --}}
-                                        <div id="existing-course_banner-preview"
-                                            class="flex items-center p-2 border border-gray-300 rounded-md bg-gray-50 shadow-sm"
-                                            data-filename="{{ basename($course->course_banner) }}">
-                                            <span class="text-sm text-gray-700 mr-2">{{ basename($course->course_banner) }}</span>
-                                            {{-- Classe e data-type adaptados para o JS --}}
-                                            <button type="button" data-type="course_banner"
-                                                class="remove-existing-image-button w-6 h-6 flex items-center justify-center text-red-600 hover:text-red-800 transition-colors rounded-full">
-                                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
-                                            </button>
+                                        <div id="existing-course_banner-preview" data-file-id="{{ $course->id }}"
+                                            data-filename="{{ basename($course->course_banner) }}" class="hidden">
+                                            {{-- Mantenha hidden. O JS lerá e removerá. --}}
                                         </div>
                                     @endif
                                 </div>
