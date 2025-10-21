@@ -1,53 +1,50 @@
 <x-app-layout>
-    {{-- Layout Principal: 4 colunas virtuais (1/4 para o curso, 3/4 para o conteúdo) --}}
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col xl:flex-row gap-8">
 
-        {{-- ===================================================================================== --}}
-        {{-- COLUNA DA ESQUERDA (Informações do Curso) --}}
-        {{-- ===================================================================================== --}}
-        <div class="xl:w-1/4 lg:w-1/3 space-y-6 xl:sticky xl:top-8 self-start">
+        {{-- =============================== --}}
+        {{-- COLUNA ESQUERDA — Informações --}}
+        {{-- =============================== --}}
+        <div class="xl:w-1/3 lg:w-2/5 space-y-6 xl:sticky xl:top-8 self-start">
 
-            {{-- Card de Informações do Curso --}}
-            <div class="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
-                <div class="relative mb-8">
-                    {{-- Banner e Ícone --}}
-                    <div class="w-full h-32 bg-gray-200 rounded-xl overflow-hidden relative group">
+            {{-- Card de Informações (ampliado) --}}
+            <div class="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
+                {{-- Banner --}}
+                <div class="relative mb-10">
+                    <div class="w-full h-40 bg-gray-200 rounded-xl overflow-hidden group">
                         <img src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
-                            alt="Banner do Curso" class="object-cover w-full h-full">
-                        
-                        {{-- Botão Trocar Banner (Admin) --}}
+                             alt="Banner do Curso" class="object-cover w-full h-full">
+
                         @if (auth()->user()->user_type === 'admin')
                             <form method="POST" action="{{ route('courses.updateBanner', $course->id) }}"
-                                enctype="multipart/form-data"
-                                class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                  enctype="multipart/form-data"
+                                  class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                 @csrf
                                 @method('PUT')
                                 <input type="file" name="course_banner" id="bannerUpload" class="hidden"
-                                    onchange="this.form.submit()">
+                                       onchange="this.form.submit()">
                                 <button type="button" onclick="document.getElementById('bannerUpload').click()"
-                                    class="bg-white px-3 py-1 text-xs rounded-full shadow-lg hover:bg-gray-100 transition flex items-center gap-1 font-medium">
-                                    <i class="ph-bold ph-image-square text-sm"></i>
-                                    Trocar Banner
+                                        class="bg-white/90 backdrop-blur-sm px-3 py-1 text-xs rounded-full shadow hover:bg-gray-100 transition font-medium flex items-center gap-1">
+                                    <i class="ph-bold ph-image-square text-sm"></i> Trocar Banner
                                 </button>
                             </form>
                         @endif
                     </div>
 
+                    {{-- Ícone --}}
                     <div class="relative">
                         <img src="{{ $course->course_icon ? asset('storage/' . $course->course_icon) : asset('images/default-icon.png') }}"
-                            alt="Ícone do Curso"
-                            class="w-24 h-24 rounded-full border-4 border-white absolute -bottom-10 left-4 object-cover shadow-md">
+                             alt="Ícone do Curso"
+                             class="w-28 h-28 rounded-full border-4 border-white absolute -bottom-12 left-6 object-cover shadow-md">
 
-                        {{-- Botão Editar Ícone (Admin) --}}
                         @if (auth()->user()->user_type === 'admin')
                             <form method="POST" action="{{ route('courses.updateIcon', $course->id) }}"
-                                enctype="multipart/form-data" class="absolute -bottom-10 left-20">
+                                  enctype="multipart/form-data" class="absolute -bottom-10 left-32">
                                 @csrf
                                 @method('PUT')
                                 <input type="file" name="course_icon" id="iconUpload" class="hidden"
-                                    onchange="this.form.submit()">
+                                       onchange="this.form.submit()">
                                 <button type="button" onclick="document.getElementById('iconUpload').click()"
-                                    class="bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md hover:bg-red-600 transition flex items-center gap-1 border-2 border-white">
+                                        class="bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md hover:bg-red-600 transition flex items-center gap-1">
                                     <i class="ph-bold ph-pencil-simple text-sm"></i>
                                 </button>
                             </form>
@@ -55,338 +52,275 @@
                     </div>
                 </div>
 
-                <div class="mt-4 pt-10">
-                    <div class="flex items-start justify-between">
-                        <h1 class="text-2xl font-extrabold text-stone-800 leading-snug">{{ $course->course_name }}</h1>
+                {{-- Dados do Curso --}}
+                <div class="mt-10 space-y-3">
+                    <h1 class="text-3xl font-extrabold text-stone-800 leading-tight">{{ $course->course_name }}</h1>
 
-                        {{-- Botão de Seguir/Deixar de Seguir --}}
-                        @auth
-                            <div data-course-id="{{ $course->id }}" class="flex-shrink-0 ml-4">
-                                @if (auth()->user()->followedCourses->contains($course->id))
-                                    <button type="button"
-                                        class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow-lg transition flex items-center gap-1"
-                                        id="unfollowButton" data-course-id="{{ $course->id }}">
-                                        <i class="ph-fill ph-heart text-white text-base"></i> Seguindo
-                                    </button>
-                                @else
-                                    <button type="button"
-                                        class="bg-gray-200 hover:bg-red-500 hover:text-white text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow-lg transition flex items-center gap-1"
-                                        id="followButton" data-course-id="{{ $course->id }}">
-                                        <i class="ph-bold ph-heart text-red-600 hover:text-white text-base"></i> Seguir
-                                    </button>
-                                @endif
-                            </div>
-                        @endauth
-                    </div>
-
-                    {{-- Contagem de Membros --}}
-                    @php
-                        $followersCount = $course->followers()->count();
-                    @endphp
-                    <p class="text-sm text-gray-500 mt-2 flex items-center gap-1">
-                        <i class="ph-fill ph-users text-red-500 text-lg"></i>
-                        <span class="font-bold" id="followersCount">{{ $followersCount }}</span>
-                        <span
-                            id="followersText">{{ $followersCount === 0 ? 'Nenhum seguidor' : ($followersCount === 1 ? 'Seguidor' : 'Seguidores') }}</span>
-                    </p>
-
-                    <p class="text-sm text-gray-500 mt-1 flex items-center gap-1">
+                    {{-- Coordenador --}}
+                    <p class="text-sm text-gray-600 flex items-center gap-1">
                         <i class="ph-fill ph-crown text-red-500 text-lg"></i>
-                        <strong class="font-semibold">Coordenador:</strong>
+                        <strong>Coordenador:</strong>
                         @if ($course->courseCoordinator?->userAccount)
                             <a href="{{ route('profile.view', $course->courseCoordinator->userAccount->id) }}"
-                                class="text-red-500 hover:underline font-medium">
+                               class="text-red-600 hover:underline font-medium">
                                 {{ $course->courseCoordinator->userAccount->name }}
                             </a>
                         @else
-                            <span class="font-medium">Não definido</span>
+                            <span class="font-medium text-gray-500">Não definido</span>
                         @endif
                     </p>
 
-                    {{-- Campo de Descrição (com Alpine.js para edição inline) --}}
-                    <div x-data="{ isEditing: false, description: '{{ addslashes($course->course_description) }}' }" class="mt-6">
-                        <h3 class="text-base font-bold text-stone-800 mb-3 border-b border-gray-200 pb-2 flex items-center justify-between">
-                            Descrição do Curso
-                            @if (auth()->user()->user_type === 'admin')
-                                <button x-show="!isEditing" @click="isEditing = true"
-                                    class="text-gray-400 hover:text-red-500 transition">
-                                    <i class="ph-bold ph-pencil-simple text-base"></i>
+                    {{-- Seguidores --}}
+                    @php $followersCount = $course->followers()->count(); @endphp
+                    <p class="text-sm text-gray-500 flex items-center gap-1">
+                        <i class="ph-fill ph-users text-red-500 text-lg"></i>
+                        <span class="font-bold" id="followersCount">{{ $followersCount }}</span>
+                        <span id="followersText">
+                            {{ $followersCount === 0 ? 'Nenhum seguidor' : ($followersCount === 1 ? 'Seguidor' : 'Seguidores') }}
+                        </span>
+                    </p>
+
+                    {{-- Botão Seguir --}}
+                    @auth
+                        <div data-course-id="{{ $course->id }}">
+                            @if (auth()->user()->followedCourses->contains($course->id))
+                                <button id="unfollowButton" data-course-id="{{ $course->id }}"
+                                    class="mt-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-5 py-2 rounded-full shadow-md transition flex items-center gap-1">
+                                    <i class="ph-fill ph-heart text-white text-base"></i> Seguindo
+                                </button>
+                            @else
+                                <button id="followButton" data-course-id="{{ $course->id }}"
+                                    class="mt-3 bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 text-sm font-medium px-5 py-2 rounded-full shadow-md transition flex items-center gap-1">
+                                    <i class="ph-bold ph-heart text-red-600 text-base"></i> Seguir
                                 </button>
                             @endif
-                        </h3>
-
-                        {{-- Visualização da Descrição --}}
-                        <div x-show="!isEditing" class="prose max-w-none text-gray-700 text-sm leading-relaxed">
-                            <p class="text-sm text-gray-700">
-                                @if ($course->course_description)
-                                    {{ $course->course_description }}
-                                @else
-                                    <em class="text-gray-400">(Sem descrição no momento)</em>
-                                @endif
-                            </p>
                         </div>
+                    @endauth
+                </div>
 
-                        {{-- Formulário de Edição (Somente para admin) --}}
+                {{-- Descrição --}}
+                <div x-data="{ isEditing: false, description: '{{ addslashes($course->course_description) }}' }"
+                     class="mt-8 border-t border-gray-200 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-base font-bold text-stone-800">Descrição</h3>
                         @if (auth()->user()->user_type === 'admin')
-                            <form x-show="isEditing" action="{{ route('courses.updateDescription', $course->id) }}"
-                                method="POST" @submit.prevent="$el.submit()">
-                                @csrf
-                                @method('PUT')
-                                <textarea x-model="description" name="course_description" rows="5"
-                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-sm shadow-sm"></textarea>
-                                <div class="mt-3 flex gap-2 justify-end">
-                                    <button type="button"
-                                        @click="isEditing = false; description = '{{ addslashes($course->course_description) }}'"
-                                        class="px-3 py-1 text-sm text-gray-700 border border-gray-300 rounded-full hover:bg-gray-100 transition shadow-sm">Cancelar</button>
-                                    <button type="submit"
-                                        class="px-3 py-1 text-sm text-white bg-red-600 rounded-full hover:bg-red-700 transition shadow-md">Salvar</button>
-                                </div>
-                            </form>
+                            <button x-show="!isEditing" @click="isEditing = true"
+                                    class="text-gray-400 hover:text-red-500 transition">
+                                <i class="ph-bold ph-pencil-simple text-base"></i>
+                            </button>
                         @endif
                     </div>
 
-                    {{-- Container de Ações do Admin (Edit/Delete Course) --}}
-                    @if (auth()->user()->user_type === 'admin')
-                        <div class="mt-6 border-t border-gray-200 pt-4 flex justify-end gap-3">
-                            {{-- Botão Editar Curso --}}
-                            <a href="{{ route('courses.edit', $course->id) }}"
-                                class="flex items-center gap-1 px-4 py-1.5 text-sm text-black hover:text-red-600 border border-black rounded-full shadow-sm transition-colors duration-200 font-medium">
-                                <i class="ph-bold ph-note-pencil text-base"></i>
-                                Editar Dados
-                            </a>
+                    <div x-show="!isEditing" class="text-sm text-gray-700 leading-relaxed">
+                        @if ($course->course_description)
+                            {{ $course->course_description }}
+                        @else
+                            <em class="text-gray-400">(Sem descrição no momento)</em>
+                        @endif
+                    </div>
 
-                            {{-- Botão Excluir Curso (abre modal) --}}
-                            <button type="button" onclick="openModal('deleteModal-{{ $course->id }}')"
-                                class="flex items-center gap-1 px-4 py-1.5 text-sm text-red-600 hover:text-white border border-red-300 hover:bg-red-600 rounded-full shadow-sm transition-colors duration-200 font-medium">
-                                <i class="ph-bold ph-trash text-base"></i>
-                                Excluir Curso
-                            </button>
-                        </div>
+                    @if (auth()->user()->user_type === 'admin')
+                        <form x-show="isEditing" action="{{ route('courses.updateDescription', $course->id) }}"
+                              method="POST" @submit.prevent="$el.submit()">
+                            @csrf
+                            @method('PUT')
+                            <textarea x-model="description" name="course_description" rows="4"
+                                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-sm shadow-sm"></textarea>
+                            <div class="mt-3 flex gap-2 justify-end">
+                                <button type="button"
+                                    @click="isEditing = false; description = '{{ addslashes($course->course_description) }}'"
+                                    class="px-3 py-1 text-sm text-gray-700 border border-gray-300 rounded-full hover:bg-gray-100 transition">Cancelar</button>
+                                <button type="submit"
+                                    class="px-3 py-1 text-sm text-white bg-red-600 rounded-full hover:bg-red-700 transition">Salvar</button>
+                            </div>
+                        </form>
                     @endif
                 </div>
+
+                {{-- BOTÕES Editar e Excluir Curso --}}
+                @if (auth()->user()->user_type === 'admin')
+                    <div class="mt-6 flex gap-3">
+                        <a href="{{ route('courses.edit', $course->id) }}"
+                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-full text-center transition">
+                            <i class="ph-bold ph-pencil-simple mr-1"></i> Editar Curso
+                        </a>
+                        <button onclick="openModal('deleteModal-{{ $course->id }}')"
+                                class="flex-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 rounded-full transition">
+                            <i class="ph-bold ph-trash mr-1"></i> Excluir Curso
+                        </button>
+                    </div>
+                @endif
             </div>
         </div>
-        
-        {{-- ===================================================================================== --}}
-        {{-- COLUNA DA DIREITA (Eventos e Posts) utilizando grid interno de 2 colunas --}}
-        {{-- ===================================================================================== --}}
-        <div class="xl:w-3/4 lg:w-2/3">
-            
-            {{-- GRID INTERNO (layout de duas colunas) --}}
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                
-                {{-- COLUNA 1 - EVENTOS --}}
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-2xl font-bold text-stone-800 flex items-center gap-2">
-                            <i class="ph ph-calendar-blank bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Eventos
+
+        {{-- =============================== --}}
+        {{-- COLUNA DIREITA — Conteúdos --}}
+        {{-- =============================== --}}
+        <div class="xl:w-2/3 lg:w-3/5 space-y-10">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                {{-- EVENTOS --}}
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-stone-800 flex items-center gap-2">
+                            <i class="ph ph-calendar-blank text-red-600 text-lg"></i> Eventos
                         </h2>
-                        {{-- Botão de Criar Evento, visível apenas para o Coordenador atribuído --}}
-                        @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
-                            <a href="{{ route('events.create', ['course_id' => $course->id]) }}"
-                                class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-full shadow-md transition-colors duration-200 text-sm flex items-center gap-1">
-                                <i class="ph-bold ph-plus text-base"></i> Criar Evento
-                            </a>
-                        @endif
                     </div>
 
-                    {{-- Lista de Eventos --}}
                     @if ($course->events->isNotEmpty())
                         <div class="grid grid-cols-1 gap-4">
                             @foreach ($course->events->sortByDesc('event_scheduled_at') as $event)
-                                {{-- CARD DE EVENTO (Vertical) --}}
-                                <a href="{{ route('events.show', $event->id) }}"
-                                    class="block bg-white rounded-xl shadow-lg border border-gray-100 hover:border-red-500 transition-colors duration-200 overflow-hidden group h-full flex flex-col">
-                                    
-                                    {{-- Imagem ou Placeholder (Topo do Card) --}}
-                                    @if ($event->event_image)
-                                        <div class="w-full h-32">
-                                            <img src="{{ asset('storage/' . $event->event_image) }}"
-                                                alt="Capa do Evento" class="object-cover w-full h-full">
-                                        </div>
-                                    @else
-                                        <div
-                                            class="w-full h-32 flex flex-col items-center justify-center text-red-500 bg-gray-50 border-b border-gray-200">
-                                            <i class="ph-bold ph-calendar-blank text-4xl"></i>
-                                            <p class="mt-1 text-xs text-gray-500">Sem Imagem</p>
-                                        </div>
-                                    @endif
-
-                                    <div class="p-4 space-y-2 flex-grow">
-                                        {{-- Título --}}
-                                        <h4 class="text-base font-bold text-stone-800 line-clamp-2 pb-2 group-hover:text-red-600 transition">
-                                            {{ $event->event_name }}
-                                        </h4>
-                                        
-                                        {{-- Data e Hora --}}
-                                        @if ($event->event_scheduled_at)
-                                            <div class="flex items-center gap-2 text-xs text-gray-500">
-                                                <i class="ph-fill ph-clock-clockwise text-red-600 text-base flex-shrink-0"></i>
-                                                <span>{{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}</span>
-                                            </div>
-                                        @endif
-
-                                        {{-- Localização --}}
-                                        @if ($event->event_location)
-                                            <div class="flex items-center gap-2 text-sm text-gray-700">
-                                                <i class="ph-fill ph-map-pin text-red-600 text-base flex-shrink-0"></i>
-                                                <span class="truncate text-xs">{{ $event->event_location }}</span>
-                                            </div>
-                                        @endif
+                            <a href="{{ route('events.show', $event->id) }}"
+                            class="flex bg-white rounded-xl shadow-sm border border-gray-100 hover:border-red-400 transition overflow-hidden group">
+                                {{-- Imagem do evento --}}
+                                @if ($event->event_image)
+                                    <img src="{{ asset('storage/' . $event->event_image) }}" 
+                                        alt="{{ $event->event_name }}"
+                                        class="object-cover w-28 h-28 rounded-l-xl">
+                                @else
+                                    <div class="flex flex-col items-center justify-center w-28 h-28 bg-gray-100 rounded-l-xl text-red-500">
+                                        <i class="ph-bold ph-calendar-blank text-3xl"></i>
+                                        <p class="mt-1 text-[11px] text-gray-500 text-center leading-tight">
+                                            Sem imagem
+                                        </p>
                                     </div>
-                                </a>
-                            @endforeach
+                                @endif
+
+                                {{-- Conteúdo do card --}}
+                                <div class="p-4 flex-1 flex flex-col justify-center">
+                                    <h4 class="text-base font-semibold text-stone-800 line-clamp-2 group-hover:text-red-600 transition">
+                                        {{ $event->event_name }}
+                                    </h4>
+                                    @if ($event->event_scheduled_at)
+                                        <p class="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                            <i class="ph-fill ph-clock-clockwise text-red-600 text-sm"></i>
+                                            {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
+                                        </p>
+                                    @endif
+                                </div>
+                            </a>
+                        @endforeach
+
                         </div>
                     @else
-                        <div class="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-100">
+                        <div class="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
                             <i class="ph-bold ph-calendar-x text-5xl text-gray-300 mb-2"></i>
-                            <p class="text-gray-500 text-sm">Nenhum evento foi criado para este curso ainda.</p>
+                            <p class="text-gray-500 text-sm">Nenhum evento criado ainda.</p>
                         </div>
                     @endif
                 </div>
 
-                {{-- COLUNA 2 - POSTS --}}
+                {{-- POSTS --}}
                 <div>
-                    <h2 class="text-2xl font-bold text-stone-800 mb-4 flex items-center gap-2">
-                        <i class="ph ph-article bg-red-600 text-white rounded-full p-1 mr-2 text-xl"></i> Posts
+                    <h2 class="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">
+                        <i class="ph ph-article text-red-600 text-lg"></i> Posts
                     </h2>
-                    
                     @livewire('course-posts', ['course' => $course])
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Botão flutuante Criar Evento --}}
+    @if (auth()->user()->user_type === 'coordinator' && auth()->user()->id === $course->courseCoordinator?->user_id)
+        <a href="{{ route('events.create', ['course_id' => $course->id]) }}"
+           class="fixed bottom-8 right-8 bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-3 rounded-full shadow-lg transition flex items-center gap-2 group"
+           title="Criar evento">
+            <i class="ph-bold ph-plus text-lg"></i>
+            <span class="hidden sm:inline-block group-hover:inline-block transition">Criar Evento</span>
+        </a>
+    @endif
 </x-app-layout>
 
-{{-- ===================================================================================== --}}
-{{-- MODAL E SCRIPTS (Sem Alteração, mantendo a funcionalidade) --}}
-{{-- ===================================================================================== --}}
-
-{{-- Modal de Exclusão para Curso --}}
+{{-- =============================== --}}
+{{-- MODAL E SCRIPTS --}}
+{{-- =============================== --}}
 <div id="deleteModal-{{ $course->id }}"
-    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 ease-in-out scale-95" onclick="event.stopPropagation();">
+     class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation();">
         <h2 class="text-xl font-bold mb-4 text-red-600 flex items-center gap-2">
             <i class="ph-bold ph-warning-circle text-2xl"></i> Confirmar Exclusão
         </h2>
-        <p class="text-gray-700">Tem certeza que deseja excluir o curso <strong>"{{ $course->course_name }}"</strong>? Esta ação é **irreversível**.</p>
+        <p class="text-gray-700">Tem certeza que deseja excluir o curso <strong>"{{ $course->course_name }}"</strong>? Esta ação é irreversível.</p>
         <div class="mt-6 flex justify-end space-x-3">
             <button onclick="closeModal('deleteModal-{{ $course->id }}')"
-                class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 font-medium transition">Cancelar</button>
+                    class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 font-medium transition">Cancelar</button>
             <form action="{{ route('courses.destroy', $course->id) }}" method="POST">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="px-4 py-2 text-sm bg-red-600 text-white rounded-full hover:bg-red-700 font-medium transition">Confirmar Exclusão</button>
+                <button type="submit"
+                        class="px-4 py-2 text-sm bg-red-600 text-white rounded-full hover:bg-red-700 font-medium transition">Confirmar</button>
             </form>
         </div>
     </div>
 </div>
 
-{{-- Scripts e Funções do Modal --}}
 @vite('resources/js/app.js')
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
 <script>
-    function openModal(id) {
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 </script>
 
-
-{{-- Script para Seguir/Deixar de Seguir Curso --}}
+{{-- Script seguir/deixar de seguir --}}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const container = document.querySelector('div[data-course-id]');
-        const followersCountSpan = document.getElementById('followersCount');
-        const followersPluralSpan = document.getElementById('followersText');
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('div[data-course-id]');
+    const followersCountSpan = document.getElementById('followersCount');
+    const followersPluralSpan = document.getElementById('followersText');
 
-        function updatePlural(count) {
-            if (!followersPluralSpan) return;
-            count = parseInt(count);
-            if (count === 1) { 
-                followersPluralSpan.textContent = 'Seguidor';
-            } else {
-                followersPluralSpan.textContent = 'Seguidores';
+    function updatePlural(count) {
+        if (!followersPluralSpan) return;
+        followersPluralSpan.textContent = count === 1 ? 'Seguidor' : 'Seguidores';
+    }
+
+    if (container) {
+        container.addEventListener('click', async e => {
+            const button = e.target.closest('button');
+            if (!button || !button.dataset.courseId) return;
+
+            const courseId = button.dataset.courseId;
+            const isFollow = button.id === 'followButton';
+            const url = `/courses/${courseId}/${isFollow ? 'follow' : 'unfollow'}`;
+            const method = isFollow ? 'POST' : 'DELETE';
+
+            button.disabled = true;
+            const original = button.innerHTML;
+            button.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> Processando';
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!res.ok) throw new Error('Erro');
+                const data = await res.json();
+                followersCountSpan.textContent = data.followers_count;
+                updatePlural(data.followers_count);
+                toggleButton(button, isFollow);
+            } catch (err) {
+                alert('Erro ao processar solicitação.');
+                button.innerHTML = original;
+            } finally {
+                button.disabled = false;
             }
+        });
+    }
+
+    function toggleButton(btn, followed) {
+        if (followed) {
+            btn.id = 'unfollowButton';
+            btn.innerHTML = '<i class="ph-fill ph-heart text-white"></i> Seguindo';
+            btn.className = 'mt-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-1.5 rounded-full shadow-md transition';
+        } else {
+            btn.id = 'followButton';
+            btn.innerHTML = '<i class="ph-bold ph-heart text-red-600"></i> Seguir';
+            btn.className = 'mt-2 bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700 text-sm font-medium px-4 py-1.5 rounded-full shadow-md transition';
         }
-        
-        if (container) {
-            container.addEventListener('click', function(e) {
-                const button = e.target.closest('button');
-                if (!button || !button.dataset.courseId) return;
+    }
 
-                const courseId = button.dataset.courseId;
-                let method, url;
-
-                if (button.id === 'followButton') {
-                    method = 'POST';
-                    url = `/courses/${courseId}/follow`;
-                } else if (button.id === 'unfollowButton') {
-                    method = 'DELETE';
-                    url = `/courses/${courseId}/unfollow`;
-                } else {
-                    return;
-                }
-
-                button.disabled = true;
-                
-                // Adiciona um efeito de loading temporário
-                const originalContent = button.innerHTML;
-                button.innerHTML = '<i class="ph-bold ph-circle-notch animate-spin"></i> Processando';
-
-                fetch(url, {
-                        method: method,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Falha na operação. Status: ' + response.status);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        updateButtonState(button, method);
-                        if (data.followers_count !== undefined && followersCountSpan) {
-                            const newCount = data.followers_count;
-                            followersCountSpan.textContent = newCount;
-                            updatePlural(newCount);
-                        }
-                        button.disabled = false;
-                    })
-                    .catch(error => {
-                        console.error('Erro:', error);
-                        alert('Erro ao processar a solicitação. Tente novamente.');
-                        button.innerHTML = originalContent; // Volta ao estado original em caso de erro
-                        button.disabled = false;
-                    });
-            });
-        }
-
-        function updateButtonState(currentButton, currentMethod) {
-            if (currentMethod === 'POST') {
-                currentButton.id = 'unfollowButton';
-                currentButton.innerHTML = '<i class="ph-fill ph-heart text-white text-base"></i> Seguindo';
-                currentButton.classList.remove('bg-gray-200', 'hover:bg-red-500', 'text-gray-700', 'hover:text-white');
-                currentButton.classList.add('bg-red-600', 'hover:bg-red-700', 'text-white');
-            } else if (currentMethod === 'DELETE') {
-                currentButton.id = 'followButton';
-                currentButton.innerHTML = '<i class="ph-bold ph-heart text-red-600 text-base"></i> Seguir';
-                currentButton.classList.remove('bg-red-600', 'hover:bg-red-700', 'text-white');
-                currentButton.classList.add('bg-gray-200', 'hover:bg-red-500', 'hover:text-white', 'text-gray-700');
-            }
-            currentButton.disabled = false;
-        }
-        
-        // Inicializa o plural
-        if (followersCountSpan) {
-            updatePlural(parseInt(followersCountSpan.textContent.trim()));
-        }
-    });
+    updatePlural(parseInt(followersCountSpan.textContent.trim()));
+});
 </script>
