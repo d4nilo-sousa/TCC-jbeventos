@@ -6,12 +6,11 @@
             </a>
         </x-slot>
 
-        <div class="mb-5 text-center">
-            <h1 class="text-3xl font-medium text-red-700 font-ubuntu">Esqueceu sua senha?</h1>
-        </div>
-        <div class="mb-4 text-sm text-center text-gray-600 px-5">
-            {{ __('Informe seu e-mail e enviaremos um link para redefinição.') }}
-            
+        <!-- Título -->
+        <div class="text-center mb-5">
+            <h1 class="text-3xl font-thin text-stone-500 font-poppins">Esqueci minha senha</h1>
+            <p class="mt-2 text-sm text-stone-400">Informe seu e-mail e enviaremos<br> um link para redefinição.</p>
+            <hr class="w-1/4 mx-auto">
         </div>
 
         @session('status')
@@ -22,19 +21,30 @@
 
         <x-validation-errors class="mb-4" />
 
-        <form method="POST" action="{{ route('password.email') }}">
-            @csrf
 
-            <div class="block">
-                <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            </div>
+        @csrf
 
-            <div class="flex items-center justify-end mt-4">
-                <x-button>
-                    {{ __('Redefina sua Senha') }}
-                </x-button>
-            </div>
+        <div class="block">
+            <x-label for="email" value="{{ __('Email') }}" />
+            <x-input id="email" class="block mt-1 w-full placeholder-gray-300 font-ubuntu" type="email"
+                name="email" :value="old('email')" required autofocus autocomplete="off" placeholder="exemplo@gmail.com"
+                required autofocus autocomplete="username" placeholder="Digite seu gmail" />
+        </div>
+
+        <div class="flex items-center justify-center mt-7">
+            <x-button class="bg-red-600 hover:bg-red-700 w-full h-10">
+                {{ __('Redefinir senha') }}
+            </x-button>
+        </div>
+        <div class="flex items-center justify-center mt-5 gap-1">
+            @if (Route::has('login'))
+                <p class="ml-2 text-sm text-stone-500">Lembrou sua senha? </p>
+                <a class="no-underline text-sm text-blue-500" href="{{ route('login') }}">
+                    {{ __('Login') }}
+                </a>
+            @endif
+        </div>
+
         </form>
     </x-authentication-card>
 </x-guest-layout>
