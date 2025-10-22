@@ -3,17 +3,21 @@
 
     {{-- Área do Ícone Redondo (Estilo Avatar/Perfil) --}}
     <div class="mb-4 relative">
-        <img src="{{ $course->course_icon ? asset('storage/' . $course->course_icon) : asset('imgs/placeholder.png') }}"
-            alt="{{ $course->course_name }}"
-            {{-- Borda sutil para dar um toque de cor --}}
-            class="w-24 h-24 rounded-full object-cover border-4 border-red-500/30 shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-        
-        {{-- Adiciona um "selo" de destaque --}}
-        {{-- @if ($course->is_new) --}}
-            <span class="absolute bottom-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-md">
-                Curso
-            </span>
-        {{-- @endif --}}
+        @if ($course->course_icon)
+            <img src="{{ asset('storage/' . $course->course_icon) }}" alt="{{ $course->course_name }}"
+                class="w-24 h-24 rounded-full object-cover border-4 border-red-500/30 shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
+        @else
+            <div
+                class="w-24 h-24 rounded-full border-4 border-red-500/30 shadow-md transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl
+                    bg-gray-100 flex items-center justify-center">
+                <i class="ph ph-book-open text-4xl text-red-600"></i>
+            </div>
+        @endif
+    
+        <span
+            class="absolute bottom-0 right-0 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-md">
+            Curso
+        </span>
     </div>
 
     {{-- Detalhes do Curso --}}
@@ -31,7 +35,8 @@
 
     {{-- Botão/Call to Action no Rodapé --}}
     <div class="w-full">
-        <span class="inline-block w-full py-2 px-4 bg-red-600 text-white font-bold rounded-xl text-sm opacity-90 group-hover:bg-red-700 transition duration-200 shadow-lg hover:shadow-xl">
+        <span
+            class="inline-block w-full py-2 px-4 bg-red-600 text-white font-bold rounded-xl text-sm opacity-90 group-hover:bg-red-700 transition duration-200 shadow-lg hover:shadow-xl">
             Explorar Curso
         </span>
     </div>

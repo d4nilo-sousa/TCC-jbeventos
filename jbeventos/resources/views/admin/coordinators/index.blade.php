@@ -67,13 +67,23 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             @if ($coordinator->coordinatedCourse)
                                                 <div class="flex items-center gap-3">
-                                                    <img class="h-8 w-8 rounded-full object-cover"
-                                                        src="{{ $coordinator->coordinatedCourse->course_icon ? asset('storage/' . $coordinator->coordinatedCourse->course_icon) : asset('imgs/default_course_icon.svg') }}"
-                                                        alt="Ícone do Curso">
+                                                    @if ($coordinator->coordinatedCourse->course_icon)
+                                                        {{-- Se houver ícone de foto, mostra a imagem --}}
+                                                        <img class="h-8 w-8 rounded-full object-cover"
+                                                            src="{{ asset('storage/' . $coordinator->coordinatedCourse->course_icon) }}"
+                                                            alt="Ícone do Curso">
+                                                    @else
+                                                        {{-- Se NÃO houver ícone de foto (mas o curso existe), mostra o ícone Phosphor --}}
+                                                        {{-- Ajustei o tamanho (text-2xl) para se aproximar do h-8 w-8 da imagem e adicionei classes de alinhamento --}}
+                                                        <div class="h-8 w-8 flex items-center justify-center">
+                                                            <i class="ph ph-book-open text-2xl text-red-600"></i>
+                                                        </div>
+                                                    @endif
                                                     <span
                                                         class="font-semibold text-gray-800">{{ $coordinator->coordinatedCourse->course_name }}</span>
                                                 </div>
                                             @else
+                                                {{-- Se não houver curso coordenado, mostra o span de "Nenhum Curso Atribuído" --}}
                                                 <span
                                                     class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
                                                     Nenhum Curso Atribuído

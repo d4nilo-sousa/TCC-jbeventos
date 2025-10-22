@@ -11,11 +11,17 @@ class CourseFollowController extends Controller
     {
         $user = auth()->user();
         
+        // 1. Executa a ação de seguir
         $user->followedCourses()->syncWithoutDetaching([$course->id]);
 
+        // 2. Calcula a nova contagem
+        $newFollowersCount = $course->followers()->count(); // <-- OBRIGATÓRIO
+
+        // 3. Retorna a contagem no JSON com a chave correta
         return response()->json([
             'status' => 'success', 
-            'message' => 'Você está seguindo este curso.'
+            'message' => 'Você está seguindo este curso.',
+            'followers_count' => $newFollowersCount // <-- CHAVE NECESSÁRIA PARA O JS
         ]);
     }
 
@@ -23,15 +29,21 @@ class CourseFollowController extends Controller
     {
         $user = auth()->user();
         
+        // 1. Executa a ação de deixar de seguir
         $user->followedCourses()->detach($course->id); 
 
+        // 2. Calcula a nova contagem
+        $newFollowersCount = $course->followers()->count(); // <-- OBRIGATÓRIO
+        
+        // 3. Retorna a contagem no JSON com a chave correta
         return response()->json([
             'status' => 'success', 
-            'message' => 'Você deixou de seguir este curso.'
+            'message' => 'Você deixou de seguir este curso.',
+            'followers_count' => $newFollowersCount // <-- CHAVE NECESSÁRIA PARA O JS
         ]);
     }
 
-    // Novo método para retornar contagem
+    // O método followersCount pode ser mantido, mas não é usado na lógica de clique do botão
     public function followersCount(Course $course)
     {
         $count = $course->followers()->count();
