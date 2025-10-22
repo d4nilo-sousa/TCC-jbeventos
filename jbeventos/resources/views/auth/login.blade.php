@@ -6,7 +6,7 @@
             </a>
         </x-slot>
 
-        <x-validation-errors class="mb-4" />
+        
 
         @session('status')
             <div class="mb-4 font-medium text-sm text-green-600">
@@ -19,24 +19,29 @@
 
             <!-- Título -->
             <div class="text-center mb-5">
-                <h1 class="text-3xl font-thin text-stone-500 font-ubuntu">Bem-vindo de volta!</h1>
+                <h1 class="text-3xl font-thin text-stone-600 font-ubuntu">Bem-vindo de volta!</h1>
                 <p class="mt-2 text-sm text-stone-400">Faça login para continuar</p>
-                <hr class="w-1/4 mx-auto">
+                <hr class="w-1/5 mx-auto">
             </div>
+
+            <x-validation-errors class="mb-4 mt-2" />
 
             <!-- Gmail -->
             <div class="mt-5">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 font-ubuntu" type="email" name="email"
-                    :value="old('email')" required autofocus autocomplete="off" placeholder="exemplo@gmail.com" />
+                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 placeholder:text-sm text-sm" type="email" name="email"
+                    :value="old('email')" required autofocus autocomplete="off"  />
             </div>
 
             <!-- Senha -->
             <div class="mt-4">
                 <x-label for="password" value="{{ __('Senha') }}" />
                 <div class="relative">
-                    <x-input id="password" class="block mt-1 w-full pr-10 placeholder-gray-300 font-ubuntu" type="password"
-                        name="password" required autocomplete="current-password" placeholder="digite sua senha" />
+                    <input id="password"
+                        class="block mt-1 w-full pr-10 placeholder-gray-300 placeholder:text-sm border-gray-200 focus:border-gray-400 focus:ring-stone-500
+                    rounded-xl shadow-sm focus:ring-white text-sm"
+                        type="password" name="password" required autocomplete="current-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    </input>
                     <button type="button"
                         class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 toggle-password"
                         data-target="#password">
@@ -45,7 +50,8 @@
                     </button>
                 </div>
             </div>
-            
+
+
             <!-- Campos de lembre-me e esqueceu senha -->
             <div class="flex justify-between items-center mb-6 mt-4 px-1">
                 <div class="block">
@@ -54,7 +60,7 @@
                         <span class="ml-2 text-sm text-gray-700">{{ __('Lembre-me') }}</span>
                     </label>
                 </div>
-    
+
                 <div class="flex items-center justify-center">
                     @if (Route::has('password.request'))
                         <a class="no-underline style text-sm text-blue-500" href="{{ route('password.request') }}">
@@ -63,7 +69,7 @@
                     @endif
                 </div>
             </div>
-            
+
 
             <div class="flex items-center justify-center mt-3">
                 <x-button class="bg-red-600 hover:bg-red-700 w-full h-10">

@@ -170,20 +170,23 @@
                 <div class="text-center">
                     {{-- PLACEHOLDER PARA O LOGO DO SISTEMA --}}
                     <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo do Sistema de Eventos"
-                        class="h-16 mx-auto mb-4 object-contain"
+                        class="h-[2.5rem] mx-auto mb-12 object-contain"
                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/990000/ffffff?text=LOGO'">
 
-                    <h3 id="modal-title" class="text-3xl font-extrabold text-gray-900 mb-3">
+                    <h3 id="modal-title" class="text-2xl font-bold font-ubuntu text-gray-700 mb-4">
                         Bem-vindo(a) ao feed do JB Eventos!
                     </h3>
-                    <p class="text-gray-600 text-lg mb-8">
-                        Fique por dentro dos principais eventos e posts da nossa escola!
-                        Encontre todos os eventos, notícias e posts em um só lugar, independente do seu papel na escola.
-                    </p>
+                    <div class="w-[90%] mx-auto"> 
+                        <p class="text-gray-600 text-lg mb-8 font-thin d-flex ">
+                            Fique por dentro dos principais acontecimentos da nossa escola!
+                            Encontre eventos, notícias e publicações em um só lugar
+                        </p>
+                    </div>
+                    
 
                     <button onclick="closeWelcomeModal()"
-                        class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-md px-6 py-3 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg">
-                        Começar a Explorar o Feed
+                        class="w-full inline-flex justify-center rounded-lg border border-transparent text-lg font-thin shadow-md px-6 py-3 bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg">
+                        Explorar o Feed!
                     </button>
                 </div>
             </div>

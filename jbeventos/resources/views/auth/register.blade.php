@@ -11,9 +11,9 @@
 
             <!-- Título -->
             <div class="text-center mb-5">
-                <h1 class="text-3xl font-thin text-stone-500 font-poppins">Olá, seja bem-vindo!</h1>
+                <h1 class="text-3xl font-thin text-stone-600 font-ubuntu">Olá, seja bem-vindo!</h1>
                 <p class="mt-2 text-sm text-stone-400">Cadastre-se para continuar</p>
-                <hr class="w-1/4 mx-auto">
+                <hr class="w-1/5 mx-auto">
             </div>
 
             <x-validation-errors class="mb-3 p-3 bg-red-50 rounded-lg shadow-md" />
