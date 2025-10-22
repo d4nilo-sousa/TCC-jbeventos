@@ -320,7 +320,7 @@
                                 @forelse ($coordinators as $coordinator)
                                     <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 text-center transform transition duration-300 hover:scale-[1.05] hover:shadow-xl">
                                         <a href="{{ route('profile.view', $coordinator->userAccount->id) }}" class="flex flex-col items-center">
-                                            <img src="{{ $coordinator->userAccount->profile_photo_url }}" alt="{{ $coordinator->userAccount->name }}" class="size-28 rounded-full object-cover border-4 border-red-500/50 mb-4 shadow-lg">
+                                            <img src="{{ $coordinator->userAccount->user_icon_url }}" alt="{{ $coordinator->userAccount->name }}" class="size-28 rounded-full object-cover border-4 border-red-500/50 mb-4 shadow-lg">
                                             <h3 class="font-extrabold text-lg text-gray-900 leading-tight mb-1">
                                                 {{ $coordinator->userAccount->name }}
                                             </h3>
