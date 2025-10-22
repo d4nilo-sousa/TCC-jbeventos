@@ -77,35 +77,64 @@
                                 Destaques da Comunidade
                             </h2>
 
-                            {{-- Eventos (Primeiro a aparecer) --}}
+                            {{-- Eventos --}}
                             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-8">
                                 <h3 class="text-2xl font-bold text-gray-700 mb-6 flex justify-between items-center">
-                                    Próximos Eventos (Top 4)
+                                    Próximos Eventos
                                     <a href="?tab=events" class="text-sm text-red-600 hover:text-red-800 font-semibold transition duration-200">
                                         Ver todos <i class="ph ph-arrow-right ml-1"></i>
                                     </a>
                                 </h3>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    @forelse ($events->take(4) as $event)
-                                        <div class="bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden relative transform transition duration-300 hover:scale-[1.02] hover:shadow-xl">
-                                            <a href="{{ route('events.show', $event->id) }}">
-                                                <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="w-full h-40 object-cover">
-                                                <span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md flex items-center">
-                                                    <i class="ph ph-calendar-check mr-1"></i> EVENTO
-                                                </span>
-                                                <div class="p-4">
-                                                    <h3 class="font-extrabold text-lg text-gray-900 leading-snug truncate">{{ $event->event_name }}</h3>
-                                                    <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ \Illuminate\Support\Str::limit($event->event_description, 60) }}</p>
-                                                    <div class="flex items-center text-sm text-red-600 mt-3 font-semibold">
-                                                        <i class="ph ph-clock mr-2"></i>
-                                                        <span>{{ $event->event_scheduled_at->format('d/m/Y H:i') }}</span>
+                                
+                                {{-- NOVO CONTAINER DE ROLAGEM HORIZONTAL --}}
+                                <div class="relative group">
+                                    {{-- Botões de Seta (Opcionais, requerem JS, mas o visual já indica rolagem) --}}
+                                    <button onclick="scrollSection('event-highlight-container', -300)" 
+                                        class="absolute left-0 z-10 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg border border-gray-200 hidden lg:group-hover:block hover:bg-white transition duration-200">
+                                        <i class="ph-bold ph-caret-left text-xl text-red-600"></i>
+                                    </button>
+                                    
+                                    <div id="event-highlight-container" class="flex overflow-x-scroll space-x-4 pb-4 scrollbar-hide">
+                                        @forelse ($events as $event)
+                                            <div class="flex-shrink-0 w-72"> 
+                                                <a href="{{ route('events.show', $event->id) }}" class="block bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden relative transform transition duration-300 hover:scale-[1.02] hover:shadow-xl">
+                                                    
+                                                    {{-- IMAGEM DO EVENTO COM PLACEHOLDER --}}
+                                                    <div class="relative w-full h-40 bg-gray-200">
+                                                        @if ($event->event_image)
+                                                            <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="w-full h-full object-cover">
+                                                        @else
+                                                            {{-- PLACEHOLDER: Evento Sem Imagem --}}
+                                                            <div class="flex flex-col items-center justify-center w-full h-full text-gray-500 bg-gray-100 p-4">
+                                                                <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                                <p class="mt-2 text-sm font-semibold">Evento Sem Imagem</p>
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        <span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md flex items-center">
+                                                            <i class="ph ph-calendar-check mr-1"></i> {{ $event->event_type === 'course' ? 'CURSO' : ($event->event_type === 'general' ? 'GERAL' : 'EVENTO') }}
+                                                        </span>
                                                     </div>
-                                                </div>
-                                            </a>
-                                        </div>
-                                    @empty
-                                        <p class="text-gray-500 text-center col-span-full py-4">Nenhum evento encontrado no momento.</p>
-                                    @endforelse
+                                                    
+                                                    <div class="p-4">
+                                                        <h3 class="font-extrabold text-lg text-gray-900 leading-snug truncate">{{ $event->event_name }}</h3>
+                                                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ \Illuminate\Support\Str::limit($event->event_description, 60) }}</p>
+                                                        <div class="flex items-center text-sm text-red-600 mt-3 font-semibold">
+                                                            <i class="ph ph-clock mr-2"></i>
+                                                            <span>{{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}</span>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        @empty
+                                            <p class="text-gray-500 text-center col-span-full py-4 w-full">Nenhum evento em destaque no momento.</p>
+                                        @endforelse
+                                    </div>
+                                    
+                                    <button onclick="scrollSection('event-highlight-container', 300)" 
+                                        class="absolute right-0 z-10 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg border border-gray-200 hidden lg:group-hover:block hover:bg-white transition duration-200">
+                                        <i class="ph-bold ph-caret-right text-xl text-red-600"></i>
+                                    </button>
                                 </div>
                             </div>
                             
@@ -189,13 +218,26 @@
                                 @forelse ($events as $event)
                                     <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden relative transform transition duration-300 hover:shadow-xl">
                                         <a href="{{ route('events.show', $event->id) }}">
-                                            <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="w-full h-48 object-cover">
+                                            
+                                            {{-- IMAGEM DO EVENTO COM PLACEHOLDER --}}
+                                            <div class="relative w-full h-48 bg-gray-200">
+                                                @if ($event->event_image)
+                                                    <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="w-full h-full object-cover">
+                                                @else
+                                                    {{-- PLACEHOLDER: Evento Sem Imagem --}}
+                                                    <div class="flex flex-col items-center justify-center w-full h-full text-gray-500 bg-gray-100 p-4">
+                                                        <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                        <p class="mt-2 text-sm font-semibold">Evento Sem Imagem</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            
                                             <div class="p-4">
                                                 <h3 class="font-extrabold text-xl text-gray-900 leading-tight truncate">{{ $event->event_name }}</h3>
                                                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ \Illuminate\Support\Str::limit($event->event_description, 80) }}</p>
                                                 <div class="flex items-center text-sm text-red-600 mt-3 font-semibold">
                                                     <i class="ph ph-clock mr-2"></i>
-                                                    <span>{{ $event->event_scheduled_at->format('d/m/Y H:i') }}</span>
+                                                    <span>{{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}</span>
                                                 </div>
                                             </div>
                                         </a>
@@ -206,7 +248,8 @@
                             </div>
                         </div>
 
-                        {{-- =================================== Seção de Posts (Conteúdo da Aba) =================================== --}}
+                        {{-- =================================== Seção de Posts, Cursos e Coordenadores (SEM ALTERAÇÕES) =================================== --}}
+
                         <div id="posts-section" class="tab-content hidden">
                             <h2 class="text-4xl font-extrabold text-gray-900 mb-8 border-b-4 border-red-500/50 pb-2">
                                 <i class="ph ph-feather text-red-600 mr-3"></i>
@@ -243,7 +286,6 @@
                             </div>
                         </div>
 
-                        {{-- =================================== Seção de Cursos (Conteúdo da Aba) =================================== --}}
                         <div id="courses-section" class="tab-content hidden">
                             <h2 class="text-4xl font-extrabold text-gray-900 mb-8 border-b-4 border-red-500/50 pb-2">
                                 <i class="ph ph-book-open text-red-600 mr-3"></i>
@@ -268,7 +310,6 @@
                             </div>
                         </div>
 
-                        {{-- =================================== Seção de Coordenadores (Conteúdo da Aba) =================================== --}}
                         <div id="coordinators-section" class="tab-content hidden">
                             <h2 class="text-4xl font-extrabold text-gray-900 mb-8 border-b-4 border-red-500/50 pb-2">
                                 <i class="ph ph-user-circle text-red-600 mr-3"></i>
@@ -304,26 +345,46 @@
         </div>
     </div>
 
-    {{-- Script para a funcionalidade das abas/filtros--}}
+    {{-- ESTILO e SCRIPT para Rolagem Horizontal --}}
+    <style>
+        /* Esconde a barra de rolagem para WebKit (Chrome, Safari) */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Esconde a barra de rolagem para IE, Edge e Firefox */
+        .scrollbar-hide {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+    
     <script>
+        // Função para rolagem horizontal com botões
+        function scrollSection(containerId, amount) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.scrollBy({ left: amount, behavior: 'smooth' });
+            }
+        }
+
+        // Script para a funcionalidade das abas/filtros (MANTIDO)
         document.addEventListener('DOMContentLoaded', function () {
             const tabs = document.querySelectorAll('.tab-button');
             const contents = document.querySelectorAll('.tab-content');
             const activeTabInput = document.getElementById('active-tab-input');
 
             function showContent(tabId) {
-                // Remove estilos de aba ativa e define o estilo inativo
+                // ... (lógica da aba)
                 tabs.forEach(tab => {
                     tab.classList.remove('bg-red-600', 'text-white', 'shadow-lg', 'hover:bg-red-700', 'font-semibold');
                     tab.classList.add('text-gray-600', 'hover:bg-gray-100', 'hover:text-red-600', 'font-medium');
                 });
 
-                // Oculta todo o conteúdo
                 contents.forEach(content => {
                     content.classList.add('hidden');
                 });
 
-                // Define a aba ativa e mostra seu conteúdo
                 const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
                 if (activeTab) {
                     activeTab.classList.remove('text-gray-600', 'hover:bg-gray-100', 'hover:text-red-600', 'font-medium');
@@ -335,7 +396,6 @@
                     activeContent.classList.remove('hidden');
                 }
                 
-                // ATUALIZA CAMPO OCULTO para a busca
                 if (activeTabInput) {
                     activeTabInput.value = tabId;
                 }
@@ -359,8 +419,6 @@
                     // Atualiza a URL sem recarregar
                     const newUrl = new URL(window.location.href);
                     newUrl.searchParams.set('tab', tabId);
-                    
-                    // Mantém a lógica de busca (search) ativa
                     
                     window.history.pushState({ path: newUrl.href }, '', newUrl.href);
                 });
