@@ -28,9 +28,9 @@
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
-            <div class="bg-white shadow rounded-xl p-4 sm:p-6 border border-gray-200">
-                <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
-                <p class="text-gray-600">
+            <div class="bg-gradient-to-br from-black to-gray-700 shadow rounded-xl p-4 sm:p-6 border border-gray-200">
+                <h1 class="text-2xl font-extrabold text-white mb-2">Olá, <font color="red">{{ $user->name }} </font>!</h1>
+                <p class="text-gray-300">
                     Fique por dentro dos eventos e posts disponíveis no sistema.
                 </p>
             </div>
