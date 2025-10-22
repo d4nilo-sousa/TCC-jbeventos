@@ -248,7 +248,7 @@
                             </div>
                         </div>
 
-                        {{-- =================================== Seção de Posts, Cursos e Coordenadores (SEM ALTERAÇÕES) =================================== --}}
+                        {{-- =================================== Seção de Posts, Cursos e Coordenadores =================================== --}}
 
                         <div id="posts-section" class="tab-content hidden">
                             <h2 class="text-4xl font-extrabold text-gray-900 mb-8 border-b-4 border-red-500/50 pb-2">
@@ -310,6 +310,7 @@
                             </div>
                         </div>
 
+                        {{-- =================================== Seção de Coordenadores =================================== --}}
                         <div id="coordinators-section" class="tab-content hidden">
                             <h2 class="text-4xl font-extrabold text-gray-900 mb-8 border-b-4 border-red-500/50 pb-2">
                                 <i class="ph ph-user-circle text-red-600 mr-3"></i>
@@ -323,14 +324,24 @@
                                             <h3 class="font-extrabold text-lg text-gray-900 leading-tight mb-1">
                                                 {{ $coordinator->userAccount->name }}
                                             </h3>
+                                            
+                                            {{-- LÓGICA DE EXIBIÇÃO DO CARGO: COORDENADOR DE CURSO OU GERAL --}}
+                                            @php
+                                                $courseName = $coordinator->userAccount->coordinated_course_name;
+                                                $coordinatorTitle = $courseName 
+                                                                    ? 'Coordenador(a) de ' . $courseName 
+                                                                    : 'Coordenador(a) Geral';
+                                            @endphp
+
                                             <p class="text-sm text-gray-600 font-medium flex items-center">
-                                                <i class="ph ph-briefcase mr-1 text-red-600"></i> Coordenador
+                                                <i class="ph ph-briefcase mr-1 text-red-600"></i> {{ $coordinatorTitle }}
                                             </p>
-                                            @if($coordinator->course)
+                                            
+                                            {{-- @if($coordinator->course)
                                                 <span class="bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full shadow mt-2 truncate max-w-full">
                                                     {{ $coordinator->course->course_name }}
                                                 </span>
-                                            @endif
+                                            @endif --}}
                                         </a>
                                     </div>
                                 @empty
