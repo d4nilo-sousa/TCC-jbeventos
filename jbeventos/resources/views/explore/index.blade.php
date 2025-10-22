@@ -154,7 +154,7 @@
                                                     <img src="{{ asset('storage/' . $post->images[0]) }}" alt="Imagem do post" class="size-20 object-cover rounded-lg border-2 border-red-400/50">
                                                 @else
                                                     <div class="size-20 bg-red-100 rounded-lg flex items-center justify-center text-red-500">
-                                                        <i class="ph ph-chat-text-fill text-3xl"></i>
+                                                        <i class="ph ph-image-square text-3xl"></i>
                                                     </div>
                                                 @endif
                                             </a>
