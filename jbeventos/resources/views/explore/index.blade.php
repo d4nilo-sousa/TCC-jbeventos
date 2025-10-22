@@ -14,20 +14,21 @@
                                 Explorar
                             </h2>
                             <form action="{{ route('explore.index') }}" method="GET">
-                                <div class="relative">
+                                <div class="relative flex items-center">
                                     {{-- Campo oculto para manter a aba ativa após a pesquisa --}}
                                     <input type="hidden" name="tab" id="active-tab-input" value="{{ request('tab', 'all') }}">
-                                    
-                                    <input type="text" name="search" placeholder="Buscar por eventos, cursos, posts..."
-                                        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all duration-300"
-                                        value="{{ request('search') }}">
-                                    
-                                    <div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-red-500">
+
+                                    <div class="absolute left-4 text-red-500 pointer-events-none">
                                         <i class="ph ph-magnifying-glass text-lg font-bold"></i> 
                                     </div>
                                     
+                                    <input type="text" name="search" placeholder="Buscar por eventos, cursos, posts..."
+                                        class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all duration-300"
+                                        value="{{ request('search') }}">
+                                    
+                                    {{-- Botão Limpar Busca --}}
                                     @if (request('search'))
-                                        <a href="{{ route('explore.index', ['tab' => request('tab', 'all')]) }}" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-600 transition-colors duration-200" title="Limpar Busca">
+                                        <a href="{{ route('explore.index', ['tab' => request('tab', 'all')]) }}" class="absolute right-4 text-gray-500 hover:text-red-600 transition-colors duration-200" title="Limpar Busca">
                                             <i class="ph ph-x-circle-fill text-xl"></i>
                                         </a>
                                     @endif
@@ -379,7 +380,7 @@
             }
         }
 
-        // Script para a funcionalidade das abas/filtros (MANTIDO)
+        // Script para a funcionalidade das abas/filtros
         document.addEventListener('DOMContentLoaded', function () {
             const tabs = document.querySelectorAll('.tab-button');
             const contents = document.querySelectorAll('.tab-content');
