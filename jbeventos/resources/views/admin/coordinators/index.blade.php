@@ -1,14 +1,13 @@
 <x-app-layout>
-    {{-- Main Container (amplo e centralizado) --}}
-    <div class="py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-screen-2xl mx-auto space-y-6">
+    <div class="py-10 bg-gray-50 min-h-screen">
+        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
             {{-- Header: Título + Botão Adicionar --}}
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b pb-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-6 border-b pb-4 mt-1">
                 <h1 class="text-4xl font-extrabold text-gray-900 mb-4 sm:mb-0">Coordenadores</h1>
                 <a href="{{ route('coordinators.create') }}"
                     class="inline-flex items-center px-6 py-3 rounded-full shadow-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-all">
-                    <i class="ph-fill ph-plus text-lg mr-2"></i> Adicionar Coordenador
+                    <i class="ph-bold ph-plus-circle text-lg mr-2"></i> Adicionar Coordenador
                 </a>
             </div>
 

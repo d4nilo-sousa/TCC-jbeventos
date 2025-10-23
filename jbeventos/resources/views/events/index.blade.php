@@ -1,6 +1,7 @@
-<x-app-layout backgroundClass="bg-gray-100">
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+<x-app-layout>
+    <div class="py-10 bg-gray-50 min-h-screen"> 
+        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
+            <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div class="mt-1">
                 <p class="text-3xl sm:text-4xl font-extrabold text-stone-800 mt-3 tracking-tight drop-shadow-sm">
                     Todos os Eventos

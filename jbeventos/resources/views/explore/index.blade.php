@@ -1,6 +1,6 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-10 bg-gray-50 min-h-screen">
+        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
                 {{-- Coluna 1: Barra de Pesquisa e Filtros --}}
@@ -16,19 +16,19 @@
                             <form action="{{ route('explore.index') }}" method="GET">
                                 <div class="relative flex items-center">
                                     {{-- Campo oculto para manter a aba ativa após a pesquisa --}}
-                                    <input type="hidden" name="tab" id="active-tab-input" value="{{ request('tab', 'all') }}">
+                                    <input type="hidden" name="tab" id="active-tab-input"
+                                        value="{{ request('tab', 'all') }}">
 
-                                    <div class="absolute left-4 text-red-500 pointer-events-none">
-                                        <i class="ph ph-magnifying-glass text-lg font-bold"></i> 
-                                    </div>
-                                    
-                                    <input type="text" name="search" placeholder="Buscar por eventos, cursos, posts..."
+                                    <input type="text" name="search"
+                                        placeholder="Buscar por eventos, cursos, posts..."
                                         class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-4 focus:ring-red-200 focus:border-red-500 transition-all duration-300"
                                         value="{{ request('search') }}">
-                                    
+
                                     {{-- Botão Limpar Busca --}}
                                     @if (request('search'))
-                                        <a href="{{ route('explore.index', ['tab' => request('tab', 'all')]) }}" class="absolute right-4 text-gray-500 hover:text-red-600 transition-colors duration-200" title="Limpar Busca">
+                                        <a href="{{ route('explore.index', ['tab' => request('tab', 'all')]) }}"
+                                            class="absolute right-4 text-gray-500 hover:text-red-600 transition-colors duration-200"
+                                            title="Limpar Busca">
                                             <i class="ph ph-x-circle-fill text-xl"></i>
                                         </a>
                                     @endif
@@ -52,10 +52,10 @@
                                 @endphp
 
                                 @foreach ($tabs as $key => $tab)
-                                    <button type="button" data-tab="{{ $key }}" 
+                                    <button type="button" data-tab="{{ $key }}"
                                         class="tab-button w-full flex items-center px-4 py-3 rounded-xl text-left transition-all duration-300
-                                            {{ $activeTab === $key 
-                                                ? 'bg-red-600 text-white shadow-lg hover:bg-red-700 font-semibold' 
+                                            {{ $activeTab === $key
+                                                ? 'bg-red-600 text-white shadow-lg hover:bg-red-700 font-semibold'
                                                 : 'text-gray-600 hover:bg-gray-100 hover:text-red-600 font-medium' }}">
                                         <i class="{{ $tab['icon'] }} mr-3 text-lg"></i>
                                         <span class="text-sm">{{ $tab['label'] }}</span>
@@ -82,45 +82,59 @@
                             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-8">
                                 <h3 class="text-2xl font-bold text-gray-700 mb-6 flex justify-between items-center">
                                     Próximos Eventos
-                                    <a href="?tab=events" class="text-sm text-red-600 hover:text-red-800 font-semibold transition duration-200">
+                                    <a href="?tab=events"
+                                        class="text-sm text-red-600 hover:text-red-800 font-semibold transition duration-200">
                                         Ver todos <i class="ph ph-arrow-right ml-1"></i>
                                     </a>
                                 </h3>
-                                
+
                                 {{-- NOVO CONTAINER DE ROLAGEM HORIZONTAL --}}
                                 <div class="relative group">
                                     {{-- Botões de Seta (Opcionais, requerem JS, mas o visual já indica rolagem) --}}
-                                    <button onclick="scrollSection('event-highlight-container', -300)" 
+                                    <button onclick="scrollSection('event-highlight-container', -300)"
                                         class="absolute left-0 z-10 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg border border-gray-200 hidden lg:group-hover:block hover:bg-white transition duration-200">
                                         <i class="ph-bold ph-caret-left text-xl text-red-600"></i>
                                     </button>
-                                    
-                                    <div id="event-highlight-container" class="flex overflow-x-scroll space-x-4 pb-4 scrollbar-hide">
+
+                                    <div id="event-highlight-container"
+                                        class="flex overflow-x-scroll space-x-4 pb-4 scrollbar-hide">
                                         @forelse ($events as $event)
-                                            <div class="flex-shrink-0 w-72"> 
-                                                <a href="{{ route('events.show', $event->id) }}" class="block bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden relative transform transition duration-300 hover:scale-[1.02] hover:shadow-xl">
-                                                    
+                                            <div class="flex-shrink-0 w-72">
+                                                <a href="{{ route('events.show', $event->id) }}"
+                                                    class="block bg-white border border-gray-200 rounded-lg shadow-md overflow-hidden relative transform transition duration-300 hover:scale-[1.02] hover:shadow-xl">
+
                                                     {{-- IMAGEM DO EVENTO COM PLACEHOLDER --}}
                                                     <div class="relative w-full h-40 bg-gray-200">
                                                         @if ($event->event_image)
-                                                            <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="w-full h-full object-cover">
+                                                            <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                                alt="{{ $event->event_name }}"
+                                                                class="w-full h-full object-cover">
                                                         @else
                                                             {{-- PLACEHOLDER: Evento Sem Imagem --}}
-                                                            <div class="flex flex-col items-center justify-center w-full h-full text-gray-500 bg-gray-100 p-4">
+                                                            <div
+                                                                class="flex flex-col items-center justify-center w-full h-full text-gray-500 bg-gray-100 p-4">
                                                                 <i class="ph-bold ph-calendar-blank text-6xl"></i>
-                                                                <p class="mt-2 text-sm font-semibold">Evento Sem Imagem</p>
+                                                                <p class="mt-2 text-sm font-semibold">Evento Sem Imagem
+                                                                </p>
                                                             </div>
                                                         @endif
-                                                        
-                                                        <span class="absolute top-2 left-2 bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md flex items-center">
-                                                            <i class="ph ph-calendar-check mr-1"></i> {{ $event->event_type === 'course' ? 'CURSO' : ($event->event_type === 'general' ? 'GERAL' : 'EVENTO') }}
+
+                                                        <span
+                                                            class="absolute top-2 left-2 bg-red-600 text-white text-xs font-extrabold px-3 py-1 rounded-full shadow-md flex items-center">
+                                                            <i class="ph ph-calendar-check mr-1"></i>
+                                                            {{ $event->event_type === 'course' ? 'CURSO' : ($event->event_type === 'general' ? 'GERAL' : 'EVENTO') }}
                                                         </span>
                                                     </div>
-                                                    
+
                                                     <div class="p-4">
-                                                        <h3 class="font-extrabold text-lg text-gray-900 leading-snug truncate">{{ $event->event_name }}</h3>
-                                                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ \Illuminate\Support\Str::limit($event->event_description, 60) }}</p>
-                                                        <div class="flex items-center text-sm text-red-600 mt-3 font-semibold">
+                                                        <h3
+                                                            class="font-extrabold text-lg text-gray-900 leading-snug truncate">
+                                                            {{ $event->event_name }}</h3>
+                                                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">
+                                                            {{ \Illuminate\Support\Str::limit($event->event_description, 60) }}
+                                                        </p>
+                                                        <div
+                                                            class="flex items-center text-sm text-red-600 mt-3 font-semibold">
                                                             <i class="ph ph-clock mr-2"></i>
                                                             <span>{{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}</span>
                                                         </div>
@@ -128,52 +142,65 @@
                                                 </a>
                                             </div>
                                         @empty
-                                            <p class="text-gray-500 text-center col-span-full py-4 w-full">Nenhum evento em destaque no momento.</p>
+                                            <p class="text-gray-500 text-center col-span-full py-4 w-full">Nenhum evento
+                                                em destaque no momento.</p>
                                         @endforelse
                                     </div>
-                                    
-                                    <button onclick="scrollSection('event-highlight-container', 300)" 
+
+                                    <button onclick="scrollSection('event-highlight-container', 300)"
                                         class="absolute right-0 z-10 top-1/2 -translate-y-1/2 p-2 bg-white/80 rounded-full shadow-lg border border-gray-200 hidden lg:group-hover:block hover:bg-white transition duration-200">
                                         <i class="ph-bold ph-caret-right text-xl text-red-600"></i>
                                     </button>
                                 </div>
                             </div>
-                            
+
                             {{-- Posts (Principais Discussões) --}}
                             <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-8">
                                 <h3 class="text-2xl font-bold text-gray-700 mb-6 flex justify-between items-center">
                                     Principais Discussões (Top 3)
-                                    <a href="?tab=posts" class="text-sm text-red-600 hover:text-red-800 font-semibold transition duration-200">
+                                    <a href="?tab=posts"
+                                        class="text-sm text-red-600 hover:text-red-800 font-semibold transition duration-200">
                                         Ver todos <i class="ph ph-arrow-right ml-1"></i>
                                     </a>
                                 </h3>
                                 <div class="grid grid-cols-1 gap-4">
                                     @forelse ($posts->take(3) as $post)
-                                        <div class="flex bg-gray-50 p-4 rounded-lg border border-gray-200 transition duration-300 hover:shadow-md hover:border-red-300">
-                                            <a href="{{ route('courses.show', $post->course->id) }}" class="flex-shrink-0 mr-4">
+                                        <div
+                                            class="flex bg-gray-50 p-4 rounded-lg border border-gray-200 transition duration-300 hover:shadow-md hover:border-red-300">
+                                            <a href="{{ route('courses.show', $post->course->id) }}"
+                                                class="flex-shrink-0 mr-4">
                                                 @if ($post->images && count($post->images) > 0)
-                                                    <img src="{{ asset('storage/' . $post->images[0]) }}" alt="Imagem do post" class="size-20 object-cover rounded-lg border-2 border-red-400/50">
+                                                    <img src="{{ asset('storage/' . $post->images[0]) }}"
+                                                        alt="Imagem do post"
+                                                        class="size-20 object-cover rounded-lg border-2 border-red-400/50">
                                                 @else
-                                                    <div class="size-20 bg-red-100 rounded-lg flex items-center justify-center text-red-500">
+                                                    <div
+                                                        class="size-20 bg-red-100 rounded-lg flex items-center justify-center text-red-500">
                                                         <i class="ph ph-image-square text-3xl"></i>
                                                     </div>
                                                 @endif
                                             </a>
                                             <div class="flex-grow">
                                                 <a href="{{ route('courses.show', $post->course->id) }}">
-                                                    <p class="text-xs font-semibold text-gray-500 mb-1">POST em {{ $post->course->course_name ?? 'Curso Desconhecido' }}</p>
-                                                    <h4 class="font-extrabold text-base text-gray-900 leading-snug line-clamp-2">{{ $post->content }}</h4>
+                                                    <p class="text-xs font-semibold text-gray-500 mb-1">POST em
+                                                        {{ $post->course->course_name ?? 'Curso Desconhecido' }}</p>
+                                                    <h4
+                                                        class="font-extrabold text-base text-gray-900 leading-snug line-clamp-2">
+                                                        {{ $post->content }}</h4>
                                                     <p class="text-sm text-gray-600 mt-2">
-                                                        Por <span class="font-bold text-red-600">{{ $post->author->name }}</span>
+                                                        Por <span
+                                                            class="font-bold text-red-600">{{ $post->author->name }}</span>
                                                         <span class="text-xs text-gray-400 ml-2">
-                                                            <i class="ph ph-clock-counter-clockwise"></i> {{ $post->created_at->diffForHumans() }}
+                                                            <i class="ph ph-clock-counter-clockwise"></i>
+                                                            {{ $post->created_at->diffForHumans() }}
                                                         </span>
                                                     </p>
                                                 </a>
                                             </div>
                                         </div>
                                     @empty
-                                        <p class="text-gray-500 col-span-full py-4 text-center">Nenhuma discussão em destaque no momento.</p>
+                                        <p class="text-gray-500 col-span-full py-4 text-center">Nenhuma discussão em
+                                            destaque no momento.</p>
                                     @endforelse
                                 </div>
                             </div>
@@ -186,11 +213,16 @@
                                 </h3>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     @forelse ($courses->take(3) as $course)
-                                        <div class="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm hover:bg-red-50 transition duration-200">
-                                            <a href="{{ route('courses.show', $course->id) }}" class="flex items-center w-full">
-                                                <img src="{{ asset('storage/' . $course->course_icon) }}" alt="{{ $course->course_name }}" class="size-12 rounded-full object-cover border-2 border-red-400">
+                                        <div
+                                            class="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm hover:bg-red-50 transition duration-200">
+                                            <a href="{{ route('courses.show', $course->id) }}"
+                                                class="flex items-center w-full">
+                                                <img src="{{ asset('storage/' . $course->course_icon) }}"
+                                                    alt="{{ $course->course_name }}"
+                                                    class="size-12 rounded-full object-cover border-2 border-red-400">
                                                 <div class="ml-4 flex-grow">
-                                                    <p class="font-bold text-gray-800 leading-tight">{{ $course->course_name }}</p>
+                                                    <p class="font-bold text-gray-800 leading-tight">
+                                                        {{ $course->course_name }}</p>
                                                     <p class="text-xs text-gray-500 font-medium flex items-center">
                                                         <i class="ph ph-graduation-cap-fill mr-1"></i> Curso
                                                     </p>
@@ -199,11 +231,14 @@
                                             </a>
                                         </div>
                                     @empty
-                                        <p class="text-gray-500 text-center col-span-full">Nenhum curso em destaque.</p>
+                                        <p class="text-gray-500 text-center col-span-full">Nenhum curso em destaque.
+                                        </p>
                                     @endforelse
                                 </div>
                                 <div class="mt-4 text-center">
-                                    <a href="?tab=courses" class="text-red-600 hover:text-red-800 text-sm font-semibold">Ver todos os Cursos &rarr;</a>
+                                    <a href="?tab=courses"
+                                        class="text-red-600 hover:text-red-800 text-sm font-semibold">Ver todos os
+                                        Cursos &rarr;</a>
                                 </div>
                             </div>
                         </div>
@@ -217,25 +252,38 @@
                             </h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                                 @forelse ($events as $event)
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden relative transform transition duration-300 hover:shadow-xl">
+                                    <div
+                                        class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden relative transform transition duration-300 hover:shadow-xl">
                                         <a href="{{ route('events.show', $event->id) }}">
-                                            
+
                                             {{-- IMAGEM DO EVENTO COM PLACEHOLDER --}}
                                             <div class="relative w-full h-48 bg-gray-200">
                                                 @if ($event->event_image)
-                                                    <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}" class="w-full h-full object-cover">
+                                                    <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                        alt="{{ $event->event_name }}"
+                                                        class="w-full h-full object-cover">
                                                 @else
                                                     {{-- PLACEHOLDER: Evento Sem Imagem --}}
-                                                    <div class="flex flex-col items-center justify-center w-full h-full text-gray-500 bg-gray-100 p-4">
+                                                    <div
+                                                        class="flex flex-col items-center justify-center w-full h-full text-red-500">
                                                         <i class="ph-bold ph-calendar-blank text-6xl"></i>
-                                                        <p class="mt-2 text-sm font-semibold">Evento Sem Imagem</p>
+                                                        <p class="mt-2 text-sm">Sem Imagem de Capa</p>
                                                     </div>
                                                 @endif
+
+                                                <span
+                                                    class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                                                    {{ $event->event_type === 'course' ? 'CURSO' : ($event->event_type === 'general' ? 'GERAL' : '') }}
+                                                </span>
                                             </div>
-                                            
+
                                             <div class="p-4">
-                                                <h3 class="font-extrabold text-xl text-gray-900 leading-tight truncate">{{ $event->event_name }}</h3>
-                                                <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ \Illuminate\Support\Str::limit($event->event_description, 80) }}</p>
+                                                <h3
+                                                    class="font-extrabold text-xl text-gray-900 leading-tight truncate">
+                                                    {{ $event->event_name }}</h3>
+                                                <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                                                    {{ \Illuminate\Support\Str::limit($event->event_description, 80) }}
+                                                </p>
                                                 <div class="flex items-center text-sm text-red-600 mt-3 font-semibold">
                                                     <i class="ph ph-clock mr-2"></i>
                                                     <span>{{ \Carbon\Carbon::parse($event->event_scheduled_at)->format('d/m/Y H:i') }}</span>
@@ -244,7 +292,8 @@
                                         </a>
                                     </div>
                                 @empty
-                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum evento encontrado para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
+                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum evento encontrado
+                                        para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
                                 @endforelse
                             </div>
                         </div>
@@ -258,31 +307,41 @@
                             </h2>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 @forelse ($posts as $post)
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-lg p-5 flex gap-4 items-start transition duration-300 hover:shadow-xl">
-                                        <a href="{{ route('courses.show', $post->course->id) }}" class="flex-shrink-0">
+                                    <div
+                                        class="bg-white border border-gray-200 rounded-xl shadow-lg p-5 flex gap-4 items-start transition duration-300 hover:shadow-xl">
+                                        <a href="{{ route('courses.show', $post->course->id) }}"
+                                            class="flex-shrink-0">
                                             @if ($post->images && count($post->images) > 0)
-                                                <img src="{{ asset('storage/' . $post->images[0]) }}" alt="Imagem do post" class="size-20 object-cover rounded-lg border-2 border-red-300">
+                                                <img src="{{ asset('storage/' . $post->images[0]) }}"
+                                                    alt="Imagem do post"
+                                                    class="size-20 object-cover rounded-lg border-2 border-red-300">
                                             @else
-                                                <div class="size-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                                                <div
+                                                    class="size-20 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
                                                     <i class="ph ph-image-square text-3xl"></i>
                                                 </div>
                                             @endif
                                         </a>
                                         <div class="flex-grow">
                                             <a href="{{ route('courses.show', $post->course->id) }}">
-                                                <p class="text-xs font-semibold text-red-600 mb-1">POST em {{ $post->course->course_name ?? 'Curso' }}</p>
-                                                <h4 class="font-extrabold text-lg text-gray-900 leading-snug line-clamp-2">{{ $post->content }}</h4>
+                                                <p class="text-xs font-semibold text-red-600 mb-1">POST em
+                                                    {{ $post->course->course_name ?? 'Curso' }}</p>
+                                                <h4
+                                                    class="font-extrabold text-lg text-gray-900 leading-snug line-clamp-2">
+                                                    {{ $post->content }}</h4>
                                                 <p class="text-sm text-gray-600 mt-2">
                                                     Por <span class="font-bold">{{ $post->author->name }}</span>
                                                 </p>
                                                 <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="ph ph-calendar-check mr-1"></i> {{ $post->created_at->format('d/m/Y H:i') }}
+                                                    <i class="ph ph-calendar-check mr-1"></i>
+                                                    {{ $post->created_at->format('d/m/Y H:i') }}
                                                 </p>
                                             </a>
                                         </div>
                                     </div>
                                 @empty
-                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum post encontrado para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
+                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum post encontrado
+                                        para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
                                 @endforelse
                             </div>
                         </div>
@@ -292,11 +351,25 @@
                                 <i class="ph ph-book-open text-red-600 mr-3"></i>
                                 Catálogo de Cursos
                             </h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                                 @forelse ($courses as $course)
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 text-center transform transition duration-300 hover:scale-[1.05] hover:shadow-xl">
-                                        <a href="{{ route('courses.show', $course->id) }}" class="flex flex-col items-center">
-                                            <img src="{{ asset('storage/' . $course->course_icon) }}" alt="{{ $course->course_name }}" class="size-28 rounded-full object-cover border-4 border-red-500/50 mb-4 shadow-lg">
+                                    <div
+                                        class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 text-center transform transition duration-300 hover:scale-[1.05] hover:shadow-xl">
+                                        <a href="{{ route('courses.show', $course->id) }}"
+                                            class="flex flex-col items-center">
+                                            @if ($course->course_icon)
+                                                {{-- Exibe a imagem se houver um ícone/caminho definido --}}
+                                                <img src="{{ asset('storage/' . $course->course_icon) }}"
+                                                    alt="{{ $course->course_name }}"
+                                                    class="size-28 rounded-full object-cover border-4 border-red-500/50 mb-4 shadow-lg">
+                                            @else
+                                                {{-- Exibe o ícone de livro como fallback. 
+                     Adicionei classes para centralizar e dar o mesmo espaço inferior (mb-4) --}}
+                                                <div
+                                                    class="size-28 flex items-center justify-center rounded-full border-4 border-red-500/50 mb-4 shadow-lg bg-red-100">
+                                                    <i class="ph ph-book-open text-4xl text-red-600"></i>
+                                                </div>
+                                            @endif
                                             <h3 class="font-extrabold text-lg text-gray-900 leading-tight mb-1">
                                                 {{ $course->course_name }}
                                             </h3>
@@ -306,7 +379,8 @@
                                         </a>
                                     </div>
                                 @empty
-                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum curso encontrado para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
+                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum curso encontrado
+                                        para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
                                 @endforelse
                             </div>
                         </div>
@@ -317,28 +391,33 @@
                                 <i class="ph ph-user-circle text-red-600 mr-3"></i>
                                 Nossos Coordenadores
                             </h2>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                                 @forelse ($coordinators as $coordinator)
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 text-center transform transition duration-300 hover:scale-[1.05] hover:shadow-xl">
-                                        <a href="{{ route('profile.view', $coordinator->userAccount->id) }}" class="flex flex-col items-center">
-                                            <img src="{{ $coordinator->userAccount->user_icon_url }}" alt="{{ $coordinator->userAccount->name }}" class="size-28 rounded-full object-cover border-4 border-red-500/50 mb-4 shadow-lg">
+                                    <div
+                                        class="bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden flex flex-col items-center justify-center p-6 text-center transform transition duration-300 hover:scale-[1.05] hover:shadow-xl">
+                                        <a href="{{ route('profile.view', $coordinator->userAccount->id) }}"
+                                            class="flex flex-col items-center">
+                                            <img src="{{ $coordinator->userAccount->user_icon_url }}"
+                                                alt="{{ $coordinator->userAccount->name }}"
+                                                class="size-28 rounded-full object-cover border-4 border-red-500/50 mb-4 shadow-lg">
                                             <h3 class="font-extrabold text-lg text-gray-900 leading-tight mb-1">
                                                 {{ $coordinator->userAccount->name }}
                                             </h3>
-                                            
+
                                             {{-- LÓGICA DE EXIBIÇÃO DO CARGO: COORDENADOR DE CURSO OU GERAL --}}
                                             @php
                                                 $courseName = $coordinator->userAccount->coordinated_course_name;
-                                                $coordinatorTitle = $courseName 
-                                                                    ? 'Coordenador(a) de ' . $courseName 
-                                                                    : 'Coordenador(a) Geral';
+                                                $coordinatorTitle = $courseName
+                                                    ? 'Coordenador(a) de ' . $courseName
+                                                    : 'Coordenador(a) Geral';
                                             @endphp
 
                                             <p class="text-sm text-gray-600 font-medium flex items-center">
-                                                <i class="ph ph-briefcase mr-1 text-red-600"></i> {{ $coordinatorTitle }}
+                                                <i class="ph ph-briefcase mr-1 text-red-600"></i>
+                                                {{ $coordinatorTitle }}
                                             </p>
-                                            
-                                            {{-- @if($coordinator->course)
+
+                                            {{-- @if ($coordinator->course)
                                                 <span class="bg-red-100 text-red-800 text-xs font-semibold px-3 py-1 rounded-full shadow mt-2 truncate max-w-full">
                                                     {{ $coordinator->course->course_name }}
                                                 </span>
@@ -346,7 +425,8 @@
                                         </a>
                                     </div>
                                 @empty
-                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum coordenador encontrado para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
+                                    <p class="text-gray-500 text-center col-span-full py-10">Nenhum coordenador
+                                        encontrado para sua busca. <i class="ph ph-face-frowning text-lg ml-1"></i></p>
                                 @endforelse
                             </div>
                         </div>
@@ -366,22 +446,27 @@
 
         /* Esconde a barra de rolagem para IE, Edge e Firefox */
         .scrollbar-hide {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
         }
     </style>
-    
+
     <script>
         // Função para rolagem horizontal com botões
         function scrollSection(containerId, amount) {
             const container = document.getElementById(containerId);
             if (container) {
-                container.scrollBy({ left: amount, behavior: 'smooth' });
+                container.scrollBy({
+                    left: amount,
+                    behavior: 'smooth'
+                });
             }
         }
 
         // Script para a funcionalidade das abas/filtros
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const tabs = document.querySelectorAll('.tab-button');
             const contents = document.querySelectorAll('.tab-content');
             const activeTabInput = document.getElementById('active-tab-input');
@@ -389,8 +474,10 @@
             function showContent(tabId) {
                 // ... (lógica da aba)
                 tabs.forEach(tab => {
-                    tab.classList.remove('bg-red-600', 'text-white', 'shadow-lg', 'hover:bg-red-700', 'font-semibold');
-                    tab.classList.add('text-gray-600', 'hover:bg-gray-100', 'hover:text-red-600', 'font-medium');
+                    tab.classList.remove('bg-red-600', 'text-white', 'shadow-lg', 'hover:bg-red-700',
+                        'font-semibold');
+                    tab.classList.add('text-gray-600', 'hover:bg-gray-100', 'hover:text-red-600',
+                        'font-medium');
                 });
 
                 contents.forEach(content => {
@@ -399,15 +486,17 @@
 
                 const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
                 if (activeTab) {
-                    activeTab.classList.remove('text-gray-600', 'hover:bg-gray-100', 'hover:text-red-600', 'font-medium');
-                    activeTab.classList.add('bg-red-600', 'text-white', 'shadow-lg', 'hover:bg-red-700', 'font-semibold');
+                    activeTab.classList.remove('text-gray-600', 'hover:bg-gray-100', 'hover:text-red-600',
+                        'font-medium');
+                    activeTab.classList.add('bg-red-600', 'text-white', 'shadow-lg', 'hover:bg-red-700',
+                        'font-semibold');
                 }
 
                 const activeContent = document.getElementById(`${tabId}-section`);
                 if (activeContent) {
                     activeContent.classList.remove('hidden');
                 }
-                
+
                 if (activeTabInput) {
                     activeTabInput.value = tabId;
                 }
@@ -431,8 +520,10 @@
                     // Atualiza a URL sem recarregar
                     const newUrl = new URL(window.location.href);
                     newUrl.searchParams.set('tab', tabId);
-                    
-                    window.history.pushState({ path: newUrl.href }, '', newUrl.href);
+
+                    window.history.pushState({
+                        path: newUrl.href
+                    }, '', newUrl.href);
                 });
             });
 

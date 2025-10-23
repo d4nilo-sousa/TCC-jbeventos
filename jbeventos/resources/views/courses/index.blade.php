@@ -56,25 +56,25 @@
         @endif
 
         {{-- Lista de Cursos --}}
-        <div id="coursesList" data-url="{{ route('courses.index') }}"
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-4">
-            @forelse ($courses as $course)
-                @include('partials.courses.course-card', ['course' => $course])
-            @empty
-                {{-- Mensagem de Vazio/Não Encontrado --}}
-                <div id="noCoursesMessage"
-                    class="col-span-full flex flex-col items-center justify-center gap-6 text-center w-full my-10 p-16">
-                    <img src="{{ asset('imgs/notFound.png') }}" class="w-auto h-40 object-contain" alt="not-found">
-                    <div>
-                        <p class="text-2xl font-bold text-stone-800">Ops! Nada foi encontrado...</p>
-                        <p class="text-gray-500 mt-2 text-md max-w-lg mx-auto">
-                            Não encontramos nenhum curso com os termos de busca. Tente refinar a pesquisa ou comece a
-                            criar novos cursos (se você for um administrador).
-                        </p>
-                    </div>
-                </div>
-            @endforelse
+<div id="coursesList" data-url="{{ route('courses.index') }}"
+class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-4">
+@forelse ($courses as $course)
+    @include('partials.courses.course-card', ['course' => $course])
+@empty
+    {{-- Mensagem de Vazio/Não Encontrado (Classes de espaçamento ajustadas) --}}
+    <div id="noCoursesMessage"
+        {{-- ALTERADO: Redução de my-10 para my-4 e p-16 para p-6 --}}
+        class="col-span-full flex flex-col items-center justify-center gap-6 text-center w-full my-4 p-6"> 
+        <img src="{{ asset('imgs/notFound.png') }}" class="w-auto h-40 object-contain" alt="not-found">
+        <div>
+            <p class="text-2xl font-bold text-stone-800">Ops! Nada foi encontrado...</p>
+            <p class="text-gray-500 mt-2 text-md max-w-lg mx-auto">
+                Não encontramos nenhum curso com os termos de busca. Tente refazer pesquisa!
+            </p>
         </div>
+    </div>
+@endforelse
+</div>
     </div>
 </x-app-layout>
 

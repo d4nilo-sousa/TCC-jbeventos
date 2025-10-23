@@ -65,25 +65,28 @@
                         </x-nav-link>
 
                        {{-- Dropdown de Eventos (Coordenador) --}}
-@if (in_array(auth()->user()->user_type, ['coordinator']))
-    <div class="relative flex items-center h-full" x-data="{ open: false }" @click.away="open = false">
-        <button @click="open = ! open"
-            class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
-                {{ request()->routeIs('events.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-            <i class="ph-fill ph-calendar-check text-lg
-                {{ request()->routeIs('events.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
-            <span class="hidden sm:inline ms-2
-                {{ request()->routeIs('events.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600">
-                {{ __('Eventos') }}
-            </span>
-            <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
-                    d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
-                    d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-            </svg>
-        </button>
+                       @if (in_array(auth()->user()->user_type, ['coordinator']))
+                       <div class="relative flex items-center h-full" x-data="{ open: false }" @click.away="open = false">
+                           <button @click="open = ! open"
+                               class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
+                                   {{-- ADICIONE A CLASSE 'group' AQUI --}}
+                                   group
+                                   {{ request()->routeIs('events.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
+                               <i class="ph-fill ph-calendar-check text-lg
+                                   {{ request()->routeIs('events.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
+                               <span class="hidden sm:inline ms-2
+                                   {{ request()->routeIs('events.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600">
+                                   {{ __('Eventos') }}
+                               </span>
+                               {{-- ... restante do código do botão ... --}}
+                               <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                   viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                   <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
+                                       d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                   <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
+                                       d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                               </svg>
+                           </button>
 
         {{-- Conteúdo do Dropdown --}}
         <div x-show="open" x-transition:enter="transition ease-out duration-200"
@@ -134,25 +137,27 @@
 @endif
 
                         {{-- Dropdown de Cursos (Admin) --}}
-@if (auth()->user()->user_type === 'admin')
-    <div class="relative flex items-center h-full" x-data="{ open: false }" @click.away="open = false">
-        <button @click="open = ! open"
-            class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
-                {{ request()->routeIs('courses.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-            <i class="ph-fill ph-book-open text-lg
-                {{ request()->routeIs('courses.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
-            <span class="hidden sm:inline ms-2
-                {{ request()->routeIs('courses.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600">
-                {{ __('Cursos') }}
-            </span>
-            <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
-                    d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
-                    d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-            </svg>
-        </button>
+                        @if (auth()->user()->user_type === 'admin')
+                        <div class="relative flex items-center h-full" x-data="{ open: false }" @click.away="open = false">
+                            <button @click="open = ! open"
+                                class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
+                                    {{-- Adicione a classe 'group' aqui --}}
+                                    group
+                                    {{ request()->routeIs('courses.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
+                                <i class="ph-fill ph-book-open text-lg
+                                    {{ request()->routeIs('courses.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
+                                <span class="hidden sm:inline ms-2
+                                    {{ request()->routeIs('courses.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600">
+                                    {{ __('Cursos') }}
+                                </span>
+                                <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
+                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                    <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
+                                        d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                </svg>
+                            </button>
 
         {{-- Conteúdo do Dropdown --}}
         <div x-show="open" x-transition:enter="transition ease-out duration-200"
@@ -202,25 +207,31 @@
     </x-nav-link>
 @endif
 
-                        {{-- Dropdown de Coordenadores (Admin) --}}
-                        @if (auth()->user()->user_type === 'admin')
-                            <div class="relative flex items-center h-full" x-data="{ open: false }"
-                                @click.away="open = false">
-                                <button @click="open = ! open"
-                                    class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
-                                    {{ request()->routeIs('coordinators.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-                                    <i
-                                        class="ph-fill ph-shield-star text-lg
-                                        {{ request()->routeIs('coordinators.*') ? 'text-red-600' : 'text-gray-700 hover:text-red-600' }}"></i>
-                                    <span class="hidden sm:inline ms-2">{{ __('Coordenadores') }}</span>
-                                    <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
-                                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                        <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
-                                            d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                                    </svg>
-                                </button>
+@if (auth()->user()->user_type === 'admin')
+<div class="relative flex items-center h-full" x-data="{ open: false }"
+    @click.away="open = false">
+    <button @click="open = ! open"
+        class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
+            {{-- ADICIONADO: Classe 'group' para habilitar o group-hover nos filhos --}}
+            group 
+            {{ request()->routeIs('coordinators.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
+        <i
+            class="ph-fill ph-shield-star text-lg
+            {{-- CORRIGIDO: Agora usa group-hover:text-red-600 --}}
+            {{ request()->routeIs('coordinators.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
+        <span class="hidden sm:inline ms-2 
+            {{-- ADICIONADO: Classe group-hover:text-red-600 e cor base --}}
+            {{ request()->routeIs('coordinators.*') ? 'text-red-600 font-bold' : 'text-gray-700' }} group-hover:text-red-600">
+            {{ __('Coordenadores') }}
+        </span>
+        <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
+                d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
+                d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+        </svg>
+    </button>
                                 {{-- Conteúdo do Dropdown (MANTIDO) --}}
                                 <div x-show="open" x-transition:enter="transition ease-out duration-200"
                                     x-transition:enter-start="opacity-0 scale-95"
