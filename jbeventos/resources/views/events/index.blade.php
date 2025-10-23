@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout backgroundClass="bg-gray-100">
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
             <div class="mt-1">

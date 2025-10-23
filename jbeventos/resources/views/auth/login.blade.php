@@ -6,7 +6,7 @@
             </a>
         </x-slot>
 
-        
+
 
         @session('status')
             <div class="mb-4 font-medium text-sm text-green-600">
@@ -29,8 +29,8 @@
             <!-- Gmail -->
             <div class="mt-5">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 placeholder:text-sm text-sm" type="email" name="email"
-                    :value="old('email')" required autofocus autocomplete="off"  />
+                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 placeholder:text-sm text-sm"
+                    type="email" name="email" :value="old('email')" required autofocus autocomplete="off" />
             </div>
 
             <!-- Senha -->
@@ -40,7 +40,8 @@
                     <input id="password"
                         class="block mt-1 w-full pr-10 placeholder-gray-300 placeholder:text-sm border-gray-200 focus:border-gray-400 focus:ring-stone-500
                     rounded-xl shadow-sm focus:ring-white text-sm"
-                        type="password" name="password" required autocomplete="current-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+                        type="password" name="password" required autocomplete="current-password" autocorrect="off"
+                        autocapitalize="off" spellcheck="false">
                     </input>
                     <button type="button"
                         class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 toggle-password"
@@ -63,7 +64,7 @@
 
                 <div class="flex items-center justify-center">
                     @if (Route::has('password.request'))
-                        <a class="no-underline style text-sm text-blue-500" href="{{ route('password.request') }}">
+                        <a class="hover:underline text-sm text-blue-500" href="{{ route('password.request') }}">
                             {{ __('Esqueci minha senha') }}
                         </a>
                     @endif

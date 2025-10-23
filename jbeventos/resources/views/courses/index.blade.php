@@ -1,5 +1,6 @@
-<x-app-layout backgroundClass="bg-gray-100">
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+<x-app-layout>
+    <div class="py-10 bg-gray-50 min-h-screen">
+        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
         {{-- Cabeçalho: Título, Botões e Pesquisa --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5 mb-10">

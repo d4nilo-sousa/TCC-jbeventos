@@ -18,7 +18,8 @@
                     <input type="hidden" name="coursesChartImage" id="coursesChartImage">
 
                     <button type="submit" id="pdfSubmitButton"
-                        class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-900 active:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-xs text-white uppercase tracking-widest focus:outline-none focus:border-red-700 focus:ring focus:ring-red-300 disabled:opacity-25 transition">
+
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -248,7 +249,8 @@
                                     <div class="flex-1">
                                         <h4 class="font-medium text-gray-900">
                                             {{ $coordinator->eventCoordinator->userAccount->name }}</h4>
-                                        <p class="text-sm text-gray-500">Eventos Criados: {{ $coordinator->events_count }}</p>
+                                        <p class="text-sm text-gray-500">Eventos Criados:
+                                            {{ $coordinator->events_count }}</p>
                                     </div>
                                 </li>
                             @endif
