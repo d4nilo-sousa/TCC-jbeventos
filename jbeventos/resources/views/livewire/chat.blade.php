@@ -208,7 +208,7 @@
             @endif
         </div>
 
-        {{-- Input de envio: flex-shrink-0 --}}
+        {{-- Input de envio --}}
         <form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-4 sm:p-5 rounded-b-2xl z-20 flex-shrink-0">
             
             {{-- Pré-visualização do anexo --}}
@@ -233,7 +233,7 @@
                 </div>
             @endif
 
-            {{-- Input de digitação --}}
+            {{-- Input de digitação (Textarea auto-ajustável) --}}
             <div class="flex items-end space-x-2">
                 
                 <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-red-500 transition-colors flex-shrink-0" title="Adicionar anexo">
@@ -248,7 +248,7 @@
                     x-init="resize()"
                     @input="resize()"
                     rows="1"
-                    wire:model.live.debounce.100ms="message" 
+                    wire:model.live="message" 
                     wire:keydown.enter.prevent="sendMessage"
                     wire:keydown="typing" 
                     wire:keyup.debounce.1500ms="stopTyping"
@@ -257,6 +257,7 @@
                 </textarea>
                 
                 <button type="submit"
+                    {{-- Condição: desabilitado apenas se $message estiver vazio E não houver $attachment. --}}
                     @if (empty($message) && !$attachment) disabled @endif
                     class="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition shadow-lg flex-shrink-0
                            {{ (empty($message) && !$attachment) ? 'opacity-50 cursor-not-allowed' : '' }}">
