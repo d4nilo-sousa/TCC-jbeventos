@@ -46,8 +46,8 @@
             </header>
         @endif
 
-        <main class="flex-1">
-            <div>
+        <main class="flex-1 flex flex-col">
+            <div class="flex-1">
                 {{ $slot }}
             </div>
         </main>

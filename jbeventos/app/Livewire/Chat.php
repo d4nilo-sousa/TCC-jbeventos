@@ -144,6 +144,7 @@ class Chat extends Component
         $attachmentName = null;
 
         if ($this->attachment) {
+            // Garante que o armazenamento seja feito ANTES de criar o modelo
             $attachmentPath = $this->attachment->store('attachments', 'public');
             $attachmentMime = $this->attachment->getMimeType();
             $attachmentName = $this->attachment->getClientOriginalName();
@@ -158,7 +159,9 @@ class Chat extends Component
             'attachment_name' => $attachmentName,
             'is_read' => false,
         ]);
-        
+
+        // AQUI ESTÁ A CHAVE DA CORREÇÃO:
+        // 1. Adiciona a mensagem localmente. Isso a torna instantânea para o remetente.
         $this->addMessage([
             'id' => $msg->id,
             'sender_id' => $user->id,
@@ -168,12 +171,11 @@ class Chat extends Component
             'attachment_name' => $attachmentName,
             'created_at' => $msg->created_at->format('H:i')
         ]);
+        
+        // 2. Envia o evento para o outro usuário. garantindo que o listener só pegue mensagens do OUTRO usuário.
+        broadcast(new \App\Events\MessageSent($msg))->toOthers(); // Adicionado '->toOthers()' por segurança se MessageSent não implementa ShouldBroadcastNow/Immediately
 
-        broadcast(new \App\Events\MessageSent($msg));
-
-        // Evento para atualizar o contador do outro usuário.
-        $this->dispatch('messageReceived')->to('unread-messages');
-
+        // ... (código para limpar inputs)
         $this->message = '';
         $this->attachment = null;
         $this->stopTyping();
@@ -250,10 +252,9 @@ class Chat extends Component
 
     public function addMessageFromBroadcast($messageData)
     {
-        if (
-            ($messageData['sender_id'] === $this->otherUser->id && $messageData['receiver_id'] === auth()->id()) ||
-            ($messageData['sender_id'] === auth()->id() && $messageData['receiver_id'] === $this->otherUser->id)
-        ) {
+        // Certifique-se que a mensagem é do outro usuário para você.
+        if ($messageData['sender_id'] === $this->otherUser->id && $messageData['receiver_id'] === auth()->id()) {
+            
             $this->addMessage([
                 'id' => $messageData['id'],
                 'sender_id' => $messageData['sender_id'],
@@ -263,8 +264,14 @@ class Chat extends Component
                 'attachment_name' => $messageData['attachment_name'],
                 'created_at' => now()->format('H:i')
             ]);
+            
+            // Marca como lida
+            Message::find($messageData['id'])->update(['is_read' => true]);
+            $this->dispatch('messageRead')->to('unread-messages');
+            
             $this->stopTyping();
         }
+        
     }
 
     public function addMessage($messageData)
