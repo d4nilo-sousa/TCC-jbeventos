@@ -1,10 +1,10 @@
-{{-- Container principal do componente: Remove paddings verticais. Usa h-full e flex. --}}
+{{-- Container principal do componente --}}
 <div class="flex flex-col flex-1 p-0 sm:px-4 md:px-8 bg-gray-100 w-full h-full">
     
-    {{-- Container do Chat (Branco): Limita a altura, usa mx-auto para centralizar horizontalmente e my-auto para verticalmente. --}}
-    <div class="flex flex-col mx-auto my-auto bg-white shadow-xl rounded-2xl w-full max-h-[88vh] lg:max-w-4xl xl:max-w-5xl">
+    {{-- Container do Chat --}}
+    <div class="flex flex-col mx-auto mt-6 bg-white shadow-xl rounded-2xl w-full max-h-[80vh] lg:max-w-4xl xl:max-w-5xl">
 
-        {{-- Topo Fixo da Conversa: flex-shrink-0 --}}
+        {{-- Topo Fixo da Conversa --}}
         <div class="flex items-center p-4 sm:p-5 border-b bg-white sticky top-0 z-20 flex-shrink-0">
             <a href="javascript:history.back()" class="text-gray-500 hover:text-red-500 mr-3 transition duration-150" title="Voltar">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,8 +32,8 @@
             </a>
         </div>
 
-        {{-- Lista de mensagens: flex-1 para ocupar TODO o espaço restante e overflow-y-auto (SCROLL AQUI) --}}
-        <div id="messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50 scroll-smooth">
+        {{-- LISTA DE MENSAGENS --}}
+        <div id="messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50 scroll-smooth min-h-[50vh]">
             @foreach ($messages as $msg)
                 @php
                     $time = isset($msg['created_at']) ? $msg['created_at'] : date('H:i');
@@ -213,7 +213,7 @@
             
             {{-- Pré-visualização do anexo --}}
             @if ($attachment)
-                <div class="flex items-center space-x-3 p-3 rounded-xl bg-gray-100 mb-3 border border-gray-200">
+                <div class="flex items-center space-x-3 p-3 rounded-xl bg-gray-100 mb-3 border border-gray-200 flex-shrink-0">
                     <span class="font-semibold text-sm text-gray-700">Anexo:</span>
                     @if (\Illuminate\Support\Str::startsWith($attachment->getMimeType(), 'image'))
                         <img src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" alt="Pré-visualização">
@@ -233,7 +233,7 @@
                 </div>
             @endif
 
-            {{-- Input de digitação (Textarea auto-ajustável) --}}
+            {{-- Input de digitação --}}
             <div class="flex items-end space-x-2">
                 
                 <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-red-500 transition-colors flex-shrink-0" title="Adicionar anexo">
@@ -307,8 +307,10 @@
             );
             
             if (container && hasMessageChange) {
+                // Verifica se o usuário está perto do final (dentro de 50px)
                 const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50; 
 
+                // Rola para o final se: (a) o usuário já estava perto do final OU (b) uma nova mensagem foi adicionada (ou seja, o total de mensagens aumentou)
                 if (isScrolledToBottom || message.response.serverMemo.data.messages.length > (component.data.messages ? component.data.messages.length : 0)) {
                     setTimeout(() => {
                         container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
