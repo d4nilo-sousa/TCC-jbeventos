@@ -1,203 +1,335 @@
-<div class="flex-1 flex justify-center items-center py-8">
-    <div class="flex flex-col border rounded-xl shadow-lg bg-white w-full max-w-7xl h-full overflow-hidden">
-        
-        {{-- Topo da conversa --}}
-        <div class="flex items-center p-4 border-b bg-white rounded-t-xl">
-            <a href="{{ route('profile.view', $receiver->id) }}">
-            <img src="{{ $receiver->user_icon ? asset('storage/' . $receiver->user_icon) : 'https://ui-avatars.com/api/?name=' . urlencode($receiver->name) }}"
-                alt="Foto de perfil"
-                class="w-12 h-12 rounded-full mr-4 border-2 border-red-500"></a>
-            <div>
-                <span class="font-semibold text-gray-800 text-lg">{{ $receiver->name }}</span>
-                <p class="text-sm text-gray-500">
-                    @if($isOnline)
-                        <span class="text-green-500">Online</span>
-                    @else
-                        <span>Offline</span>
-                    @endif
-                </p>
-            </div>
+{{-- Container principal do componente --}}
+<div class="flex flex-col flex-1 p-0 sm:px-4 md:px-8 bg-gray-100 w-full h-full">
+    
+    {{-- Container do Chat --}}
+    <div class="flex flex-col mx-auto mt-6 bg-white shadow-xl rounded-2xl w-full max-h-[80vh] lg:max-w-4xl xl:max-w-5xl">
+
+        {{-- Topo Fixo da Conversa --}}
+        <div class="flex items-center p-4 sm:p-5 border-b bg-white sticky top-0 z-20 flex-shrink-0">
+            <a href="javascript:history.back()" class="text-gray-500 hover:text-red-500 mr-3 transition duration-150" title="Voltar">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <a href="{{ route('profile.view', $receiver->id) }}" class="flex items-center">
+                <img src="{{ $receiver->user_icon ? asset('storage/' . $receiver->user_icon) : 'https://ui-avatars.com/api/?name=' . urlencode($receiver->name) . '&background=F87171&color=ffffff&size=128' }}"
+                    alt="Foto de perfil"
+                    class="w-12 h-12 rounded-full mr-3 border-2 border-red-500 object-cover">
+                <div>
+                    <span class="font-bold text-gray-800 text-lg block">{{ $receiver->name }}</span>
+                    <p class="text-xs font-semibold">
+                        @if($isOnline)
+                            <span class="text-green-500 flex items-center">
+                                <span class="h-2 w-2 bg-green-500 rounded-full mr-1"></span> Online
+                            </span>
+                        @else
+                            <span class="text-gray-500 flex items-center">
+                                <span class="h-2 w-2 bg-gray-400 rounded-full mr-1"></span> Offline
+                            </span>
+                        @endif
+                    </p>
+                </div>
+            </a>
         </div>
-        
-        {{-- Lista de mensagens --}}
-        <div id="messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50 scroll-smooth">
+
+        {{-- LISTA DE MENSAGENS --}}
+        <div id="messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50 scroll-smooth min-h-[50vh]">
             @foreach ($messages as $msg)
                 @php
                     $time = isset($msg['created_at']) ? $msg['created_at'] : date('H:i');
                     $isSender = $msg['sender_id'] === auth()->id();
+                    $isEditing = $isSender && $editingMessageId === $msg['id'];
+                    $isSelected = $isSender && $selectedMessage === $msg['id'];
+
+                    $bubbleClasses = 'inline-block p-3 rounded-xl max-w-sm lg:max-w-md break-words shadow-sm relative';
+                    $senderClasses = 'bg-red-500 text-white rounded-br-none';
+                    $receiverClasses = 'bg-gray-200 text-gray-800 rounded-tl-none';
                 @endphp
-                <div class="flex {{ $isSender ? 'justify-end' : 'justify-start' }} relative group">
-                    <div class="flex items-center space-x-1">
-                        @if($isSender)
-                            @if($selectedMessage === $msg['id'])
-                                <div class="relative inline-block text-left z-50">
-                                    <div class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                        <div class="py-1">
-                                            <button wire:click="copyMessage({{ $msg['id'] }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Copiar</button>
-                                            <button wire:click="startEditing({{ $msg['id'] }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Editar</button>
-                                            <button wire:click="confirmDelete" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Excluir</button>
-                                            <button wire:click="clearSelection" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cancelar</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        @endif
+
+                <div class="flex {{ $isSender ? 'justify-end' : 'justify-start' }} group transition duration-100 z-10">
                     
-                        @if($isSender)
-                            <button wire:click="selectMessage({{ $msg['id'] }})" class="p-1 rounded-full hover:bg-gray-300 transition" title="Mais opções">
+                    @if($isSender)
+                        
+                        {{-- Menu de Opções --}}
+                        <div class="relative flex items-center order-1 self-center mr-1 z-20">
+                            
+                            <button wire:click="selectMessage({{ $msg['id'] }})"
+                                class="p-1 self-center rounded-full transition-opacity {{ $isSelected ? 'bg-gray-200 opacity-100' : 'opacity-0 group-hover:opacity-100 hover:bg-gray-200' }}"
+                                title="Mais opções">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12h.01M12 12h.01M18 12h.01" />
                                 </svg>
                             </button>
-                        @endif
+                            
+                            @if($isSelected)
+                                <div wire:click.away="clearSelection" 
+                                    class="absolute right-full top-1/2 -translate-y-1/2 mr-1 w-40 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+                                    <div class="py-1">
+                                        @if(isset($msg['message']) && !empty($msg['message']))
+                                            <button wire:click="copyMessage({{ $msg['id'] }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Copiar</button>
+                                        @endif
+                                        
+                                        {{-- SÓ MOSTRA EDITAR SE HOUVER MENSAGEM DE TEXTO --}}
+                                        @if(isset($msg['message']) && !empty($msg['message']))
+                                            <button wire:click="startEditing({{ $msg['id'] }})" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Editar</button>
+                                        @endif
+                                        
+                                        <button wire:click="confirmDelete" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Excluir</button>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        
+                        {{-- Conteúdo Principal --}}
+                        <div class="flex flex-col space-y-1 max-w-full items-end order-2">
+                            
+                            @if($isEditing)
+                                <div class="flex items-center space-x-2 w-full">
+                                    <input type="text" wire:model.defer="editedMessageContent"
+                                        wire:keydown.enter="saveEditedMessage"
+                                        class="flex-1 rounded-lg px-3 py-2 border-gray-300 focus:ring-red-500 focus:border-red-500 text-sm" />
+                                    <button wire:click="saveEditedMessage" class="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition" title="Salvar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <button wire:click="$set('editingMessageId', null)" class="text-gray-500 p-2 rounded-full hover:bg-gray-200 transition" title="Cancelar">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            @else
+                                {{-- Anexo --}}
+                                @if(isset($msg['attachment_path']))
+                                    <a href="{{ asset('storage/' . $msg['attachment_path']) }}" target="_blank"
+                                        class="block rounded-xl overflow-hidden shadow mb-1 border {{ $isSender ? 'border-red-400' : 'border-gray-300' }}">
+                                        @if (\Illuminate\Support\Str::startsWith($msg['attachment_mime'], 'image'))
+                                            <img src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl object-cover w-full" alt="Anexo de imagem">
+                                        @elseif (\Illuminate\Support\Str::startsWith($msg['attachment_mime'], 'video'))
+                                            <video src="{{ $msg['attachment_path'] }}" class="max-h-60 rounded-xl w-full" controls></video>
+                                        @else
+                                            <div class="bg-white p-4 flex items-center space-x-2 text-sm text-gray-700 w-64">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                <span class="truncate" title="{{ $msg['attachment_name'] }}">{{ $msg['attachment_name'] }}</span>
+                                            </div>
+                                        @endif
+                                    </a>
+                                @endif
+
+                                {{-- Texto da Mensagem (Se houver texto) --}}
+                                @if(isset($msg['message']) && !empty($msg['message']))
+                                    <div class="flex flex-col">
+                                        <span class="{{ $bubbleClasses }} {{ $senderClasses }}">
+                                            {!! nl2br(e($msg['message'])) !!}
+                                        </span>
+                                        <div class="flex items-center text-xs text-gray-500 self-end mt-1 space-x-1">
+                                            @if(isset($msg['is_edited']) && $msg['is_edited'])
+                                                <span class="italic">Editada</span>
+                                                <span class="mx-[1px]">•</span>
+                                            @endif
+                                            <span>{{ $time }}</span>
+                                            @if($isSender)
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ isset($msg['read']) && $msg['read'] ? 'text-blue-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @elseif(isset($msg['attachment_path']))
+                                    <div class="flex items-center text-xs text-gray-500 self-end space-x-1">
+                                        <span>{{ $time }}</span>
+                                        @if($isSender)
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ isset($msg['read']) && $msg['read'] ? 'text-blue-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        @endif
+                                    </div>
+                                @endif
+                            @endif 
+
+                        </div>
                     
-                        <div class="flex flex-col space-y-1">
+                    @else
+                        {{-- Destinatário --}}
+                        <div class="flex flex-col space-y-1 max-w-full items-start">
                             @if(isset($msg['attachment_path']))
-                                <a href="{{ asset('storage/' . $msg['attachment_path']) }}" target="_blank" class="block rounded-xl overflow-hidden shadow">
-                                    @if (Str::startsWith($msg['attachment_mime'], 'image'))
-                                        <img src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" alt="Anexo de imagem">
-                                    @elseif (Str::startsWith($msg['attachment_mime'], 'video'))
-                                        <video src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl" controls></video>
+                                <a href="{{ asset('storage/' . $msg['attachment_path']) }}" target="_blank"
+                                    class="block rounded-xl overflow-hidden shadow mb-1 border border-gray-300">
+                                    @if (\Illuminate\Support\Str::startsWith($msg['attachment_mime'], 'image'))
+                                        <img src="{{ asset('storage/' . $msg['attachment_path']) }}" class="max-h-60 rounded-xl object-cover w-full" alt="Anexo de imagem">
+                                    @elseif (\Illuminate\Support\Str::startsWith($msg['attachment_mime'], 'video'))
+                                        <video src="{{ $msg['attachment_path'] }}" class="max-h-60 rounded-xl w-full" controls></video>
                                     @else
-                                        <div class="bg-white p-4 flex items-center space-x-2 text-sm text-gray-700">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div class="bg-white p-4 flex items-center space-x-2 text-sm text-gray-700 w-64">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            <span>{{ $msg['attachment_name'] }}</span>
+                                            <span class="truncate" title="{{ $msg['attachment_name'] }}">{{ $msg['attachment_name'] }}</span>
                                         </div>
                                     @endif
                                 </a>
                             @endif
                             
-                            @if($isSender && $editingMessageId === $msg['id'])
-                                <div class="flex items-center space-x-2">
-                                    <input type="text" wire:model.defer="editedMessageContent" 
-                                        class="flex-1 rounded-lg px-3 py-2 border-gray-300 focus:ring-blue-400 focus:border-blue-400" />
-                                    <button wire:click="saveEditedMessage" class="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            @elseif(isset($msg['message']) && !empty($msg['message']))
+                            @if(isset($msg['message']) && !empty($msg['message']))
                                 <div class="flex flex-col">
-                                    <span class="inline-block p-3 rounded-2xl max-w-xs break-words shadow
-                                            {{ $isSender ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800' }}">
-                                        {{ $msg['message'] }}
+                                    <span class="{{ $bubbleClasses }} {{ $receiverClasses }}">
+                                        {!! nl2br(e($msg['message'])) !!}
                                     </span>
-                                    @if(isset($msg['is_edited']) && $msg['is_edited'])
-                                        <span class="text-[10px] text-gray-500 mt-1 self-end">Editada</span>
-                                    @endif
+                                    <div class="flex items-center text-xs text-gray-500 self-start mt-1 space-x-1">
+                                        @if(isset($msg['is_edited']) && $msg['is_edited']) <span class="italic">Editada</span> <span class="mx-[1px]">•</span> @endif
+                                        <span>{{ $time }}</span>
+                                    </div>
+                                </div>
+                            @elseif(isset($msg['attachment_path']))
+                                <div class="flex items-center text-xs text-gray-500 self-start space-x-1">
+                                    <span>{{ $time }}</span>
                                 </div>
                             @endif
                         </div>
-                    </div>
-                    <div class="text-xs text-gray-400 mt-1 flex items-center space-x-1">
-                        <span class="ml-2">{{ $time }}</span>
-                        @if($isSender)
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 {{ isset($msg['read']) && $msg['read'] ? 'text-blue-500' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        @endif
-                    </div>
+                    @endif
                 </div>
             @endforeach
-        </div>
-
-        {{-- Status de digitação --}}
-        @if ($isTyping && $receiver->id !== auth()->id())
-            <div class="px-4 pb-2 flex {{ $receiver->id === auth()->id() ? 'justify-end' : 'justify-start' }}">
-                <div class="flex items-center space-x-2 bg-gray-100 px-3 py-1 rounded-2xl">
-                    <span class="text-sm text-gray-500 italic">{{ $receiver->name }} está digitando</span>
-                    <div class="flex space-x-1">
-                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                        <span class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></span>
+            
+            {{-- Status de digitação --}}
+            @if ($isTyping)
+                <div class="flex justify-start">
+                    <div class="flex items-center space-x-2 bg-gray-200 px-4 py-2 rounded-2xl rounded-tl-none shadow-sm">
+                        <span class="text-sm text-gray-600 italic">{{ $receiver->name }} está digitando</span>
+                        <div class="flex space-x-1">
+                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-100"></span>
+                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-200"></span>
+                            <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse delay-300"></span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        @endif
+            @endif
+        </div>
 
         {{-- Input de envio --}}
-        <form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-3 rounded-b-xl z-20">
+        <form wire:submit.prevent="sendMessage" class="flex flex-col border-t bg-white p-4 sm:p-5 rounded-b-2xl z-20 flex-shrink-0">
+            
             {{-- Pré-visualização do anexo --}}
             @if ($attachment)
-                <div class="flex items-center space-x-2 p-2 rounded-lg bg-gray-100 mb-2">
-                    @if (Str::startsWith($attachment->getMimeType(), 'image'))
-                        <img src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" alt="Pré-visualização da imagem">
-                    @elseif (Str::startsWith($attachment->getMimeType(), 'video'))
-                        <video src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" controls></video>
+                <div class="flex items-center space-x-3 p-3 rounded-xl bg-gray-100 mb-3 border border-gray-200 flex-shrink-0">
+                    <span class="font-semibold text-sm text-gray-700">Anexo:</span>
+                    @if (\Illuminate\Support\Str::startsWith($attachment->getMimeType(), 'image'))
+                        <img src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover" alt="Pré-visualização">
+                    @elseif (\Illuminate\Support\Str::startsWith($attachment->getMimeType(), 'video'))
+                        <video src="{{ $attachment->temporaryUrl() }}" class="h-10 w-10 rounded-md object-cover"></video>
                     @else
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span>{{ $attachment->getClientOriginalName() }}</span>
+                        <div class="flex items-center space-x-1 text-sm text-gray-700 truncate max-w-[200px]">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            <span class="truncate">{{ $attachment->getClientOriginalName() }}</span>
+                        </div>
                     @endif
-                    <button wire:click="$set('attachment', null)" class="text-red-500 hover:text-red-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button type="button" wire:click="$set('attachment', null)" class="text-gray-500 hover:text-red-600 transition ml-auto" title="Remover anexo">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
             @endif
-            {{-- Input de digitação --}}
-            <div class="flex items-center">
-                <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-blue-500 transition-colors">
+
+            {{-- Input de digitação (Textarea auto-ajustável) --}}
+            <div class="flex items-end space-x-2">
+                
+                <label for="attachment-input" class="p-2 cursor-pointer text-gray-500 hover:text-red-500 transition-colors flex-shrink-0" title="Adicionar anexo">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.415a2 2 0 102.828 2.828l6.414-6.414"/>
                     </svg>
                 </label>
-                <input id="attachment-input" type="file" wire:model="attachment" class="hidden">
-                <input 
-                    type="text" 
-                    wire:model.live.debounce.500ms="message" 
+                <input id="attachment-input" type="file" wire:model="attachment" class="hidden" accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/zip">
+                
+                <textarea 
+                    x-data="{ resize: () => { $el.style.height = '42px'; $el.style.height = $el.scrollHeight + 'px' } }"
+                    x-init="resize()"
+                    @input="resize()"
+                    rows="1"
+                    wire:model.live="message" 
+                    wire:keydown.enter.prevent="sendMessage"
                     wire:keydown="typing" 
-                    wire:keyup.debounce.1000ms="stopTyping"
+                    wire:keyup.debounce.1500ms="stopTyping"
                     placeholder="Digite sua mensagem..."
-                    class="flex-1 border border-gray-300 rounded-full px-4 py-2 mr-3 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent">
+                    class="flex-1 border border-gray-300 rounded-full px-4 py-2 overflow-hidden resize-none focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 text-sm min-h-[42px] max-h-40">
+                </textarea>
+                
                 <button type="submit"
-                        class="bg-blue-500 text-white px-5 py-2 rounded-full hover:bg-blue-600 transition shadow">
-                    Enviar
+                    {{-- Condição: desabilitado apenas se $message estiver vazio E não houver $attachment. --}}
+                    @if (empty($message) && !$attachment) disabled @endif
+                    class="bg-red-500 text-white p-3 rounded-full hover:bg-red-600 transition shadow-lg flex-shrink-0
+                           {{ (empty($message) && !$attachment) ? 'opacity-50 cursor-not-allowed' : '' }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
                 </button>
             </div>
+            @error('attachment') <span class="text-red-500 text-xs mt-1 ml-4">{{ $message }}</span> @enderror
         </form>
     </div>
 
     {{-- Modal de exclusão de mensagem --}}
     @if ($showDeleteModal)
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50">
-            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirmar Exclusão</h3>
-                <p class="text-sm text-gray-600 mb-6">Tem certeza de que deseja excluir esta mensagem? Esta ação não pode ser desfeita.</p>
-                <div class="flex justify-end space-x-4">
-                    <button wire:click="cancelDelete" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full flex justify-center items-center z-50 transition-opacity duration-300 ease-out">
+            <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 ease-out scale-100">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Excluir Mensagem</h3>
+                <p class="text-sm text-gray-600 mb-6">Tem certeza de que deseja **excluir permanentemente** esta mensagem? Esta ação não pode ser desfeita.</p>
+                <div class="flex justify-end space-x-3">
+                    <button wire:click="cancelDelete" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition">
                         Cancelar
                     </button>
-                    <button wire:click="deleteSelectedMessage" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                        Excluir
+                    <button wire:click="deleteSelectedMessage" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">
+                        Confirmar Exclusão
                     </button>
                 </div>
             </div>
         </div>
     @endif
 </div>
+
+{{-- Scripts para Scroll, Copiar e Notificações --}}
 <script>
     document.addEventListener("livewire:init", () => {
-        Livewire.hook("message.processed", (message, component) => {
+        const initialScroll = () => {
             const container = document.getElementById("messages");
             if (container) {
-                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                container.scrollTop = container.scrollHeight;
+            }
+        };
+
+        Livewire.hook("message.processed", (message, component) => {
+            const container = document.getElementById("messages");
+            const hasMessageChange = (
+                message.response.serverMemo.data.messages.length !== (component.data.messages ? component.data.messages.length : 0) || 
+                message.response.effects.dispatches.some(d => d.event === 'copy-message') || 
+                message.response.effects.html.includes('<div class="flex flex-col">') 
+            );
+            
+            if (container && hasMessageChange) {
+                // Verifica se o usuário está perto do final (dentro de 50px)
+                const isScrolledToBottom = container.scrollHeight - container.clientHeight <= container.scrollTop + 50; 
+
+                // Rola para o final se: (a) o usuário já estava perto do final OU (b) uma nova mensagem foi adicionada (ou seja, o total de mensagens aumentou)
+                if (isScrolledToBottom || message.response.serverMemo.data.messages.length > (component.data.messages ? component.data.messages.length : 0)) {
+                    setTimeout(() => {
+                        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+                    }, 100);
+                }
             }
         });
-        const container = document.getElementById("messages");
-        if (container) {
-            container.scrollTo({ top: container.scrollHeight, behavior: 'auto' });
-        }
+        
+        initialScroll();
         
         Livewire.on("copy-message", (data) => {
             navigator.clipboard.writeText(data.message)
-                .then(() => alert("Mensagem copiada!"))
+                .then(() => {
+                    alert("Mensagem copiada para a área de transferência!"); 
+                })
                 .catch(err => console.error("Erro ao copiar: ", err));
+            
+            Livewire.getByName('chat').call('clearSelection'); 
         });
     });
 </script>
