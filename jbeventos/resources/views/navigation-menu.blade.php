@@ -214,16 +214,15 @@
                                 <button
                                     class="relative flex items-center size-9 rounded-full justify-center text-gray-700 bg-gray-100 hover:bg-gray-200 transition">
                                     <i class="ph-fill ph-chat-text text-lg"></i>
+                                    
+                                    {{-- Componente Livewire de Contagem de Mensagens --}}
                                     @livewire('unread-messages')
+                                    
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-                                    <div class="p-3 border-b border-gray-100 flex items-center justify-center">
-                                        <h2 class="text-base font-bold text-gray-800">{{ __('Suas Conversas') }}</h2>
-                                    </div>
-                                    @livewire('conversation-list')
-                                </div>
+                                {{-- Componente Livewire de Listagem de Conversas --}}
+                                @livewire('conversation-list')
                             </x-slot>
                         </x-dropdown>
                     </div>
