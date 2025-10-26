@@ -64,174 +64,193 @@
                             </span>
                         </x-nav-link>
 
-                       {{-- Dropdown de Eventos (Coordenador) --}}
-                       @if (in_array(auth()->user()->user_type, ['coordinator']))
-                       <div class="relative flex items-center h-full" x-data="{ open: false }" @click.away="open = false">
-                           <button @click="open = ! open"
-                               class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
+                        {{-- Dropdown de Eventos (Coordenador) --}}
+                        @if (in_array(auth()->user()->user_type, ['coordinator']))
+                            <div class="relative flex items-center h-full" x-data="{ open: false }"
+                                @click.away="open = false">
+                                <button @click="open = ! open"
+                                    class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
                                    {{-- ADICIONE A CLASSE 'group' AQUI --}}
                                    group
                                    {{ request()->routeIs('events.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-                               <i class="ph-fill ph-calendar-check text-lg
+                                    <i
+                                        class="ph-fill ph-calendar-check text-lg
                                    {{ request()->routeIs('events.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
-                               <span class="hidden sm:inline ms-2
+                                    <span
+                                        class="hidden sm:inline ms-2
                                    {{ request()->routeIs('events.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600">
-                                   {{ __('Eventos') }}
-                               </span>
-                               {{-- ... restante do código do botão ... --}}
-                               <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                   viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                   <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
-                                       d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                   <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
-                                       d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                               </svg>
-                           </button>
+                                        {{ __('Eventos') }}
+                                    </span>
+                                    {{-- ... restante do código do botão ... --}}
+                                    <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
+                                            d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                    </svg>
+                                </button>
 
-        {{-- Conteúdo do Dropdown --}}
-        <div x-show="open" x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden"
-            style="display: none;">
-            <div class="py-1">
-                <x-dropdown-link href="{{ route('events.index') }}" :active="request()->routeIs('events.index')"
-                    class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
+                                {{-- Conteúdo do Dropdown --}}
+                                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95"
+                                    class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden"
+                                    style="display: none;">
+                                    <div class="py-1">
+                                        <x-dropdown-link href="{{ route('events.index') }}" :active="request()->routeIs('events.index')"
+                                            class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
                         {{ request()->routeIs('events.index') ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-red-50' }}">
-                    <i class="ph-duotone ph-list-checks mr-2 text-gray-700
+                                            <i
+                                                class="ph-duotone ph-list-checks mr-2 text-gray-700
                         {{ request()->routeIs('events.index') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
-                    <span class="text-gray-700
+                                            <span
+                                                class="text-gray-700
                         {{ request()->routeIs('events.index') ? 'text-red-600' : '' }} group-hover:text-red-600">
-                        {{ __('Listar Eventos') }}
-                    </span>
-                </x-dropdown-link>
+                                                {{ __('Listar Eventos') }}
+                                            </span>
+                                        </x-dropdown-link>
 
-                <x-dropdown-link href="{{ route('events.create') }}" :active="request()->routeIs('events.create')"
-                    class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
+                                        <x-dropdown-link href="{{ route('events.create') }}" :active="request()->routeIs('events.create')"
+                                            class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
                         {{ request()->routeIs('events.create') ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-red-50' }}">
-                    <i class="ph-duotone ph-calendar-plus mr-2 text-gray-700
+                                            <i
+                                                class="ph-duotone ph-calendar-plus mr-2 text-gray-700
                         {{ request()->routeIs('events.create') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
-                    <span class="text-gray-700
+                                            <span
+                                                class="text-gray-700
                         {{ request()->routeIs('events.create') ? 'text-red-600' : '' }} group-hover:text-red-600">
-                        {{ __('Criar Evento') }}
-                    </span>
-                </x-dropdown-link>
-            </div>
-        </div>
-    </div>
-@else
-    {{-- Link Eventos (User e Admin) --}}
-    <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')"
-        class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg
+                                                {{ __('Criar Evento') }}
+                                            </span>
+                                        </x-dropdown-link>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            {{-- Link Eventos (User e Admin) --}}
+                            <x-nav-link href="{{ route('events.index') }}" :active="request()->routeIs('events.*')"
+                                class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg
             {{ request()->routeIs('events.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-        <i class="ph-fill ph-calendar-check text-lg text-gray-700
+                                <i
+                                    class="ph-fill ph-calendar-check text-lg text-gray-700
             {{ request()->routeIs('events.*') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
-        <span class="hidden sm:inline ms-2 text-gray-700
+                                <span
+                                    class="hidden sm:inline ms-2 text-gray-700
             {{ request()->routeIs('events.*') ? 'text-red-600' : '' }} group-hover:text-red-600">
-            {{ __('Eventos') }}
-        </span>
-    </x-nav-link>
-@endif
+                                    {{ __('Eventos') }}
+                                </span>
+                            </x-nav-link>
+                        @endif
 
                         {{-- Dropdown de Cursos (Admin) --}}
                         @if (auth()->user()->user_type === 'admin')
-                        <div class="relative flex items-center h-full" x-data="{ open: false }" @click.away="open = false">
-                            <button @click="open = ! open"
-                                class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
+                            <div class="relative flex items-center h-full" x-data="{ open: false }"
+                                @click.away="open = false">
+                                <button @click="open = ! open"
+                                    class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
                                     {{-- Adicione a classe 'group' aqui --}}
                                     group
                                     {{ request()->routeIs('courses.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-                                <i class="ph-fill ph-book-open text-lg
+                                    <i
+                                        class="ph-fill ph-book-open text-lg
                                     {{ request()->routeIs('courses.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
-                                <span class="hidden sm:inline ms-2
+                                    <span
+                                        class="hidden sm:inline ms-2
                                     {{ request()->routeIs('courses.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600">
+                                        {{ __('Cursos') }}
+                                    </span>
+                                    <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
+                                            d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                    </svg>
+                                </button>
+
+                                {{-- Conteúdo do Dropdown --}}
+                                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 scale-95"
+                                    x-transition:enter-end="opacity-100 scale-100"
+                                    x-transition:leave="transition ease-in duration-75"
+                                    x-transition:leave-start="opacity-100 scale-100"
+                                    x-transition:leave-end="opacity-0 scale-95"
+                                    class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden"
+                                    style="display: none;">
+                                    <div class="py-1">
+                                        <x-dropdown-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.index')"
+                                            class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
+                        {{ request()->routeIs('courses.index') ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-red-50' }}">
+                                            <i
+                                                class="ph-duotone ph-list-dashes mr-2 text-gray-700
+                        {{ request()->routeIs('courses.index') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
+                                            <span
+                                                class="text-gray-700
+                        {{ request()->routeIs('courses.index') ? 'text-red-600' : '' }} group-hover:text-red-600">
+                                                {{ __('Listar Cursos') }}
+                                            </span>
+                                        </x-dropdown-link>
+
+                                        <x-dropdown-link href="{{ route('courses.create') }}" :active="request()->routeIs('courses.create')"
+                                            class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
+                        {{ request()->routeIs('courses.create') ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-red-50' }}">
+                                            <i
+                                                class="ph-duotone ph-folder-plus mr-2 text-gray-700
+                        {{ request()->routeIs('courses.create') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
+                                            <span
+                                                class="text-gray-700
+                        {{ request()->routeIs('courses.create') ? 'text-red-600' : '' }} group-hover:text-red-600">
+                                                {{ __('Criar Curso') }}
+                                            </span>
+                                        </x-dropdown-link>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            {{-- Link Cursos (Coordenador e User) --}}
+                            <x-nav-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.*')"
+                                class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg
+            {{ request()->routeIs('courses.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
+                                <i
+                                    class="ph-fill ph-book-open text-lg text-gray-700
+            {{ request()->routeIs('courses.*') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
+                                <span
+                                    class="hidden sm:inline ms-2 text-gray-700
+            {{ request()->routeIs('courses.*') ? 'text-red-600' : '' }} group-hover:text-red-600">
                                     {{ __('Cursos') }}
                                 </span>
-                                <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
-                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                    <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
-                                        d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-                                </svg>
-                            </button>
+                            </x-nav-link>
+                        @endif
 
-        {{-- Conteúdo do Dropdown --}}
-        <div x-show="open" x-transition:enter="transition ease-out duration-200"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-75"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-95"
-            class="absolute z-50 mt-2 w-48 rounded-xl shadow-xl ring-1 ring-black/5 top-full bg-white overflow-hidden"
-            style="display: none;">
-            <div class="py-1">
-                <x-dropdown-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.index')"
-                    class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
-                        {{ request()->routeIs('courses.index') ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-red-50' }}">
-                    <i class="ph-duotone ph-list-dashes mr-2 text-gray-700
-                        {{ request()->routeIs('courses.index') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
-                    <span class="text-gray-700
-                        {{ request()->routeIs('courses.index') ? 'text-red-600' : '' }} group-hover:text-red-600">
-                        {{ __('Listar Cursos') }}
-                    </span>
-                </x-dropdown-link>
-
-                <x-dropdown-link href="{{ route('courses.create') }}" :active="request()->routeIs('courses.create')"
-                    class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
-                        {{ request()->routeIs('courses.create') ? 'bg-red-50 text-red-600 font-bold' : 'hover:bg-red-50' }}">
-                    <i class="ph-duotone ph-folder-plus mr-2 text-gray-700
-                        {{ request()->routeIs('courses.create') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
-                    <span class="text-gray-700
-                        {{ request()->routeIs('courses.create') ? 'text-red-600' : '' }} group-hover:text-red-600">
-                        {{ __('Criar Curso') }}
-                    </span>
-                </x-dropdown-link>
-            </div>
-        </div>
-    </div>
-@else
-    {{-- Link Cursos (Coordenador e User) --}}
-    <x-nav-link href="{{ route('courses.index') }}" :active="request()->routeIs('courses.*')"
-        class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg
-            {{ request()->routeIs('courses.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-        <i class="ph-fill ph-book-open text-lg text-gray-700
-            {{ request()->routeIs('courses.*') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
-        <span class="hidden sm:inline ms-2 text-gray-700
-            {{ request()->routeIs('courses.*') ? 'text-red-600' : '' }} group-hover:text-red-600">
-            {{ __('Cursos') }}
-        </span>
-    </x-nav-link>
-@endif
-
-@if (auth()->user()->user_type === 'admin')
-<div class="relative flex items-center h-full" x-data="{ open: false }"
-    @click.away="open = false">
-    <button @click="open = ! open"
-        class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
+                        @if (auth()->user()->user_type === 'admin')
+                            <div class="relative flex items-center h-full" x-data="{ open: false }"
+                                @click.away="open = false">
+                                <button @click="open = ! open"
+                                    class="inline-flex items-center p-2 rounded-lg text-base font-medium leading-5 text-gray-700 hover:text-red-600 focus:outline-none transition duration-150 ease-in-out
             {{-- ADICIONADO: Classe 'group' para habilitar o group-hover nos filhos --}}
             group 
             {{ request()->routeIs('coordinators.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-        <i
-            class="ph-fill ph-shield-star text-lg
+                                    <i
+                                        class="ph-fill ph-shield-star text-lg
             {{-- CORRIGIDO: Agora usa group-hover:text-red-600 --}}
             {{ request()->routeIs('coordinators.*') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
-        <span class="hidden sm:inline ms-2 
+                                    <span
+                                        class="hidden sm:inline ms-2 
             {{-- ADICIONADO: Classe group-hover:text-red-600 e cor base --}}
             {{ request()->routeIs('coordinators.*') ? 'text-red-600 font-bold' : 'text-gray-700' }} group-hover:text-red-600">
-            {{ __('Coordenadores') }}
-        </span>
-        <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
-                d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
-                d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-        </svg>
-    </button>
+                                        {{ __('Coordenadores') }}
+                                    </span>
+                                    <svg class="ms-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path x-show="!open" stroke-linecap="round" stroke-linejoin="round"
+                                            d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                        <path x-show="open" stroke-linecap="round" stroke-linejoin="round"
+                                            d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                    </svg>
+                                </button>
                                 {{-- Conteúdo do Dropdown (MANTIDO) --}}
                                 <div x-show="open" x-transition:enter="transition ease-out duration-200"
                                     x-transition:enter-start="opacity-0 scale-95"
@@ -257,17 +276,19 @@
                                             </span>
                                         </x-dropdown-link>
                                         <x-dropdown-link href="{{ route('coordinators.create') }}" :active="request()->routeIs('coordinators.create')"
-    class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
+                                            class="group flex items-center px-4 py-2 text-gray-700 transition duration-150 ease-in-out rounded-lg
         {{ request()->routeIs('coordinators.create') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
 
-    <i class="ph-duotone ph-user-plus mr-2 text-gray-700
+                                            <i
+                                                class="ph-duotone ph-user-plus mr-2 text-gray-700
         {{ request()->routeIs('coordinators.create') ? 'text-red-600' : '' }} group-hover:text-red-600"></i>
 
-    <span class="text-gray-700
+                                            <span
+                                                class="text-gray-700
         {{ request()->routeIs('coordinators.create') ? 'text-red-600' : '' }} group-hover:text-red-600">
-        {{ __('Criar Coordenador') }}
-    </span>
-</x-dropdown-link>
+                                                {{ __('Criar Coordenador') }}
+                                            </span>
+                                        </x-dropdown-link>
                                     </div>
                                 </div>
                             </div>
@@ -299,16 +320,20 @@
                         </x-dropdown>
                     </div>
 
-                    <div class="hidden sm:block relative" x-data="{ profileTooltip: false }">
-                        {{-- Link direto para o Perfil (Ícone de Avatar) --}}
+                    <div class="hidden sm:block relative" x-data="profileIconUpdater()" x-init="init()"
+                        x-ref="profileDiv">
                         <a href="{{ route('profile.show') }}" class="block" @mouseenter="profileTooltip = true"
                             @mouseleave="profileTooltip = false" @focus="profileTooltip = true"
                             @blur="profileTooltip = false">
-                            <img src ="{{ Auth::user()->user_icon_url }}" alt="{{ Auth::user()->name }}"
-                                class="size-9 rounded-full object-cover border-2 border-gray-200 hover:border-red-500 transition shadow-md">
+
+                            <img :src="userIcon" alt="{{ Auth::user()->name }}"
+                                class="size-9 rounded-full object-cover transition shadow-md
+                {{ request()->routeIs('profile.show')
+                    ? 'border-2 border-red-500'
+                    : 'border-2 border-gray-200 hover:border-red-500' }}">
                         </a>
 
-                        {{-- Tooltip/Popover com Nome e Email --}}
+                        <!-- Tooltip/Popover com Nome e Email -->
                         <div x-cloak x-show="profileTooltip" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 scale-95 transform"
                             x-transition:enter-end="opacity-100 scale-100 transform"
@@ -317,6 +342,7 @@
                             x-transition:leave-end="opacity-0 scale-95 transform"
                             class="absolute right-0 mt-3 w-48 bg-white p-3 rounded-xl shadow-2xl border border-gray-100 z-50 pointer-events-none"
                             style="min-width: max-content;">
+
                             <div class="text-sm font-bold text-gray-800 truncate">{{ Auth::user()->name }}</div>
                             <div class="text-xs text-gray-500 truncate">{{ Auth::user()->email }}</div>
                         </div>
@@ -467,3 +493,19 @@
         </div>
     </nav>
 </div>
+
+<script>
+    function profileIconUpdater() {
+        return {
+            userIcon: '{{ Auth::user()->user_icon_url }}',
+            profileTooltip: false,
+
+            init() {
+                window.Echo.channel('user-icon.{{ Auth::id() }}')
+                    .listen('UserIconUpdated', (e) => {
+                        this.userIcon = e.icon_url;
+                    });
+            }
+        }
+    }
+</script>

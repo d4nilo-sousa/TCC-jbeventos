@@ -1,5 +1,5 @@
 <div id="event-card-{{ $event->id }}"
-    class="feed-card bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-red-200 w-[408px]">
+    class="feed-card bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-gray-200 w-[408px]">
 
     <a href="{{ route('events.show', $event->id) }}" class="block">
         <!-- Imagem -->
