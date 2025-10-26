@@ -6,8 +6,6 @@
             </a>
         </x-slot>
 
-
-
         @session('status')
             <div class="mb-4 font-medium text-sm text-green-600">
                 {{ $value }}
@@ -24,34 +22,33 @@
                 <hr class="w-1/5 mx-auto">
             </div>
 
-            <x-validation-errors class="mb-4 mt-2" />
+            <x-validation-errors class="mb-3 p-3 bg-red-50 rounded-lg shadow-md" />
 
-            <!-- Gmail -->
-            <div class="mt-5">
+            <!-- Email -->
+            <div>
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 placeholder:text-sm text-sm"
-                    type="email" name="email" :value="old('email')" required autofocus autocomplete="off" />
+                <x-input id="email"
+                    class="block mt-1 w-full placeholder-gray-300 placeholder:text-base text-base"
+                    type="email" name="email" :value="old('email')" required autofocus autocomplete="off"
+                    placeholder="exemplo@gmail.com" />
             </div>
 
             <!-- Senha -->
             <div class="mt-4">
                 <x-label for="password" value="{{ __('Senha') }}" />
                 <div class="relative">
-                    <input id="password"
-                        class="block mt-1 w-full pr-10 placeholder-gray-300 placeholder:text-sm border-gray-200 focus:border-gray-400 focus:ring-stone-500
-                    rounded-xl shadow-sm focus:ring-white text-sm"
-                        type="password" name="password" required autocomplete="current-password" autocorrect="off"
-                        autocapitalize="off" spellcheck="false">
-                    </input>
+                    <x-input id="password"
+                        class="block mt-1 w-full pr-10 placeholder-gray-300 placeholder:text-base text-base"
+                        type="password" name="password" required autocomplete="current-password"
+                        placeholder="Digite sua senha" />
+
                     <button type="button"
                         class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 toggle-password"
                         data-target="#password">
-                        <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha"
-                            class="w-5 h-5 opacity-75 hover:opacity-100 transition" />
+                        <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha" class="w-5 h-5 opacity-75 hover:opacity-100 transition">
                     </button>
                 </div>
             </div>
-
 
             <!-- Campos de lembre-me e esqueceu senha -->
             <div class="flex justify-between items-center mb-6 mt-4 px-1">
@@ -71,7 +68,7 @@
                 </div>
             </div>
 
-
+            <!-- Botão Entrar -->
             <div class="flex items-center justify-center mt-3">
                 <x-button class="bg-red-600 hover:bg-red-700 w-full h-10">
                     {{ __('Entrar') }}

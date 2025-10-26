@@ -92,12 +92,16 @@ class EventController extends Controller
 
             if ($events->isEmpty()) {
                 $eventsHtml = '
-                <div class="col-span-full flex flex-col items-center justify-center p-12">
-                    <img src="' . asset('imgs/notFound.png') . '" alt="Nenhum evento encontrado" class="w-32 h-32 mb-4 text-gray-400">
-                    <p class="text-xl font-semibold text-gray-500">Nenhum evento encontrado...</p>
-                    <p class="text-sm text-gray-400 mt-2">Tente ajustar os filtros ou a pesquisa.</p>
-                </div>
-            ';
+        <div id="no-events-message" class="col-span-full flex flex-col items-center justify-center gap-6 text-center w-full my-4 p-6">
+            <img src="' . asset('imgs/notFound.png') . '" class="w-auto h-40 object-contain" alt="not-found">
+            <div>
+                <p class="text-2xl font-bold text-stone-800">Ops! Nada foi encontrado...</p>
+                <p class="text-gray-500 mt-2 text-md max-w-lg mx-auto">
+                    Não encontramos nenhum evento com os termos de busca. Tente refazer a pesquisa!
+                </p>
+            </div>
+        </div>
+    ';
             }
 
             $paginationHtml = (string) $events->links();

@@ -172,13 +172,14 @@
                         <ul class="divide-y divide-gray-200">
                             @foreach ($topEvents as $event)
                                 <li class="flex justify-between items-center py-3">
-                                    <a href="#"
-                                        class="font-medium text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out truncate max-w-[70%]">
+                                    <a href="{{ route('events.show', $event->id) }}"
+                                        class="font-medium text-gray-700 hover:text-red-600 transition duration-150 ease-in-out truncate max-w-[70%]">
                                         {{ $event->event_name }}
                                     </a>
                                     <span
-                                        class="text-gray-500 font-semibold text-sm bg-gray-100 px-2 py-1 rounded-full">{{ $event->total_engagement }}
-                                        interações</span>
+                                        class="text-gray-500 font-semibold text-sm bg-gray-100 px-2 py-1 rounded-full">
+                                        {{ $event->total_engagement }} interações
+                                    </span>
                                 </li>
                             @endforeach
                         </ul>
@@ -186,7 +187,7 @@
                 </div>
 
                 {{-- Distribuição Interações --}}
-               {{-- Gráfico Evolução de Posts e Respostas --}}
+                {{-- Gráfico Evolução de Posts e Respostas --}}
                 <div class="p-5 bg-white rounded-2xl shadow-sm border border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-700 mb-3">Distribuição das Interações em Eventos</h3>
                     <div class="relative h-64 flex justify-center items-center">

@@ -9,6 +9,7 @@
                 @php
                     $previousUrl = url()->previous();
                     $isFromFeed = str_contains($previousUrl, '/feed');
+                    $isFromProfile = str_contains($previousUrl, '/perfil'); // detecta se veio do perfil
                 @endphp
 
                 @if ($isFromFeed)
@@ -16,13 +17,17 @@
                         class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
                         <i class="ph-fill ph-arrow-left text-lg"></i> Voltar para o Feed de Eventos
                     </a>
+                @elseif ($isFromProfile)
+                    <a href="{{ route('profile.show') }}"
+                        class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                        <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Minha Página de Perfil
+                    </a>
                 @else
                     <a href="{{ route('events.index') }}"
                         class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
                         <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Lista de Eventos
                     </a>
                 @endif
-
                 <h1 class="text-4xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
                     {{ $event->event_name }}
                 </h1>
@@ -154,9 +159,10 @@
                                 <i class="ph-fill ph-file-text text-red-600"></i> Sobre o Evento
                             </h2>
                             <div
-                                 class="text-gray-700 leading-relaxed text-base whitespace-pre-wrap mb-8 mr-40 pb-4 border-b border-gray-100 text-center **max-w-3xl mx-auto**">
+                                class="text-gray-700 leading-relaxed text-base mb-8 pb-4 border-b border-gray-100 text-left max-w-3xl pl-4 break-words">
                                 {{ $event->event_info ?? '(Sem informações sobre o evento)' }}
                             </div>
+
 
                             {{-- INFORMAÇÕES ESSENCIAIS EM FORMATO GRID --}}
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -267,15 +273,11 @@
                     {{-- Torna a coluna de comentários fixa em telas grandes. --}}
                     <div class="lg:sticky lg:top-10 bg-white rounded-3xl shadow-xl p-6 border border-gray-100 space-y-4"
                         style="max-height: calc(100vh - 4rem); overflow-y: auto;">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <i class="ph-fill ph-chats text-red-600"></i> Comentários
-                            ({{ $event->eventComments->count() }})
-                        </h2>
                         {{-- O Livewire Component de comentários se expandirá para essa largura --}}
+                        {{-- O TÍTULO E A CONTAGEM SERÃO RENDERIZADOS A PARTIR DESTE COMPONENTE AGORA --}}
                         @livewire('event-comments', ['event' => $event])
                     </div>
                 </div>
-
             </div> {{-- FIM do MAIN CONTENT GRID --}}
 
         </div> {{-- FIM do container amplo --}}
@@ -294,28 +296,37 @@
         </div>
     </div>
 
-    {{-- Modal de Exclusão (Agora em z-[1000] - O mais alto) --}}
+    {{-- Modal de Exclusão (Evento) --}}
     <div id="deleteModal-{{ $event->id }}"
-        class="modal hidden fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-sm transform transition-all">
-            <div class="text-center">
-                <i class="ph-fill ph-warning-circle text-6xl text-red-500 mx-auto mb-4"></i>
-                <h2 class="text-xl font-bold mb-2 text-gray-800">Confirmar Exclusão</h2>
-                <p class="text-gray-600 text-sm">Tem certeza que deseja excluir o evento
-                    "{{ $event->event_name }}" ? Esta ação não poderá ser desfeita.</p>
-            </div>
+        class="modal hidden fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4">
 
-            <div class="mt-6 flex justify-center space-x-3">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
+            onclick="event.stopPropagation();">
+
+            {{-- Cabeçalho --}}
+            <h2 class="text-xl font-bold mb-4 text-red-600 flex items-center gap-2 flex-wrap">
+                <i class="ph-bold ph-warning-circle text-2xl"></i> Confirmar Exclusão
+            </h2>
+
+            {{-- Texto --}}
+            <p class="text-gray-700 w-full break-words whitespace-normal text-left">
+                Tem certeza que deseja excluir o evento
+                <strong class="break-words whitespace-normal">{{ $event->event_name }}</strong>?
+                Esta ação não poderá ser desfeita.
+            </p>
+
+            {{-- Botões --}}
+            <div class="mt-6 flex justify-end space-x-3 flex-wrap">
                 <button onclick="closeModal('deleteModal-{{ $event->id }}')"
-                    class="px-5 py-2 text-sm font-semibold rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors">
+                    class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 font-medium transition">
                     Cancelar
                 </button>
                 <form action="{{ route('events.destroy', $event->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
                     <button type="submit"
-                        class="px-5 py-2 text-sm font-semibold rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors shadow-md">
-                        <i class="ph-fill ph-trash text-base mr-1"></i> Confirmar Exclusão
+                        class="px-4 py-2 text-sm bg-red-600 text-white rounded-full hover:bg-red-700 font-medium transition">
+                        Confirmar Exclusão
                     </button>
                 </form>
             </div>

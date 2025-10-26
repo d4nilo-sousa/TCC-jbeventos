@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // =========================================================
-    // VARIÁVEIS COMUNS E LÓGICA DE HIGHLIGHT
+    // FUNÇÕES COMUNS E DE HIGHLIGHT
     // =========================================================
     const debounce = (func, delay) => {
         let timeout;
@@ -31,59 +31,91 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // =========================================================
-    // LÓGICA DE EVENTOS (JSON + FILTROS)
+    // 🔍 LÓGICA DE PESQUISA GLOBAL (explore.index)
     // =========================================================
+    const exploreSearchInput = document.getElementById('explore-search-input');
+    const exploreResultsContainer = document.getElementById('results-container');
+    const activeTabInput = document.getElementById('active-tab-input');
 
-    const eventSearchInput = document.getElementById('search-input');
-    const eventsContainer = document.getElementById('events-container');
-    const paginationLinks = document.getElementById('pagination-links');
+    if (exploreSearchInput && exploreResultsContainer) {
 
-    if (eventSearchInput && eventsContainer && paginationLinks) {
-        
-        const getSearchParams = (currentQuery) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const params = new URLSearchParams();
-
-            Array.from(urlParams.entries()).forEach(([key, value]) => {
-                if (key !== 'search' && key !== 'page') {
-                    params.append(key, value);
-                }
-            });
-
-            params.append('search', currentQuery);
-            return params.toString();
-        };
-
-        const performEventSearch = async (query) => {
-            const queryString = getSearchParams(query);
-            const url = `/events?${queryString}`; 
+        const performExploreSearch = async (query) => {
+            const tab = activeTabInput ? activeTabInput.value : 'all';
+            const url = `/explore?search=${encodeURIComponent(query)}&tab=${encodeURIComponent(tab)}`;
 
             try {
                 const response = await fetch(url, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' }
                 });
 
-                if (!response.ok) {
-                    throw new Error('Falha na resposta da rede: ' + response.status);
+                if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newResults = doc.getElementById('results-container');
+
+                if (newResults) {
+                    exploreResultsContainer.innerHTML = newResults.innerHTML;
+
+                    // Aplica highlight nas partes relevantes
+                    if (query) {
+                        exploreResultsContainer.querySelectorAll('.searchable').forEach(el => highlightText(el, query));
+                    }
                 }
-                
+
+            } catch (error) {
+                console.error('Erro na busca AJAX do Explore:', error);
+                exploreResultsContainer.innerHTML = `
+                    <div class="text-center py-10 text-red-600 font-semibold">
+                        Ocorreu um erro ao buscar os resultados. Tente novamente.
+                    </div>
+                `;
+            }
+        };
+
+        exploreSearchInput.addEventListener('input', debounce((e) => {
+            performExploreSearch(e.target.value.trim());
+        }, 400));
+    }
+
+    // =========================================================
+    // 🔎 LÓGICA DE EVENTOS (JSON + PAGINAÇÃO)
+    // =========================================================
+    const eventSearchInput = document.getElementById('search-input');
+    const eventsContainer = document.getElementById('events-container');
+    const paginationLinks = document.getElementById('pagination-links');
+
+    if (eventSearchInput && eventsContainer && paginationLinks) {
+        const getSearchParams = (currentQuery) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams();
+            Array.from(urlParams.entries()).forEach(([key, value]) => {
+                if (key !== 'search' && key !== 'page') params.append(key, value);
+            });
+            params.append('search', currentQuery);
+            return params.toString();
+        };
+
+        const performEventSearch = async (query) => {
+            const queryString = getSearchParams(query);
+            const url = `/events?${queryString}`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (!response.ok) throw new Error('Falha na rede: ' + response.status);
                 const data = await response.json();
-                
+
                 eventsContainer.innerHTML = data.eventsHtml;
                 paginationLinks.innerHTML = data.paginationHtml;
-                
-                // ----------------------------------------------------
-                // ✅ CORREÇÃO: Aplicar Highlight APÓS injeção do HTML
-                // ----------------------------------------------------
+
                 if (query) {
-                    // Percorre todos os elementos com a classe .event-name-searchable
-                    eventsContainer.querySelectorAll('.event-name-searchable').forEach(element => {
-                        // O highlightText precisa do texto puro, então não precisa de reset
-                        highlightText(element, query);
-                    });
+                    eventsContainer.querySelectorAll('.event-name-searchable').forEach(el => highlightText(el, query));
                 }
-                // ----------------------------------------------------
-                
+
             } catch (error) {
                 console.error('Erro na pesquisa AJAX de Eventos:', error);
                 eventsContainer.innerHTML = `
@@ -100,22 +132,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 300));
     }
 
-
     // =========================================================
-    // LÓGICA DE CURSOS (HTML Parsing)
+    // 📘 LÓGICA DE CURSOS (HTML Parsing)
     // =========================================================
-     
-    const courseSearchInput = document.getElementById("searchInput"); 
+    const courseSearchInput = document.getElementById("searchInput");
 
-    if (courseSearchInput) { 
-        
+    if (courseSearchInput) {
         const searchForm = courseSearchInput.closest("form");
-        
+
         function setupCourseSearch(listId, cardClass, noMessageId) {
             const list = document.getElementById(listId);
             if (!list) return;
 
-            // Tentativa de obter a URL base
             const baseUrl = list.dataset.url || searchForm.getAttribute('action') || window.location.pathname;
             const originalHTML = list.innerHTML;
             const noMessage = document.getElementById(noMessageId);
@@ -125,24 +153,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (query) url += `?search=${encodeURIComponent(query)}`;
 
                 fetch(url, { headers: { "X-Requested-With": "XMLHttpRequest" } })
-                    .then(res => res.text()) // Espera HTML/texto puro
+                    .then(res => res.text())
                     .then(html => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, "text/html");
-                        
-                        // Busca o conteúdo dentro do container principal (coursesList)
                         const newListContainer = doc.getElementById(listId);
-                        
+
                         if (newListContainer) {
-                             list.innerHTML = newListContainer.innerHTML;
+                            list.innerHTML = newListContainer.innerHTML;
                         } else {
-                            // Fallback para o método antigo (caso o Controller retorne apenas os cards soltos)
                             const newCards = doc.querySelectorAll(`#${listId} > *`);
                             list.innerHTML = "";
                             newCards.forEach(card => list.appendChild(card));
                         }
-                        
-                        // Highlight e mensagem de não encontrado
+
                         if (query) {
                             list.querySelectorAll(`.${cardClass}`).forEach(el => highlightText(el, query));
                         }
@@ -153,23 +177,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             courseSearchInput.addEventListener("keyup", debounce(() => {
                 const query = courseSearchInput.value.trim();
-                
                 if (!query) {
-                    list.innerHTML = originalHTML; 
+                    list.innerHTML = originalHTML;
                     if (noMessage) noMessage.style.display = list.children.length > 0 ? "none" : "flex";
                 }
-                
                 fetchList(query);
             }, 150));
-            
+
             searchForm.addEventListener("submit", e => {
                 if (!courseSearchInput.value.trim()) {
                     e.preventDefault();
-                    window.location.href = baseUrl; 
+                    window.location.href = baseUrl;
                 }
             });
         }
 
-        setupCourseSearch("coursesList", "course-title", "noCoursesMessage"); 
+        setupCourseSearch("coursesList", "course-title", "noCoursesMessage");
     }
 });

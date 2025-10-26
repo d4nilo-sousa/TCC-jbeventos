@@ -60,7 +60,7 @@
                             style="max-height: {{ $maxHeight }};">
                             @forelse ($events as $item)
                                 <div id="event-{{ $item->id }}"
-                                    class="feed-card w-full sm:w-[95%] bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-red-200 flex flex-col">
+                                    class="feed-card w-full sm:w-[95%] bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-gray-200 flex flex-col">
 
                                     <!-- IMAGEM DO EVENTO -->
                                     <a href="{{ route('events.show', $item) }}" class="block">

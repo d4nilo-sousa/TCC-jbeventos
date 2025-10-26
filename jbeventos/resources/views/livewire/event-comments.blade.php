@@ -2,19 +2,20 @@
     deletingId: @entangle('deletingId').live,
     isModalOpen: false,
     openModal(id) {
-        // Alpine chama o PHP para definir o ID de exclusão e abre o modal
         $wire.setDeletingId(id);
         this.isModalOpen = true;
     },
     closeModal() {
         this.isModalOpen = false;
-        // Limpar o ID no PHP é feito automaticamente após a exclusão bem-sucedida,
-        // mas é bom ter uma forma de fechar e limpar caso o usuário cancele.
-        // O Livewire já reseta o 'deletingId' após a exclusão, mas mantemos
-        // o reset no PHP para garantir o cancelamento.
         $wire.setDeletingId(null);
     }
 }">
+
+    {{-- Cabeçalho de Comentários --}}
+    <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+        <i class="ph-fill ph-chats text-red-600"></i> Comentários
+        ({{ $event->eventComments->count() }})
+    </h2>
 
     {{-- Formulário de Comentário Principal (Novo Comentário - SEMPRE NO TOPO) --}}
 
@@ -413,49 +414,48 @@
     @endforelse
 
     {{-- Modal de Confirmação de Exclusão (Alpine.js) --}}
-
     <div x-show="isModalOpen" x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" style="display: none;"
-        class="fixed inset-0 z-50 overflow-y-auto">
-        {{-- Overlay --}}
-        <div x-show="isModalOpen" x-transition.opacity @click="closeModal()"
-            class="fixed inset-0 bg-gray-900 bg-opacity-75"></div>
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
 
         {{-- Conteúdo do Modal --}}
-        <div x-show="isModalOpen" class="flex items-center justify-center min-h-screen p-4"
+        <div x-show="isModalOpen"
+            class="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-auto flex flex-col space-y-4"
             @click.away="closeModal()">
-            <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full z-10 mx-auto transform transition-all">
-                <div class="text-center">
-                    <i class="ph-fill ph-warning text-6xl text-red-500 mx-auto mb-4 animate-pulse-slow"></i>
-                    <h3 class="text-xl font-bold text-gray-800 mb-2">Confirmação de Exclusão</h3>
-                    <p class="text-sm text-gray-600">
-                        Tem certeza que deseja excluir este comentário? Esta ação é irreversível e excluirá também todas
-                        as suas respostas.
-                    </p>
-                </div>
 
-                <div class="mt-6 flex justify-center gap-4">
-                    <button @click="closeModal()"
-                        class="px-5 py-2 text-sm font-semibold rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors">
-                        Cancelar
-                    </button>
-                    {{-- Ação CRÍTICA: Chama o método deleteComment no Livewire --}}
-                    <button wire:click="deleteComment" @click="closeModal()" {{-- Fecha o modal imediatamente para melhor UX --}}
-                        class="px-5 py-2 text-sm font-semibold rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors shadow-md disabled:bg-red-400"
-                        wire:loading.attr="disabled" wire:target="deleteComment">
-                        <span wire:loading.remove wire:target="deleteComment">Sim, Excluir</span>
-                        <span wire:loading wire:target="deleteComment">
-                            <i class="ph-fill ph-spinner-gap animate-spin mr-1"></i> Excluindo...
-                        </span>
-                    </button>
-                </div>
+            {{-- Cabeçalho --}}
+            <h2 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
+                <i class="ph-bold ph-warning-circle text-2xl"></i> Confirmação de Exclusão
+            </h2>
+
+            {{-- Texto --}}
+            <p class="text-gray-700 whitespace-normal break-words text-left">
+                Tem certeza que deseja excluir este comentário?
+                Esta ação é irreversível e excluirá também todas as suas respostas.
+            </p>
+
+            {{-- Botões --}}
+            <div class="mt-6 flex justify-end gap-3 flex-wrap">
+                <button @click="closeModal()"
+                    class="px-4 py-2 text-sm font-medium rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition">
+                    Cancelar
+                </button>
+
+                <button wire:click="deleteComment" @click="closeModal()"
+                    class="px-4 py-2 text-sm font-medium rounded-full bg-red-600 text-white hover:bg-red-700 transition shadow-md disabled:bg-red-400"
+                    wire:loading.attr="disabled" wire:target="deleteComment">
+                    <span wire:loading.remove wire:target="deleteComment">Sim, Excluir</span>
+                    <span wire:loading wire:target="deleteComment">
+                        <i class="ph-fill ph-spinner-gap animate-spin mr-1"></i> Excluindo...
+                    </span>
+                </button>
             </div>
         </div>
-
     </div>
+
 
     <script>
         document.addEventListener('livewire:initialized', () => {

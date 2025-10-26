@@ -255,33 +255,41 @@
     {{-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO --}}
     {{-- ============================================================ --}}
     @if ($confirmingPostDeletionId)
-        <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
-            class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 sm:p-6"
-            aria-modal="true" role="dialog" wire:ignore.self
-            x-on:keydown.escape.window="$wire.confirmingPostDeletionId = null">
+    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
+        class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 sm:p-6"
+        aria-modal="true" role="dialog" wire:ignore.self
+        x-on:keydown.escape.window="$wire.confirmingPostDeletionId = null">
 
-            <div x-transition
-                class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4 transform transition-all border border-gray-100">
+        <div x-transition
+            class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 space-y-4 transform transition-all border border-gray-100"
+            @click.away="$wire.confirmingPostDeletionId = null">
 
-                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
-                    <i class="ph-bold ph-warning text-2xl"></i>
-                    Confirmar Exclusão
-                </h3>
-                <p class="text-gray-700">Tem certeza que deseja excluir este post? Essa ação é **irreversível**.</p>
+            {{-- Cabeçalho --}}
+            <h3 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
+                <i class="ph-bold ph-warning text-2xl"></i>
+                Confirmar Exclusão
+            </h3>
 
-                <div class="flex justify-end gap-3">
-                    <button type="button" wire:click="$set('confirmingPostDeletionId', null)"
-                        class="px-4 py-2 text-sm text-gray-600 font-semibold rounded-full hover:bg-gray-100 transition">
-                        Cancelar
-                    </button>
-                    <button type="button" wire:click="deletePost"
-                        class="px-4 py-2 text-sm bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition">
-                        Excluir Post
-                    </button>
-                </div>
+            {{-- Texto --}}
+            <p class="text-gray-700 whitespace-normal break-words text-left">
+                Tem certeza que deseja excluir este post? Essa ação é irreversível.
+            </p>
+
+            {{-- Botões --}}
+            <div class="flex justify-end gap-3 flex-wrap mt-4">
+                <button type="button" wire:click="$set('confirmingPostDeletionId', null)"
+                    class="px-4 py-2 text-sm text-gray-700 font-medium rounded-full bg-gray-200 hover:bg-gray-300 transition">
+                    Cancelar
+                </button>
+                <button type="button" wire:click="deletePost"
+                    class="px-4 py-2 text-sm bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition">
+                    Excluir Post
+                </button>
             </div>
         </div>
-    @endif
+    </div>
+@endif
+
 
     {{-- ============================================================ --}}
     {{-- MODAL DE EXPANSÃO (RESPOSTAS) --}}

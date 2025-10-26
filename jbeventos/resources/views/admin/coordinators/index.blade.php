@@ -110,38 +110,41 @@
 
                                                 {{-- Modal de Exclusão --}}
                                                 <div id="deleteModal-{{ $coordinator->id }}"
-                                                    class="modal fixed inset-0 bg-black bg-opacity-50 hidden z-[1000] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-                                                    <div
-                                                        class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 text-center flex flex-col space-y-4 overflow-hidden">
-                                                        <i
-                                                            class="ph-fill ph-warning-circle text-6xl text-red-500 mx-auto"></i>
-                                                        <h2 class="text-2xl font-bold text-gray-900 break-words">
-                                                            Confirmar Exclusão</h2>
-                                                        <p class="text-gray-600 break-words">
-                                                            Tem certeza de que deseja excluir o(a) coordenador(a)? <br>
-                                                            <strong>{{ $coordinator->userAccount->name }}</strong>?
-                                                            Esta ação não poderá ser desfeita.
+                                                    class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                                                    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
+                                                        onclick="event.stopPropagation();">
+                                                        <h2
+                                                            class="text-xl font-bold mb-4 text-red-600 flex items-center gap-2 flex-wrap">
+                                                            <i class="ph-bold ph-warning-circle text-2xl"></i> Confirmar
+                                                            Exclusão
+                                                        </h2>
+                                                        <p
+                                                            class="text-gray-700 w-full break-words whitespace-normal text-left">
+                                                            Tem certeza que deseja excluir o(a) coordenador(a)
+                                                            <strong
+                                                                class="break-words whitespace-normal">{{ $coordinator->userAccount->name }}</strong>?
+                                                            Esta ação é irreversível.
                                                         </p>
-                                                        <div
-                                                            class="flex flex-col sm:flex-row justify-center gap-3 mt-2">
-                                                            <button type="button"
+                                                        <div class="mt-6 flex justify-end space-x-3 flex-wrap">
+                                                            <button
                                                                 onclick="closeModal('deleteModal-{{ $coordinator->id }}')"
-                                                                class="px-5 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors whitespace-normal break-words">
+                                                                class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 font-medium transition">
                                                                 Cancelar
                                                             </button>
                                                             <form
                                                                 action="{{ route('coordinators.destroy', $coordinator->id) }}"
-                                                                method="POST" class="w-full sm:w-auto">
+                                                                method="POST">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit"
-                                                                    class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors whitespace-normal break-words w-full sm:w-auto">
+                                                                    class="px-4 py-2 text-sm bg-red-600 text-white rounded-full hover:bg-red-700 font-medium transition">
                                                                     Confirmar
                                                                 </button>
                                                             </form>
                                                         </div>
                                                     </div>
                                                 </div>
+
                                             </div>
                                         </td>
                                     </tr>
