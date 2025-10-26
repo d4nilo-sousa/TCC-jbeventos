@@ -10,7 +10,7 @@
                 <div class="flex items-center space-x-6 h-full">
                     {{-- Logo --}}
                     <div class="shrink-0 flex items-center h-full">
-                        <a href="{{ route('feed.index') }}" class="flex items-center h-full">
+                        <a href="{{ route('feed.index') }}" class="flex items-center h-full mb-2 m">
                             <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[6rem] h-auto">
                         </a>
                     </div>
@@ -21,45 +21,43 @@
                         {{-- Feed --}}
                         <x-nav-link href="{{ route('feed.index') }}" :active="request()->routeIs('feed.index')"
                             class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg 
-    {{ request()->routeIs('feed.index') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
+                                {{ request()->routeIs('feed.index') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
                             <i
                                 class="ph-fill ph-house-simple text-lg 
-        {{ request()->routeIs('feed.index') ? 'text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
+                                {{ request()->routeIs('feed.index') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}"></i>
                             <span
                                 class="hidden sm:inline ms-2 
-        {{ request()->routeIs('feed.index') ? 'text-red-600' : '' }} group-hover:text-red-600">{{ __('Feed') }}</span>
+                                {{ request()->routeIs('feed.index') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}">
+                                {{ __('Feed') }}
+                            </span>
                         </x-nav-link>
 
-                        {{-- Dashboard unificado --}}
-                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->is('dashboard') ||
-                            request()->is('admin/dashboard') ||
-                            request()->is('coordinator/dashboard')"
-                            class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg
-        {{ request()->is('dashboard') || request()->is('admin/dashboard') || request()->is('coordinator/dashboard') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
 
+                        {{-- Dashboard --}}
+                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard*')"
+                            class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg 
+                                {{ request()->routeIs('dashboard') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
                             <i
-                                class="ph-fill ph-gauge text-lg text-gray-700 group-hover:text-red-600
-        {{ request()->is('dashboard') || request()->is('admin/dashboard') || request()->is('coordinator/dashboard') ? 'text-red-600' : '' }}"></i>
-
+                                class="ph-fill ph-gauge text-lg
+                                {{ request()->routeIs('dashboard') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}"></i>
                             <span
-                                class="hidden sm:inline ms-2 text-gray-700 group-hover:text-red-600
-        {{ request()->is('dashboard') || request()->is('admin/dashboard') || request()->is('coordinator/dashboard') ? 'text-red-600' : '' }}">
+                                class="hidden sm:inline ms-2
+                                {{ request()->routeIs('dashboard') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}">
                                 {{ __('Dashboard') }}
                             </span>
                         </x-nav-link>
 
+
                         {{-- Explorar --}}
                         <x-nav-link href="{{ route('explore.index') }}" :active="request()->routeIs('explore.*')"
                             class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg 
-    {{ request()->routeIs('explore.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-
+        {{ request()->routeIs('explore.*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
                             <i
-                                class="ph-fill ph-magnifying-glass text-lg 
-        {{ request()->routeIs('explore.*') ? '!text-red-600' : 'text-gray-700' }} group-hover:text-red-600"></i>
-
+                                class="ph-fill ph-magnifying-glass text-lg
+        {{ request()->routeIs('explore.*') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}"></i>
                             <span
-                                class="hidden sm:inline ms-2 
-        {{ request()->routeIs('explore.*') ? '!text-red-600' : '' }} group-hover:text-red-600">
+                                class="hidden sm:inline ms-2
+        {{ request()->routeIs('explore.*') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}">
                                 {{ __('Explorar') }}
                             </span>
                         </x-nav-link>
@@ -306,16 +304,15 @@
                                 <button
                                     class="relative flex items-center size-9 rounded-full justify-center text-gray-700 bg-gray-100 hover:bg-gray-200 transition">
                                     <i class="ph-fill ph-chat-text text-lg"></i>
+                                    
+                                    {{-- Componente Livewire de Contagem de Mensagens --}}
                                     @livewire('unread-messages')
+                                    
                                 </button>
                             </x-slot>
                             <x-slot name="content">
-                                <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-                                    <div class="p-3 border-b border-gray-100 flex items-center justify-center">
-                                        <h2 class="text-base font-bold text-gray-800">{{ __('Suas Conversas') }}</h2>
-                                    </div>
-                                    @livewire('conversation-list')
-                                </div>
+                                {{-- Componente Livewire de Listagem de Conversas --}}
+                                @livewire('conversation-list')
                             </x-slot>
                         </x-dropdown>
                     </div>

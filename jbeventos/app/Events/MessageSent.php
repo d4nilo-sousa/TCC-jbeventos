@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -35,7 +36,10 @@ class MessageSent implements ShouldBroadcast
         $ids = [$this->messageModel->sender_id, $this->messageModel->receiver_id];
         sort($ids);
 
-        return [new PresenceChannel('chat.' . implode('.', $ids))];
+        return [
+            new PresenceChannel('chat.' . implode('.', $ids)),
+            new PrivateChannel('user.' . $this->messageModel->receiver_id),
+        ];
     }
 
     /**
