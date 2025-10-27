@@ -11,6 +11,18 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
+                    {{-- NOVO: Botão de Alternância de Visualização --}}
+                    <div class="inline-flex rounded-full shadow-md bg-white border border-gray-200">
+                        <button id="view-list-btn" data-view="list"
+                            class="px-4 py-2.5 text-sm font-medium rounded-l-full transition-colors">
+                            <i class="ph-fill ph-list-bullets text-xl align-middle"></i>
+                        </button>
+                        <button id="view-calendar-btn" data-view="calendar"
+                            class="px-4 py-2.5 text-sm font-medium rounded-r-full transition-colors">
+                            <i class="ph-fill ph-calendar text-xl align-middle"></i>
+                        </button>
+                    </div>
+
                     {{-- Formulário de Pesquisa de Eventos --}}
                     <form method="GET" action="{{ route('events.index') }}" class="w-full flex-grow max-w-sm">
                         <div class="relative flex items-center w-full shadow-md rounded-full bg-white ">
@@ -169,8 +181,13 @@
                 </div>
             </div>
 
-            {{-- Events List (Container de AJAX) --}}
-            <div id="events-container"
+            {{-- NOVO: Container do Calendário --}}
+            <div id="calendar-view" class="p-4 bg-white rounded-lg shadow-xl hidden">
+                <div id='full-calendar'></div>
+            </div>
+
+            {{-- Lista de Eventos --}}
+            <div id="list-view"
                 class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 justify-items-center">
 
                 @forelse ($events as $event)
@@ -199,6 +216,227 @@
     </div>
 </x-app-layout>
 
+{{-- NOVO: Modal de Detalhes do Dia --}}
+<div id="dayDetailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+            onclick="closeModal()">
+        </div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div
+            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
+                            Eventos em <span id="modal-date"></span>
+                        </h3>
+                        <div class="mt-2 space-y-4" id="modal-events-list">
+                            {{-- Lista de eventos será injetada aqui --}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    onclick="closeModal()">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @vite('resources/js/app.js')
 
 <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+<script>
+    // Variável global para armazenar a instância do FullCalendar
+    let calendarInstance = null;
+    const viewListBtn = document.getElementById('view-list-btn');
+    const viewCalendarBtn = document.getElementById('view-calendar-btn');
+    const listView = document.getElementById('list-view');
+    const calendarView = document.getElementById('calendar-view');
+    const paginationLinks = document.getElementById('pagination-links');
+    const modal = document.getElementById('dayDetailsModal');
+    const modalDate = document.getElementById('modal-date');
+    const modalEventsList = document.getElementById('modal-events-list');
+
+    // ------------------------------------
+    // Lógica do FullCalendar e Interatividade
+    // ------------------------------------
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializa o calendário ao carregar a página
+        initializeCalendar();
+
+        // Lógica de Alternância de Visualização
+        const currentView = localStorage.getItem('event_view') || 'list';
+        if (currentView === 'calendar') {
+            showCalendarView();
+        } else {
+            showListView();
+        }
+
+        viewListBtn.addEventListener('click', showListView);
+        viewCalendarBtn.addEventListener('click', showCalendarView);
+    });
+
+    /**
+     * Função para inicializar o FullCalendar
+     */
+    function initializeCalendar() {
+        const calendarEl = document.getElementById('full-calendar');
+
+        calendarInstance = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'pt-br',
+            height: 'auto', // Ajusta a altura automaticamente
+
+            // Configuração do Header
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+
+            // Fonte de dados dos eventos: Puxa do novo endpoint JSON
+            events: '{{ route('events.calendar-feed') }}',
+
+            // ------------------------------------
+            // Interatividade: Clicar em um DIA (dateClick)
+            // ------------------------------------
+            dateClick: function(info) {
+                // info.dateStr é a data clicada (ex: '2025-11-03')
+                showDayEventsModal(info.dateStr);
+            },
+
+            // ------------------------------------
+            // Personalização da renderização (opcional)
+            // ------------------------------------
+            eventDidMount: function(info) {
+                // Adiciona um tooltip simples ou informação extra ao passar o mouse
+                info.el.setAttribute('title', info.event.title + ' | Local: ' + info.event.extendedProps.location);
+            },
+        });
+
+        // Renderiza (mas a div do calendário ainda está escondida)
+        calendarInstance.render();
+    }
+
+    /**
+     * Alterna para a visualização de LISTA.
+     */
+    function showListView() {
+        listView.classList.remove('hidden');
+        paginationLinks.classList.remove('hidden');
+        calendarView.classList.add('hidden');
+        document.getElementById('no-events-message')?.classList.remove('hidden'); // Mostra a mensagem de vazio se existir
+
+        // Atualiza a seleção visual dos botões
+        viewListBtn.classList.add('bg-red-600', 'text-white');
+        viewListBtn.classList.remove('text-gray-700', 'hover:bg-gray-50');
+        viewCalendarBtn.classList.remove('bg-red-600', 'text-white');
+        viewCalendarBtn.classList.add('text-gray-700', 'hover:bg-gray-50');
+
+        localStorage.setItem('event_view', 'list');
+    }
+
+    /**
+     * Alterna para a visualização de CALENDÁRIO.
+     */
+    function showCalendarView() {
+        calendarView.classList.remove('hidden');
+        listView.classList.add('hidden');
+        paginationLinks.classList.add('hidden');
+        document.getElementById('no-events-message')?.classList.add('hidden'); // Esconde a mensagem de vazio no modo calendário
+
+        // Garante que o calendário renderize corretamente
+        if (calendarInstance) {
+            calendarInstance.render();
+        }
+
+        // Atualiza a seleção visual dos botões
+        viewCalendarBtn.classList.add('bg-red-600', 'text-white');
+        viewCalendarBtn.classList.remove('text-gray-700', 'hover:bg-gray-50');
+        viewListBtn.classList.remove('bg-red-600', 'text-white');
+        viewListBtn.classList.add('text-gray-700', 'hover:bg-gray-50');
+
+        localStorage.setItem('event_view', 'calendar');
+    }
+
+    /**
+     * Busca os eventos para um dia específico e exibe no modal.
+     */
+    function showDayEventsModal(dateStr) {
+        // Formato para display (ex: 27 de Outubro de 2025)
+        const displayDate = new Date(dateStr + 'T00:00:00').toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Filtra os eventos do calendário pela data clicada
+        const events = calendarInstance.getEvents();
+
+        const eventsOnDay = events.filter(event => {
+            if (!event.start) return false;
+
+            // Compara a data de início (YYYY-MM-DD)
+            const eventStartDay = event.start.toISOString().substring(0, 10);
+            return eventStartDay === dateStr;
+        });
+
+        modalDate.textContent = displayDate;
+        modalEventsList.innerHTML = '';
+
+        if (eventsOnDay.length > 0) {
+            eventsOnDay.forEach(event => {
+                // Formata a hora de início
+                const startTime = event.start.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+
+                // Determina se a hora deve ser exibida
+                const timeDisplay = event.allDay ? ' (Dia Inteiro)' : ` (${startTime}h)`;
+
+                const eventHtml = `
+                    <div class="p-3 border-b border-gray-100 last:border-b-0">
+                        <h4 class="text-lg font-semibold text-red-600">
+                            <a href="${event.extendedProps.url}" class="hover:underline">${event.title}</a>
+                        </h4>
+                        <p class="text-sm text-gray-500 mt-1">
+                            ${timeDisplay} |
+                            <strong>Local:</strong> ${event.extendedProps.location}<br>
+                            <strong>Coordenador:</strong> ${event.extendedProps.coordinator}
+                        </p>
+                    </div>
+                `;
+                modalEventsList.innerHTML += eventHtml;
+            });
+        } else {
+            modalEventsList.innerHTML = `
+                <div class="text-center p-4 text-gray-500 border rounded-md bg-gray-50">
+                    Nenhum evento agendado para este dia.
+                </div>
+            `;
+        }
+
+        modal.classList.remove('hidden');
+    }
+
+    /**
+     * Fecha o modal de detalhes do dia.
+     */
+    function closeModal() {
+        modal.classList.add('hidden');
+    }
+</script>

@@ -113,6 +113,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::resource('courses', CourseController::class)->only(['index', 'show']);
     Route::get('events', [EventController::class, 'index'])->name('events.index');
 
+    //Rota JSON para calendário de eventos
+    Route::get('/events/calendar-feed', [EventController::class, 'calendarEvents'])->name('events.calendar-feed');
+
     // Show com middleware
     Route::get('events/{event}', [EventController::class, 'show'])
         ->middleware('checkEventVisibility')
