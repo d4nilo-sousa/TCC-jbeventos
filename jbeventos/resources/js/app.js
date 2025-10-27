@@ -15,7 +15,7 @@ import './tabs-navigation';
 import './delete-images';
 
 
-import { initializeEventsPage } from './events_calendar'; 
+import { initializeEventsPage } from './events-calendar'; 
 
 window.Alpine = Alpine;
 Alpine.start();
