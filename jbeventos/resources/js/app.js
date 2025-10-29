@@ -13,3 +13,23 @@ import './search-highlight';
 import './modal-actions';
 import './tabs-navigation';
 import './delete-images';
+
+
+import { initializeEventsPage } from './events-calendar'; 
+
+window.Alpine = Alpine;
+Alpine.start();
+
+// -----------------------------------------------------
+// Inicialização do FullCalendar / Eventos
+// -----------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Verifica se os elementos da página de eventos existem antes de inicializar
+    const isEventsPage = document.getElementById('list-view');
+
+    if (isEventsPage) {
+        initializeEventsPage();
+    }
+
+});

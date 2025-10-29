@@ -130,6 +130,62 @@ class EventController extends Controller
         return view('coordinator.events.create', compact('categories', 'minExpiredAt', 'eventExpiredAt', 'allCourses'));
     }
 
+    public function calendarEvents()
+    {
+        $events = Event::with(['eventCoordinator.userAccount', 'courses'])
+            ->whereDate('event_scheduled_at', '>=', now()->subMonths(3))
+            ->get();
+
+        $formattedEvents = $events->map(function ($event) {
+            
+            $color = match ($event->event_type) {
+                'course' => '#009688', // Teal
+                'general' => '#E91E63', // Rosa (Para eventos gerais)
+                default => '#2196F3', // Azul padrão
+            };
+
+            $coordinatorName = optional($event->eventCoordinator->userAccount)->name ?? 'N/A';
+            $courseNames = $event->courses->pluck('course_name')->implode(', ');
+            
+            // 1. DATA DE TÉRMINO (END)
+            $end = null; // Começa como null por padrão
+
+            if ($event->event_expired_at) {
+                // Se tiver data de término, formata. 
+                $end = $event->event_expired_at->format('Y-m-d H:i:s');
+            } 
+            
+            // 2. ALL-DAY
+            // Consideramos all-day se o evento é de um dia inteiro (sem hora de início/fim específica)
+            $isAllDay = $event->event_scheduled_at->format('H:i:s') == '00:00:00' && $event->event_expired_at === null;
+            
+            // Se for um evento pontual (sem data/hora de término), 'end' deve ser nulo. 
+
+            return [
+                'id' => $event->id,
+                'title' => $event->event_name,
+                // START: Sempre no formato ISO
+                'start' => $event->event_scheduled_at->format('Y-m-d H:i:s'), 
+                
+                // END: Apenas se for um evento de mais de um dia/hora. Se for pontual, DEVE ser null.
+                'end' => $end, 
+                
+                'allDay' => $isAllDay, 
+                'color' => $color,
+                'extendedProps' => [
+                    'description' => $event->event_description,
+                    'location' => $event->event_location,
+                    'type' => $event->event_type,
+                    'coordinator' => $coordinatorName,
+                    'courses' => $courseNames,
+                    'url' => route('events.show', $event->id),
+                ],
+            ];
+        });
+        
+        return response()->json($formattedEvents);
+    }
+
     // Cria o evento
     public function store(Request $request)
     {

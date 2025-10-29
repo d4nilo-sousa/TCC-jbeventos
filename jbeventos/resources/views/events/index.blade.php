@@ -1,4 +1,98 @@
 <x-app-layout>
+    {{-- INÍCIO: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR --}}
+    <style>
+        /* Estilos dos botões do FullCalendar */
+        .fc-toolbar-chunk .fc-button {
+            background-color: transparent;
+            border-color: #e5e7eb; /* Cor da borda suave */
+            color: #1f2937; /* Cor do texto/ícone: Preto Suave */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03); /* Sombra suave */
+            text-transform: capitalize; /* Deixa o texto normalizado */
+            font-weight: 500; /* Medium weight */
+            transition: all 0.2s;
+        }
+
+        /* Hover e Focus dos botões */
+        .fc-toolbar-chunk .fc-button:hover,
+        .fc-toolbar-chunk .fc-button:focus {
+            background-color: #f3f4f6; /* Fundo leve no hover */
+            border-color: #d1d5db;
+            outline: none;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.07);
+        }
+
+        /* Botão Ativo */
+        .fc-toolbar-chunk .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #1f2937; /* Fundo Preto */
+            color: white; /* Texto Branco */
+            border-color: #1f2937;
+        }
+
+        /* Titulo do Calendário */
+        .fc-toolbar-title {
+            font-size: 1.5rem;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        /* Cabeçalho da Semana (dom, seg, ter...) */
+        .fc-col-header-cell {
+            background-color: #f9fafb; /* Fundo cinza bem claro */
+            padding: 0.5rem 0;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 2px solid #e5e7eb;
+            font-weight: 600; /* Semibold */
+            color: #4b5563; /* Cor mais escura para o texto */
+        }
+
+        /* Células do Corpo do Calendário */
+        .fc-daygrid-body,
+        .fc-daygrid-day {
+            border-color: #f3f4f6; /* Bordas mais suaves */
+        }
+        
+        /* Células da tabela do calendário (para o layout fixo) */
+        .fc-scrollgrid-sync-table {
+            width: 100% !important; /* Garante que a tabela use 100% do container */
+            table-layout: fixed; /* Ajuda a distribuir o espaço uniformemente */
+        }
+
+        /* Realçar o dia atual em vermelho suave */
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: #fee2e2; /* Red 100 - Vermelho muito suave */
+            border-left: 3px solid #dc2626; /* Borda esquerda vermelha (Red 600) para ênfase */
+        }
+
+        /* Ocultar dias de outros meses (fallback visual e ajuste fino) */
+        .fc-day-other .fc-daygrid-day-number {
+            opacity: 0; /* Esconde o número do dia */
+            pointer-events: none; /* Impede clique */
+        }
+        /* Ocultar os eventos dos dias de outros meses */
+        .fc-day-other .fc-daygrid-event-harness {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        /* Cor dos números dos dias - Mantém o contraste */
+        .fc-daygrid-day-number {
+            color: #4b5563; /* Cinza escuro */
+        }
+
+        /* Estilo para eventos - Melhorias de legibilidade */
+        .fc-event {
+            border-radius: 0.25rem; /* Bordas arredondadas */
+            padding: 2px 4px;
+            font-size: 0.8rem;
+            white-space: normal;
+        }
+        .fc-event-title {
+            font-weight: 500;
+        }
+    </style>
+    {{-- FIM: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR --}}
+
+
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
             <div
@@ -11,6 +105,18 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
+                    {{-- Botão de Alternância de Visualização --}}
+                    <div class="inline-flex rounded-full shadow-md bg-white border border-gray-200">
+                        <button id="view-list-btn" data-view="list"
+                            class="px-4 py-2.5 text-sm font-medium rounded-l-full transition-colors">
+                            <i class="ph-fill ph-list-bullets text-xl align-middle"></i>
+                        </button>
+                        <button id="view-calendar-btn" data-view="calendar"
+                            class="px-4 py-2.5 text-sm font-medium rounded-r-full transition-colors">
+                            <i class="ph-fill ph-calendar text-xl align-middle"></i>
+                        </button>
+                    </div>
+
                     {{-- Formulário de Pesquisa de Eventos --}}
                     <form method="GET" action="{{ route('events.index') }}" class="w-full flex-grow max-w-sm">
                         <div class="relative flex items-center w-full shadow-md rounded-full bg-white ">
@@ -44,7 +150,6 @@
                         <div id="filterMenu"
                             class="absolute right-0 z-20 mt-2 w-64 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden">
                             <form method="GET" action="{{ route('events.index') }}" class="p-4 space-y-4">
-
                                 @if (request('search'))
                                     <input type="hidden" name="search" value="{{ request('search') }}">
                                 @endif
@@ -169,8 +274,15 @@
                 </div>
             </div>
 
-            {{-- Events List (Container de AJAX) --}}
-            <div id="events-container"
+            {{-- Container do Calendário (Melhoria: Usando flex para garantir que ele se estique se necessário) --}}
+            <div id="calendar-view"
+                class="p-4 bg-white rounded-xl shadow-2xl hidden transition-all duration-300 ease-in-out">
+                {{-- O FullCalendar adiciona a classe .fc que tem a largura definida --}}
+                <div id='full-calendar'></div>
+            </div>
+
+            {{-- Lista de Eventos --}}
+            <div id="list-view"
                 class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 justify-items-center">
 
                 @forelse ($events as $event)
@@ -199,6 +311,37 @@
     </div>
 </x-app-layout>
 
-@vite('resources/js/app.js')
+{{-- NOVO: Modal de Detalhes do Dia --}}
+<div id="dayDetailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
+    aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+            onclick="closeModal('dayDetailsModal')">
+        </div>
 
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div
+            class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-2xl leading-6 font-medium text-gray-900" id="modal-title">
+                            Eventos em <span id="modal-date"></span>
+                        </h3>
+                        <div class="mt-2 space-y-4" id="modal-events-list">
+                            {{-- Lista de eventos será injetada aqui --}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button type="button"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    onclick="closeModal('dayDetailsModal')">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
