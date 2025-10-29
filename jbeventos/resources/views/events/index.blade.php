@@ -1,36 +1,36 @@
 <x-app-layout>
-    {{-- INÍCIO: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR (Atualizado para realçar o dia de hoje em vermelho) --}}
+    {{-- INÍCIO: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR --}}
     <style>
-        /* Estilos base dos botões */
+        /* Estilos dos botões do FullCalendar */
         .fc-toolbar-chunk .fc-button {
-            background-color: transparent !important;
-            border-color: #e5e7eb !important; /* Cor da borda suave */
-            color: #1f2937 !important; /* Cor do texto/ícone: Preto Suave */
+            background-color: transparent;
+            border-color: #e5e7eb; /* Cor da borda suave */
+            color: #1f2937; /* Cor do texto/ícone: Preto Suave */
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03); /* Sombra suave */
-            text-transform: capitalize !important; /* Deixa o texto normalizado */
-            font-weight: 500 !important; /* Medium weight */
+            text-transform: capitalize; /* Deixa o texto normalizado */
+            font-weight: 500; /* Medium weight */
             transition: all 0.2s;
         }
 
         /* Hover e Focus dos botões */
         .fc-toolbar-chunk .fc-button:hover,
         .fc-toolbar-chunk .fc-button:focus {
-            background-color: #f3f4f6 !important; /* Fundo leve no hover */
-            border-color: #d1d5db !important;
-            outline: none !important;
+            background-color: #f3f4f6; /* Fundo leve no hover */
+            border-color: #d1d5db;
+            outline: none;
             box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.07);
         }
 
-        /* Botão Ativo (Hoje, Mês/Semana/Dia selecionado) */
+        /* Botão Ativo */
         .fc-toolbar-chunk .fc-button-primary:not(:disabled).fc-button-active {
-            background-color: #1f2937 !important; /* Fundo Preto */
-            color: white !important; /* Texto Branco */
-            border-color: #1f2937 !important;
+            background-color: #1f2937; /* Fundo Preto */
+            color: white; /* Texto Branco */
+            border-color: #1f2937;
         }
 
         /* Titulo do Calendário */
         .fc-toolbar-title {
-            font-size: 1.5rem !important;
+            font-size: 1.5rem;
             color: #1f2937;
             font-weight: 700;
         }
@@ -39,8 +39,8 @@
         .fc-col-header-cell {
             background-color: #f9fafb; /* Fundo cinza bem claro */
             padding: 0.5rem 0;
-            border-top: 1px solid #e5e7eb !important;
-            border-bottom: 2px solid #e5e7eb !important;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 2px solid #e5e7eb;
             font-weight: 600; /* Semibold */
             color: #4b5563; /* Cor mais escura para o texto */
         }
@@ -48,18 +48,46 @@
         /* Células do Corpo do Calendário */
         .fc-daygrid-body,
         .fc-daygrid-day {
-            border-color: #f3f4f6 !important; /* Bordas mais suaves */
+            border-color: #f3f4f6; /* Bordas mais suaves */
+        }
+        
+        /* Células da tabela do calendário (para o layout fixo) */
+        .fc-scrollgrid-sync-table {
+            width: 100% !important; /* Garante que a tabela use 100% do container */
+            table-layout: fixed; /* Ajuda a distribuir o espaço uniformemente */
         }
 
         /* Realçar o dia atual em vermelho suave */
         .fc .fc-daygrid-day.fc-day-today {
-            background-color: #fee2e2 !important; /* Red 100 - Vermelho muito suave */
-            border-left: 3px solid #dc2626 !important; /* Borda esquerda vermelha (Red 600) para ênfase */
+            background-color: #fee2e2; /* Red 100 - Vermelho muito suave */
+            border-left: 3px solid #dc2626; /* Borda esquerda vermelha (Red 600) para ênfase */
+        }
+
+        /* Ocultar dias de outros meses (fallback visual e ajuste fino) */
+        .fc-day-other .fc-daygrid-day-number {
+            opacity: 0; /* Esconde o número do dia */
+            pointer-events: none; /* Impede clique */
+        }
+        /* Ocultar os eventos dos dias de outros meses */
+        .fc-day-other .fc-daygrid-event-harness {
+            opacity: 0;
+            pointer-events: none;
         }
         
         /* Cor dos números dos dias - Mantém o contraste */
         .fc-daygrid-day-number {
             color: #4b5563; /* Cinza escuro */
+        }
+
+        /* Estilo para eventos - Melhorias de legibilidade */
+        .fc-event {
+            border-radius: 0.25rem; /* Bordas arredondadas */
+            padding: 2px 4px;
+            font-size: 0.8rem;
+            white-space: normal;
+        }
+        .fc-event-title {
+            font-weight: 500;
         }
     </style>
     {{-- FIM: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR --}}
@@ -77,7 +105,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
-                    {{-- NOVO: Botão de Alternância de Visualização --}}
+                    {{-- Botão de Alternância de Visualização --}}
                     <div class="inline-flex rounded-full shadow-md bg-white border border-gray-200">
                         <button id="view-list-btn" data-view="list"
                             class="px-4 py-2.5 text-sm font-medium rounded-l-full transition-colors">
@@ -246,8 +274,10 @@
                 </div>
             </div>
 
-            {{-- NOVO: Container do Calendário (Com borda e sombra mais modernas) --}}
-            <div id="calendar-view" class="p-4 bg-white rounded-xl shadow-2xl hidden transition-all duration-300 ease-in-out">
+            {{-- Container do Calendário (Melhoria: Usando flex para garantir que ele se estique se necessário) --}}
+            <div id="calendar-view"
+                class="p-4 bg-white rounded-xl shadow-2xl hidden transition-all duration-300 ease-in-out">
+                {{-- O FullCalendar adiciona a classe .fc que tem a largura definida --}}
                 <div id='full-calendar'></div>
             </div>
 
