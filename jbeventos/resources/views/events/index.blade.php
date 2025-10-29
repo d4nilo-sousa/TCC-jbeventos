@@ -1,4 +1,70 @@
 <x-app-layout>
+    {{-- INÍCIO: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR (Atualizado para realçar o dia de hoje em vermelho) --}}
+    <style>
+        /* Estilos base dos botões */
+        .fc-toolbar-chunk .fc-button {
+            background-color: transparent !important;
+            border-color: #e5e7eb !important; /* Cor da borda suave */
+            color: #1f2937 !important; /* Cor do texto/ícone: Preto Suave */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03); /* Sombra suave */
+            text-transform: capitalize !important; /* Deixa o texto normalizado */
+            font-weight: 500 !important; /* Medium weight */
+            transition: all 0.2s;
+        }
+
+        /* Hover e Focus dos botões */
+        .fc-toolbar-chunk .fc-button:hover,
+        .fc-toolbar-chunk .fc-button:focus {
+            background-color: #f3f4f6 !important; /* Fundo leve no hover */
+            border-color: #d1d5db !important;
+            outline: none !important;
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.07);
+        }
+
+        /* Botão Ativo (Hoje, Mês/Semana/Dia selecionado) */
+        .fc-toolbar-chunk .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #1f2937 !important; /* Fundo Preto */
+            color: white !important; /* Texto Branco */
+            border-color: #1f2937 !important;
+        }
+
+        /* Titulo do Calendário */
+        .fc-toolbar-title {
+            font-size: 1.5rem !important;
+            color: #1f2937;
+            font-weight: 700;
+        }
+
+        /* Cabeçalho da Semana (dom, seg, ter...) */
+        .fc-col-header-cell {
+            background-color: #f9fafb; /* Fundo cinza bem claro */
+            padding: 0.5rem 0;
+            border-top: 1px solid #e5e7eb !important;
+            border-bottom: 2px solid #e5e7eb !important;
+            font-weight: 600; /* Semibold */
+            color: #4b5563; /* Cor mais escura para o texto */
+        }
+
+        /* Células do Corpo do Calendário */
+        .fc-daygrid-body,
+        .fc-daygrid-day {
+            border-color: #f3f4f6 !important; /* Bordas mais suaves */
+        }
+
+        /* Realçar o dia atual em vermelho suave */
+        .fc .fc-daygrid-day.fc-day-today {
+            background-color: #fee2e2 !important; /* Red 100 - Vermelho muito suave */
+            border-left: 3px solid #dc2626 !important; /* Borda esquerda vermelha (Red 600) para ênfase */
+        }
+        
+        /* Cor dos números dos dias - Mantém o contraste */
+        .fc-daygrid-day-number {
+            color: #4b5563; /* Cinza escuro */
+        }
+    </style>
+    {{-- FIM: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR --}}
+
+
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
             <div
@@ -180,8 +246,8 @@
                 </div>
             </div>
 
-            {{-- NOVO: Container do Calendário --}}
-            <div id="calendar-view" class="p-4 bg-white rounded-lg shadow-xl hidden">
+            {{-- NOVO: Container do Calendário (Com borda e sombra mais modernas) --}}
+            <div id="calendar-view" class="p-4 bg-white rounded-xl shadow-2xl hidden transition-all duration-300 ease-in-out">
                 <div id='full-calendar'></div>
             </div>
 
