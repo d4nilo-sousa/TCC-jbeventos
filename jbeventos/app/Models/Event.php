@@ -58,7 +58,14 @@ class Event extends Model
         return $this->hasMany(EventUserReaction::class, 'event_id');
     }
 
-    public function notifiableUsers() {
+    public function likes()
+    {
+        return $this->hasMany(EventUserReaction::class, 'event_id')
+            ->where('reaction_type', 'like');
+    }
+
+    public function notifiableUsers()
+    {
         return $this->belongsToMany(User::class, 'event_user_alerts', 'event_id', 'user_id');
     }
 
@@ -70,11 +77,12 @@ class Event extends Model
     public function images()
     {
         return $this->hasMany(EventImage::class);
-    }    
-    
-    public function saivers(){
+    }
+
+    public function saivers()
+    {
         return $this->belongsToMany(User::class, 'event_user_reaction')
-                ->wherePivot('reaction_type', 'save')
-                ->withTimestamps();
+            ->wherePivot('reaction_type', 'save')
+            ->withTimestamps();
     }
 }

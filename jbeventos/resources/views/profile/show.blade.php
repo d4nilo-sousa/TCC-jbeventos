@@ -9,47 +9,54 @@
 
                     {{-- Coluna PRINCIPAL (Conteúdo das Abas e Formulários) --}}
                     <div class="lg:col-span-2 bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-100">
-
                         <div class="relative">
-                            {{-- Div do banner com id para JS --}}
-                            <div id="userBanner" class="relative h-56 w-full rounded-lg overflow-hidden"
-                                style="
-        background-color: {{ preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner) ? $user->user_banner : 'transparent' }};
-        background-image: {{ !preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner) ? "url('{$user->user_banner_url}')" : 'none' }};
+                            @php
+    $isColor = preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner ?? '');
+    $hasImage = !$isColor && !empty($user->user_banner) && Storage::disk('public')->exists($user->user_banner);
+    $bgColor = $isColor ? $user->user_banner : '#f3f4f6'; // fallback cinza
+    $bgImage = $hasImage ? "url('" . Storage::url($user->user_banner) . "')" : 'none';
+@endphp
+
+<div id="userBanner" class="relative h-56 w-full rounded-lg overflow-hidden"
+     style="
+        background-color: {{ $bgColor }};
+        background-image: {{ $bgImage }};
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
-     ">
-                                {{-- Imagem apenas para acessibilidade --}}
-                                @if (!preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner))
-                                    <img src="{{ $user->user_banner_url }}" alt="Banner do Usuário" class="sr-only">
-                                @endif
-                                {{-- Botões de edição do banner --}}
-                                @if (auth()->id() === $user->id)
-                                    {{-- Upload de Imagem --}}
-                                    <label for="bannerUpload"
-                                        class="absolute top-4 right-4 bg-white/70 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-lg cursor-pointer hover:bg-white transition-colors duration-200 flex items-center space-x-1">
-                                        <i class="ph ph-image text-lg"></i>
-                                        <span>Trocar Imagem</span>
-                                    </label>
-                                    <form id="bannerForm" method="POST" action="{{ route('profile.updateBanner') }}"
-                                        enctype="multipart/form-data" class="hidden">
-                                        @csrf
-                                        <input type="file" name="user_banner" id="bannerUpload">
-                                    </form>
+    ">
 
-                                    {{-- Seletor de Cor --}}
-                                    <form id="bannerColorForm" method="POST"
-                                        action="{{ route('profile.updateBannerColor') }}"
-                                        class="absolute top-4 right-44">
-                                        @csrf
-                                        <label for="bannerColor" class="sr-only">Escolher Cor de Banner</label>
-                                        <input type="color" name="user_banner" id="bannerColor"
-                                            value="{{ preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner) ? $user->user_banner : '#a0a0a0' }}"
-                                            class="cursor-pointer h-10 w-10 p-1 rounded-full border-2 border-white shadow-lg transition-all duration-200 hover:scale-105">
-                                    </form>
-                                @endif
-                            </div>
+    {{-- Imagem apenas para acessibilidade --}}
+    @if($hasImage)
+        <img src="{{ Storage::url($user->user_banner) }}" alt="Banner do Usuário" class="sr-only">
+    @endif
+
+    {{-- Botões de edição do banner --}}
+    @if(auth()->id() === $user->id)
+        {{-- Upload de Imagem --}}
+        <label for="bannerUpload"
+               class="absolute top-4 right-4 bg-white/70 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-lg cursor-pointer hover:bg-white transition-colors duration-200 flex items-center space-x-1">
+            <i class="ph ph-image text-lg"></i>
+            <span>Trocar Imagem</span>
+        </label>
+        <form id="bannerForm" method="POST" action="{{ route('profile.updateBanner') }}"
+              enctype="multipart/form-data" class="hidden">
+            @csrf
+            <input type="file" name="user_banner" id="bannerUpload">
+        </form>
+
+        {{-- Seletor de Cor --}}
+        <form id="bannerColorForm" method="POST" action="{{ route('profile.updateBannerColor') }}"
+              class="absolute top-4 right-44">
+            @csrf
+            <label for="bannerColor" class="sr-only">Escolher Cor de Banner</label>
+            <input type="color" name="user_banner" id="bannerColor"
+                   value="{{ $isColor ? $user->user_banner : '#f3f4f6' }}"
+                   class="cursor-pointer h-10 w-10 p-1 rounded-full border-2 border-white shadow-lg transition-all duration-200 hover:scale-105">
+        </form>
+    @endif
+</div>
+
 
                             {{-- Avatar, Nome e Tipo do Usuário --}}
                             <div class="px-6 -mt-16 flex items-end space-x-6 pb-6 border-b border-gray-200">
@@ -176,11 +183,18 @@
                                         <i class="ph ph-notepad text-lg mr-2"></i>
                                         Biografia
                                     </button>
+                                    <button @click="activeTab = 'participatedEvents'"
+                                        :class="{ 'border-red-500 text-red-600': activeTab === 'participatedEvents', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'participatedEvents' }"
+                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center">
+                                        <i class="ph ph-thumbs-up text-lg mr-2"></i>
+                                        Eventos Interagidos ({{ $participatedEvents->count() }})
+                                    </button>
                                     <button @click="activeTab = 'savedEvents'"
                                         :class="{ 'border-red-500 text-red-600': activeTab === 'savedEvents', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'savedEvents' }"
                                         class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center">
                                         <i class="ph ph-bookmark-simple text-lg mr-2"></i>
-                                        Eventos Salvos (<span id="savedEventsCount">{{ $savedEvents->count() }}</span>)
+                                        Eventos Salvos (<span
+                                            id="savedEventsCount">{{ $savedEvents->count() }}</span>)
                                     </button>
                                     {{-- Aba Meus Eventos --}}
                                     @if ($user->user_type === 'coordinator')
@@ -237,6 +251,75 @@
 
                                         </form>
                                     </div>
+                                </div>
+
+                                {{-- CONTEÚDO DA ABA: Eventos Interagidos --}}
+                                <div x-show="activeTab === 'participatedEvents'">
+                                    <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pb-2 pt-4">
+                                        <i class="ph ph-activity text-xl mr-2 text-yellow-500"></i> Eventos que você
+                                        interagiu
+                                    </h3>
+                                    @if ($participatedEvents->isEmpty())
+                                        <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
+                                            <i class="ph ph-smiley-sad text-4xl text-gray-400"></i>
+                                            <p class="text-gray-500 text-sm mt-2">
+                                                Você ainda não interagiu a nenhum evento interessante.
+                                            </p>
+                                            <a href="{{ route('events.index') }}"
+                                                class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                                <i class="ph ph-arrow-right text-sm mr-1"></i>
+                                                Explore eventos agora!
+                                            </a>
+                                        </div>
+                                        <div
+                                            class="max-h-[800px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            @foreach ($participatedEvents as $event)
+                                                <div
+                                                    class="bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
+
+                                                    {{-- Link do evento --}}
+                                                    <a href="{{ route('events.show', $event) }}" class="block">
+
+                                                        {{-- Imagem / Placeholder --}}
+                                                        <div
+                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                            @if ($event->event_image)
+                                                                <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                                    alt="{{ $event->event_name }}"
+                                                                    class="w-full h-full object-cover">
+                                                            @else
+                                                                <div
+                                                                    class="flex flex-col items-center justify-center w-full h-full text-red-500">
+                                                                    <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                                    <p class="mt-2 text-sm">Sem Imagem de Capa</p>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+
+                                                        {{-- Nome do evento --}}
+                                                        <div class="px-6 pt-6 pb-0">
+                                                            <p
+                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0">
+                                                                {{ $event->event_name }}
+                                                            </p>
+                                                        </div>
+
+                                                        {{-- Linha divisória + Data e hora --}}
+                                                        <div class="px-6 pb-6 mt-0.5">
+                                                            @if ($event->event_scheduled_at)
+                                                                <p
+                                                                    class="flex items-center gap-1 text-gray-500 mt-2 text-sm">
+                                                                    <i
+                                                                        class="ph-fill ph-clock-clockwise text-red-600 text-base"></i>
+                                                                    {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
+                                                                </p>
+                                                            @endif
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
 
                                 {{-- CONTEÚDO DA ABA: Eventos Salvos --}}
@@ -330,11 +413,6 @@
                                                 <i class="ph ph-rocket-launch text-xl mr-2 text-red-500"></i> Eventos
                                                 que você publicou
                                             </h3>
-                                            {{-- Botão Criar Evento --}}
-                                            <a href="{{ route('events.create') }}"
-                                                class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
-                                                <i class="ph ph-plus-circle text-sm mr-1"></i> Criar Evento
-                                            </a>
                                         </div>
 
                                         @if ($createdEvents->isEmpty())
@@ -443,14 +521,32 @@
                                     </div>
                                 </div>
 
-                                {{-- CAMPO: Curso Coordenado (Apenas se for Coordenador e houver um curso) --}}
-                                @if ($user->user_type === 'coordinator' && $user->coordinated_course_name)
+                                {{-- CAMPO: Curso Coordenado, Coordenador Geral ou Administrador --}}
+                                @if ($user->user_type === 'admin')
+                                    <div class="flex items-start">
+                                        <i class="ph ph-shield-star text-lg w-5 text-red-500 mr-3 mt-1"></i>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-900">Administrador do Sistema</p>
+                                            <p class="text-sm font-medium text-gray-700">Responsável pelo Gerenciamento
+                                                do Sistema</p>
+                                        </div>
+                                    </div>
+                                @elseif ($coordinator)
                                     <div class="flex items-start">
                                         <i class="ph ph-chalkboard-teacher text-lg w-5 text-red-500 mr-3 mt-1"></i>
                                         <div class="flex-1">
-                                            <p class="font-semibold text-gray-900">Coordenador do Curso</p>
-                                            <p class="text-sm font-medium text-gray-700">
-                                                {{ $user->coordinated_course_name }}</p>
+                                            @if ($coordinator->coordinator_type === 'general')
+                                                <p class="font-semibold text-gray-900">Coordenador Geral</p>
+                                                <p class="text-sm font-medium text-gray-700">Responsável pelos Eventos
+                                                    Gerais</p>
+                                            @elseif($coordinator->coordinator_type === 'course')
+                                                <p class="font-semibold text-gray-900">Coordenador de Curso</p>
+                                                <p class="text-sm font-medium text-gray-700">
+                                                    {{ $coordinator->coordinatedCourse?->course_name
+                                                        ? 'Responsável pelo Curso: ' . $coordinator->coordinatedCourse->course_name
+                                                        : 'Não é Responsável por Nenhum Curso' }}
+                                                </p>
+                                            @endif
                                         </div>
                                     </div>
                                 @endif

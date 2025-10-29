@@ -13,38 +13,45 @@
             <hr class="w-1/4 mx-auto">
         </div>
 
-        @session('status')
+        @if (session('status'))
             <div class="mb-4 font-medium text-sm text-green-600">
-                {{ $value }}
+                {{ session('status') }}
             </div>
-        @endsession
+        @endif
 
-        <x-validation-errors class="mb-4" />
+        <x-validation-errors class="mb-3 p-3 bg-red-50 rounded-lg shadow-md" />
 
+        {{-- Formulário de envio --}}
+        <form method="POST" action="{{ route('password.email') }}">
+            @csrf
 
-        @csrf
+            <div class="block">
+                <x-label for="email" value="{{ __('Email') }}" />
+                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 font-ubuntu" 
+                         type="email"
+                         name="email" 
+                         :value="old('email')" 
+                         required 
+                         autofocus 
+                         autocomplete="username"
+                         placeholder="Digite seu email" />
+            </div>
 
-        <div class="block">
-            <x-label for="email" value="{{ __('Email') }}" />
-            <x-input id="email" class="block mt-1 w-full placeholder-gray-300 font-ubuntu" type="email"
-                name="email" :value="old('email')" required autofocus autocomplete="off" placeholder="exemplo@gmail.com"
-                required autofocus autocomplete="username" placeholder="Digite seu gmail" />
-        </div>
+            <div class="flex items-center justify-center mt-7">
+                <x-button class="bg-red-600 hover:bg-red-700 w-full h-10">
+                    {{ __('Redefinir senha') }}
+                </x-button>
+            </div>
+        </form>
 
-        <div class="flex items-center justify-center mt-7">
-            <x-button class="bg-red-600 hover:bg-red-700 w-full h-10">
-                {{ __('Redefinir senha') }}
-            </x-button>
-        </div>
         <div class="flex items-center justify-center mt-5 gap-1">
             @if (Route::has('login'))
                 <p class="ml-2 text-sm text-stone-500">Lembrou sua senha? </p>
-                <a class="no-underline text-sm text-blue-500" href="{{ route('login') }}">
+                <a class="underline hover:no-underline text-sm text-gray-500" href="{{ route('login') }}">
                     {{ __('Login') }}
                 </a>
             @endif
         </div>
 
-        </form>
     </x-authentication-card>
 </x-guest-layout>

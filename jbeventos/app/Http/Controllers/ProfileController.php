@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Event;
 use App\Models\EventUserReaction;
 use App\Events\UserIconUpdated;
+use App\Models\Coordinator;
 
 class ProfileController extends Controller
 {
@@ -18,40 +19,49 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        // Carrega os eventos salvos do usuário.
         $savedEvents = $user->savedEvents()->orderBy('event_scheduled_at', 'desc')->get();
-
-        // Inicializa a variável para os eventos criados como uma coleção vazia
         $createdEvents = collect();
+        $participatedEvents = collect();
 
-        // Se o usuário for um coordenador e a relação 'coordinator' não for nula,
-        // carregamos os eventos criados por ele.
-        if ($user->user_type === 'coordinator' && $user->coordinator) {
-            $createdEvents = $user->coordinator->managedEvents()->orderBy('event_scheduled_at', 'desc')->get();
+        $coordinator = Coordinator::where('user_id', $user->id)->first();
+
+        if ($coordinator) {
+            $createdEvents = $coordinator->managedEvents()->orderBy('event_scheduled_at', 'desc')->get();
         }
 
-        // Passa todas as variáveis para a view.
-        return view('profile.show', compact('user', 'savedEvents', 'createdEvents'));
+        $participatedEvents = Event::whereHas('reactions', function ($query) use ($user) {
+            $query->where('user_id', $user->id)
+                ->whereIn('reaction_type', ['like']);
+        })
+            ->orderBy('event_scheduled_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        return view('profile.show', compact('user', 'savedEvents', 'createdEvents', 'participatedEvents', 'coordinator'));
     }
 
     /**
      * Exibe o perfil público de outro usuário.
      */
     public function viewPublicProfile(User $user)
-    {
-        $eventsCreated = collect(); // Inicia uma coleção vazia
+{
+    $eventsCreated = collect(); // Inicia uma coleção vazia
+    $coordinator = null; // Inicializa a variável
 
-        // Busca eventos criados, se for coordenador
-        if ($user->user_type === 'coordinator' && $user->coordinator) {
-            $eventsCreated = $user->coordinator->managedEvents()->orderBy('event_scheduled_at', 'desc')->get();
+    // Busca eventos criados, se for coordenador
+    if ($user->user_type === 'coordinator') {
+        $coordinator = $user->coordinator; // Pega o objeto Coordinator
+        if ($coordinator) {
+            $eventsCreated = $coordinator->managedEvents()->orderBy('event_scheduled_at', 'desc')->get();
         }
-
-        // Busca eventos que o usuário participou (curtiu)
-        $participatedEvents = $this->getParticipatedEvents($user);
-
-        // Passa as variáveis para a view.
-        return view('profile.public', compact('user', 'eventsCreated', 'participatedEvents'));
     }
+
+    // Busca eventos que o usuário participou (curtiu)
+    $participatedEvents = $this->getParticipatedEvents($user);
+
+    // Passa as variáveis para a view.
+    return view('profile.public', compact('user', 'eventsCreated', 'participatedEvents', 'coordinator'));
+}
 
     /**
      * NOVO: Retorna eventos em que o usuário deu "like" ou "confirmou presença" (assumindo que 'like' é uma forma de participação).

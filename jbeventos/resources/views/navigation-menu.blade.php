@@ -298,24 +298,29 @@
                 <div class="flex items-center space-x-3 sm:ms-6">
 
                     {{-- Dropdown de Conversas/Mensagens --}}
-                    <div class="hidden sm:block">
-                        <x-dropdown align="right" width="80">
-                            <x-slot name="trigger">
-                                <button
-                                    class="relative flex items-center size-9 rounded-full justify-center text-gray-700 bg-gray-100 hover:bg-gray-200 transition">
-                                    <i class="ph-fill ph-chat-text text-lg"></i>
-                                    
-                                    {{-- Componente Livewire de Contagem de Mensagens --}}
-                                    @livewire('unread-messages')
-                                    
-                                </button>
-                            </x-slot>
-                            <x-slot name="content">
-                                {{-- Componente Livewire de Listagem de Conversas --}}
-                                @livewire('conversation-list')
-                            </x-slot>
-                        </x-dropdown>
+                    <div class="hidden sm:block" x-data="{ open: false }" @click.away="open = false"
+                        @keydown.escape.window="open = false">
+                        <button @click="open = !open" :class="open ? 'ring-2 ring-red-500 shadow-sm' : ''"
+                            class="relative flex items-center size-9 rounded-full justify-center text-gray-700 bg-gray-100 hover:bg-gray-200 transition">
+                            <i class="ph-fill ph-chat-text text-lg"></i>
+
+                            {{-- Badge de mensagens não lidas --}}
+                            @livewire('unread-messages')
+                        </button>
+
+                        {{-- Conteúdo do dropdown --}}
+                        <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95"
+                            x-transition:enter-end="opacity-100 scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 scale-100"
+                            x-transition:leave-end="opacity-0 scale-95"
+                            class="absolute right-0 mt-2 !w-[600px] min-w-[600px] max-w-[700px] bg-white rounded-2xl border border-gray-200 shadow-2xl p-2 overflow-hidden z-50"
+                            style="transform: translateX(-4rem); transform-origin: top right;">
+                            @livewire('conversation-list')
+                        </div>
                     </div>
+
 
                     <div class="hidden sm:block relative" x-data="profileIconUpdater()" x-init="init()"
                         x-ref="profileDiv">

@@ -176,15 +176,15 @@
                 @forelse ($events as $event)
                     @include('partials.events.event-card', ['event' => $event])
                 @empty
-                    {{-- Mensagem de Vazio/Não Encontrado (Classes de espaçamento ajustadas) --}}
-                    <div id="no-events-message"
+                    {{-- Mensagem inicial quando não houver eventos --}}
+                    <div id="no-initial-events-message"
                         class="col-span-full flex flex-col items-center justify-center gap-6 text-center w-full my-4 p-6">
                         <img src="{{ asset('imgs/notFound.png') }}" class="w-auto h-40 object-contain"
                             alt="not-found">
                         <div>
-                            <p class="text-2xl font-bold text-stone-800">Ops! Nada foi encontrado...</p>
+                            <p class="text-2xl font-bold text-stone-800">Ops! Nenhum evento disponível no momento</p>
                             <p class="text-gray-500 mt-2 text-md max-w-lg mx-auto">
-                                Não encontramos nenhum evento com os termos de busca. Tente refazer a pesquisa!
+                                Fique de olho, novos eventos podem aparecer em breve!
                             </p>
                         </div>
                     </div>

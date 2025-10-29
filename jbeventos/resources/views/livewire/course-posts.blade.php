@@ -3,7 +3,7 @@
     @foreach (['success' => 'green', 'error' => 'red', 'error_edit_image' => 'yellow'] as $type => $color)
         @if (session()->has($type))
             <div
-                class="p-4 bg-{{ $color }}-50 border border-{{ $color }}-300 text-{{ $color }}-700 rounded-xl shadow-sm flex items-center gap-2">
+                class="p-4 bg-{{ $color }}-50 border border-{{ $color }}-300 text-{{ $color }}-700 rounded-xl shadow-sm flex items-center gap-2 mb-4">
                 <i class="ph ph-info text-lg"></i>
                 <span>{{ session($type) }}</span>
             </div>
@@ -12,74 +12,83 @@
 
     {{-- FORM DE NOVO POST --}}
     @if ($isCoordinator)
-    {{-- Removendo o container externo pesado e aplicando um padding mais leve --}}
-    <div class="mb-6 p-4 bg-white rounded-xl shadow-md border border-gray-100">
-        {{-- Título mais sutil, sem a barra divisória e negrito excessivo --}}
-        <h4 class="text-base font-semibold mb-3 text-gray-700">
-            Crie uma nova publicação
-        </h4>
-        <form wire:submit.prevent="createPost" class="space-y-4">
-            {{-- Área de Texto - Mantendo a funcionalidade, mas limpando o estilo --}}
-            <textarea wire:model.defer="newPostContent" rows="3"
-                class="w-full border-gray-200 rounded-lg text-sm p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-400 shadow-sm"
-                placeholder="Publique uma novidade, um lembrete, etc."></textarea>
-            @error('newPostContent') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+        {{-- Removendo o container externo pesado e aplicando um padding mais leve --}}
+        <div class="mb-6 p-4 bg-white rounded-xl shadow-md border border-gray-100">
+            {{-- Título mais sutil, sem a barra divisória e negrito excessivo --}}
+            <h4 class="text-base font-semibold mb-3 text-gray-700">
+                Crie uma nova publicação
+            </h4>
+            <form wire:submit.prevent="createPost" class="space-y-4">
+                {{-- Área de Texto - Mantendo a funcionalidade, mas limpando o estilo --}}
+                <textarea wire:model.defer="newPostContent" rows="3"
+                    class="w-full border-gray-200 rounded-lg text-sm p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-400 shadow-sm"
+                    placeholder="Publique uma novidade, um lembrete, etc."></textarea>
+                @error('newPostContent')
+                    <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                @enderror
 
-            {{-- Seção de upload e preview de imagens - Ajustando o layout e botões --}}
-            <div class="flex items-center justify-between gap-4">
-                {{-- Botão de Upload - Usando o estilo de link/botão secundário --}}
-                <div class="flex items-center gap-2">
-                    <input type="file" wire:model="newlyUploadedImages" multiple accept="image/*"
-                        class="hidden" id="file-upload">
-                    
-                    {{-- Novo estilo para o botão de fotos: Vermelho e mais 'clean' --}}
-                    <label for="file-upload"
-                        class="inline-flex items-center gap-1.5 bg-red-500 text-white px-4 py-2 rounded-full cursor-pointer hover:bg-red-600 transition text-xs font-semibold shadow-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                        Adicionar Fotos (Máx. 5)
-                    </label>
+                {{-- Seção de upload e preview de imagens - Ajustando o layout e botões --}}
+                <div class="flex items-center justify-between gap-4">
+                    {{-- Botão de Upload - Usando o estilo de link/botão secundário --}}
+                    <div class="flex items-center gap-2">
+                        <input type="file" wire:model="newlyUploadedImages" multiple accept="image/*" class="hidden"
+                            id="file-upload">
 
-                    @error('images.*') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        {{-- Novo estilo para o botão de fotos: Vermelho e mais 'clean' --}}
+                        <label for="file-upload"
+                            class="inline-flex items-center gap-1.5 bg-red-500 text-white px-4 py-2 rounded-full cursor-pointer hover:bg-red-600 transition text-xs font-semibold shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            Adicionar Fotos (Máx. 5)
+                        </label>
+
+                        @error('images.*')
+                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    {{-- Botão de Postar - Vermelho, para destaque --}}
+                    <button type="submit"
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition text-sm">
+                        Publicar
+                    </button>
                 </div>
 
-                {{-- Botão de Postar - Vermelho, para destaque --}}
-                <button type="submit"
-                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition text-sm">
-                    Publicar
-                </button>
-            </div>
+                {{-- Preview de Imagens Selecionadas --}}
+                @if (!empty($images))
+                    <div class="flex flex-wrap mt-4 gap-3 border-t border-gray-100 pt-3">
+                        @php
+                            // Mapeia as URLs temporárias das novas imagens para o lightbox
+                            $tempUrls = collect($images)->map(fn($img) => $img->temporaryUrl())->toArray();
+                            $tempUrlsJson = json_encode($tempUrls);
+                        @endphp
+                        @foreach ($images as $index => $image)
+                            <div
+                                class="relative w-20 h-20 border-2 border-red-300 rounded-lg overflow-hidden shadow-sm">
+                                <img src="{{ $image->temporaryUrl() }}" alt="Preview da imagem {{ $index + 1 }}"
+                                    class="object-cover w-full h-full bg-gray-100 cursor-pointer"
+                                    @click="openLightbox({{ $tempUrlsJson }}, {{ $index }})">
+                                {{-- Lightbox inicializa no índice clicado --}}
 
-            {{-- Preview de Imagens Selecionadas --}}
-            @if(!empty($images))
-                <div class="flex flex-wrap mt-4 gap-3 border-t border-gray-100 pt-3">
-                    @php
-                        // Mapeia as URLs temporárias das novas imagens para o lightbox
-                        $tempUrls = collect($images)->map(fn($img) => $img->temporaryUrl())->toArray();
-                        $tempUrlsJson = json_encode($tempUrls);
-                    @endphp
-                    @foreach($images as $index => $image)
-                        <div class="relative w-20 h-20 border-2 border-red-300 rounded-lg overflow-hidden shadow-sm">
-                            <img src="{{ $image->temporaryUrl() }}" alt="Preview da imagem {{ $index + 1 }}" 
-                                class="object-cover w-full h-full bg-gray-100 cursor-pointer"
-                                @click="openLightbox({{ $tempUrlsJson }}, {{ $index }})"> {{-- Lightbox inicializa no índice clicado --}}
-                            
-                            <button type="button" wire:click="removeImage({{ $index }})"
-                                class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-gray-900 text-white rounded-full p-1 shadow-md hover:bg-red-700 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </form>
-    </div>
+                                <button type="button" wire:click="removeImage({{ $index }})"
+                                    class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-gray-900 text-white rounded-full p-1 shadow-md hover:bg-red-700 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                        fill="currentColor">
+                                        <path fill-rule="evenodd"
+                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </form>
+        </div>
     @endif
 
     {{-- LISTAGEM DE POSTS COM SCROLL --}}
@@ -255,40 +264,39 @@
     {{-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO --}}
     {{-- ============================================================ --}}
     @if ($confirmingPostDeletionId)
-    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
-        class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 sm:p-6"
-        aria-modal="true" role="dialog" wire:ignore.self
-        x-on:keydown.escape.window="$wire.confirmingPostDeletionId = null">
+        <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
+            class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 sm:p-6" aria-modal="true"
+            role="dialog" wire:ignore.self x-on:keydown.escape.window="$wire.confirmingPostDeletionId = null">
 
-        <div x-transition
-            class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 space-y-4 transform transition-all border border-gray-100"
-            @click.away="$wire.confirmingPostDeletionId = null">
+            <div x-transition
+                class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 space-y-4 transform transition-all border border-gray-100"
+                @click.away="$wire.confirmingPostDeletionId = null">
 
-            {{-- Cabeçalho --}}
-            <h3 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
-                <i class="ph-bold ph-warning text-2xl"></i>
-                Confirmar Exclusão
-            </h3>
+                {{-- Cabeçalho --}}
+                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
+                    <i class="ph-bold ph-warning text-2xl"></i>
+                    Confirmar Exclusão
+                </h3>
 
-            {{-- Texto --}}
-            <p class="text-gray-700 whitespace-normal break-words text-left">
-                Tem certeza que deseja excluir este post? Essa ação é irreversível.
-            </p>
+                {{-- Texto --}}
+                <p class="text-gray-700 whitespace-normal break-words text-left">
+                    Tem certeza que deseja excluir este post? Essa ação é irreversível.
+                </p>
 
-            {{-- Botões --}}
-            <div class="flex justify-end gap-3 flex-wrap mt-4">
-                <button type="button" wire:click="$set('confirmingPostDeletionId', null)"
-                    class="px-4 py-2 text-sm text-gray-700 font-medium rounded-full bg-gray-200 hover:bg-gray-300 transition">
-                    Cancelar
-                </button>
-                <button type="button" wire:click="deletePost"
-                    class="px-4 py-2 text-sm bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition">
-                    Excluir Post
-                </button>
+                {{-- Botões --}}
+                <div class="flex justify-end gap-3 flex-wrap mt-4">
+                    <button type="button" wire:click="$set('confirmingPostDeletionId', null)"
+                        class="px-4 py-2 text-sm text-gray-700 font-medium rounded-full bg-gray-200 hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="button" wire:click="deletePost"
+                        class="px-4 py-2 text-sm bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition">
+                        Excluir Post
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-@endif
+    @endif
 
 
     {{-- ============================================================ --}}

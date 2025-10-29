@@ -50,8 +50,9 @@
                         </button>
                     </div>
 
-                    <ul id="password-requirements" class="text-sm mt-2 hidden">
-                        <li id="req-length" class="text-red-500">Pelo menos 8 caracteres</li>
+                    <ul id="password-requirements" class="text-sm mt-2 hidden list-disc list-inside">
+                        <li id="req-length" class="text-red-500 flex items-center"><i
+                                class="ph ph-x-circle text-base mr-1"></i>Pelo menos 8 caracteres</li>
                     </ul>
                 </div>
 
@@ -69,8 +70,8 @@
                         </button>
                     </div>
 
-                    <p id="password-mismatch-error" class="text-red-500 text-sm mt-1 hidden">
-                        As senhas são diferentes!
+                    <p id="password-mismatch-error" class="text-red-500 text-sm mt-1 hidden flex items-center">
+                        <i class="ph ph-warning text-lg mr-1"></i> As senhas são diferentes!
                     </p>
                 </div>
             </div>
@@ -113,3 +114,5 @@
 </x-guest-layout>
 
 @vite('resources/js/app.js')
+
+<script src="https://unpkg.com/@phosphor-icons/web"></script>

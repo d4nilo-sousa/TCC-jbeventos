@@ -35,12 +35,23 @@
 
             {{-- Mensagem de Sucesso --}}
             @if (session('success'))
-                <div
-                    class="mb-6 p-4 text-green-700 bg-green-50 rounded-xl shadow-md border border-green-200 flex items-center gap-3">
+                <div id="success-message"
+                    class="mb-6 p-4 text-green-700 bg-green-50 rounded-xl shadow-md border border-green-200 flex items-center gap-3 transition-all duration-500">
                     <i class="ph-fill ph-check-circle text-green-500 text-2xl"></i>
                     <span class="font-medium">{{ session('success') }}</span>
                 </div>
             @endif
+
+            <script>
+                // Faz a mensagem sumir depois de 4 segundos
+                setTimeout(() => {
+                    const msg = document.getElementById('success-message');
+                    if (msg) {
+                        msg.classList.add('opacity-0', 'translate-y-2'); // animação suave
+                        setTimeout(() => msg.remove(), 500); // remove do DOM após sumir
+                    }
+                }, 4000);
+            </script>
 
             {{-- Lista de Cursos --}}
             <div id="coursesList" data-url="{{ route('courses.index') }}"

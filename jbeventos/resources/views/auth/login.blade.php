@@ -27,8 +27,7 @@
             <!-- Email -->
             <div>
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email"
-                    class="block mt-1 w-full placeholder-gray-300 placeholder:text-base text-base"
+                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 placeholder:text-base text-base"
                     type="email" name="email" :value="old('email')" required autofocus autocomplete="off"
                     placeholder="exemplo@gmail.com" />
             </div>
@@ -45,7 +44,8 @@
                     <button type="button"
                         class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 toggle-password"
                         data-target="#password">
-                        <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha" class="w-5 h-5 opacity-75 hover:opacity-100 transition">
+                        <img src="{{ asset('imgs/blind.png') }}" alt="Mostrar senha"
+                            class="w-5 h-5 opacity-75 hover:opacity-100 transition">
                     </button>
                 </div>
             </div>
@@ -61,7 +61,8 @@
 
                 <div class="flex items-center justify-center">
                     @if (Route::has('password.request'))
-                        <a class="hover:underline text-sm text-blue-500" href="{{ route('password.request') }}">
+                        <a class="underline hover:no-underline text-sm text-gray-500"
+                            href="{{ route('password.request') }}">
                             {{ __('Esqueci minha senha') }}
                         </a>
                     @endif

@@ -9,7 +9,14 @@
                 @php
                     $previousUrl = url()->previous();
                     $isFromFeed = str_contains($previousUrl, '/feed');
-                    $isFromProfile = str_contains($previousUrl, '/perfil'); // detecta se veio do perfil
+                    $isFromProfile = str_contains($previousUrl, '/perfil');
+
+                    // Detecta se veio de um curso específico /courses/{id}
+                    $courseId = null;
+                    if (preg_match('/\/courses\/(\d+)$/', $previousUrl, $matches)) {
+                        $courseId = $matches[1];
+                        $course = \App\Models\Course::find($courseId); // pega o curso pelo ID
+                    }
                 @endphp
 
                 @if ($isFromFeed)
@@ -22,12 +29,18 @@
                         class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
                         <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Minha Página de Perfil
                     </a>
+                @elseif ($courseId && $course)
+                    <a href="{{ route('courses.show', $course) }}"
+                        class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                        <i class="ph-fill ph-arrow-left text-lg"></i> Voltar ao Curso: {{ $course->course_name }}
+                    </a>
                 @else
                     <a href="{{ route('events.index') }}"
                         class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
                         <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Lista de Eventos
                     </a>
                 @endif
+
                 <h1 class="text-4xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
                     {{ $event->event_name }}
                 </h1>
@@ -221,7 +234,7 @@
                                         <p class="text-sm font-bold text-gray-500">Promovido por</p>
                                         <p class="text-gray-800 font-semibold">
                                             @if (!$event->eventCoordinator || $event->eventCoordinator->coordinator_type !== $event->event_type)
-                                                <span class="text-gray-500">Coordenador não informado</span>
+                                                <span class="text-gray-500">Nenhum coordenador atribuído</span>
                                             @else
                                                 {{ $event->eventCoordinator?->userAccount?->name ?? 'N/A' }}
                                             @endif

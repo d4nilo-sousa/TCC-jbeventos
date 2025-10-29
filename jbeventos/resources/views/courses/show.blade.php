@@ -10,22 +10,42 @@
                 <i class="ph-fill ph-arrow-left text-xl"></i> Voltar à Lista de Cursos
             </a>
 
+            {{-- ✅ Mensagem de sucesso específica do curso --}}
+            @if (session('success_course'))
+                <div id="success-course-message"
+                    class="p-4 bg-green-50 border border-green-300 text-green-700 rounded-xl shadow-sm flex items-center gap-2 mb-4">
+                    <i class="ph ph-info text-lg"></i>
+                    <span>{{ session('success_course') }}</span>
+                </div>
+
+                <script>
+                    // Faz a mensagem do curso sumir depois de 4 segundos
+                    setTimeout(() => {
+                        const msg = document.getElementById('success-course-message');
+                        if (msg) {
+                            msg.classList.add('opacity-0', 'translate-y-2'); // animação suave
+                            setTimeout(() => msg.remove(), 500); // remove do DOM após sumir
+                        }
+                    }, 4000);
+                </script>
+            @endif
+
+
+
             {{-- Card de Informações (ampliado) --}}
             <div class="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
-                {{-- Banner --}}
                 <div class="relative mb-10">
                     <div class="w-full h-40 bg-gray-200 rounded-xl overflow-hidden group">
-                        <img src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
+                        <img id="courseBannerImg"
+                            src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
                             alt="Banner do Curso" class="object-cover w-full h-full">
 
                         @if (auth()->user()->user_type === 'admin')
-                            <form method="POST" action="{{ route('courses.updateBanner', $course->id) }}"
-                                enctype="multipart/form-data"
-                                class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <form id="bannerForm" enctype="multipart/form-data"
+                                class="absolute top-3 right-3 transition-opacity">
                                 @csrf
                                 @method('PUT')
-                                <input type="file" name="course_banner" id="bannerUpload" class="hidden"
-                                    onchange="this.form.submit()">
+                                <input type="file" name="course_banner" id="bannerUpload" class="hidden">
                                 <button type="button" onclick="document.getElementById('bannerUpload').click()"
                                     class="bg-white/90 backdrop-blur-sm px-3 py-1 text-xs rounded-full shadow hover:bg-gray-100 transition font-medium flex items-center gap-1">
                                     <i class="ph-bold ph-image-square text-sm"></i> Trocar Banner
@@ -37,26 +57,22 @@
                     {{-- Ícone --}}
                     <div class="relative">
                         @if ($course->course_icon)
-                            {{-- Se houver ícone de foto, mostra a imagem --}}
-                            <img src="{{ asset('storage/' . $course->course_icon) }}" alt="Ícone do Curso"
+                            <img id="courseIconImg" src="{{ asset('storage/' . $course->course_icon) }}"
+                                alt="Ícone do Curso"
                                 class="w-28 h-28 rounded-full border-4 border-white absolute -bottom-12 left-6 object-cover shadow-md">
                         @else
-                            {{-- Se NÃO houver ícone, mostra o ícone Phosphor (simulando o mesmo container) --}}
-                            <div
+                            <div id="courseIconImg"
                                 class="w-28 h-28 rounded-full border-4 border-white absolute -bottom-12 left-6 shadow-md
-                    bg-gray-200 flex items-center justify-center">
-                                {{-- Ícone Phosphor. Usando text-5xl para preencher bem o w-28 h-28 --}}
+        bg-gray-200 flex items-center justify-center">
                                 <i class="ph ph-book-open text-5xl text-red-600"></i>
                             </div>
                         @endif
 
                         @if (auth()->user()->user_type === 'admin')
-                            <form method="POST" action="{{ route('courses.updateIcon', $course->id) }}"
-                                enctype="multipart/form-data" class="absolute -bottom-10 left-32">
+                            <form id="iconForm" enctype="multipart/form-data" class="absolute -bottom-10 left-32">
                                 @csrf
                                 @method('PUT')
-                                <input type="file" name="course_icon" id="iconUpload" class="hidden"
-                                    onchange="this.form.submit()">
+                                <input type="file" name="course_icon" id="iconUpload" class="hidden">
                                 <button type="button" onclick="document.getElementById('iconUpload').click()"
                                     class="bg-red-500 text-white text-xs px-2 py-1 rounded-full shadow-md hover:bg-red-600 transition flex items-center gap-1">
                                     <i class="ph-bold ph-pencil-simple text-sm"></i>
@@ -113,7 +129,9 @@
                 </div>
 
                 {{-- Descrição --}}
-                <div x-data="{ isEditing: false, description: '{{ addslashes($course->course_description) }}' }" class="mt-5 border-t border-gray-200 pt-4">
+                <div x-data="{ isEditing: false, description: '{{ addslashes($course->course_description) }}' }" class="mt-5 border-t border-gray-200 pt-4"
+                    @description-updated.window="description = $event.detail; isEditing = false">
+
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-base font-bold text-stone-800">Descrição</h3>
                         @if (auth()->user()->user_type === 'admin')
@@ -124,18 +142,12 @@
                         @endif
                     </div>
 
-                    {{-- MUDANÇA AQUI: Adicionando a classe 'break-words' --}}
-                    <div x-show="!isEditing" class="text-sm text-gray-700 leading-relaxed break-words">
-                        @if ($course->course_description)
-                            {{ $course->course_description }}
-                        @else
-                            <em class="text-gray-400">(Sem descrição no momento)</em>
-                        @endif
+                    <div x-show="!isEditing" class="text-sm text-gray-700 leading-relaxed break-words"
+                        x-text="description || '(Sem descrição no momento)'">
                     </div>
 
                     @if (auth()->user()->user_type === 'admin')
-                        <form x-show="isEditing" action="{{ route('courses.updateDescription', $course->id) }}"
-                            method="POST" @submit.prevent="$el.submit()">
+                        <form x-show="isEditing" id="descriptionForm">
                             @csrf
                             @method('PUT')
                             <textarea x-model="description" name="course_description" rows="4"
@@ -143,13 +155,18 @@
                             <div class="mt-3 flex gap-2 justify-end">
                                 <button type="button"
                                     @click="isEditing = false; description = '{{ addslashes($course->course_description) }}'"
-                                    class="px-3 py-1 text-sm text-gray-700 border border-gray-300 rounded-full hover:bg-gray-100 transition">Cancelar</button>
-                                <button type="submit"
-                                    class="px-3 py-1 text-sm text-white bg-red-600 rounded-full hover:bg-red-700 transition">Salvar</button>
+                                    class="px-3 py-1 text-sm text-gray-700 border border-gray-300 rounded-full hover:bg-gray-100 transition">
+                                    Cancelar
+                                </button>
+                                <button type="button" id="saveDescriptionBtn"
+                                    class="px-3 py-1 text-sm text-white bg-red-600 rounded-full hover:bg-red-700 transition">
+                                    Salvar
+                                </button>
                             </div>
                         </form>
                     @endif
                 </div>
+
 
                 {{-- ========================================================== --}}
                 {{-- CORREÇÃO AQUI: Envolver os botões em um div com separador --}}
@@ -192,12 +209,12 @@
                                     @if ($event->event_image)
                                         <img src="{{ asset('storage/' . $event->event_image) }}"
                                             alt="{{ $event->event_name }}"
-                                            class="object-cover w-36 h-36 rounded-l-xl"> 
+                                            class="object-cover w-36 h-36 rounded-l-xl">
                                     @else
                                         <div
                                             class="flex flex-col items-center justify-center w-36 h-36 bg-gray-100 rounded-l-xl text-red-500">
                                             {{-- w-36 h-36 em vez de w-28 h-28 --}}
-                                            <i class="ph-bold ph-calendar-blank text-4xl"></i> 
+                                            <i class="ph-bold ph-calendar-blank text-4xl"></i>
                                             <p class="mt-1 text-xs text-red-500 text-center leading-tight">
                                                 {{-- text-xs em vez de text-[11px] --}}
                                                 Sem Imagem
@@ -294,13 +311,13 @@
 {{-- Script seguir/deixar de seguir --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // --- SEGUIR / DEIXAR DE SEGUIR ---
         const container = document.querySelector('div[data-course-id]');
         const followersCountSpan = document.getElementById('followersCount');
         const followersPluralSpan = document.getElementById('followersText');
 
         function updatePlural(count) {
             if (!followersPluralSpan) return;
-            // Adiciona "Nenhum seguidor" para o caso de 0
             if (count === 0) {
                 followersPluralSpan.textContent = 'Nenhum seguidor';
             } else {
@@ -308,19 +325,14 @@
             }
         }
 
-        // Função para trocar o botão de Seguir para Seguindo e vice-versa
         function toggleButton(btn, isFollowing) {
-            // Classes comuns a ambos os botões para manter o estilo
             const baseClasses =
                 'mt-3 text-sm font-medium px-5 py-2 rounded-full shadow-md transition flex items-center gap-1';
-
             if (isFollowing) {
-                // Se o usuário está seguindo (o novo estado)
                 btn.id = 'unfollowButton';
                 btn.innerHTML = '<i class="ph-fill ph-heart text-white text-base"></i> Seguindo';
                 btn.className = `${baseClasses} bg-red-600 hover:bg-red-700 text-white`;
             } else {
-                // Se o usuário parou de seguir (o novo estado)
                 btn.id = 'followButton';
                 btn.innerHTML = '<i class="ph-bold ph-heart text-red-600 text-base"></i> Seguir';
                 btn.className = `${baseClasses} bg-gray-100 hover:bg-red-500 hover:text-white text-gray-700`;
@@ -333,34 +345,25 @@
                 if (!button || !button.dataset.courseId) return;
 
                 const courseId = button.dataset.courseId;
-                // 'isFollowAction' é true se o botão clicado for o 'followButton'
                 const isFollowAction = button.id === 'followButton';
 
-                // --- CORREÇÃO APLICADA AQUI ---
-                let url;
-                let method;
-
+                let url, method;
                 if (isFollowAction) {
-                    // Rota: courses/{course}/follow (POST)
                     url = `/courses/${courseId}/follow`;
                     method = 'POST';
                 } else {
-                    // Rota: courses/{course}/unfollow (DELETE)
                     url = `/courses/${courseId}/unfollow`;
-                    method = 'DELETE'; // Define o método DELETE
+                    method = 'DELETE';
                 }
-                // -----------------------------
 
                 button.disabled = true;
                 const original = button.innerHTML;
-
-                // Adicionado classe text-sm para o "Processando" não quebrar o layout
                 button.innerHTML =
                     '<i class="ph-bold ph-circle-notch animate-spin text-sm"></i> Processando';
 
                 try {
                     const res = await fetch(url, {
-                        method: method, // Usa o método dinâmico (POST ou DELETE)
+                        method: method,
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector(
                                 'meta[name="csrf-token"]').content,
@@ -368,41 +371,142 @@
                         }
                     });
 
-                    // Tratar erro HTTP antes de tentar ler o JSON
                     if (!res.ok) {
-                        // Tenta ler o erro do JSON se disponível
                         let errorMessage = 'Erro no servidor.';
                         try {
                             const errorData = await res.json();
                             errorMessage = errorData.message || errorMessage;
-                        } catch (e) {
-                            // Ignora se não conseguir ler JSON
-                        }
+                        } catch {}
                         throw new Error(errorMessage);
                     }
 
                     const data = await res.json();
-
-                    // 1. Atualiza a contagem e o plural
                     followersCountSpan.textContent = data.followers_count;
                     updatePlural(data.followers_count);
-
-                    // 2. Troca o botão. Passamos o novo estado (se a ação foi 'follow', o novo estado é 'seguindo' (true))
                     toggleButton(button, isFollowAction);
 
                 } catch (err) {
                     console.error('Erro:', err);
                     alert('Erro ao processar solicitação: ' + err.message);
-                    button.innerHTML = original; // Reverte o texto do botão em caso de erro
+                    button.innerHTML = original;
                 } finally {
                     button.disabled = false;
                 }
             });
         }
 
-        // Inicializa o texto plural corretamente ao carregar
         if (followersCountSpan) {
             updatePlural(parseInt(followersCountSpan.textContent.trim()));
+        }
+
+        // --- FUNÇÃO GENÉRICA PARA UPLOAD DE IMAGEM ---
+        function setupImageUpload(inputId, formId, imgId, uploadUrl, methodOverride = null) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+
+                // Validação de tipo e tamanho
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                const maxSize = 2 * 1024 * 1024; // 2MB
+
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Formato de imagem inválido! Use JPEG, PNG, GIF ou WEBP.');
+                    this.value = '';
+                    return;
+                }
+
+                if (file.size > maxSize) {
+                    alert('Imagem muito grande! Tamanho máximo de 2MB.');
+                    this.value = '';
+                    return;
+                }
+
+                const form = document.getElementById(formId);
+                const formData = new FormData(form);
+
+                const headers = {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                };
+                if (methodOverride) {
+                    headers['X-HTTP-Method-Override'] = methodOverride;
+                }
+
+                fetch(uploadUrl, {
+                        method: 'POST',
+                        headers: headers,
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const img = document.getElementById(imgId);
+                        if (img) {
+                            const key = imgId.includes('Icon') ? 'icon_url' : 'banner_url';
+                            img.src = data[key] + '?t=' + new Date().getTime();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao atualizar a imagem.');
+                    });
+            });
+        }
+
+        // --- CONFIGURAÇÃO DE UPLOADS ---
+        setupImageUpload('iconUpload', 'iconForm', 'courseIconImg',
+            '{{ route('courses.updateIcon', $course->id) }}');
+        setupImageUpload('bannerUpload', 'bannerForm', 'courseBannerImg',
+            '{{ route('courses.updateBanner', $course->id) }}', 'PUT');
+
+        // --- SALVAR DESCRIÇÃO VIA AJAX ---
+        const saveBtn = document.getElementById('saveDescriptionBtn');
+        const form = document.getElementById('descriptionForm');
+
+        if (saveBtn && form) {
+            saveBtn.addEventListener('click', function() {
+                const url = '{{ route('courses.updateDescription', $course->id) }}';
+                const formData = new FormData(form);
+
+                saveBtn.disabled = true;
+                const originalText = saveBtn.textContent;
+                saveBtn.textContent = 'Salvando...';
+
+                fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .content,
+                            'X-HTTP-Method-Override': 'PUT',
+                            'Accept': 'application/json'
+                        },
+                        body: formData
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error('Erro ao salvar a descrição.');
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // Dispara um evento customizado para Alpine.js atualizar a descrição
+                            form.dispatchEvent(new CustomEvent('description-updated', {
+                                detail: data.course_description,
+                                bubbles: true
+                            }));
+                        } else {
+                            alert(data.message || 'Erro ao salvar a descrição.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert(err.message);
+                    })
+                    .finally(() => {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = originalText;
+                    });
+            });
         }
     });
 </script>

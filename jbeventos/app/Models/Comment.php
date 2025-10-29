@@ -12,7 +12,6 @@ class Comment extends Model
 
     protected $fillable = [
         'comment',
-        'edited_at',
         'parent_id',
         'media_path',
         'user_id',
@@ -20,7 +19,6 @@ class Comment extends Model
     ];
 
     protected $casts = [
-        'edited_at' => 'datetime',
     ];
 
     /*

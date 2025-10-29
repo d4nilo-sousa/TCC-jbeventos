@@ -36,7 +36,7 @@ class EventComments extends Component
     // Regras de validação para o formulário principal
     protected $rules = [
         'commentText' => 'nullable|string|max:1000',
-        'media' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,webp,mp4,pdf'
+        'media' => 'nullable|file|max:2048|mimes:jpg,jpeg,png,webp,mp4,pdf,gif'
     ];
     
     // Regras para o formulário de resposta inline
@@ -197,7 +197,6 @@ class EventComments extends Component
         if ($comment && $comment->user_id === Auth::id()) {
             $comment->update([
                 'comment' => $this->editText,
-                'edited_at' => now(),
             ]);
             $this->lastActionId = $comment->parent_id ?? $comment->id; // Rola para a resposta ou o comentário principal
         }
