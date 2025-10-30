@@ -2,34 +2,38 @@
     <x-validation-errors class="mb-4" />
 
     @php
-        $user = \App\Models\User::where('email', $request->email)->first();
-        $userType = $user?->user_type ?? 'user';
+    $user = \App\Models\User::where('email', $request->email)->first();
+    $userType = $user?->user_type ?? 'user';
     @endphp
 
     <!-- 🔹 Fundo da página -->
     <div class="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style="background-image: url('{{ asset('imgs/etecPhoto.png') }}'); 
-                filter: grayscale(0%) brightness(90%);">
+                filter: grayscale(0%) brightness(50%);">
     </div>
 
-    <!-- 🔹 Conteúdo principal -->
-    <div class="relative flex items-center justify-center h-screen">
+    <!-- 🔹 Conteúdo principal responsivo -->
+    <div class="relative flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
         <div
-            class="w-1/4 py-10 text-gray-800 shadow-xl rounded-xl border-2 border-gray-100 p-14 bg-white bg-opacity-100">
+            class="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-md xl:max-w-lg 2xl:max-w-lg py-10 px-8 sm:px-10 md:px-14 bg-white bg-opacity-100 border-2 border-gray-100 shadow-xl rounded-xl text-gray-800">
+
             <form method="POST" action="{{ route('password.update') }}">
                 @csrf
                 <input type="hidden" name="token" value="{{ $request->route('token') }}">
                 <input type="hidden" name="userType" value="{{ $userType }}">
 
+                <!-- Logo -->
                 <div class="mb-7">
                     <a href="/">
-                        <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[35%] h-auto mx-auto">
+                        <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo"
+                            class="w-1/3 sm:w-1/4 md:w-1/5 lg:w-[35%] h-auto mx-auto">
                     </a>
                 </div>
 
+                <!-- Título -->
                 <div class="text-center mb-5">
-                    <h1 class="text-3xl font-thin text-stone-600 font-ubuntu">Redefinir minha senha</h1>
-                    <p class="mt-2 text-sm text-stone-400">Insira sua nova senha para continuar</p>
+                    <h1 class="text-2xl sm:text-3xl font-thin text-stone-600 font-ubuntu">Redefinir minha senha</h1>
+                    <p class="mt-2 text-xs sm:text-sm text-stone-400">Insira sua nova senha para continuar</p>
                     <hr class="w-1/5 mx-auto">
                 </div>
 
@@ -68,19 +72,20 @@
                 </div>
 
                 <div class="flex items-center justify-center mt-6">
-                    <x-button class="bg-red-600 hover:bg-red-700 w-full h-10">
+                    <x-button class="bg-red-600 hover:bg-red-700 w-full h-10 sm:h-11 md:h-12 text-sm sm:text-base">
                         {{ __('Redefinir') }}
                     </x-button>
                 </div>
 
-                <div class="flex items-center justify-center mt-5 gap-1">
-                    <p class="text-sm text-stone-500">Voltar a tela anterior</p>
+                <div class="flex items-center justify-center mt-5 gap-1 text-center">
+                    <p class="text-xs sm:text-sm text-stone-500">Voltar a tela anterior</p>
                     <a href="{{ route('password.request') }}"
-                        class="underline hover:no-underline text-sm text-gray-500"> {{ __('Voltar') }}</a>
+                        class="underline hover:no-underline text-xs sm:text-sm text-gray-500">Voltar</a>
                 </div>
             </form>
         </div>
     </div>
+
 </x-guest-layout>
 
 @vite('resources/js/app.js')
