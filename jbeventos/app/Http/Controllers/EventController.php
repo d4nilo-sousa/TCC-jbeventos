@@ -555,24 +555,29 @@ class EventController extends Controller
         // 9. NOTIFICAÇÃO
         // =====================
         $changed = $event->getChanges();
-        $importantChanges = array_intersect_key($changed, array_flip(['event_name', 'event_scheduled_at', 'event_location']));
+        // campos considerados 'alterações importantes'
+        $importantChanges = array_intersect_key($changed, array_flip(['event_name', 'event_scheduled_at', 'event_location', 'event_expired_at']));
 
+        // Se houver alterações importantes, notificamos os usuários
         if (!empty($importantChanges)) {
-            $allFollowers = collect();
+            // 1. Coleta os seguidores dos cursos vinculados
+            $courseFollowers = $event->courses
+                ->pluck('followers')
+                ->flatten()
+                ->keyBy('id'); // Usa keyBy para garantir unicidade e facilitar a fusão
 
-            foreach ($event->courses as $course) {
-                if ($course->followers->isNotEmpty()) {
-                    $allFollowers = $allFollowers->merge($course->followers);
-                }
-            }
+            // 2. Coleta os usuários que salvaram o evento
+            //  carregando a relação saivers antes de usar.
+            $event->load('saivers');
+            $eventSavers = $event->saivers->keyBy('id');
 
-            if ($allFollowers->isNotEmpty()) {
-                $uniqueFollowers = $allFollowers->unique('id');
-                Notification::send($uniqueFollowers, new EventUpdatedNotification($event, $importantChanges));
-            }
+            // 3. Combina as duas coleções
+            $allUniqueRecipients = $courseFollowers->merge($eventSavers);
 
-            if ($event->notifiableUsers->isNotEmpty()) {
-                Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $importantChanges));
+            if ($allUniqueRecipients->isNotEmpty()) {
+                // Envia a notificação para todos os usuários únicos
+                // EventUpdatedNotification($event, $importantChanges)
+                Notification::send($allUniqueRecipients, new EventUpdatedNotification($event, $importantChanges));
             }
         }
 
