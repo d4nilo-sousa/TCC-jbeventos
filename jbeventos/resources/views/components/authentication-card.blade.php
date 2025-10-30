@@ -1,6 +1,5 @@
 <div class="min-h-screen flex overflow-hidden">
 
-
     <!-- Lado esquerdo -->
     <div x-data="{ show: false }" x-init="setTimeout(() => show = true, 100)" x-show="show"
         x-transition:enter="transition ease-out duration-700" x-transition:enter-start="opacity-0 -translate-x-10"

@@ -14,7 +14,7 @@
         </div>
 
         @if (session('status'))
-            <div class="mb-4 font-medium text-sm text-green-600">
+            <div class="p-5 bg-green-100 rounded-xl mb-4 font-medium text-sm text-green-600">
                 {{ session('status') }}
             </div>
         @endif
@@ -27,14 +27,14 @@
 
             <div class="block">
                 <x-label for="email" value="{{ __('Email') }}" />
-                <x-input id="email" class="block mt-1 w-full placeholder-gray-300 font-ubuntu" 
+                <x-input id="email" class="block mt-1 w-full placeholder-gray-300" 
                          type="email"
                          name="email" 
                          :value="old('email')" 
                          required 
                          autofocus 
                          autocomplete="username"
-                         placeholder="Digite seu email" />
+                          />
             </div>
 
             <div class="flex items-center justify-center mt-7">
