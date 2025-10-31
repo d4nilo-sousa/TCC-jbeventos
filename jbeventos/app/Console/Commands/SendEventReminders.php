@@ -29,28 +29,40 @@ class SendEventReminders extends Command
      */
     public function handle()
     {
-        // 1. Define a janela de tempo para os lembretes (24h de antecedência)
-        $reminderStart = Carbon::now()->addHours(23)->toDateTimeString(); // De 23h até
-        $reminderEnd = Carbon::now()->addHours(25)->toDateTimeString(); // 25h no futuro
+        // Define as janelas de tempo que queremos verificar (24h e 1h)
+        $reminders = [
+            '24 horas' => 24, // Lembrete de 24 horas (janela de 2h de verificação)
+            '1 hora' => 1,    // Lembrete de 1 hora (janela de 10 min de verificação)
+        ];
 
-        // 2. Encontra eventos que estão para começar dentro dessa janela de 2 horas
-        $events = Event::with('saivers') // Carrega os usuários que salvaram o evento
-            ->whereBetween('event_scheduled_at', [$reminderStart, $reminderEnd])
-            ->get();
+        $notifiedUsers = []; // Para evitar notificação duplicada se o usuário salvar o evento duas vezes
 
-        $this->info("Verificando lembretes para {$events->count()} eventos...");
+        foreach ($reminders as $timeString => $hoursBefore) {
+            
+            // Define o período exato que inicia daqui a X horas (e a janela de verificação)
+            // Ex: para 24h, verifica eventos entre 23:50 e 24:10 de antecedência.
+            $windowStart = Carbon::now()->addHours($hoursBefore)->subMinutes(10)->toDateTimeString();
+            $windowEnd = Carbon::now()->addHours($hoursBefore)->addMinutes(10)->toDateTimeString();
 
-        foreach ($events as $event) {
-            $recipients = $event->saivers; // Pega os usuários que salvaram o evento
+            // Encontra eventos que estão para começar na janela
+            $events = Event::with('saivers') // Usuários que salvaram o evento
+                ->whereBetween('event_scheduled_at', [$windowStart, $windowEnd])
+                ->get();
+            
+            $this->info("Verificando lembretes de {$timeString} para {$events->count()} eventos...");
 
-            if ($recipients->isNotEmpty()) {
-                // 3. Envia a notificação de lembrete
-                // Você deve criar a EventReminderNotification com o canal 'database' (próximo passo)
-                $this->info("Enviando lembrete para {$recipients->count()} usuários para o evento '{$event->event_name}'");
-                
-                // NOTA: O Laravel vai automaticamente colocar isso na fila graças ao 'ShouldQueue'
+            foreach ($events as $event) {
+                $recipients = $event->saivers;
+
                 foreach ($recipients as $user) {
-                     $user->notify(new EventReminderNotification($event));
+                    if (!isset($notifiedUsers[$user->id][$event->id][$timeString])) {
+                        
+                        // 1. Envia a notificação com a string de tempo correta
+                        $user->notify(new EventReminderNotification($event, $timeString));
+                        
+                        // 2. Marca o usuário como notificado para esta janela de tempo/evento
+                        $notifiedUsers[$user->id][$event->id][$timeString] = true;
+                    }
                 }
             }
         }

@@ -5,6 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage; 
 use App\Models\Event;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -24,7 +25,7 @@ class NewEventNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', 'broadcast'];
     }
 
     /**
@@ -40,6 +41,33 @@ class NewEventNotification extends Notification implements ShouldQueue
             ]);
     }
 
+    /**
+     * Obtém a representação da notificação para o canal "broadcast" (WebSockets).
+     * Este é o payload que o Livewire irá escutar.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        // Reutiliza o payload de dados da notificação de banco de dados
+        $data = $this->toArray($notifiable);
+        
+        // Adiciona dados relevantes para a Livewire, como a contagem (que será recalculada
+        // no componente Livewire, mas podemos enviar o mínimo)
+        return new BroadcastMessage([
+            'data' => $data,
+            'unread_count' => $notifiable->unreadNotifications()->count(),
+            'event_id' => $this->event->id,
+        ]);
+    }
+    
+    /**
+     * Define o canal de transmissão (necessário para o Laravel Echo saber onde enviar).
+     * O canal padrão para notificações de usuário é 'users.{id}'.
+     */
+    public function broadcastOn()
+    {
+        return new \Illuminate\Broadcasting\PrivateChannel('users.' . $this->event->coordinator->userAccount->id);
+    }
+    
     /**
      * Obtém a representação da notificação para o canal "database".
      * O conteúdo deste array será armazenado no campo 'data' da tabela 'notifications'.

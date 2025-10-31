@@ -321,6 +321,9 @@
                         </div>
                     </div>
 
+                    {{-- Dropdown de Notificações --}}
+                    @livewire('notification-bell')
+
 
                     <div class="hidden sm:block relative" x-data="profileIconUpdater()" x-init="init()"
                         x-ref="profileDiv">

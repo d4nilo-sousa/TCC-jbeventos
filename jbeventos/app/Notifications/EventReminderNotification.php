@@ -9,50 +9,65 @@ use Illuminate\Notifications\Notification;
 use App\Models\Event;
 use Carbon\Carbon;
 
-class EventReminderNotification extends Notification
+class EventReminderNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected $event;
-    protected $timeBefore; // Ex: '24h' ou '1h'
+    protected $timeBefore; // Ex: '24 horas', '1 hora'
 
-    public function __construct(Event $event, string $timeBefore)
+    public function __construct(Event $event, string $timeBefore = 'em breve')
     {
         $this->event = $event;
         $this->timeBefore = $timeBefore;
     }
 
+    /**
+     * Define os canais de envio.
+     */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
     }
 
+    /**
+     * Constrói o email usando MailMessage.
+     */
     public function toMail(object $notifiable): MailMessage
     {
         $startDate = Carbon::parse($this->event->event_scheduled_at);
-        $diff = Carbon::now()->diffForHumans($startDate, [
+        $diff = Carbon::now()->locale('pt_BR')->diffForHumans($startDate, [
             'parts' => 2,
-            'short' => true,
+            'short' => false,
             'syntax' => Carbon::DIFF_RELATIVE_TO_NOW,
         ]);
 
         return (new MailMessage)
             ->subject('Não se esqueça: ' . $this->event->event_name . ' começa em breve!')
             ->greeting('Olá, ' . $notifiable->name . '!')
-            ->line('Lembrete: o evento que você segue está quase começando!')
+            ->line('🚨 **LEMBRETE**: O evento que você segue está quase começando!')
             ->line('**' . $this->event->event_name . '**')
-            ->line($this->event->event_description)
-            ->line('📅 Data e hora: ' . $startDate->format('d/m/Y H:i'))
-            ->line('⏳ Falta ' . $diff . ' para começar.')
+            ->line('**Local:** ' . $this->event->event_location)
+            ->line('📅 **Data e hora:** ' . $startDate->format('d/m/Y H:i'))
+            ->line('⏳ Faltam ' . $diff . ' para começar.')
             ->action('Ver detalhes do evento', route('events.show', $this->event->id))
             ->line('Esperamos você lá!');
     }
 
+    /**
+     * Obtém a representação da notificação para o canal "database".
+     */
     public function toArray(object $notifiable): array
     {
+        $message = "⏳ O evento **{$this->event->event_name}** começa {$this->timeBefore}! Não se atrase.";
+        
         return [
+            'type' => 'event_reminder', // Identificador da notificação
             'event_id' => $this->event->id,
-            'time_before' => $this->timeBefore,
+            'event_name' => $this->event->event_name,
+            'event_url' => route('events.show', $this->event->id),
+            'message' => $message,
+            'reminder_time' => $this->timeBefore,
         ];
     }
 }
