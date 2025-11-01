@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\BroadcastMessage; 
 use App\Models\Event;
 use Carbon\Carbon;
 
@@ -24,10 +25,11 @@ class EventReminderNotification extends Notification implements ShouldQueue
 
     /**
      * Define os canais de envio.
+     * Adiciona 'broadcast' para o tempo real.
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', 'broadcast']; // Adiciona 'broadcast'
     }
 
     /**
@@ -52,6 +54,22 @@ class EventReminderNotification extends Notification implements ShouldQueue
             ->line('⏳ Faltam ' . $diff . ' para começar.')
             ->action('Ver detalhes do evento', route('events.show', $this->event->id))
             ->line('Esperamos você lá!');
+    }
+    
+    /**
+     * Obtém a representação da notificação para o canal "broadcast" (WebSockets).
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        // Reutiliza o payload de dados do toArray()
+        $data = $this->toArray($notifiable);
+        
+        return new BroadcastMessage([
+            'data' => $data,
+            // Adiciona a contagem de não lidas para que o frontend possa atualizar o sino
+            'unread_count' => $notifiable->unreadNotifications()->count(), 
+            'event_id' => $this->event->id,
+        ]);
     }
 
     /**

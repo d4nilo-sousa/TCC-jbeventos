@@ -59,14 +59,6 @@ class NewEventNotification extends Notification implements ShouldQueue
         ]);
     }
     
-    /**
-     * Define o canal de transmissão (necessário para o Laravel Echo saber onde enviar).
-     * O canal padrão para notificações de usuário é 'users.{id}'.
-     */
-    public function broadcastOn()
-    {
-        return new \Illuminate\Broadcasting\PrivateChannel('users.' . $this->event->coordinator->userAccount->id);
-    }
     
     /**
      * Obtém a representação da notificação para o canal "database".

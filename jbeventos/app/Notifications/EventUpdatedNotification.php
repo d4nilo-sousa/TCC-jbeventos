@@ -5,9 +5,13 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage; 
 use App\Models\Event;
 
-class EventUpdatedNotification extends Notification
+// Adiciona a interface ShouldQueue para que a notificação vá para a fila, o que é necessário para o Broadcast (WebSockets)
+use Illuminate\Contracts\Queue\ShouldQueue; 
+
+class EventUpdatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -26,11 +30,11 @@ class EventUpdatedNotification extends Notification
 
     /**
      * Define os canais (meios) de entrega da notificação.
-     * Iremos usar o 'database' para notificação interna e 'mail' para e-mail.
+     * Adiciona 'broadcast' para o tempo real.
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return ['database', 'mail', 'broadcast']; // Adiciona 'broadcast'
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -42,6 +46,22 @@ class EventUpdatedNotification extends Notification
                 'user'          => $notifiable,
                 'changedFields' => $this->changedFields,
             ]);
+    }
+
+    /**
+     * Obtém a representação da notificação para o canal "broadcast" (WebSockets).
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        // Reutiliza o payload de dados do toArray() para consistência
+        $data = $this->toArray($notifiable);
+        
+        return new BroadcastMessage([
+            'data' => $data,
+            // Adiciona a contagem de não lidas para que o frontend possa atualizar o sino
+            'unread_count' => $notifiable->unreadNotifications()->count(), 
+            'event_id' => $this->event->id,
+        ]);
     }
 
     /**
@@ -62,7 +82,8 @@ class EventUpdatedNotification extends Notification
 
         $changes = [];
         foreach ($this->changedFields as $field => $newValue) {
-            $changes[ $translationMap[$field] ?? $field ] = $newValue;
+            // Garante que o campo existe no translationMap antes de usar
+            $changes[ $translationMap[$field] ?? $field ] = $newValue; 
         }
 
         return [
