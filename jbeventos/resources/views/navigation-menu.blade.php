@@ -322,7 +322,7 @@
                     </div>
 
                     {{-- Dropdown de Notificações --}}
-                    @livewire('notification-bell')
+                    @livewire('notification-bell', [], key('notification-bell-' . Auth::id()))
 
 
                     <div class="hidden sm:block relative" x-data="profileIconUpdater()" x-init="init()"
