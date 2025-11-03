@@ -20,50 +20,50 @@
     {{-- Formulário de Comentário Principal (Novo Comentário - SEMPRE NO TOPO) --}}
 
     <div class="bg-white p-6 rounded-xl border shadow-lg transition-shadow hover:shadow-xl"
-     id="main-comment-form">
+        id="main-comment-form">
 
-    <textarea wire:model.defer="commentText" id="comment-textarea"
-              class="w-full p-4 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors resize-none text-base shadow-inner"
-              placeholder="Escreva um comentário ou anexe um arquivo..."></textarea>
+        <textarea wire:model.defer="commentText" id="comment-textarea"
+            class="w-full p-4 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors resize-none text-base shadow-inner"
+            placeholder="Escreva um comentário ou anexe um arquivo..."></textarea>
 
-    @error('commentText')
-    <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span>
-    @enderror
+        @error('commentText')
+        <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span>
+        @enderror
 
-    <div class="flex items-center gap-3 mt-4">
-        {{-- Campo de upload de mídia --}}
-        <label for="media-upload" class="cursor-pointer">
-            <div
-                class="flex items-center gap-2 text-sm text-gray-600 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors shadow-sm">
-                <i class="ph-fill ph-paperclip text-lg"></i>
-                <span class="truncate max-w-[150px] font-medium">{{ $media ? $media->getClientOriginalName() : 'Adicionar arquivo' }}</span>
-            </div>
-            <input type="file" id="media-upload" wire:model="media" class="hidden">
-        </label>
+        <div class="flex items-center gap-3 mt-4">
+            {{-- Campo de upload de mídia --}}
+            <label for="media-upload" class="cursor-pointer">
+                <div
+                    class="flex items-center gap-2 text-sm text-gray-600 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors shadow-sm">
+                    <i class="ph-fill ph-paperclip text-lg"></i>
+                    <span class="truncate max-w-[150px] font-medium">{{ $media ? $media->getClientOriginalName() : 'Adicionar arquivo' }}</span>
+                </div>
+                <input type="file" id="media-upload" wire:model="media" class="hidden">
+            </label>
 
-        @if ($media)
-            <span class="text-sm text-gray-500 whitespace-nowrap">
-                ({{ number_format($media->getSize() / 1024 / 1024, 2) }} MB)
-            </span>
-            <button wire:click="$set('media', null)"
+            @if ($media)
+                <span class="text-sm text-gray-500 whitespace-nowrap">
+                    ({{ number_format($media->getSize() / 1024 / 1024, 2) }} MB)
+                </span>
+                <button wire:click="$set('media', null)"
                     class="text-red-400 hover:text-red-600 text-xs transition-colors" title="Remover arquivo">
-                <i class="ph-fill ph-x-circle text-lg"></i>
-            </button>
-        @endif
+                    <i class="ph-fill ph-x-circle text-lg"></i>
+                </button>
+            @endif
 
-        <div class="flex-1"></div>
+            <div class="flex-1"></div>
 
-        {{-- Botão de Comentar --}}
-        <button wire:click="addComment"
+            {{-- Botão de Comentar --}}
+            <button wire:click="addComment"
                 class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors shadow-lg"
                 wire:loading.attr="disabled" wire:target="addComment, media">
-            <span wire:loading.remove wire:target="addComment, media">Comentar</span>
-            <span wire:loading wire:target="addComment, media">
-                <i class="ph-fill ph-spinner-gap animate-spin mr-1"></i> Enviando...
-            </span>
-        </button>
+                <span wire:loading.remove wire:target="addComment, media">Comentar</span>
+                <span wire:loading wire:target="addComment, media">
+                    <i class="ph-fill ph-spinner-gap animate-spin mr-1"></i> Enviando...
+                </span>
+            </button>
+        </div>
     </div>
-</div>
 
 
     {{-- Lista de Comentários --}}
@@ -94,7 +94,7 @@
                         <textarea wire:model.defer="editText"
                             class="w-full p-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 transition-colors resize-none text-sm"
                             placeholder="Edite seu comentário...">
-                    </textarea>
+                        </textarea>
 
                         @error('editText')
                             <span class="text-red-500 text-sm mt-1 block">{{ $message }}</span>
@@ -148,29 +148,29 @@
                         <p class="text-gray-700 whitespace-pre-wrap">{{ $comment->comment }}</p>
 
                         @if ($comment->media_path)
-    <div class="mt-3">
-        @php
-            $extension = strtolower(pathinfo($comment->media_path, PATHINFO_EXTENSION));
-        @endphp
+                            <div class="mt-3">
+                                @php
+                                    $extension = strtolower(pathinfo($comment->media_path, PATHINFO_EXTENSION));
+                                @endphp
 
-        @if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif']))
-            <img src="{{ asset('storage/' . $comment->media_path) }}"
-                class="max-w-full sm:max-w-md rounded-lg shadow-md border object-cover"
-                alt="Imagem anexada">
-        @elseif ($extension === 'mp4')
-            <video controls class="max-w-full sm:max-w-md rounded-lg shadow-md border">
-                <source src="{{ asset('storage/' . $comment->media_path) }}" type="video/mp4">
-                Seu navegador não suporta a tag de vídeo.
-            </video>
-        @else
-            <a href="{{ asset('storage/' . $comment->media_path) }}" target="_blank"
-                class="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1 bg-blue-50 p-2 rounded-lg max-w-max transition-colors shadow-sm">
-                <i class="ph-fill ph-file-text text-base"></i> Ver arquivo:
-                {{ pathinfo($comment->media_path, PATHINFO_BASENAME) }}
-            </a>
-        @endif
-    </div>
-@endif
+                                @if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif']))
+                                    <img src="{{ asset('storage/' . $comment->media_path) }}"
+                                        class="max-w-full sm:max-w-md rounded-lg shadow-md border object-cover"
+                                        alt="Imagem anexada">
+                                @elseif ($extension === 'mp4')
+                                    <video controls class="max-w-full sm:max-w-md rounded-lg shadow-md border">
+                                        <source src="{{ asset('storage/' . $comment->media_path) }}" type="video/mp4">
+                                        Seu navegador não suporta a tag de vídeo.
+                                    </video>
+                                @else
+                                    <a href="{{ asset('storage/' . $comment->media_path) }}" target="_blank"
+                                        class="text-blue-600 hover:text-blue-800 underline text-sm flex items-center gap-1 bg-blue-50 p-2 rounded-lg max-w-max transition-colors shadow-sm">
+                                        <i class="ph-fill ph-file-text text-base"></i> Ver arquivo:
+                                        {{ pathinfo($comment->media_path, PATHINFO_BASENAME) }}
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
                         {{-- Botões de Ação do Comentário --}}
                         <div class="flex items-center gap-4 text-sm mt-3 pt-1">
                             {{-- Reações (sempre visíveis) --}}
@@ -305,7 +305,7 @@
                                                 <textarea wire:model.defer="editText"
                                                     class="w-full p-3 border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 transition-colors resize-none text-sm"
                                                     placeholder="Edite sua resposta...">
-                                            </textarea>
+                                                </textarea>
 
                                                 @error('editText')
                                                     <span
@@ -456,34 +456,7 @@
         </div>
     </div>
 
-    <script>
-        <script>
-    document.addEventListener('livewire:load', () => {
-        const scrollToElement = (id) => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                const textarea = element.querySelector('textarea');
-                if (textarea) textarea.focus();
-            }
-        };
-
-        Livewire.on('replyFormOpened', ({ id }) => {
-            scrollToElement(id);
-        });
-
-        Livewire.on('editFormOpened', ({ id }) => {
-            scrollToElement(id);
-        });
-
-        Livewire.on('scrollToComment', ({ id }) => {
-            scrollToElement(id);
-        });
-    });
-</script>
-
-    </script>
-
+    {{-- Script Livewire/Alpine para rolagem e foco --}}
     <script>
         document.addEventListener('livewire:initialized', () => {
             // Função para rolar para o elemento e focar
@@ -503,37 +476,27 @@
             };
 
             // Rola para o formulário de resposta recém-aberto
-            Livewire.on( & #39;replyFormOpened&# 39;, ({
-                id
-            }) = & gt;
-            {
+            Livewire.on('replyFormOpened', ({ id }) => {
                 scrollToElement(id);
             });
 
             // Rola para o formulário de edição recém-aberto
-            Livewire.on( & #39;editFormOpened&# 39;, ({
-                id
-            }) = & gt;
-            {
+            Livewire.on('editFormOpened', ({ id }) => {
                 scrollToElement(id);
             });
 
             // Rola para o comentário recém-adicionado/editado/pai
-            Livewire.on( & #39;scrollToComment&# 39;, ({
-                id
-            }) = & gt;
-            {
-                // Rola para o comentário pai ou para o formulário principal
-                if (id === & #39;main-comment-form&# 39;) {
-                    // Rola para o topo (novo comentário)
+            Livewire.on('scrollToComment', ({ id }) => {
+                // Rola para o topo (novo comentário)
+                if (id === 'main-comment-form') {
                     document.getElementById(id).scrollIntoView({
-                        behavior: & #39;smooth&# 39;,
-                        block: & #39;start&# 39;
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 } else {
                     scrollToElement(id);
                 }
             });
-
         });
     </script>
+</div>
