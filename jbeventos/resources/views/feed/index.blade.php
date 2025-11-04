@@ -200,7 +200,7 @@
                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/990000/ffffff?text=LOGO'">
 
                     <h3 id="modal-title" class="text-2xl font-bold font-ubuntu text-gray-700 mb-4">
-                        Bem-vindo(a) ao feed do JB Eventos!
+                        Bem-vindo(a) ao JB Eventos!
                     </h3>
                     <div class="w-[90%] mx-auto">
                         <p class="text-gray-600 text-lg mb-8 font-thin d-flex ">
