@@ -5,10 +5,22 @@
         {{-- COLUNA ESQUERDA — Informações (Mantida) --}}
         {{-- =============================== --}}
         <div class="xl:w-1/3 lg:w-2/5 space-y-6 xl:sticky xl:top-8 self-start">
-            <a href="{{ route('courses.index') }}"
-                class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
-                <i class="ph-fill ph-arrow-left text-xl"></i> Voltar à Lista de Cursos
-            </a>
+            @php
+                $previousUrl = url()->previous();
+                $isFromExplore = str_contains($previousUrl, '/explore'); // verifica se veio do explore
+            @endphp
+
+            @if ($isFromExplore)
+                <a href="{{ route('explore.index') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar ao Explorar
+                </a>
+            @else
+                <a href="{{ route('courses.index') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar à Lista de Cursos
+                </a>
+            @endif
 
             {{-- ✅ Mensagem de sucesso específica do curso --}}
             @if (session('success_course'))
@@ -308,7 +320,7 @@
     }
 </script>
 
-{{-- Script seguir/deixar de seguir --}}
+{{-- Script seguir/deixar de seguir (mantive igual) --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // --- SEGUIR / DEIXAR DE SEGUIR ---
@@ -509,4 +521,125 @@
             });
         }
     });
+</script>
+
+{{-- CSS para destaque do post --}}
+<style>
+  /* destaque principal */
+  .highlight-post {
+    position: relative;
+    animation: postHighlightFade 2.8s ease-out forwards;
+    z-index: 10;
+    isolation: isolate;
+  }
+
+  /* efeito de brilho + leve zoom e sombra */
+  @keyframes postHighlightFade {
+    0% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      background-color: rgba(254, 226, 226, 0);
+      transform: scale(1.02);
+    }
+    15% {
+      background-color: rgba(254, 226, 226, 0.4);
+      box-shadow: 0 8px 30px -10px rgba(239, 68, 68, 0.25);
+    }
+    40% {
+      background-color: rgba(254, 226, 226, 0.2);
+      transform: scale(1.01);
+    }
+    70% {
+      background-color: rgba(254, 226, 226, 0.1);
+      box-shadow: 0 4px 15px -8px rgba(239, 68, 68, 0.1);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: none;
+      transform: scale(1);
+    }
+  }
+
+  /* borda pulsante */
+  .highlight-post::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    border: 2px solid rgba(239, 68, 68, 0.35);
+    pointer-events: none;
+    animation: borderGlow 2.5s ease-out forwards;
+    z-index: -1;
+  }
+
+  @keyframes borderGlow {
+    0% {
+      opacity: 0;
+      transform: scale(0.96);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    20% {
+      opacity: 1;
+      box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.25);
+    }
+    60% {
+      opacity: 0.8;
+      box-shadow: 0 0 10px 3px rgba(239, 68, 68, 0.15);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1);
+      box-shadow: none;
+    }
+  }
+</style>
+
+<script>
+(function() {
+  const DEBUG = false;
+  function debugLog(...args) { if (DEBUG) console.log('[post-highlight]', ...args); }
+
+  // 🧩 Etapa 1 — impedir scroll automático do hash
+  let savedHash = null;
+  if (window.location.hash) {
+    savedHash = window.location.hash;
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    debugLog('temporarily removed hash to prevent auto-scroll');
+  }
+
+  // 🧭 Após tudo carregar, restaura hash e aplica destaque
+  window.addEventListener('load', () => {
+    if (savedHash) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search + savedHash);
+      setTimeout(() => tryHighlight(savedHash), 600); // espera o layout se estabilizar
+    }
+  });
+
+  function tryHighlight(selector) {
+    const el = document.querySelector(selector);
+    if (!el) {
+      debugLog('element not found for', selector);
+      return;
+    }
+
+    // scroll suave e centralizado
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // animação
+    el.classList.remove('highlight-post');
+    void el.offsetWidth;
+    el.classList.add('highlight-post');
+
+    setTimeout(() => el.classList.remove('highlight-post'), 4000);
+  }
+
+  // Se Livewire atualizar a lista, tenta novamente
+  document.addEventListener('livewire:load', () => {
+    if (savedHash) setTimeout(() => tryHighlight(savedHash), 700);
+    if (window.Livewire && Livewire.hook) {
+      Livewire.hook('message.processed', () => {
+        if (savedHash) tryHighlight(savedHash);
+      });
+    }
+  });
+})();
 </script>

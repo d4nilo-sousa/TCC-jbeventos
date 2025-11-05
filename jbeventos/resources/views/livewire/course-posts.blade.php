@@ -3,90 +3,62 @@
     @foreach (['success' => 'green', 'error' => 'red', 'error_edit_image' => 'yellow'] as $type => $color)
         @if (session()->has($type))
             <div
-                class="p-4 bg-{{ $color }}-50 border border-{{ $color }}-300 text-{{ $color }}-700 rounded-xl shadow-sm flex items-center gap-2 mb-4">
+                class="p-4 bg-{{ $color }}-50 border border-{{ $color }}-300 text-{{ $color }}-700 rounded-xl shadow-sm flex items-center gap-2">
                 <i class="ph ph-info text-lg"></i>
                 <span>{{ session($type) }}</span>
             </div>
         @endif
     @endforeach
 
-    {{-- FORM DE NOVO POST --}}
-    @if ($isCoordinator)
-        {{-- Removendo o container externo pesado e aplicando um padding mais leve --}}
-        <div class="mb-6 p-4 bg-white rounded-xl shadow-md border border-gray-100">
-            {{-- Título mais sutil, sem a barra divisória e negrito excessivo --}}
-            <h4 class="text-base font-semibold mb-3 text-gray-700">
-                Crie uma nova publicação
-            </h4>
-            <form wire:submit.prevent="createPost" class="space-y-4">
-                {{-- Área de Texto - Mantendo a funcionalidade, mas limpando o estilo --}}
-                <textarea wire:model.defer="newPostContent" rows="3"
-                    class="w-full border-gray-200 rounded-lg text-sm p-3 focus:border-red-500 focus:ring-red-500 resize-none placeholder-gray-400 shadow-sm"
-                    placeholder="Publique uma novidade, um lembrete, etc."></textarea>
+    @if (auth()->check() &&
+            optional(auth()->user()->coordinatorRole)->coordinator_type === 'course' &&
+            optional(auth()->user()->coordinatorRole->coordinatedCourse)->id === optional($course)->id)
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Criar Novo Post</h3>
+
+            <form wire:submit.prevent="createPost" enctype="multipart/form-data" class="space-y-4">
+                <textarea wire:model.defer="newPostContent" rows="4"
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 transition"
+                    placeholder="Compartilhe algo com o curso {{ optional($coordinatorCourses->first())->course_name }}..."
+                    wire:keydown.enter.prevent="createPost" wire:keydown.shift.enter>
+            </textarea>
                 @error('newPostContent')
-                    <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                    <span class="text-red-500 text-sm">{{ $message }}</span>
                 @enderror
 
-                {{-- Seção de upload e preview de imagens - Ajustando o layout e botões --}}
-                <div class="flex items-center justify-between gap-4">
-                    {{-- Botão de Upload - Usando o estilo de link/botão secundário --}}
-                    <div class="flex items-center gap-2">
-                        <input type="file" wire:model="newlyUploadedImages" multiple accept="image/*" class="hidden"
-                            id="file-upload">
+                <div class="flex items-center gap-3">
+                    <label for="media-upload" class="cursor-pointer">
+                        <div
+                            class="flex items-center gap-2 text-sm text-gray-600 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors shadow-sm">
+                            <i class="ph-fill ph-paperclip text-lg"></i>
+                            <span
+                                class="truncate max-w-[150px] font-medium">{{ $media ? $media->getClientOriginalName() : 'Adicionar arquivo' }}</span>
+                        </div>
+                        <input type="file" id="media-upload" wire:model="media" class="hidden">
+                    </label>
 
-                        {{-- Novo estilo para o botão de fotos: Vermelho e mais 'clean' --}}
-                        <label for="file-upload"
-                            class="inline-flex items-center gap-1.5 bg-red-500 text-white px-4 py-2 rounded-full cursor-pointer hover:bg-red-600 transition text-xs font-semibold shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                            Adicionar Fotos (Máx. 5)
-                        </label>
-
-                        @error('images.*')
-                            <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
-                        @enderror
-                    </div>
-
-                    {{-- Botão de Postar - Vermelho, para destaque --}}
-                    <button type="submit"
-                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-5 rounded-full shadow-md transition text-sm">
-                        Publicar
-                    </button>
+                    @if ($media)
+                        <span class="text-sm text-gray-500 whitespace-nowrap">
+                            ({{ number_format($media->getSize() / 1024 / 1024, 2) }} MB)
+                        </span>
+                        <button type="button" wire:click="$set('media', null)"
+                            class="text-red-400 hover:text-red-600 text-xs transition-colors" title="Remover arquivo">
+                            <i class="ph-fill ph-x-circle text-lg"></i>
+                        </button>
+                    @endif
+                    @error('media')
+                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                    @enderror
                 </div>
 
-                {{-- Preview de Imagens Selecionadas --}}
-                @if (!empty($images))
-                    <div class="flex flex-wrap mt-4 gap-3 border-t border-gray-100 pt-3">
-                        @php
-                            // Mapeia as URLs temporárias das novas imagens para o lightbox
-                            $tempUrls = collect($images)->map(fn($img) => $img->temporaryUrl())->toArray();
-                            $tempUrlsJson = json_encode($tempUrls);
-                        @endphp
-                        @foreach ($images as $index => $image)
-                            <div
-                                class="relative w-20 h-20 border-2 border-red-300 rounded-lg overflow-hidden shadow-sm">
-                                <img src="{{ $image->temporaryUrl() }}" alt="Preview da imagem {{ $index + 1 }}"
-                                    class="object-cover w-full h-full bg-gray-100 cursor-pointer"
-                                    @click="openLightbox({{ $tempUrlsJson }}, {{ $index }})">
-                                {{-- Lightbox inicializa no índice clicado --}}
-
-                                <button type="button" wire:click="removeImage({{ $index }})"
-                                    class="absolute top-0 right-0 transform translate-x-1 -translate-y-1 bg-gray-900 text-white rounded-full p-1 shadow-md hover:bg-red-700 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
-                                        fill="currentColor">
-                                        <path fill-rule="evenodd"
-                                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                            clip-rule="evenodd" />
-                                    </svg>
-                                </button>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
+                <div class="flex justify-end">
+                    <button type="submit"
+                        class="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition"
+                        wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="createPost">Publicar Post</span>
+                        <span wire:loading wire:target="createPost">Publicando...</span>
+                    </button>
+                </div>
             </form>
         </div>
     @endif
@@ -94,18 +66,19 @@
     {{-- LISTAGEM DE POSTS COM SCROLL --}}
     <div @class([
         'space-y-6',
-        'overflow-y-auto' => true,
-        'max-h-[70vh] min-h-[30vh]' => $isCoordinator,
-        'max-h-[115vh] min-h-[85vh]' => !$isCoordinator,
+        'overflow-y-auto', // ativa o scroll vertical
+        'overflow-x-hidden', // evita scroll horizontal
+        'max-h-[115vh] min-h-[85vh]', // controla altura
     ])>
         @forelse ($posts as $post)
-            <div wire:key="post-{{ $post->id }}"
-                class="feed-card bg-white rounded-2xl shadow-md border border-gray-100 p-5 space-y-4 relative transition hover:shadow-lg hover:border-red-300">
+            <div id="post-{{ $post->id }}" wire:key="post-{{ $post->id }}"
+                class="feed-card bg-white rounded-2xl shadow-md border border-gray-100 p-5 space-y-4 relative transition hover:shadow-lg border-gray-200">
 
                 {{-- SEÇÃO DE EDIÇÃO --}}
                 @if ($editingPostId === $post->id)
                     <form wire:submit.prevent="saveEditPost" class="space-y-4">
                         <h3 class="text-lg font-bold text-red-600">Editando Post</h3>
+
                         <div>
                             <textarea wire:model.defer="editingPostContent" rows="4"
                                 class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-sm p-3"
@@ -114,6 +87,7 @@
                                 <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                             @enderror
                         </div>
+
                         <div class="flex items-center gap-3">
                             <label for="edit-media-upload" class="cursor-pointer">
                                 <div
@@ -147,9 +121,11 @@
                                 </button>
                             @endif
                         </div>
+
                         @error('editingMedia')
                             <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                         @enderror
+
                         <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
                             <button type="button" wire:click="resetEditModal"
                                 class="px-4 py-2 text-sm text-gray-600 font-semibold rounded-full hover:bg-gray-100 transition">
@@ -164,21 +140,18 @@
                         </div>
                     </form>
                 @else
-                    {{-- 2. VISUALIZAÇÃO NORMAL DO POST (EXIBIDO SE NÃO ESTIVER EM EDIÇÃO) --}}
+                    {{-- VISUALIZAÇÃO NORMAL DO POST --}}
                     <div wire:click="openPostModal({{ $post->id }})" class="cursor-pointer">
 
-                        {{-- Botões de Ação (Editar e Excluir) --}}
+                        {{-- Botões de Ação --}}
                         @if (Auth::id() === $post->user_id)
                             <div class="absolute top-4 right-4 flex gap-2 z-10">
-                                {{-- Botão Editar --}}
                                 <button wire:click.stop="startEditPost({{ $post->id }})"
                                     class="text-sm text-blue-600 hover:text-blue-800 transition p-1 bg-white rounded-full shadow-md"
                                     title="Editar Post">
-
                                     <i class="ph ph-pencil-simple text-lg"></i>
                                 </button>
 
-                                {{-- Botão Excluir --}}
                                 <button wire:click.stop="confirmPostDeletion({{ $post->id }})"
                                     class="text-sm text-red-600 hover:text-red-800 transition p-1 bg-white rounded-full shadow-md"
                                     title="Excluir Post">
@@ -201,8 +174,13 @@
 
                                 <p class="text-sm text-gray-500">
                                     {{ $post->created_at->diffForHumans() }} •
-                                    <span
-                                        class="font-medium text-red-600">{{ optional($post->course)->course_name ?? 'Geral' }}</span>
+                                    <span class="font-medium text-red-600">
+                                        @if ($post->author->user_type === 'coordinator' && $post->author->coordinatorRole->coordinator_type === 'general')
+                                            Geral
+                                        @else
+                                            {{ optional($post->course)->course_name ?? 'Geral' }}
+                                        @endif
+                                    </span>
                                 </p>
                             </div>
                         </div>
@@ -211,7 +189,7 @@
                             <p class="text-gray-800 whitespace-pre-wrap leading-relaxed mb-2">{{ $post->content }}</p>
                         </div>
 
-                        {{-- Mídia do Post --}}
+                        {{-- Mídia --}}
                         @if (!empty($post->images) && count($post->images) > 0)
                             @php
                                 $mediaPath = $post->images[0];
@@ -220,24 +198,19 @@
 
                             <div class="mt-3">
                                 @if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']))
-                                    {{-- Exibe Imagem --}}
-                                    <div class="max-w-full rounded-xl shadow-md cursor-pointer group">
-                                        <img src="{{ asset('storage/' . $mediaPath) }}"
-                                            class="w-full h-auto rounded-xl shadow-md border transition duration-300"
-                                            alt="Imagem anexada">
-                                    </div>
+                                    <img src="{{ asset('storage/' . $mediaPath) }}"
+                                        class="w-full h-auto rounded-xl shadow-md border transition duration-300"
+                                        alt="Imagem anexada">
                                 @elseif($extension === 'mp4')
-                                    {{-- Exibe Vídeo --}}
                                     <video controls class="max-w-full rounded-xl shadow-md border">
                                         <source src="{{ asset('storage/' . $mediaPath) }}" type="video/mp4">
                                         Seu navegador não suporta a tag de vídeo.
                                     </video>
                                 @else
-                                    {{-- Exibe Link para Outros Arquivos (PDF, DOC, ZIP, etc.) --}}
                                     <a href="{{ asset('storage/' . $mediaPath) }}" target="_blank"
                                         class="text-blue-600 hover:text-red-600 underline text-sm flex items-center gap-1 bg-gray-50 p-3 rounded-xl max-w-max transition-colors shadow-sm">
-                                        <i class="ph-fill ph-file-text text-base"></i> Ver arquivo:
-                                        **{{ pathinfo($mediaPath, PATHINFO_BASENAME) }}**
+                                        <i class="ph-fill ph-file-text text-base"></i>
+                                        {{ pathinfo($mediaPath, PATHINFO_BASENAME) }}
                                     </a>
                                 @endif
                             </div>
@@ -265,39 +238,32 @@
     {{-- ============================================================ --}}
     @if ($confirmingPostDeletionId)
         <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
-            class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 sm:p-6" aria-modal="true"
-            role="dialog" wire:ignore.self x-on:keydown.escape.window="$wire.confirmingPostDeletionId = null">
+            class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4 sm:p-6"
+            aria-modal="true" role="dialog" wire:ignore.self
+            x-on:keydown.escape.window="$wire.confirmingPostDeletionId = null">
 
             <div x-transition
-                class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 space-y-4 transform transition-all border border-gray-100"
-                @click.away="$wire.confirmingPostDeletionId = null">
+                class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4 transform transition-all border border-gray-100">
 
-                {{-- Cabeçalho --}}
-                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
+                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
                     <i class="ph-bold ph-warning text-2xl"></i>
                     Confirmar Exclusão
                 </h3>
+                <p class="text-gray-700">Tem certeza que deseja excluir este post? Essa ação é irreversível.</p>
 
-                {{-- Texto --}}
-                <p class="text-gray-700 whitespace-normal break-words text-left">
-                    Tem certeza que deseja excluir este post? Essa ação é irreversível.
-                </p>
-
-                {{-- Botões --}}
-                <div class="flex justify-end gap-3 flex-wrap mt-4">
+                <div class="flex justify-end gap-3">
                     <button type="button" wire:click="$set('confirmingPostDeletionId', null)"
-                        class="px-4 py-2 text-sm text-gray-700 font-medium rounded-full bg-gray-200 hover:bg-gray-300 transition">
+                        class="px-4 py-2 text-sm text-gray-600 font-semibold rounded-full hover:bg-gray-100 transition">
                         Cancelar
                     </button>
                     <button type="button" wire:click="deletePost"
-                        class="px-4 py-2 text-sm bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition">
+                        class="px-4 py-2 text-sm bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition">
                         Excluir Post
                     </button>
                 </div>
             </div>
         </div>
     @endif
-
 
     {{-- ============================================================ --}}
     {{-- MODAL DE EXPANSÃO (RESPOSTAS) --}}
@@ -443,27 +409,32 @@
     {{-- ============================================================ --}}
     @if ($confirmingReplyDeletionId)
         <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
-            class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm z-[70] flex items-center justify-center p-4 sm:p-6"
-            aria-modal="true" role="dialog" wire:ignore.self
-            x-on:keydown.escape.window="$wire.confirmingReplyDeletionId = null">
+            class="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4 sm:p-6" aria-modal="true"
+            role="dialog" wire:ignore.self x-on:keydown.escape.window="$wire.confirmingReplyDeletionId = null">
 
             <div x-transition
-                class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 space-y-4 transform transition-all border border-gray-100">
+                class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 space-y-4 transform transition-all border border-gray-100"
+                @click.away="$wire.confirmingReplyDeletionId = null">
 
-                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2">
+                {{-- Cabeçalho --}}
+                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
                     <i class="ph-bold ph-warning text-2xl"></i>
                     Confirmar Exclusão
                 </h3>
-                <p class="text-gray-700">Tem certeza que deseja excluir esta resposta? Essa ação é **irreversível**.
+
+                {{-- Texto --}}
+                <p class="text-gray-700 whitespace-normal break-words text-left">
+                    Tem certeza que deseja excluir esta resposta? Essa ação é irreversível.
                 </p>
 
-                <div class="flex justify-end gap-3">
+                {{-- Botões --}}
+                <div class="flex justify-end gap-3 flex-wrap mt-4">
                     <button type="button" wire:click="$set('confirmingReplyDeletionId', null)"
-                        class="px-4 py-2 text-sm text-gray-600 font-semibold rounded-full hover:bg-gray-100 transition">
+                        class="px-4 py-2 text-sm text-gray-700 font-medium rounded-full bg-gray-200 hover:bg-gray-300 transition">
                         Cancelar
                     </button>
                     <button type="button" wire:click="deleteReply"
-                        class="px-4 py-2 text-sm bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition">
+                        class="px-4 py-2 text-sm bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition">
                         Excluir Resposta
                     </button>
                 </div>

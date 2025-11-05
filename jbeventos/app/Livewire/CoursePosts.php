@@ -48,6 +48,7 @@ class CoursePosts extends Component
     public ?int $editingReplyId = null;
     public $editingReplyContent = '';
     public ?int $confirmingReplyDeletionId = null;
+    public ?Course $course = null;
     // -----------------------------------------------------------
 
     protected function rules()
@@ -405,31 +406,44 @@ class CoursePosts extends Component
     // ==========================================================
 
     #[On('postCreated')]
-    public function render()
-    {
-        $posts = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies'])
-            ->latest()
-            ->get();
+public function render()
+{
+    // 🔹 Filtra posts pelo curso atual (caso a propriedade exista)
+    $query = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies'])
+        ->latest();
 
-        $feedItems = $posts->map(function ($post) {
-            $post->type = 'post';
-            $post->sort_date = $post->created_at;
-            return $post;
-        });
-
-        if ($this->selectedPostId && !$this->expandedPost) {
-            $this->expandedPost = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies.author'])
-                ->findOrFail($this->selectedPostId);
-        }
-
-        // NOVO: Garantir que a propriedade editingReplyContent seja definida se estiver editando
-        if ($this->editingReplyId && empty($this->editingReplyContent)) {
-            $this->startEditReply($this->editingReplyId);
-        }
-
-        return view('livewire.feed-posts', [
-            'feedItems' => $feedItems,
-            'posts' => $posts,
-        ]);
+    if (property_exists($this, 'courseId') && $this->courseId) {
+        $query->where('course_id', $this->courseId);
     }
+
+    $posts = $query->get();
+
+    // 🔹 Adiciona metadados (usado no feed)
+    $feedItems = $posts->map(function ($post) {
+        $post->type = 'post';
+        $post->sort_date = $post->created_at;
+        return $post;
+    });
+
+    // 🔹 Carrega post expandido (quando abre o modal)
+    if ($this->selectedPostId && !$this->expandedPost) {
+        $this->expandedPost = Post::with([
+            'course.courseCoordinator.userAccount',
+            'author',
+            'replies.author'
+        ])->findOrFail($this->selectedPostId);
+    }
+
+    // 🔹 Garante que o campo de edição de resposta esteja preparado
+    if ($this->editingReplyId && empty($this->editingReplyContent)) {
+        $this->startEditReply($this->editingReplyId);
+    }
+
+    // ✅ Agora renderiza a view correta
+    return view('livewire.course-posts', [
+        'feedItems' => $feedItems,
+        'posts' => $posts,
+    ]);
+}
+
 }
