@@ -11,23 +11,21 @@
     @endforeach
 
     {{-- FORM DE NOVO POST --}}
-    @if ($isCoordinator)
+    @if ($isCoordinator && auth()->user()->coordinatorRole->coordinator_type !== 'general')
         <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
             <h3 class="text-xl font-bold text-gray-800 mb-4">Criar Novo Post</h3>
 
             <form wire:submit.prevent="createPost" enctype="multipart/form-data" class="space-y-4">
                 <textarea wire:model.defer="newPostContent" rows="4"
                     class="w-full border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 transition"
-                    placeholder="Compartilhe algo com o curso {{ optional($coordinatorCourses->first())->course_name }}..."
-                    {{-- ADICIONADO: Envia o formulário (chama createPost) ao apertar ENTER --}} wire:keydown.enter.prevent="createPost" {{-- ADICIONADO: Permite a quebra de linha normal ao apertar SHIFT + ENTER --}} wire:keydown.shift.enter>
-    </textarea>
+                    placeholder="Compartilhe algo com seu curso..."
+                    wire:keydown.enter.prevent="createPost" wire:keydown.shift.enter>
+            </textarea>
                 @error('newPostContent')
                     <span class="text-red-500 text-sm">{{ $message }}</span>
                 @enderror
 
                 <div class="flex items-center gap-3">
-
-                    {{-- Campo de upload de mídia --}}
                     <label for="media-upload" class="cursor-pointer">
                         <div
                             class="flex items-center gap-2 text-sm text-gray-600 px-4 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-colors shadow-sm">
@@ -66,11 +64,12 @@
 
     {{-- LISTAGEM DE POSTS COM SCROLL --}}
     <div @class([
-        'space-y-6',
-        'overflow-y-auto' => true,
-        'max-h-[70vh] min-h-[30vh]' => $isCoordinator,
-        'max-h-[115vh] min-h-[85vh]' => !$isCoordinator,
-    ])>
+    'space-y-6',
+    'overflow-y-auto' => true,
+    'overflow-x-hidden', {{-- evita scroll horizontal --}}
+    'max-h-[115vh] min-h-[85vh]' => !$isCoordinator || ($isCoordinator && auth()->user()->coordinatorRole->coordinator_type === 'general'),
+    'max-h-[70vh] min-h-[30vh]' => $isCoordinator && auth()->user()->coordinatorRole->coordinator_type !== 'general',
+])>
         @forelse ($posts as $post)
             <div wire:key="post-{{ $post->id }}"
                 class="feed-card bg-white rounded-2xl shadow-md border border-gray-100 p-5 space-y-4 relative transition hover:shadow-lg border-gray-200">
@@ -162,6 +161,7 @@
 
                         <div class="flex items-start space-x-3 {{ Auth::id() === $post->user_id ? 'pt-6' : '' }}">
                             <img src="{{ $post->author->user_icon_url }}" alt="{{ $post->author->name }}"
+    
                                 class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 hover:border-red-500 transition shadow-sm">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2">
@@ -174,8 +174,13 @@
 
                                 <p class="text-sm text-gray-500">
                                     {{ $post->created_at->diffForHumans() }} •
-                                    <span
-                                        class="font-medium text-red-600">{{ optional($post->course)->course_name ?? 'Geral' }}</span>
+                                    <span class="font-medium text-red-600">
+                                        @if ($post->author->user_type === 'coordinator' && $post->author->coordinatorRole->coordinator_type === 'general')
+                                            Geral
+                                        @else
+                                            {{ optional($post->course)->course_name ?? 'Geral' }}
+                                        @endif
+                                    </span>
                                 </p>
                             </div>
                         </div>
@@ -407,39 +412,38 @@
     {{-- NOVO: MODAL DE CONFIRMAÇÃO DE EXCLUSÃO DE RESPOSTA (FORA DO MODAL DE POST) --}}
     {{-- Este modal deve ser colocado ao lado do Modal de Exclusão de POST original --}}
     {{-- ============================================================ --}}
-   @if ($confirmingReplyDeletionId)
-    <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
-        class="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4 sm:p-6"
-        aria-modal="true" role="dialog" wire:ignore.self
-        x-on:keydown.escape.window="$wire.confirmingReplyDeletionId = null">
+    @if ($confirmingReplyDeletionId)
+        <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.300ms
+            class="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center p-4 sm:p-6" aria-modal="true"
+            role="dialog" wire:ignore.self x-on:keydown.escape.window="$wire.confirmingReplyDeletionId = null">
 
-        <div x-transition
-            class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 space-y-4 transform transition-all border border-gray-100"
-            @click.away="$wire.confirmingReplyDeletionId = null">
+            <div x-transition
+                class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 space-y-4 transform transition-all border border-gray-100"
+                @click.away="$wire.confirmingReplyDeletionId = null">
 
-            {{-- Cabeçalho --}}
-            <h3 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
-                <i class="ph-bold ph-warning text-2xl"></i>
-                Confirmar Exclusão
-            </h3>
+                {{-- Cabeçalho --}}
+                <h3 class="text-xl font-bold text-red-600 flex items-center gap-2 flex-wrap">
+                    <i class="ph-bold ph-warning text-2xl"></i>
+                    Confirmar Exclusão
+                </h3>
 
-            {{-- Texto --}}
-            <p class="text-gray-700 whitespace-normal break-words text-left">
-                Tem certeza que deseja excluir esta resposta? Essa ação é irreversível.
-            </p>
+                {{-- Texto --}}
+                <p class="text-gray-700 whitespace-normal break-words text-left">
+                    Tem certeza que deseja excluir esta resposta? Essa ação é irreversível.
+                </p>
 
-            {{-- Botões --}}
-            <div class="flex justify-end gap-3 flex-wrap mt-4">
-                <button type="button" wire:click="$set('confirmingReplyDeletionId', null)"
-                    class="px-4 py-2 text-sm text-gray-700 font-medium rounded-full bg-gray-200 hover:bg-gray-300 transition">
-                    Cancelar
-                </button>
-                <button type="button" wire:click="deleteReply"
-                    class="px-4 py-2 text-sm bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition">
-                    Excluir Resposta
-                </button>
+                {{-- Botões --}}
+                <div class="flex justify-end gap-3 flex-wrap mt-4">
+                    <button type="button" wire:click="$set('confirmingReplyDeletionId', null)"
+                        class="px-4 py-2 text-sm text-gray-700 font-medium rounded-full bg-gray-200 hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="button" wire:click="deleteReply"
+                        class="px-4 py-2 text-sm bg-red-600 text-white font-medium rounded-full hover:bg-red-700 transition">
+                        Excluir Resposta
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-@endif
+    @endif
 </div>

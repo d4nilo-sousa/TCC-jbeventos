@@ -2,8 +2,23 @@
     {{-- Container Principal --}}
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="{ activeTab: 'biography' }">
+            @php
+                $fromTab = request('fromTab'); // vai receber 'coordinators' se veio da aba coordenadores
+            @endphp
 
+            @if ($fromTab === 'coordinators')
+                <a href="{{ route('explore.index', ['tab' => 'coordinators']) }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar a Aba de Coordenadores
+                </a>
+            @else
+                <a href="{{ route('explore.index') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar ao Explorar
+                </a>
+            @endif
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="{ activeTab: 'biography' }">
                 {{-- Coluna PRINCIPAL (Conteúdo das Abas e Formulários) --}}
                 <div class="lg:col-span-2 bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-100">
 
@@ -35,7 +50,8 @@
 
                             {{-- Imagem apenas para acessibilidade --}}
                             @if ($hasImage)
-                                <img src="{{ Storage::url($user->user_banner) }}" alt="Banner do Usuário" class="sr-only">
+                                <img src="{{ Storage::url($user->user_banner) }}" alt="Banner do Usuário"
+                                    class="sr-only">
                             @endif
 
                         </div>
@@ -45,7 +61,8 @@
                             {{-- Bloco do Avatar --}}
                             <div class="flex flex-col items-center">
                                 <div
-                                    class="relative w-36 h-36 rounded-full border-6 border-white bg-gray-300 shadow-xl">
+                                    class="relative w-36 h-36 rounded-full border-6 border-white shadow-xl 
+    {{ in_array($user->user_icon_default, ['avatar_default_1.svg', 'avatar_default_2.svg']) ? 'bg-gray-200' : 'bg-white' }}">
                                     <img src="{{ $user->user_icon_url }}" alt="Avatar"
                                         class="w-full h-full rounded-full object-cover">
                                 </div>
@@ -132,21 +149,21 @@
                         </div>
 
                         <div class="mt-8">
-    {{-- CONTEÚDO DA ABA: Biografia (apenas leitura) --}}
-    <div x-show="activeTab === 'biography'">
-        <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pb-2">
-            <i class="ph ph-info text-xl mr-2"></i> Sobre o {{ $user->name }}
-        </h3>
+                            {{-- CONTEÚDO DA ABA: Biografia (apenas leitura) --}}
+                            <div x-show="activeTab === 'biography'">
+                                <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pb-2">
+                                    <i class="ph ph-info text-xl mr-2"></i> Sobre o {{ $user->name }}
+                                </h3>
 
-        <div
-            class="cursor-default text-sm leading-none text-gray-700 whitespace-normal break-words 
+                                <div
+                                    class="cursor-default text-sm leading-none text-gray-700 whitespace-normal break-words 
             py-4 px-6 rounded bg-gray-50 hover:bg-gray-100
             transition-colors duration-200 border border-transparent hover:border-red-200 shadow-sm 
             flex items-center justify-center text-center">
-            <span>
-                {{ $user->bio ?: 'Este usuário ainda não escreveu uma biografia.' }}
-            </span>
-        </div>
+                                    <span>
+                                        {{ $user->bio ?: 'Este usuário ainda não escreveu uma biografia.' }}
+                                    </span>
+                                </div>
 
 
 

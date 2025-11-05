@@ -29,7 +29,7 @@
 
                 {{-- Eventos Criados --}}
                 {{-- Gráfico Evolução de Posts e Respostas --}}
-                <div class="p-5 bg-white rounded-2xl shadow-sm border border-gray-200">
+                <div class="p-4 bg-white rounded-xl shadow-sm border border-gray-200 relative transform hover:scale-[1.02] transition-transform duration-200">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -102,7 +102,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-sm font-medium text-gray-600">Comentários em seus Eventos</h3>
+                            <h3 class="text-sm font-medium text-gray-600">Comentários em Seus Eventos</h3>
                             <p class="text-3xl font-bold text-gray-800 mt-1">{{ $comments }}</p>
                         </div>
                     </div>

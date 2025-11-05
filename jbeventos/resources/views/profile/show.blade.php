@@ -11,14 +11,17 @@
                     <div class="lg:col-span-2 bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-100">
                         <div class="relative">
                             @php
-    $isColor = preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner ?? '');
-    $hasImage = !$isColor && !empty($user->user_banner) && Storage::disk('public')->exists($user->user_banner);
-    $bgColor = $isColor ? $user->user_banner : '#f3f4f6'; // fallback cinza
-    $bgImage = $hasImage ? "url('" . Storage::url($user->user_banner) . "')" : 'none';
-@endphp
+                                $isColor = preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner ?? '');
+                                $hasImage =
+                                    !$isColor &&
+                                    !empty($user->user_banner) &&
+                                    Storage::disk('public')->exists($user->user_banner);
+                                $bgColor = $isColor ? $user->user_banner : '#f3f4f6'; // fallback cinza
+                                $bgImage = $hasImage ? "url('" . Storage::url($user->user_banner) . "')" : 'none';
+                            @endphp
 
-<div id="userBanner" class="relative h-56 w-full rounded-lg overflow-hidden"
-     style="
+                            <div id="userBanner" class="relative h-56 w-full rounded-lg overflow-hidden"
+                                style="
         background-color: {{ $bgColor }};
         background-image: {{ $bgImage }};
         background-size: cover;
@@ -26,36 +29,38 @@
         background-repeat: no-repeat;
     ">
 
-    {{-- Imagem apenas para acessibilidade --}}
-    @if($hasImage)
-        <img src="{{ Storage::url($user->user_banner) }}" alt="Banner do Usuário" class="sr-only">
-    @endif
+                                {{-- Imagem apenas para acessibilidade --}}
+                                @if ($hasImage)
+                                    <img src="{{ Storage::url($user->user_banner) }}" alt="Banner do Usuário"
+                                        class="sr-only">
+                                @endif
 
-    {{-- Botões de edição do banner --}}
-    @if(auth()->id() === $user->id)
-        {{-- Upload de Imagem --}}
-        <label for="bannerUpload"
-               class="absolute top-4 right-4 bg-white/70 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-lg cursor-pointer hover:bg-white transition-colors duration-200 flex items-center space-x-1">
-            <i class="ph ph-image text-lg"></i>
-            <span>Trocar Imagem</span>
-        </label>
-        <form id="bannerForm" method="POST" action="{{ route('profile.updateBanner') }}"
-              enctype="multipart/form-data" class="hidden">
-            @csrf
-            <input type="file" name="user_banner" id="bannerUpload">
-        </form>
+                                {{-- Botões de edição do banner --}}
+                                @if (auth()->id() === $user->id)
+                                    {{-- Upload de Imagem --}}
+                                    <label for="bannerUpload"
+                                        class="absolute top-4 right-4 bg-white/70 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-lg cursor-pointer hover:bg-white transition-colors duration-200 flex items-center space-x-1">
+                                        <i class="ph ph-image text-lg"></i>
+                                        <span>Trocar Imagem</span>
+                                    </label>
+                                    <form id="bannerForm" method="POST" action="{{ route('profile.updateBanner') }}"
+                                        enctype="multipart/form-data" class="hidden">
+                                        @csrf
+                                        <input type="file" name="user_banner" id="bannerUpload">
+                                    </form>
 
-        {{-- Seletor de Cor --}}
-        <form id="bannerColorForm" method="POST" action="{{ route('profile.updateBannerColor') }}"
-              class="absolute top-4 right-44">
-            @csrf
-            <label for="bannerColor" class="sr-only">Escolher Cor de Banner</label>
-            <input type="color" name="user_banner" id="bannerColor"
-                   value="{{ $isColor ? $user->user_banner : '#f3f4f6' }}"
-                   class="cursor-pointer h-10 w-10 p-1 rounded-full border-2 border-white shadow-lg transition-all duration-200 hover:scale-105">
-        </form>
-    @endif
-</div>
+                                    {{-- Seletor de Cor --}}
+                                    <form id="bannerColorForm" method="POST"
+                                        action="{{ route('profile.updateBannerColor') }}"
+                                        class="absolute top-4 right-44">
+                                        @csrf
+                                        <label for="bannerColor" class="sr-only">Escolher Cor de Banner</label>
+                                        <input type="color" name="user_banner" id="bannerColor"
+                                            value="{{ $isColor ? $user->user_banner : '#f3f4f6' }}"
+                                            class="cursor-pointer h-10 w-10 p-1 rounded-full border-2 border-white shadow-lg transition-all duration-200 hover:scale-105">
+                                    </form>
+                                @endif
+                            </div>
 
 
                             {{-- Avatar, Nome e Tipo do Usuário --}}
@@ -63,7 +68,8 @@
                                 {{-- Bloco do Avatar e Botões de Edição --}}
                                 <div class="flex flex-col items-center">
                                     <div
-                                        class="relative w-36 h-36 rounded-full border-6 border-white bg-gray-300 shadow-xl">
+                                        class="relative w-36 h-36 rounded-full border-6 border-white shadow-xl 
+    {{ in_array($user->user_icon_default, ['avatar_default_1.svg', 'avatar_default_2.svg']) ? 'bg-gray-200' : 'bg-white' }}">
                                         <img src="{{ $user->user_icon_url }}" alt="Avatar"
                                             class="w-full h-full rounded-full object-cover">
 
@@ -100,8 +106,11 @@
                                                 x-transition:leave-start="transform opacity-100 scale-100"
                                                 x-transition:leave-end="transform opacity-0 scale-95"
                                                 class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-52 origin-top-right bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 p-4 z-10">
+
                                                 <p class="text-xs font-semibold text-gray-700 mb-2 border-b pb-1">
-                                                    Selecione um ícone padrão:</p>
+                                                    Selecione um ícone padrão:
+                                                </p>
+
                                                 <div class="grid grid-cols-4 gap-2">
                                                     @php
                                                         $defaultIcons = [
@@ -120,7 +129,9 @@
                                                             <input type="hidden" name="user_icon_default"
                                                                 value="{{ $icon }}">
                                                             <button type="submit"
-                                                                class="w-full h-full rounded-full border-2 p-1 transition-all duration-150 {{ $user->user_icon_default === $icon ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-200 hover:border-red-300' }}"
+                                                                class="w-full h-full rounded-full border-2 p-1 transition-all duration-150 
+                    {{ in_array($icon, ['avatar_default_1.svg', 'avatar_default_2.svg']) ? 'bg-gray-100' : '' }}
+                    {{ $user->user_icon_default === $icon ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-200 hover:border-red-300' }}"
                                                                 title="Usar {{ $icon }}">
                                                                 <img src="{{ asset('imgs/' . $icon) }}"
                                                                     alt="{{ $icon }}"
@@ -252,13 +263,13 @@
                                         </form>
                                     </div>
                                 </div>
-
                                 {{-- CONTEÚDO DA ABA: Eventos Interagidos --}}
                                 <div x-show="activeTab === 'participatedEvents'">
                                     <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pb-2 pt-4">
                                         <i class="ph ph-activity text-xl mr-2 text-yellow-500"></i> Eventos que você
                                         interagiu
                                     </h3>
+
                                     @if ($participatedEvents->isEmpty())
                                         <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
                                             <i class="ph ph-smiley-sad text-4xl text-gray-400"></i>
@@ -271,16 +282,13 @@
                                                 Explore eventos agora!
                                             </a>
                                         </div>
+                                    @else
                                         <div
                                             class="max-h-[800px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
                                             @foreach ($participatedEvents as $event)
                                                 <div
                                                     class="bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
-
-                                                    {{-- Link do evento --}}
                                                     <a href="{{ route('events.show', $event) }}" class="block">
-
-                                                        {{-- Imagem / Placeholder --}}
                                                         <div
                                                             class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden">
                                                             @if ($event->event_image)
@@ -296,7 +304,6 @@
                                                             @endif
                                                         </div>
 
-                                                        {{-- Nome do evento --}}
                                                         <div class="px-6 pt-6 pb-0">
                                                             <p
                                                                 class="font-bold text-gray-900 line-clamp-2 break-words mb-0">
@@ -304,7 +311,6 @@
                                                             </p>
                                                         </div>
 
-                                                        {{-- Linha divisória + Data e hora --}}
                                                         <div class="px-6 pb-6 mt-0.5">
                                                             @if ($event->event_scheduled_at)
                                                                 <p

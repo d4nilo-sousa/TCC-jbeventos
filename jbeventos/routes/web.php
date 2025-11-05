@@ -151,6 +151,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
     //Rota para a tela de exploração
     Route::get('/explore', [ExploreController::class, 'index'])->name('explore.index');
+    Route::get('/explore/coordinators', [ExploreController::class, 'coordinators'])->name('explore.coordinators');
 
 
     /*
