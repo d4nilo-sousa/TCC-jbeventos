@@ -1,16 +1,23 @@
 <x-app-layout>
     {{-- Mensagem de boas-vindas --}}
-    <div class="py-10 bg-gray-50 min-h-screen">
-        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
-            {{-- A classe 'shadow' foi trocada por 'shadow-md' e 'rounded-2xl' por 'rounded-xl' para combinar melhor com o feed --}}
-            <div class="p-5 bg-white rounded-xl shadow-md flex justify-between items-center border border-red-200">
-                <div>
-                    <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $name }}!</h2>
-                    <p class="text-gray-600 mt-1">{{ $message }}</p>
-                </div>
+<div class="py-10 bg-gray-50 min-h-screen">
+    <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
+        {{-- Card de Saudação com layout Flexbox e BG suave para destacar --}}
+        <div class="p-6 bg-red-50 rounded-xl shadow-lg flex items-center justify-between border border-red-300 overflow-hidden">
+            <div class="max-w-xl pr-4">
 
-                {{-- Botão direto para exportação --}}
-                <form method="POST" action="{{ route('admin.dashboard.export.pdf') }}" id="exportForm">
+                {{-- Título --}}
+                <h2 class="text-3xl font-extrabold text-red-800 mb-2 leading-snug">
+                    Bem-vindo(a) de volta, {{ $name }}! 
+                </h2>
+
+                {{-- Descrição do dashboard --}}
+                <p class="text-red-700 mt-1 text-base">
+                    Este é o seu Painel de Controle de Administrador . Aqui, você acompanha o desempenho geral do sistema e monitora as principais métricas de interações e eventos.
+                </p>
+
+                {{-- Botão para exportação --}}
+                <form method="POST" action="{{ route('admin.dashboard.export.pdf') }}" id="exportForm" class="mt-4">
                     @csrf
                     {{-- CAMPOS OCULTOS PARA AS IMAGENS DOS GRÁFICOS --}}
                     <input type="hidden" name="interactionsChartImage" id="interactionsChartImage">
@@ -18,18 +25,25 @@
                     <input type="hidden" name="coursesChartImage" id="coursesChartImage">
 
                     <button type="submit" id="pdfSubmitButton"
-                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-xs text-white uppercase tracking-widest focus:outline-none focus:border-red-700 focus:ring focus:ring-red-300 disabled:opacity-25 transition">
+                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-sm font-medium text-white uppercase tracking-widest transition shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50">
 
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
-                        Exportar Relatório
+                        Exportar Relatório em PDF
                     </button>
                 </form>
             </div>
+
+            {{-- Imagem de Ilustração para o Dashboard --}}
+            <div class="hidden md:block flex-shrink-0">
+                <img src="{{ asset('imgs/admin-dashboard.png') }}" alt="Ilustração de Dashboard e Análise de Dados" 
+                    class="h-40 w-auto object-contain" /> 
+            </div>
         </div>
+    </div>
 
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6 pt-6">
 
