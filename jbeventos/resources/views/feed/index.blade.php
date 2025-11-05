@@ -44,12 +44,42 @@
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
-            <div class="bg-white shadow rounded-xl p-4 sm:p-6 border border-red-200">
-                <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
-                <p class="text-gray-600">
-                    Fique por dentro dos eventos e posts disponíveis no sistema.
-                </p>
+           {{-- BANNER DE BOAS-VINDAS --}}
+            <div
+                class="bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-red-100 flex flex-col md:flex-row items-center justify-between overflow-hidden">
+                
+                <div class="md:w-3/5 lg:w-3/4 order-2 md:order-1 text-center md:text-left">
+                    {{-- Subtítulo --}}
+                    <span class="text-sm font-semibold text-black-600 uppercase tracking-wider block mb-4">
+                        <i class="ph ph-hand-waving mr-1"></i> SEJA BEM-VINDO(A)
+                    </span>
+                    
+                    {{-- Título Principal --}}
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
+                        <span class="text-red-600">{{ $user->name }}</span>!
+                    </h1>
+                    
+                    {{-- Descrição --}}
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Role pra baixo e fique por dentro de todos os eventos e posts do sistema em um só lugar!
+                    </p>
+                    
+                    {{-- chamada para a ação de rolagem --}}
+                    <a href="#eventos-posts-anchor" 
+                       class="mt-4 inline-flex items-center text-red-600 hover:text-red-700 font-medium transition duration-150">
+                        Começar a Explorar <i class="ph ph-arrow-circle-down ml-2 text-xl"></i>
+                    </a>
+                </div>
+
+                {{-- Imagem do Banner --}}
+                <div class="md:w-2/5 lg:w-1/4 order-1 md:order-2 mb-6 md:mb-0">
+                    <img class="w-full h-auto max-w-[200px] mx-auto transform hover:scale-105 transition duration-300"
+                        src="{{ asset('imgs/welcome.png') }}" 
+                        alt="Ilustração de organização de eventos e feed de notícias" 
+                        loading="lazy">
+                </div>
             </div>
+            {{-- FIM DO BANNER DE BOAS-VINDAS --}}
 
             {{-- BOTÃO DE BOAS-VINDAS (PARA A SEGUNDA VISITA) --}}
             @if (isset($showWelcomeButton) && $showWelcomeButton)
@@ -69,7 +99,7 @@
 
             @if ($events->isNotEmpty() || true)
                 {{-- LAYOUT PRINCIPAL DE DUAS COLUNAS --}}
-                <div class="grid grid-cols-1 lg:grid-cols-[64%_36%] gap-8">
+                <div id="eventos-posts-anchor" class="grid grid-cols-1 lg:grid-cols-[64%_36%] gap-8">
 
                     <div class="space-y-6">
                         <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2 flex items-center">
