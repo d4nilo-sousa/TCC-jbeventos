@@ -34,9 +34,9 @@
             </div>
 
             <!-- Campo de senha e confirmar senha -->
-            <div class="flex items-center gap-3 mt-4 mb-6">
+            <div class="mt-4 mb-6 space-y-4">
                 <!-- Campo de Senha com botão olho -->
-                <div class="">
+                <div class="w-full">
                     <x-label for="password" value="{{ __('Senha') }}" />
                     <div class="relative">
                         <x-input id="password" class="block mt-1 w-full pr-10" type="password" name="password" required
@@ -57,7 +57,7 @@
                 </div>
 
                 <!-- Campo de Confirmação com botão olho -->
-                <div class="">
+                <div class="w-full">
                     <x-label for="password_confirmation" value="{{ __('Confirmar Senha') }}" />
                     <div class="relative">
                         <x-input id="password_confirmation" class="block mt-1 w-full pr-10" type="password"
