@@ -8,8 +8,10 @@
     <!-- Exemplo com a fonte Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 
+    <title>JBeventos</title>
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <!-- Favicon do site-->
+    <link rel="shortcut icon" href="{{ asset('imgs/favicon-JB.ico') }}" type="image/x-icon">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

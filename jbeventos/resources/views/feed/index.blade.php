@@ -22,18 +22,74 @@
                 max-width: none;
                 /* Remove limite fixo */
             }
+
+            /* Estilo para o botão flutuante de boas-vindas */
+            .welcome-float-button {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 40;
+                /* Abaixo do modal, mas acima de outros elementos */
+                cursor: pointer;
+                transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            }
+
+            .welcome-float-button:hover {
+                transform: translateY(-2px) scale(1.02);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
         </style>
     @endpush
 
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
-            <div class="bg-white shadow rounded-xl p-4 sm:p-6 border border-red-200">
-                <h1 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $user->name }}!</h1>
-                <p class="text-gray-600">
-                    Fique por dentro dos eventos e posts disponíveis no sistema.
-                </p>
+           {{-- BANNER DE BOAS-VINDAS --}}
+            <div
+                class="bg-white shadow-xl rounded-2xl p-6 sm:p-8 border border-red-100 flex flex-col md:flex-row items-center justify-between overflow-hidden">
+                
+                <div class="md:w-3/5 lg:w-3/4 order-2 md:order-1 text-center md:text-left">
+                    {{-- Subtítulo --}}
+                    <span class="text-sm font-semibold text-black-600 uppercase tracking-wider block mb-4">
+                        <i class="ph ph-hand-waving mr-1"></i> SEJA BEM-VINDO(A)
+                    </span>
+                    
+                    {{-- Título Principal --}}
+                    <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">
+                        <span class="text-red-600">{{ $user->name }}</span>!
+                    </h1>
+                    
+                    {{-- Descrição --}}
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Role pra baixo e fique por dentro de todos os eventos e posts do sistema em um só lugar!
+                    </p>
+                    
+                    {{-- chamada para a ação de rolagem --}}
+                    <a href="#eventos-posts-anchor" 
+                       class="mt-4 inline-flex items-center text-red-600 hover:text-red-700 font-medium transition duration-150">
+                        Começar a Explorar <i class="ph ph-arrow-circle-down ml-2 text-xl"></i>
+                    </a>
+                </div>
+
+                {{-- Imagem do Banner --}}
+                <div class="md:w-2/5 lg:w-1/4 order-1 md:order-2 mb-6 md:mb-0">
+                    <img class="w-full h-auto max-w-[200px] mx-auto transform hover:scale-105 transition duration-300"
+                        src="{{ asset('imgs/welcome.png') }}" 
+                        alt="Ilustração de organização de eventos e feed de notícias" 
+                        loading="lazy">
+                </div>
             </div>
+            {{-- FIM DO BANNER DE BOAS-VINDAS --}}
+
+            {{-- BOTÃO DE BOAS-VINDAS (PARA A SEGUNDA VISITA) --}}
+            @if (isset($showWelcomeButton) && $showWelcomeButton)
+                <button onclick="openWelcomeModal()"
+                    class="welcome-float-button bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-full shadow-lg flex items-center">
+                    <i class="ph-bold ph-hands-clapping text-xl mr-2"></i>
+                    Ver Boas-Vindas
+                </button>
+            @endif
+            {{-- FIM DO BOTÃO --}}
 
             {{-- FILTRAGEM E SEPARAÇÃO DE EVENTOS E POSTS --}}
             @php
@@ -43,7 +99,7 @@
 
             @if ($events->isNotEmpty() || true)
                 {{-- LAYOUT PRINCIPAL DE DUAS COLUNAS --}}
-                <div class="grid grid-cols-1 lg:grid-cols-[64%_36%] gap-8">
+                <div id="eventos-posts-anchor" class="grid grid-cols-1 lg:grid-cols-[64%_36%] gap-8">
 
                     <div class="space-y-6">
                         <h2 class="text-2xl font-bold text-gray-800 border-b border-red-200 pb-2 flex items-center">
@@ -62,7 +118,6 @@
                                 <div id="event-{{ $item->id }}"
                                     class="feed-card w-full sm:w-[95%] bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-gray-200 flex flex-col">
 
-                                    <!-- IMAGEM DO EVENTO -->
                                     <a href="{{ route('events.show', $item) }}" class="block">
                                         <div class="relative w-full aspect-video bg-gray-200">
                                             @if ($item->event_image)
@@ -83,7 +138,6 @@
                                         </div>
                                     </a>
 
-                                    <!-- CONTEÚDO -->
                                     <div class="p-6 flex flex-col gap-2">
                                         <div class="flex items-center mb-1 text-sm text-gray-500">
                                             <i class="ph-fill ph-graduation-cap mr-2 text-red-500"></i>
@@ -160,9 +214,11 @@
     </div>
 
 
-    @if (isset($isFirstLogin) && $isFirstLogin)
+    {{-- MODAL DE BOAS-VINDAS --}}
+    @if ((isset($showWelcomeModal) && $showWelcomeModal) || (isset($showWelcomeButton) && $showWelcomeButton))
         <div id="welcome-modal"
-            class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center transition-opacity duration-300 ease-out opacity-0 pointer-events-none">
+            class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center transition-opacity duration-300 ease-out 
+            opacity-0 pointer-events-none">
             <div id="welcome-modal-content"
                 class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 m-4 transform transition duration-300 ease-out scale-95"
                 role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -174,19 +230,25 @@
                         onerror="this.onerror=null;this.src='https://placehold.co/64x64/990000/ffffff?text=LOGO'">
 
                     <h3 id="modal-title" class="text-2xl font-bold font-ubuntu text-gray-700 mb-4">
-                        Bem-vindo(a) ao feed do JB Eventos!
+                        Bem-vindo(a) ao JB Eventos!
                     </h3>
-                    <div class="w-[90%] mx-auto"> 
+                    <div class="w-[90%] mx-auto">
                         <p class="text-gray-600 text-lg mb-8 font-thin d-flex ">
                             Fique por dentro dos principais acontecimentos da nossa escola!
                             Encontre eventos, notícias e publicações em um só lugar
                         </p>
                     </div>
-                    
+
 
                     <button onclick="closeWelcomeModal()"
-                        class="w-full inline-flex justify-center rounded-lg border border-transparent text-lg font-thin shadow-md px-6 py-3 bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg">
+                        class="w-full inline-flex justify-center rounded-lg border border-transparent text-lg font-thin shadow-md px-6 py-3 bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-lg mb-3">
                         Explorar o Feed!
+                    </button>
+                    
+                    {{-- BOTÃO DE DESATIVAÇÃO PERMANENTE --}}
+                    <button onclick="disableWelcomeModal()"
+                        class="w-full inline-flex justify-center rounded-lg border border-gray-300 text-base font-normal shadow-sm px-6 py-2 bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-150 sm:text-base">
+                        Não mostrar novamente
                     </button>
                 </div>
             </div>
@@ -194,25 +256,23 @@
     @endif
 
     <script>
-        // Função unificada para fechar o modal com transição suave
+        // Variável JS para saber se deve abrir o modal automaticamente (1ª visita)
+        const shouldShowModalAutomatically = {{ (isset($showWelcomeModal) && $showWelcomeModal) ? 'true' : 'false' }};
+
+        // Função para fechar o modal com transição suave
         function closeWelcomeModal() {
             const modal = document.getElementById('welcome-modal');
             if (modal) {
-                // Inicia a animação de saída: opacidade para 0 e escala para 95%
+                // Inicia a animação de saída
                 modal.classList.remove('opacity-100', 'pointer-events-auto');
                 modal.classList.add('opacity-0');
                 document.getElementById('welcome-modal-content').classList.remove('scale-100');
                 document.getElementById('welcome-modal-content').classList.add('scale-95');
                 document.body.style.overflow = ''; // Habilita o scroll do body
-
-                // Remove o modal do DOM após a transição para limpar o código
-                setTimeout(() => {
-                    modal.remove();
-                }, 300); // 300ms é a duração da transição
             }
         }
 
-        // Função para abrir o modal, usada apenas no DOMContentLoaded
+        // Função para abrir o modal (usada pelo DOMContentLoaded e pelo botão flutuante)
         function openWelcomeModal() {
             const modal = document.getElementById('welcome-modal');
             if (modal) {
@@ -223,6 +283,34 @@
                 document.getElementById('welcome-modal-content').classList.remove('scale-95');
                 document.body.style.overflow = 'hidden';
             }
+        }
+        
+        //  Desativa permanentemente a exibição do modal e do botão
+        function disableWelcomeModal() {
+            // 1. Fecha o modal imediatamente
+            closeWelcomeModal();
+            
+            // 2. Faz uma requisição AJAX para atualizar a sessão no backend
+            fetch("{{ route('feed.disable-welcome') }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}', 
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Falha ao desativar o modal no backend.');
+                } else {
+                    console.log('Modal de boas-vindas desativado permanentemente.');
+                    // Remove o botão flutuante se ele estiver visível, para não confundir o usuário.
+                    const floatButton = document.querySelector('.welcome-float-button');
+                    if(floatButton) floatButton.remove();
+                }
+            })
+            .catch(error => {
+                console.error('Erro de rede ao desativar o modal:', error);
+            });
         }
 
         // Lógica de Reações (Curtir e Salvar)
@@ -246,25 +334,20 @@
 
             if (reactionType === 'like') {
                 if (isActive) {
-                    // Adiciona ph-fill, remove hover
                     icon.classList.remove('ph', 'hover:text-red-500');
-                    icon.classList.add('ph-fill',
-                        'text-red-500'); // ph-bold já deve estar no HTML, mantive a lógica de JS mais simples
+                    icon.classList.add('ph-fill', 'text-red-500');
                     if (countElement) countElement.textContent = currentCount + 1;
                 } else {
-                    // Remove ph-fill, adiciona hover
                     icon.classList.remove('ph-fill', 'text-red-500');
                     icon.classList.add('ph', 'hover:text-red-500');
                     if (countElement) countElement.textContent = currentCount - 1;
                 }
             } else if (reactionType === 'save') {
                 if (isActive) {
-                    // Adiciona ph-fill, remove hover
                     icon.classList.remove('ph', 'hover:text-yellow-500');
                     icon.classList.add('ph-fill', 'text-yellow-500');
                     button.setAttribute('aria-label', 'Remover dos salvos');
                 } else {
-                    // Remove ph-fill, adiciona hover
                     icon.classList.remove('ph-fill', 'text-yellow-500');
                     icon.classList.add('ph', 'hover:text-yellow-500');
                     button.setAttribute('aria-label', 'Salvar evento');
@@ -276,11 +359,11 @@
                 button.setAttribute('data-is-active', oldIsActive);
 
                 if (reactionType === 'like') {
-                    if (oldIsActive) { // Reverte para o estado original (ativado)
+                    if (oldIsActive) {
                         icon.classList.remove('ph', 'hover:text-red-500');
                         icon.classList.add('ph-fill', 'text-red-500');
                         if (countElement) countElement.textContent = currentCount;
-                    } else { // Reverte para o estado original (desativado)
+                    } else {
                         icon.classList.remove('ph-fill', 'text-red-500');
                         icon.classList.add('ph', 'hover:text-red-500');
                         if (countElement) countElement.textContent = currentCount;
@@ -320,8 +403,6 @@
                 })
                 .catch(error => {
                     console.error(`Erro ao reagir ao evento ${eventId}:`, error);
-
-                    // 3. Reversão de Otimismo (Undo UI update)
                     undoUiChanges();
                 })
                 .finally(() => {
@@ -330,10 +411,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Inicialização e Animação do Modal (Chamado se o blade o renderizar)
-            const modal = document.getElementById('welcome-modal');
-            if (modal) {
-                // Inicia a animação de entrada do modal 
+            // Inicialização e Animação do Modal: Apenas se for a PRIMEIRA visita
+            if (shouldShowModalAutomatically) {
                 openWelcomeModal();
             }
 

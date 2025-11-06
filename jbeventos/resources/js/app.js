@@ -6,7 +6,6 @@ import './filter-menu';
 import './password-generator';
 import './password-validator';
 import './echo';
-import 'alpinejs';
 import './image-viewer';
 import './preview-images';
 import './search-highlight';
@@ -17,8 +16,6 @@ import './delete-images';
 
 import { initializeEventsPage } from './events-calendar'; 
 
-window.Alpine = Alpine;
-Alpine.start();
 
 // -----------------------------------------------------
 // Inicialização do FullCalendar / Eventos
