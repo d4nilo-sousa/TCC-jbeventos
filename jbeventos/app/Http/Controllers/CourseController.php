@@ -20,10 +20,18 @@ class CourseController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
+            // Busca case-insensitive e em português
             $courses->where('course_name', 'like', "%{$search}%");
         }
 
-        $courses = $courses->get();
+        // carregando o coordenador para o course-card funcionar
+        $courses = $courses->with('courseCoordinator.userAccount')->get();
+
+        // Lógica para responder à requisição AJAX do views/js/search-highlight.js
+        if ($request->ajax()) {
+            // Retorna apenas a parte da view que contém os cards de curso
+            return view('courses.index', compact('courses'))->render();
+        }
 
         return view('courses.index', compact('courses'));
     }
@@ -122,7 +130,7 @@ class CourseController extends Controller
         $course->update($data);
 
         // Redireciona para a lista com mensagem de sucesso
-        return redirect()->route('courses.index')->with('success', 'Curso atualizado com sucesso');
+        return redirect()->route('courses.show', $course->id)->with('success_course', 'Curso atualizado com sucesso!');
     }
 
     public function destroy(string $id)
@@ -155,45 +163,88 @@ class CourseController extends Controller
     public function updateBanner(Request $request, Course $course)
     {
         $request->validate([
-            'course_banner' => 'nullable|image|max:2048',
+            'course_banner' => 'nullable|image|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048', // 2MB
         ]);
 
-        //apaga o banner antigo
-        if ($course->course_banner) {
-            Storage::disk('public')->delete($course->course_banner); // Armazena o arquivo no disco publico e deleta
+        if ($request->hasFile('course_banner')) {
+            // Apaga o banner antigo
+            if ($course->course_banner) {
+                Storage::disk('public')->delete($course->course_banner);
+            }
+
+            // Armazena o novo banner
+            $path = $request->file('course_banner')->store('course_banners', 'public');
+
+            // Atualiza o curso
+            $course->update(['course_banner' => $path]);
+
+            // Retorna JSON para AJAX
+            return response()->json([
+                'success' => true,
+                'banner_url' => asset('storage/' . $path),
+            ]);
         }
 
-        $path = $request->file('course_banner')->store('course_banners', 'public'); // Armazena o arquivo no disco publico
-        $course->update(['course_banner' => $path]); // Atualiza o caminho do arquivo no banco
-
-        return back()->with('success', 'Banner atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+        return response()->json([
+            'success' => false,
+            'message' => 'Nenhum arquivo enviado.',
+        ], 400);
     }
 
     public function updateIcon(Request $request, Course $course)
     {
-
         $request->validate([
-            'course_icon' => 'nullable|image|max:2048',
+            'course_icon' => 'nullable|image|mimetypes:image/jpeg,image/png,image/gif,image/webp|max:2048',
         ]);
 
-        if ($course->course_icon) {
-            Storage::disk('public')->delete($course->course_icon);
+        if ($request->hasFile('course_icon')) {
+            // Deleta o ícone antigo, se existir
+            if ($course->course_icon && Storage::disk('public')->exists($course->course_icon)) {
+                Storage::disk('public')->delete($course->course_icon);
+            }
+
+            // Armazena o novo ícone
+            $path = $request->file('course_icon')->store('course_icons', 'public');
+
+            // Atualiza o registro do curso
+            $course->update(['course_icon' => $path]);
+
+            // Retorna JSON para o AJAX
+            return response()->json([
+                'success' => true,
+                'icon_url' => asset('storage/' . $path),
+            ]);
         }
 
-        $path = $request->file('course_icon')->store('course_icons', 'public'); // Armazena o arquivo no disco publico
-        $course->update(['course_icon' => $path]); // Atualiza o caminho do arquivo no banco
-
-        return back()->with('success', 'Ícone atualizado com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+        return response()->json([
+            'success' => false,
+            'message' => 'Nenhum arquivo enviado.',
+        ], 400);
     }
 
     public function updateDescription(Request $request, Course $course)
-    {
-        $request->validate([
-            'course_description' => 'nullable|string|max:1000',
-        ]);
+{
+    // Validação
+    $request->validate([
+        'course_description' => 'nullable|string|max:1000',
+    ]);
 
+    if ($request->has('course_description')) {
+        // Atualiza a descrição do curso
         $course->update(['course_description' => $request->course_description]);
 
-        return back()->with('success', 'Descrição atualizada com sucesso'); // Redireciona para a mesma rota com uma mensagem de sucesso
+        // Retorna JSON para AJAX
+        return response()->json([
+            'success' => true,
+            'course_description' => $course->course_description,
+        ]);
     }
+
+    // Caso não tenha enviado descrição
+    return response()->json([
+        'success' => false,
+        'message' => 'Nenhuma descrição enviada.',
+    ], 400);
+}
+
 }

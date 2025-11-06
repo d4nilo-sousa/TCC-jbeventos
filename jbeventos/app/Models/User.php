@@ -32,13 +32,12 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
-        'phone_number',
-        'phone_number_verified_at',
         'user_icon',
         'user_icon_default',
         'user_banner',
         'bio',
         'user_type',
+        'welcome_modal_shown',
     ];
 
     /**
@@ -71,8 +70,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'phone_number_verified_at' => 'datetime',
             'password' => 'hashed',
+            'welcome_modal_shown' => 'boolean',
         ];
     }
 
@@ -180,6 +179,20 @@ class User extends Authenticatable
 
         // Se não houver nenhum valor, retorna uma cor padrão
         return '#B0B0B0';
+    }
+
+    public function getCoordinatedCourseNameAttribute()
+    {
+        // Verifica se o usuário é um coordenador e se possui um Coordinator associado
+        if ($this->user_type === 'coordinator' && $this->coordinator) {
+            // Tenta carregar o curso coordenado (usando a relação definida no Coordinator.php)
+            $course = $this->coordinator->coordinatedCourse;
+            
+            // Retorna o nome do curso se ele existir
+            return $course ? $course->course_name : null;
+        }
+
+        return null;
     }
 
     public function sendPasswordResetNotification($token)

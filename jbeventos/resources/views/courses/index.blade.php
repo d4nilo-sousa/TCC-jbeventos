@@ -1,78 +1,103 @@
-<x-app-layout backgroundClass="bg-gray-100">
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<x-app-layout>
+    <div class="py-10 bg-gray-50 min-h-screen">
+        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
-            {{-- Título, Botões e Barra de Pesquisa --}}
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 sm:px-0 gap-5 mb-10">
+            {{-- Cabeçalho: Título, Botões e Pesquisa --}}
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5 mb-10">
+                {{-- Título --}}
                 <div class="mt-1">
-                    <p class="text-3xl sm:text-4xl font-extrabold text-stone-800 tracking-tight drop-shadow-sm">
+                    <p class="text-3xl sm:text-4xl mt-5 font-extrabold text-stone-800 tracking-tight drop-shadow-sm">
                         Catálogo de Cursos
                     </p>
-                    <div class="w-16 h-1 bg-blue-500 rounded-full mt-2 shadow-lg"></div>
+                    <div class="w-16 h-1 bg-red-500 rounded-full mt-2 shadow-lg"></div>
                 </div>
 
-                @php
-                    $loggedAdmin = auth()->user()->user_type === 'admin';
-                @endphp
+                {{-- Área de Ações: Botão de Criar e Pesquisa --}}
+                <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
 
-                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
-                    @if ($loggedAdmin)
-                        <a href="{{ route('courses.create') }}"
-                            class="flex items-center justify-center gap-2 bg-stone-800 text-white px-6 py-2 rounded-full shadow-lg hover:bg-stone-700 transition-colors duration-200 text-sm font-medium">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                fill="currentColor">
-                                <path fill-rule="evenodd"
-                                    d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                                    clip-rule="evenodd" />
+                    {{-- Formulário de Pesquisa --}}
+                    <form action="{{ route('courses.index') }}" method="GET" class="w-full flex-grow max-w-sm">
+                        <div class="relative flex items-center w-full shadow-md rounded-full bg-white">
+                            <svg class="absolute left-4 w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
+                                stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"></path>
                             </svg>
-                            Novo Curso
-                        </a>
-                    @endif
-
-                    <form action="{{ route('courses.index') }}" method="GET"
-                        class="flex items-center w-full sm:w-auto">
-                        <div class="relative w-full">
+                            {{-- Input de pesquisa --}}
                             <input id="searchInput" type="text" name="search" value="{{ request('search') }}"
                                 placeholder="Pesquisar cursos..." autocomplete="off"
-                                class="w-full pl-5 pr-12 py-3 text-gray-800 placeholder-gray-400 border-2 border-gray-300 rounded-full outline-none focus:ring-2 focus:ring-blue-500 transition-shadow">
-                            <button type="submit"
-                                class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-500 rounded-full text-white hover:bg-blue-600 transition-colors">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
-                                    fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </button>
+                                class="w-full pl-11 pr-5 py-2.5 border border-gray-200 rounded-full focus:ring-red-500 focus:border-red-500 text-sm placeholder-gray-500 bg-transparent">
                         </div>
                     </form>
                 </div>
             </div>
 
-            {{-- Mensagens de sucesso --}}
+            {{-- Mensagem de Sucesso --}}
             @if (session('success'))
-                <div class="mb-6 p-4 text-green-700 bg-green-100 rounded-lg shadow-sm">
-                    {{ session('success') }}
+                <div id="success-message"
+                    class="mb-6 p-4 text-green-700 bg-green-50 rounded-xl shadow-md border border-green-200 flex items-center gap-3 transition-all duration-500">
+                    <i class="ph-fill ph-check-circle text-green-500 text-2xl"></i>
+                    <span class="font-medium">{{ session('success') }}</span>
                 </div>
             @endif
 
-            {{-- Lista de cursos --}}
-            <div class="bg-white shadow-xl rounded-2xl p-6 sm:p-9 border border-gray-200">
-                <div id="coursesList" data-url="{{ route('courses.index') }}"
-                    class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-10 mt-10">
-                    @forelse ($courses as $course)
-                        @include('partials.courses.course-card', ['course' => $course])
-                    @empty
-                        <div id="noCoursesMessage"
-                            class="col-span-full flex flex-col items-center justify-center gap-5 p-10">
-                            <img src="{{ asset('imgs/notFound.png') }}" class="w-[19%]" alt="not-found">
-                            <p class="text-gray-500 text-center">Nenhum curso encontrado...</p>
+            <script>
+                // Faz a mensagem sumir depois de 4 segundos
+                setTimeout(() => {
+                    const msg = document.getElementById('success-message');
+                    if (msg) {
+                        msg.classList.add('opacity-0', 'translate-y-2'); // animação suave
+                        setTimeout(() => msg.remove(), 500); // remove do DOM após sumir
+                    }
+                }, 4000);
+            </script>
+
+            {{-- Lista de Cursos --}}
+            <div id="coursesList" data-url="{{ route('courses.index') }}"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-4">
+                @forelse ($courses as $course)
+                    @include('partials.courses.course-card', ['course' => $course])
+                @empty
+                    {{-- Mensagem de Vazio/Não Encontrado (Classes de espaçamento ajustadas) --}}
+                    <div id="noCoursesMessage" {{-- ALTERADO: Redução de my-10 para my-4 e p-16 para p-6 --}}
+                        class="col-span-full flex flex-col items-center justify-center gap-6 text-center w-full my-4 p-6">
+                        <img src="{{ asset('imgs/notFound.png') }}" class="w-auto h-40 object-contain" alt="not-found">
+                        <div>
+                            <p class="text-2xl font-bold text-stone-800">Ops! Nada foi encontrado...</p>
+                            <p class="text-gray-500 mt-2 text-md max-w-lg mx-auto">
+                                Não encontramos nenhum curso com os termos de busca. Tente refazer pesquisa!
+                            </p>
                         </div>
-                    @endforelse
-                </div>
+                    </div>
+                @endforelse
             </div>
         </div>
 </x-app-layout>
 
-{{-- Scripts compilados --}}
+<script>
+    /**
+     * Atualiza o conteúdo da lista de cursos após uma pesquisa via AJAX.
+     * @param {string} html - O novo HTML para a lista de cursos.
+     */
+    function atualizarListaDeCursos(html) {
+        const coursesList = document.getElementById('coursesList');
+        const catalogEnd = document.getElementById('catalogEnd');
+        const newContent = new DOMParser().parseFromString(html, 'text/html');
+        const hasCourses = newContent.getElementById('noCoursesMessage') === null;
+
+        coursesList.innerHTML = html;
+
+        // Gerencia a visibilidade do footer de "Fim do Catálogo"
+        if (catalogEnd) {
+            // Verifica se a mensagem de "noCoursesMessage" existe no novo HTML
+            const noCoursesMessageExists = coursesList.querySelector('#noCoursesMessage');
+
+            // Exibe o footer apenas se houver cursos E se a mensagem de 'noCoursesMessage' não estiver visível.
+            catalogEnd.style.display = noCoursesMessageExists ? 'none' : 'flex';
+        }
+    }
+</script>
+
 @vite('resources/js/app.js')
+<script src="https://unpkg.com/@phosphor-icons/web"></script>

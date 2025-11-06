@@ -1,223 +1,952 @@
 <x-app-layout>
-    <div class="relative bg-white shadow-xl rounded-lg overflow-hidden max-w-4xl mx-auto my-8">
+    {{-- Variável Alpine para controlar o Modal de Configurações e o Dropdown de Ícones Padrão --}}
+    <div x-data="{ settingsModalOpen: false, defaultIconsOpen: false }">
 
-        {{-- Banner --}}
-        <div class="relative h-56 {{ preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner_url) ? '' : 'bg-gradient-to-r from-gray-300 to-gray-400' }}"
-            style="{{ preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner_url) ? 'background-color: ' . $user->user_banner_url : '' }}">
-            
-            @if(!preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner_url))
-                <img src="{{ $user->user_banner_url }}" alt="Banner do Usuário"
-                    class="object-cover w-full h-full">
-            @endif
-            
-            @if(auth()->id() === $user->id)
-                <label for="bannerUpload"
-                    class="absolute top-4 right-4 bg-white/70 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-md cursor-pointer hover:bg-white transition-colors duration-200">
-                    Trocar Banner
-                </label>
-                <form id="bannerForm" method="POST" action="{{ route('profile.updateBanner') }}"
-                    enctype="multipart/form-data" class="hidden">
-                    @csrf
-                    <input type="file" name="user_banner" id="bannerUpload" onchange="document.getElementById('bannerForm').submit()">
-                </form>
+        {{-- Container Principal --}}
+        <div class="py-10 bg-gray-50 min-h-screen">
+            <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-data="{ activeTab: '{{ request('tab', 'biography') }}' }">
 
-                <form method="POST" action="{{ route('profile.updateBannerColor') }}" class="absolute bottom-4 right-4">
-                    @csrf
-                    <input type="color" name="user_banner" value="{{ $user->user_banner }}"
-                        onchange="this.form.submit()" class="cursor-pointer h-10 w-10 p-0.5 rounded-full border-none">
-                </form>
-            @endif
-        </div>
+                    {{-- Coluna PRINCIPAL (Conteúdo das Abas e Formulários) --}}
+                    <div class="lg:col-span-2 bg-white shadow-2xl rounded-xl overflow-hidden border border-gray-100">
+                        <div class="relative">
+                            @php
+    $isColor = preg_match('/^#[a-f0-9]{6}$/i', $user->user_banner ?? '');
+    $hasImage = !$isColor && !empty($user->user_banner) && Storage::disk('public')->exists($user->user_banner);
+    $bgColor = $isColor ? $user->user_banner : '#f3f4f6'; // fallback cinza
+    $bgImage = $hasImage ? "url('" . Storage::url($user->user_banner) . "')" : 'none';
+@endphp
 
-        {{-- Avatar, Nome e Botão de Avatares --}}
-        <div class="px-6 -mt-16 flex items-end space-x-6 pb-6 border-b border-gray-200">
-            {{-- NOVO: Container para agrupar o avatar e o botão --}}
-            <div class="flex flex-col items-center">
-                <div class="relative w-32 h-32 rounded-full border-6 border-white bg-gray-300 shadow-lg">
-                    <img src="{{ $user->user_icon_url }}" alt="Avatar"
-                        class="w-full h-full rounded-full object-cover">
-                    
-                    @if(auth()->id() === $user->id)
-                        {{-- Botão de upload de imagem --}}
-                        <label for="photoUpload"
-                            class="absolute bottom-0 right-0 bg-white/70 backdrop-blur-sm text-sm p-2 rounded-full shadow-md cursor-pointer hover:bg-white transition-colors duration-200">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-5.454 2.553a2 2 0 00-2.924 2.924l5.454 5.454a2 2 0 002.924-2.924l-5.454-5.454z"/>
-                            </svg>
-                        </label>
-                        <form id="photoForm" method="POST" action="{{ route('profile.updatePhoto') }}"
-                            enctype="multipart/form-data" class="hidden">
-                            @csrf
-                            <input type="file" name="user_icon" id="photoUpload" onchange="document.getElementById('photoForm').submit()">
-                        </form>
-                    @endif
-                </div>
-                
-                {{-- Botão e Dropdown de Avatares Padrão, agora abaixo do avatar --}}
-                @if(auth()->id() === $user->id)
-                    <div class="relative inline-block text-left mt-4" x-data="{ open: false }" @click.away="open = false">
-                        <div>
-                            <button type="button" @click="open = !open" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 transition-all duration-200">
-                                Avatares Padrão
-                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
+<div id="userBanner" class="relative h-56 w-full rounded-lg overflow-hidden"
+     style="
+        background-color: {{ $bgColor }};
+        background-image: {{ $bgImage }};
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    ">
+
+    {{-- Imagem apenas para acessibilidade --}}
+    @if($hasImage)
+        <img src="{{ Storage::url($user->user_banner) }}" alt="Banner do Usuário" class="sr-only">
+    @endif
+
+    {{-- Botões de edição do banner --}}
+    @if(auth()->id() === $user->id)
+        {{-- Upload de Imagem --}}
+        <label for="bannerUpload"
+               class="absolute top-4 right-4 bg-white/70 backdrop-blur-sm text-sm px-4 py-2 rounded-full shadow-lg cursor-pointer hover:bg-white transition-colors duration-200 flex items-center space-x-1">
+            <i class="ph ph-image text-lg"></i>
+            <span>Trocar Imagem</span>
+        </label>
+        <form id="bannerForm" method="POST" action="{{ route('profile.updateBanner') }}"
+              enctype="multipart/form-data" class="hidden">
+            @csrf
+            <input type="file" name="user_banner" id="bannerUpload">
+        </form>
+
+        {{-- Seletor de Cor --}}
+        <form id="bannerColorForm" method="POST" action="{{ route('profile.updateBannerColor') }}"
+              class="absolute top-4 right-44">
+            @csrf
+            <label for="bannerColor" class="sr-only">Escolher Cor de Banner</label>
+            <input type="color" name="user_banner" id="bannerColor"
+                   value="{{ $isColor ? $user->user_banner : '#f3f4f6' }}"
+                   class="cursor-pointer h-10 w-10 p-1 rounded-full border-2 border-white shadow-lg transition-all duration-200 hover:scale-105">
+        </form>
+    @endif
+</div>
+
+
+                            {{-- Avatar, Nome e Tipo do Usuário --}}
+                            <div class="px-6 -mt-16 flex items-end space-x-6 pb-6 border-b border-gray-200">
+                                {{-- Bloco do Avatar e Botões de Edição --}}
+                                <div class="flex flex-col items-center">
+                                    <div
+                                        class="relative w-36 h-36 rounded-full border-6 border-white bg-gray-300 shadow-xl">
+                                        <img src="{{ $user->user_icon_url }}" alt="Avatar"
+                                            class="w-full h-full rounded-full object-cover">
+
+                                        @if (auth()->id() === $user->id)
+                                            <label for="photoUpload"
+                                                class="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors duration-200">
+                                                <i class="ph ph-camera text-base text-gray-700"></i>
+                                            </label>
+
+                                            <form id="photoForm" method="POST"
+                                                action="{{ route('profile.updatePhoto') }}"
+                                                enctype="multipart/form-data" class="hidden">
+                                                @csrf
+                                                <input type="file" name="user_icon" id="photoUpload">
+                                            </form>
+                                        @endif
+                                    </div>
+
+                                    {{-- BOTÃO E POP-UP PARA AVATARES PADRÃO --}}
+                                    @if (auth()->id() === $user->id)
+                                        <div class="relative mt-2" @click.away="defaultIconsOpen = false">
+                                            <button @click="defaultIconsOpen = !defaultIconsOpen"
+                                                class="flex items-center text-xs text-gray-600 hover:text-red-500 transition-colors duration-200 px-3 py-1 rounded-full bg-gray-50 hover:bg-red-50 border border-gray-200">
+                                                <i class="ph ph-users-three text-sm mr-1"></i>
+                                                Avatares Padrão
+                                            </button>
+
+                                            {{-- Pop-up de Seleção de Avatares --}}
+                                            <div x-cloak x-show="defaultIconsOpen"
+                                                x-transition:enter="transition ease-out duration-100"
+                                                x-transition:enter-start="transform opacity-0 scale-95"
+                                                x-transition:enter-end="transform opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-75"
+                                                x-transition:leave-start="transform opacity-100 scale-100"
+                                                x-transition:leave-end="transform opacity-0 scale-95"
+                                                class="absolute left-1/2 transform -translate-x-1/2 mt-2 w-52 origin-top-right bg-white rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 p-4 z-10">
+                                                <p class="text-xs font-semibold text-gray-700 mb-2 border-b pb-1">
+                                                    Selecione um ícone padrão:</p>
+                                                <div class="grid grid-cols-4 gap-2">
+                                                    @php
+                                                        $defaultIcons = [
+                                                            'avatar_default_1.svg',
+                                                            'avatar_default_2.svg',
+                                                            'avatar_default_3.png',
+                                                            'avatar_default_4.png',
+                                                        ];
+                                                    @endphp
+
+                                                    @foreach ($defaultIcons as $icon)
+                                                        <form method="POST"
+                                                            action="{{ route('profile.updateDefaultPhoto') }}"
+                                                            class="inline-block default-avatar-form">
+                                                            @csrf
+                                                            <input type="hidden" name="user_icon_default"
+                                                                value="{{ $icon }}">
+                                                            <button type="submit"
+                                                                class="w-full h-full rounded-full border-2 p-1 transition-all duration-150 {{ $user->user_icon_default === $icon ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-200 hover:border-red-300' }}"
+                                                                title="Usar {{ $icon }}">
+                                                                <img src="{{ asset('imgs/' . $icon) }}"
+                                                                    alt="{{ $icon }}"
+                                                                    class="w-full h-full rounded-full object-cover">
+                                                            </button>
+                                                        </form>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- Nome e Tipo do Usuário --}}
+                                <div class="flex-1 pb-2">
+                                    <h2 class="text-4xl font-extrabold text-gray-900">{{ $user->name }}</h2>
+                                    <div class="mt-1">
+                                        @php
+                                            $userTypeData = [
+                                                'coordinator' => [
+                                                    'label' => 'Coordenador',
+                                                    'color' => 'bg-red-500',
+                                                    'icon' => 'ph-chalkboard-teacher',
+                                                ],
+                                                'user' => [
+                                                    'label' => 'Usuário Comum',
+                                                    'color' => 'bg-gray-500',
+                                                    'icon' => 'ph-user',
+                                                ],
+                                                'admin' => [
+                                                    'label' => 'Administrador',
+                                                    'color' => 'bg-red-500',
+                                                    'icon' => 'ph-crown',
+                                                ],
+                                            ];
+                                            $type = $userTypeData[$user->user_type] ?? [
+                                                'label' => ucfirst($user->user_type),
+                                                'color' => 'bg-red-500',
+                                                'icon' => 'ph-person',
+                                            ];
+                                        @endphp
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white {{ $type['color'] }}">
+                                            <i class="ph {{ $type['icon'] }} text-sm mr-1"></i>
+                                            {{ $type['label'] }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="origin-top-right absolute left-1/2 -translate-x-1/2 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                            <div class="py-1 px-4 flex flex-wrap gap-2 justify-center">
+
+                        {{-- Seções do Perfil com Abas --}}
+                        <div class="px-6 py-4">
+                            <div class="border-b border-gray-200">
+                                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                                    {{-- Aba Biografia --}}
+                                    <button @click="activeTab = 'biography'"
+                                        :class="{ 'border-red-500 text-red-600': activeTab === 'biography', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'biography' }"
+                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center">
+                                        <i class="ph ph-notepad text-lg mr-2"></i>
+                                        Biografia
+                                    </button>
+                                    <button @click="activeTab = 'participatedEvents'"
+                                        :class="{ 'border-red-500 text-red-600': activeTab === 'participatedEvents', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'participatedEvents' }"
+                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center">
+                                        <i class="ph ph-thumbs-up text-lg mr-2"></i>
+                                        Eventos Interagidos ({{ $participatedEvents->count() }})
+                                    </button>
+                                    <button @click="activeTab = 'savedEvents'"
+                                        :class="{ 'border-red-500 text-red-600': activeTab === 'savedEvents', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'savedEvents' }"
+                                        class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center">
+                                        <i class="ph ph-bookmark-simple text-lg mr-2"></i>
+                                        Eventos Salvos (<span
+                                            id="savedEventsCount">{{ $savedEvents->count() }}</span>)
+                                    </button>
+                                    {{-- Aba Meus Eventos --}}
+                                    @if ($user->user_type === 'coordinator')
+                                        <button @click="activeTab = 'createdEvents'"
+                                            :class="{ 'border-red-500 text-red-600': activeTab === 'createdEvents', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'createdEvents' }"
+                                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center">
+                                            <i class="ph ph-calendar-plus text-lg mr-2"></i>
+                                            Meus Eventos ({{ $createdEvents->count() }})
+                                        </button>
+                                    @endif
+                                </nav>
+                            </div>
+
+                            <div class="mt-2">
+                                <div x-show="activeTab === 'biography'">
+                                    <div class="p-2 py-4" x-data="bioEditor()" @keydown.escape="cancelEdit()">
+
+                                        <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pb-2">
+                                            <i class="ph ph-info text-xl mr-2"></i> Sobre Mim
+                                        </h3>
+
+                                        {{-- Visualização --}}
+                                        <div x-show="!editing" @click="startEdit()"
+                                            :class="bio ? 'justify-start text-left' : 'justify-center text-center'"
+                                            class="cursor-pointer text-sm text-gray-700 min-h-[3rem] whitespace-pre-wrap break-words pb-2 pr-4 pl-4 pt-2 rounded-lg bg-gray-50 hover:bg-gray-100 
+        transition-colors duration-200 border border-transparent hover:border-red-200 shadow-sm
+        flex items-center">
+                                            <span id="bioDisplay"
+                                                x-text="bio || 'Clique aqui ou no botão para adicionar uma biografia atraente.'"></span>
+                                        </div>
+
+                                        <form x-show="editing" x-transition @submit.prevent="saveBio()"
+                                            x-ref="bioForm" action="{{ route('profile.updateBio') }}" <!-- ✅
+                                            Adicionado -->
+                                            @csrf
+                                            <textarea name="bio" rows="5" x-model="bio"
+                                                class="w-full border-gray-300 rounded-lg p-3 text-sm focus:ring-red-500 focus:border-red-500 shadow-inner"
+                                                placeholder="Escreva sua biografia aqui (máx. 500 caracteres)..." maxlength="500"></textarea>
+
+                                            <div class="mt-3 text-right space-x-2">
+                                                <button type="button" @click="cancelEdit()"
+                                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 text-sm rounded-lg shadow-lg transition-colors duration-200 flex-inline items-center">
+                                                    <i class="ph ph-x text-lg mr-1 relative" style="top: 2px;"></i>
+                                                    Cancelar
+                                                </button>
+
+                                                <button type="submit"
+                                                    class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 text-sm rounded-lg shadow-lg transition-colors duration-200 flex-inline items-center">
+                                                    <i class="ph ph-floppy-disk text-lg mr-1 relative"
+                                                        style="top: 2px;"></i>
+                                                    Salvar Biografia
+                                                </button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <div x-show="activeTab === 'participatedEvents'">
+                                {{-- CONTEÚDO DA ABA: Eventos Interagidos --}}
+
+                                {{-- Título --}}
+                                <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pb-2 pt-4">
+                                    <i class="ph ph-activity text-xl mr-2 text-yellow-500"></i> Eventos que você
+                                    interagiu
+                                </h3>
+
+                                {{-- Bloco: Eventos Interagidos Vazio --}}
+                                @if ($participatedEvents->isEmpty())
+                                    <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
+                                        <i class="ph ph-magnifying-glass text-4xl text-gray-400"></i>
+                                        <p class="text-gray-500 text-sm mt-2">
+                                            Você ainda não interagiu com nenhum evento (inscrição, interesse, etc.).
+                                        </p>
+                                        <a href="{{ route('events.index') }}"
+                                            class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                            <i class="ph ph-arrow-right text-sm mr-1"></i>
+                                            Explore eventos agora!
+                                        </a>
+                                    </div>
+                                @else
+                                    <div x-data="{ scrollContainer: null, scrollStep: 300 }" x-init="scrollContainer = $refs.scrollTrack" class="relative">
+
+                                        {{-- BOTÃO ESQUERDO --}}
+                                        <button @click="scrollContainer.scrollBy({ left: -scrollStep, behavior: 'smooth' })"
+                                            class="absolute left-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
+                                            <i class="ph ph-caret-left text-xl text-gray-700"></i>
+                                        </button>
+
+                                        {{-- BOTÃO DIREITO --}}
+                                        <button @click="scrollContainer.scrollBy({ left: scrollStep, behavior: 'smooth' })"
+                                            class="absolute right-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
+                                            <i class="ph ph-caret-right text-xl text-gray-700"></i>
+                                        </button>
+
+                                        {{-- CONTÊINER DE ROLAGEM --}}
+                                        <div x-ref="scrollTrack" class="flex overflow-x-auto gap-6 pb-4 -mb-4 scroll-smooth" style="scrollbar-width: none;">
+
+                                            @foreach ($participatedEvents as $event)
+                                                <div
+                                                    class="flex-none w-72 bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 relative">
+
+                                                    {{-- Conteúdo do Card --}}
+                                                    <a href="{{ route('events.show', $event) }}" class="block">
+                                                        {{-- Imagem / Placeholder --}}
+                                                        <div
+                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden rounded-t-xl">
+                                                            @if ($event->event_image)
+                                                                <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                                    alt="{{ $event->event_name }}"
+                                                                    class="w-full h-full object-cover">
+                                                            @else
+                                                                <div
+                                                                    class="flex flex-col items-center justify-center w-full h-full text-red-500">
+                                                                    <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                                    <p class="mt-2 text-sm">Sem Imagem de Capa</p>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+
+                                                        {{-- Nome do evento --}}
+                                                        <div class="px-4 pt-4 pb-0">
+                                                            <p
+                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0 text-base">
+                                                                {{ $event->event_name }}
+                                                            </p>
+                                                        </div>
+
+                                                        {{-- Data e hora --}}
+                                                        <div class="px-4 pb-4 mt-0.5">
+                                                            @if ($event->event_scheduled_at)
+                                                                <p
+                                                                    class="flex items-center gap-1 text-gray-500 mt-2 text-sm">
+                                                                    <i
+                                                                        class="ph-fill ph-clock-clockwise text-red-600 text-base"></i>
+                                                                    {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
+                                                                </p>
+                                                            @endif
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        {{-- FIM DO CONTÊINER DE ROLAGEM --}}
+
+                                    </div>
+                                @endif
+                            </div>
+                            {{-- FIM DO CONTEÚDO DA ABA: Eventos Interagidos --}}
+
+
+                            {{-- TRECHO DE EVENTOS SALVOS --}}
+                            {{-- O bloco de Eventos Salvos a seguir está correto e completo: --}}
+
+                            <div x-show="activeTab === 'savedEvents'">
+                                {{-- CONTEÚDO DA ABA: Eventos Salvos --}}
+                                <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pt-4 pb-2">
+                                    <i class="ph ph-heart-straight text-xl mr-2 text-red-500"></i>
+                                    Eventos que você salvou
+                                </h3>
+
+                                @if ($savedEvents->isEmpty())
+                                    {{-- Bloco: Vazio (Inalterado) --}}
+                                    <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
+                                        <i class="ph ph-magnifying-glass text-4xl text-gray-400"></i>
+                                        <p class="text-gray-500 text-sm mt-2">
+                                            Você ainda não salvou nenhum evento interessante.
+                                        </p>
+                                        <a href="{{ route('events.index') }}"
+                                            class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                            <i class="ph ph-arrow-right text-sm mr-1"></i>
+                                            Explore eventos agora!
+                                        </a>
+                                    </div>
+                                @else
+                                    <div x-data="{ scrollContainer: null, scrollStep: 300 }" x-init="scrollContainer = $refs.scrollTrack" class="relative">
+
+                                        {{-- BOTÃO ESQUERDO (Anterior) --}}
+                                        <button @click="scrollContainer.scrollBy({ left: -scrollStep, behavior: 'smooth' })"
+                                            class="absolute left-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
+                                            <i class="ph ph-caret-left text-xl text-gray-700"></i>
+                                        </button>
+
+                                        {{-- BOTÃO DIREITO (Próximo) --}}
+                                        <button @click="scrollContainer.scrollBy({ left: scrollStep, behavior: 'smooth' })"
+                                            class="absolute right-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
+                                            <i class="ph ph-caret-right text-xl text-gray-700"></i>
+                                        </button>
+
+                                        {{-- CONTÊINER DE ROLAGEM (x-ref para o Alpine.js) --}}
+                                        <div x-ref="scrollTrack" class="flex overflow-x-auto gap-6 pb-4 -mb-4 scroll-smooth" style="scrollbar-width: none;">
+
+                                            @foreach ($savedEvents as $event)
+                                                <div
+                                                    class="flex-none w-72 bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 relative">
+                                                    {{-- Classes: flex-none e w-72 garantem que fique na horizontal --}}
+
+                                                    {{-- Link do evento (Conteúdo inalterado) --}}
+                                                    <a href="{{ route('events.show', $event) }}" class="block">
+                                                        {{-- Imagem / Placeholder --}}
+                                                        <div
+                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden rounded-t-xl">
+                                                            @if ($event->event_image)
+                                                                <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                                    alt="{{ $event->event_name }}"
+                                                                    class="w-full h-full object-cover">
+                                                            @else
+                                                                <div
+                                                                    class="flex flex-col items-center justify-center w-full h-full text-red-500">
+                                                                    <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                                    <p class="mt-2 text-sm">Sem Imagem de Capa</p>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+
+                                                        {{-- Nome do evento --}}
+                                                        <div class="px-4 pt-4 pb-0">
+                                                            <p
+                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0 text-base">
+                                                                {{ $event->event_name }}
+                                                            </p>
+                                                        </div>
+
+                                                        {{-- Data e hora --}}
+                                                        <div class="px-4 pb-4 mt-0.5">
+                                                            @if ($event->event_scheduled_at)
+                                                                <p
+                                                                    class="flex items-center gap-1 text-gray-500 mt-2 text-sm">
+                                                                    <i
+                                                                        class="ph-fill ph-clock-clockwise text-red-600 text-base"></i>
+                                                                    {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
+                                                                </p>
+                                                            @endif
+                                                        </div>
+                                                    </a>
+
+                                                    {{-- Botão de remover dos salvos --}}
+                                                    <form action="{{ route('events.unsave', $event) }}"
+                                                        method="POST" class="absolute top-2 right-2 unsave-form">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit"
+                                                            class="bg-white/90 p-2 rounded-full text-red-500 hover:text-red-700 shadow-md transition-colors duration-200"
+                                                            title="Remover dos Salvos">
+                                                            <i class="ph ph-x-circle text-xl"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                            {{-- FIM DO CONTEÚDO DA ABA: Eventos Salvos --}}
+
+                                {{-- CONTEÚDO DA ABA: Eventos Criados (apenas para coordenadores) --}}
+                                @if ($user->user_type === 'coordinator')
+                                    <div x-show="activeTab === 'createdEvents'">
+                                        <div class="flex items-center justify-between pt-4 pb-6">
+                                            <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                                                <i class="ph ph-rocket-launch text-xl mr-2 text-red-500"></i> Eventos
+                                                que você publicou
+                                            </h3>
+                                        </div>
+
+                                        @if ($createdEvents->isEmpty())
+                                            <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
+                                                <i class="ph ph-package text-4xl text-gray-400"></i>
+                                                <p class="text-gray-500 text-sm mt-2">Você ainda não criou nenhum
+                                                    evento. Está na hora de começar!</p>
+                                                <a href="{{ route('events.create') }}"
+                                                    class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                                    <i class="ph ph-plus-circle text-sm mr-1"></i> Crie seu primeiro
+                                                    evento!
+                                                </a>
+                                            </div>
+                                        @else
+                                            <div
+                                                class="max-h-[800px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                @foreach ($createdEvents as $event)
+                                                    <div
+                                                        class="bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
+                                                        {{-- Link do evento --}}
+                                                        <a href="{{ route('events.show', $event) }}" class="block">
+                                                            {{-- Imagem / Placeholder --}}
+                                                            <div
+                                                                class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                                @if ($event->event_image)
+                                                                    <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                                        alt="{{ $event->event_name }}"
+                                                                        class="w-full h-full object-cover">
+                                                                @else
+                                                                    <div
+                                                                        class="flex flex-col items-center justify-center w-full h-full text-red-500">
+                                                                        <i
+                                                                            class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                                        <p class="mt-2 text-sm">Sem Imagem de Capa</p>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+
+                                                            {{-- Nome do evento --}}
+                                                            <div class="px-6 pt-6 pb-0">
+                                                                <p
+                                                                    class="font-bold text-gray-900 line-clamp-2 break-words mb-0">
+                                                                    {{ $event->event_name }}
+                                                                </p>
+                                                            </div>
+
+                                                            {{-- Linha divisória + Data e hora --}}
+                                                            <div class="px-6 pb-6 mt-0.5">
+                                                                @if ($event->event_scheduled_at)
+                                                                    <p
+                                                                        class="flex items-center gap-1 text-gray-500 mt-2 text-sm">
+                                                                        <i
+                                                                            class="ph-fill ph-clock-clockwise text-red-600 text-base"></i>
+                                                                        {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
+                                                                    </p>
+                                                                @endif
+                                                            </div>
+                                                        </a>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Coluna SECUNDÁRIA (Sidebar com Detalhes e Ações Estáticas) --}}
+                    <div class="lg:col-span-1 space-y-6">
+
+                        {{-- Card de Informações Básicas --}}
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                            <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                                <i class="ph ph-identification-card text-2xl mr-2 text-red-500"></i> Detalhes da Conta
+                            </h3>
+
+                            <div class="space-y-4 text-sm text-gray-700">
+                                {{-- E-mail (Visível apenas para o próprio usuário) --}}
+                                @if (auth()->id() === $user->id)
+                                    <div class="flex items-center">
+                                        <i class="ph ph-at text-lg w-5 text-red-500 mr-3"></i>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-900">E-mail</p>
+                                            <p class="truncate">{{ $user->email }}</p>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                {{-- Tipo de Usuário --}}
                                 @php
-                                    $defaultAvatars = [
-                                        'avatar_default_1.svg',
-                                        'avatar_default_2.svg',
-                                        'avatar_default_3.png',
-                                        'avatar_default_4.png'
+                                    $type = $userTypeData[$user->user_type] ?? [
+                                        'label' => ucfirst($user->user_type),
+                                        'color' => 'bg-red-500',
+                                        'icon' => 'ph-person',
                                     ];
                                 @endphp
-                                @foreach($defaultAvatars as $avatar)
-                                    <form action="{{ route('profile.updateDefaultPhoto') }}" method="POST">
-                                        @csrf
-                                        <input type="hidden" name="user_icon_default" value="{{ $avatar }}">
-                                        <button type="submit" class="w-10 h-10 rounded-full border-2 transition-all duration-200 {{ $user->user_icon_default === $avatar ? 'border-indigo-500 shadow-lg scale-110' : 'border-transparent hover:border-indigo-300' }}">
-                                            <img src="{{ asset('imgs/' . $avatar) }}" alt="Ícone Padrão" class="w-full h-full rounded-full">
-                                        </button>
-                                    </form>
-                                @endforeach
+                                <div class="flex items-center">
+                                    <i class="ph ph-user-circle text-lg w-5 text-red-500 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-900">Nível</p>
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white {{ $type['color'] }}">
+                                            {{ $type['label'] }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {{-- CAMPO: Curso Coordenado, Coordenador Geral ou Administrador --}}
+                                @if ($user->user_type === 'admin')
+                                    <div class="flex items-start">
+                                        <i class="ph ph-shield-star text-lg w-5 text-red-500 mr-3 mt-1"></i>
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-900">Administrador do Sistema</p>
+                                            <p class="text-sm font-medium text-gray-700">Responsável pelo Gerenciamento
+                                                do Sistema</p>
+                                        </div>
+                                    </div>
+                                @elseif ($coordinator)
+                                    <div class="flex items-start">
+                                        <i class="ph ph-chalkboard-teacher text-lg w-5 text-red-500 mr-3 mt-1"></i>
+                                        <div class="flex-1">
+                                            @if ($coordinator->coordinator_type === 'general')
+                                                <p class="font-semibold text-gray-900">Coordenador Geral</p>
+                                                <p class="text-sm font-medium text-gray-700">Responsável pelos Eventos
+                                                    Gerais</p>
+                                            @elseif($coordinator->coordinator_type === 'course')
+                                                <p class="font-semibold text-gray-900">Coordenador de Curso</p>
+                                                <p class="text-sm font-medium text-gray-700">
+                                                    {{ $coordinator->coordinatedCourse?->course_name
+                                                        ? 'Responsável pelo Curso: ' . $coordinator->coordinatedCourse->course_name
+                                                        : 'Não é Responsável por Nenhum Curso' }}
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+
+                                {{-- Membro Desde --}}
+                                <div class="flex items-center">
+                                    <i class="ph ph-calendar-check text-lg w-5 text-red-500 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-900">Membro desde</p>
+                                        <p>{{ $user->created_at->format('d/m/Y') }}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                @endif
-            </div>
 
-            {{-- Nome e Tipo do Usuário --}}
-            <div class="flex-1 mt-6">
-                <h2 class="text-3xl font-bold  text-gray-900">{{ $user->name }}</h2>
-                <p class="text-sm text-gray-500 mb-14 mt-1">
-                    @php
-                        $userTypes = ['coordinator' => 'Coordenador', 'user' => 'Usuário', 'admin' => 'Administrador'];
-                    @endphp
-                    {{ $userTypes[$user->user_type] ?? ucfirst($user->user_type) }}
-                </p>
-            </div>
-        </div>
+                        {{-- Card de Ação --}}
+                        @if (auth()->id() === $user->id)
+                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                                <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                                    <i class="ph ph-sign-out text-2xl mr-2 text-red-500"></i> Ações Rápidas
+                                </h3>
 
-        {{-- Seções do Perfil com Abas --}}
-        <div class="px-6 py-4" x-data="{ activeTab: 'biography' }">
-            <div class="border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button @click="activeTab = 'biography'" :class="{'border-indigo-500 text-indigo-600': activeTab === 'biography', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'biography'}" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-                        Biografia
-                    </button>
-                    <button @click="activeTab = 'savedEvents'" :class="{'border-indigo-500 text-indigo-600': activeTab === 'savedEvents', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'savedEvents'}" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-                        Eventos Salvos
-                    </button>
-                    @if($user->user_type === 'coordinator')
-                        <button @click="activeTab = 'createdEvents'" :class="{'border-indigo-500 text-indigo-600': activeTab === 'createdEvents', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'createdEvents'}" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200">
-                            Meus Eventos
-                        </button>
-                    @endif
-                </nav>
-            </div>
-
-            <div class="mt-4">
-                {{-- Biografia --}}
-                <div x-show="activeTab === 'biography'">
-                    <div class="px-2 py-4" x-data="{ editing: false, bio: @js(old('bio', $user->bio)), original: @js($user->bio) }">
-                        <h3 class="text-sm font-semibold mb-2">Biografia</h3>
-                        <div x-show="!editing" @click="editing = true" class="cursor-pointer text-sm text-gray-700 min-h-[3rem] whitespace-pre-line p-2 border border-dashed rounded hover:bg-gray-50 transition-colors duration-200">
-                            <span x-text="bio || 'Clique para adicionar uma biografia...' "></span>
-                        </div>
-                        <form method="POST" action="{{ route('profile.updateBio') }}" x-show="editing" @click.away="editing = false" x-transition>
-                            @csrf
-                            <textarea name="bio" rows="4" x-model="bio"
-                                    class="w-full border rounded p-2 text-sm focus:ring focus:ring-indigo-200 focus:border-indigo-500"
-                                    placeholder="Escreva sua biografia aqui..."></textarea>
-                            <div class="mt-2 text-right">
-                                <button type="submit"
-                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 text-sm rounded-lg shadow-md transition-colors duration-200">
-                                    Salvar Biografia
+                                {{-- NOVO BOTÃO: Abrir Modal de Configurações --}}
+                                <button @click="settingsModalOpen = true"
+                                    class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center mb-3 border border-gray-200">
+                                    <i class="ph ph-gear text-lg mr-2"></i>
+                                    Configurações da Conta
                                 </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
-                {{-- Eventos Salvos --}}
-                <div x-show="activeTab === 'savedEvents'">
-                    <h3 class="text-lg font-semibold mb-4">Seus Eventos Salvos</h3>
-                    @if($savedEvents->isEmpty())
-                        <div class="text-center py-8">
-                            <p class="text-gray-500 text-sm">Você ainda não salvou nenhum evento.</p>
-                            <a href="{{ route('events.index') }}" class="mt-4 inline-block text-indigo-600 hover:text-indigo-800 transition-colors">
-                                Explore eventos agora!
-                            </a>
-                        </div>
-                    @else
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            @foreach($savedEvents as $event)
-                                <a href="{{ route('events.show', $event) }}" class="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-                                    <div class="h-32 bg-gray-200 flex items-center justify-center overflow-hidden">
-                                        <img src="{{ $event->event_image ? asset('storage/' . $event->event_image) : asset('default-event-image.jpg') }}"
-                                                alt="{{ $event->event_name }}"
-                                                class="object-cover w-full h-full">
-                                    </div>
-                                    <div class="p-4">
-                                        <p class="font-bold text-gray-800">{{ $event->event_name }}</p>
-                                        <p class="text-sm text-gray-600 mt-1">{{ $event->event_scheduled_at->format('d/m/Y H:i') }}</p>
-                                        <div class="mt-3 text-right">
-                                            {{-- Botão para "des-salvar" o evento --}}
-                                            <form action="{{ route('events.unsave', $event) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-500 hover:text-red-700 text-xs">
-                                                    Remover dos Salvos
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-
-                {{-- Eventos Criados (apenas para coordenadores) --}}
-                @if($user->user_type === 'coordinator')
-                    <div x-show="activeTab === 'createdEvents'">
-                        <h3 class="text-lg font-semibold mb-4">Eventos que você criou</h3>
-                        @if($createdEvents->isEmpty())
-                            <div class="text-center py-8">
-                                <p class="text-gray-500 text-sm">Você ainda não criou nenhum evento.</p>
-                                <a href="{{ route('coordinator.events.create') }}" class="mt-4 inline-block text-indigo-600 hover:text-indigo-800 transition-colors">
-                                    Crie seu primeiro evento!
-                                </a>
-                            </div>
-                        @else
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                @foreach($createdEvents as $event)
-                                    <a href="{{ route('events.show', $event) }}" class="block bg-white rounded-lg shadow hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-                                        <div class="h-32 bg-gray-200 flex items-center justify-center overflow-hidden">
-                                            <img src="{{ $event->event_image ? asset('storage/' . $event->event_image) : asset('default-event-image.jpg') }}"
-                                                    alt="{{ $event->event_name }}"
-                                                    class="object-cover w-full h-full">
-                                        </div>
-                                        <div class="p-4">
-                                            <p class="font-bold text-gray-800">{{ $event->event_name }}</p>
-                                            <p class="text-sm text-gray-600 mt-1">{{ $event->event_scheduled_at->format('d/m/Y H:i') }}</p>
-                                        </div>
-                                    </a>
-                                @endforeach
+                                {{-- Botão Logout (Sair) --}}
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit"
+                                        class="w-full text-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center">
+                                        <i class="ph ph-sign-out text-lg mr-2"></i>
+                                        Sair da Conta
+                                    </button>
+                                </form>
                             </div>
                         @endif
-                    </div>
-                @endif
-            </div>
-        </div>
 
-        {{-- Informações adicionais --}}
-        <div class="px-6 py-4 text-sm text-gray-600 border-t border-gray-200">
-            <p class="mt-1"><strong>Membro desde:</strong> {{ $user->created_at->format('d/m/Y') }}</p>
-        </div>
-    </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- MODAL DE CONFIGURAÇÕES (LAYOUT DE DUAS COLUNAS COM DIVISORES) --}}
+            <div x-cloak x-show="settingsModalOpen" x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-75 flex items-start justify-center p-4 sm:p-6 lg:p-8">
+
+                <div x-show="settingsModalOpen" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-6xl w-full mx-auto my-12 transform transition-all p-6 sm:p-8">
+
+                    <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+                        <h3 class="text-xl font-extrabold text-gray-900 flex items-center">
+                            <i class="ph ph-gear-six text-2xl mr-2 text-red-600"></i> Configurações da Conta
+                        </h3>
+                        <button @click="settingsModalOpen = false"
+                            class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="ph ph-x-circle text-2xl"></i>
+                        </button>
+                    </div>
+
+                    {{-- LAYOUT DE 2 COLUNAS PRINCIPAIS --}}
+                    <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-10 relative">
+
+                        {{-- DIVISOR VERTICAL PARA SEPARAR AS COLUNAS (VISÍVEL APENAS EM TELAS GRANDES) --}}
+                        <div
+                            class="hidden lg:block absolute top-0 bottom-0 left-1/2 w-px bg-gray-200 transform -translate-x-1/2">
+                        </div>
+
+                        {{-- COLUNA 1: DADOS BÁSICOS (Informações e Senha) --}}
+                        <div class="space-y-10">
+                            {{-- Formulário de Informações de Perfil --}}
+                            @livewire('profile.update-profile-information-form')
+
+                            {{-- DIVISOR HORIZONTAL ENTRE PERFIL E SENHA --}}
+                            <div class="border-t border-gray-100"></div>
+
+                            {{-- Formulário de Atualização de Senha --}}
+                            @livewire('profile.update-password-form')
+                        </div>
+
+                        {{-- COLUNA 2: SEGURANÇA E SESSÕES (apenas Sair de outros navegadores e Deletar conta) --}}
+                        <div class="space-y-10 pt-0 lg:pt-0">
+
+                            {{-- Sessões de Navegador --}}
+                            @livewire('profile.logout-other-browser-sessions-form')
+
+                            {{-- DIVISOR HORIZONTAL ENTRE SESSÕES E EXCLUSÃO DE CONTA --}}
+                            <div class="border-t border-gray-100"></div>
+
+                            {{-- SEÇÃO DE EXCLUSÃO DE CONTA --}}
+                            @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
+                                @livewire('profile.delete-user-form')
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                {{-- FIM DO MODAL DE CONFIGURAÇÕES --}}
+
+            </div>
 </x-app-layout>
+
+<script>
+    const eventsIndexUrl = "{{ route('events.index') }}";
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // Função genérica de AJAX POST com FormData
+        async function ajaxPost(form, successCallback, errorMessage) {
+            try {
+                const formData = new FormData(form);
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
+                    }
+                });
+                if (!res.ok) throw new Error('Erro na requisição.');
+                const data = await res.json();
+                if (data.success) {
+                    successCallback(data);
+                } else {
+                    alert(data.message || errorMessage);
+                }
+            } catch (err) {
+                console.error(err);
+                alert(errorMessage);
+            }
+        }
+
+        // -------------------------------
+        // Avatares padrão
+        // -------------------------------
+        document.querySelectorAll('.default-avatar-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                ajaxPost(this, data => {
+                    const avatarImg = document.querySelector('img[alt="Avatar"]');
+                    if (avatarImg) avatarImg.src = data.avatar_url;
+
+                    // Atualiza classes dos botões
+                    document.querySelectorAll('.default-avatar-form button').forEach(
+                        btn => {
+                            btn.classList.remove('border-red-500', 'ring-4',
+                                'ring-red-100');
+                            btn.classList.add('border-gray-200',
+                                'hover:border-red-300');
+                        });
+                    this.querySelector('button').classList.add('border-red-500',
+                        'ring-4', 'ring-red-100');
+                    this.querySelector('button').classList.remove('border-gray-200',
+                        'hover:border-red-300');
+                }, 'Erro ao atualizar avatar.');
+            });
+        });
+
+        // -------------------------------
+        // Função genérica de validação de imagem
+        // -------------------------------
+        function validateImage(file) {
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                alert('Formato de imagem inválido! Use JPEG, PNG, GIF ou WEBP.');
+                return false;
+            }
+            return true;
+        }
+
+        // -------------------------------
+        // Uploads de avatar do usuário
+        // -------------------------------
+        const photoInput = document.getElementById('photoUpload');
+        const photoForm = document.getElementById('photoForm');
+        const avatarImg = document.querySelector('img[alt="Avatar"]');
+        if (photoInput && photoForm && avatarImg) {
+            photoInput.addEventListener('change', () => {
+                const file = photoInput.files[0];
+                if (!file || !validateImage(file)) {
+                    photoInput.value = '';
+                    return;
+                }
+                ajaxPost(photoForm, data => {
+                    avatarImg.src = data.avatar_url;
+                }, 'Erro ao atualizar foto de perfil.');
+            });
+        }
+
+        // -------------------------------
+        // Upload banner imagem
+        // -------------------------------
+        const bannerInput = document.getElementById('bannerUpload');
+        const bannerForm = document.getElementById('bannerForm');
+        const bannerDiv = document.getElementById('userBanner');
+        if (bannerInput && bannerForm && bannerDiv) {
+            bannerInput.addEventListener('change', () => {
+                const file = bannerInput.files[0];
+                if (!file || !validateImage(file)) {
+                    bannerInput.value = '';
+                    return;
+                }
+                ajaxPost(bannerForm, data => {
+                    bannerDiv.style.backgroundImage = `url('${data.banner_url}')`;
+                    bannerDiv.style.backgroundColor = '';
+                }, 'Erro ao atualizar banner.');
+            });
+        }
+
+        // -------------------------------
+        // Banner cor
+        // -------------------------------
+        const bannerColorInput = document.getElementById('bannerColor');
+        const bannerColorForm = document.getElementById('bannerColorForm');
+        if (bannerColorInput && bannerColorForm && bannerDiv) {
+            bannerColorInput.addEventListener('change', () => {
+                ajaxPost(bannerColorForm, data => {
+                    bannerDiv.style.backgroundColor = data.color;
+                    bannerDiv.style.backgroundImage = '';
+                }, 'Erro ao atualizar cor do banner.');
+            });
+        }
+
+        document.querySelectorAll('.unsave-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector(
+                                'meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove o card do evento
+                            const eventCard = form.closest('.bg-white.rounded-xl');
+                            if (eventCard) eventCard.remove();
+
+                            // Atualiza a contagem de eventos salvos
+                            const countEl = document.getElementById('savedEventsCount');
+                            if (countEl) {
+                                let currentCount = parseInt(countEl.innerText);
+                                countEl.innerText = currentCount > 0 ? currentCount - 1 : 0;
+                            }
+
+                            // Seleciona o container da aba de eventos salvos
+                            const eventsContainer = document.querySelector(
+                                '[x-show="activeTab === \'savedEvents\'"]');
+
+                            // Se não houver mais eventos, mostra a mensagem
+                            if (eventsContainer && eventsContainer.querySelectorAll(
+                                    '.unsave-form').length === 0) {
+                                eventsContainer.innerHTML = `
+                        <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pt-4 pb-2">
+                            <i class="ph ph-heart-straight text-xl mr-2 text-red-500"></i> Eventos que você salvou
+                        </h3>
+                        <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
+                            <i class="ph ph-magnifying-glass text-4xl text-gray-400"></i>
+                            <p class="text-gray-500 text-sm mt-2">Você ainda não salvou nenhum evento interessante.</p>
+                            <a href="${eventsIndexUrl}" class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                <i class="ph ph-arrow-right text-sm mr-1"></i> Explore eventos agora!
+                            </a>
+                        </div>
+                    `;
+                            }
+                        } else {
+                            console.error('Erro ao des-salvar:', data.message);
+                        }
+                    })
+                    .catch(err => console.error('Erro na requisição:', err));
+            });
+        });
+    });
+</script>
+
+<script>
+    function bioEditor() {
+        return {
+            editing: false,
+            bio: @js(old('bio', $user->bio ?? '')),
+            original: @js($user->bio ?? ''),
+
+            startEdit() {
+                this.editing = true;
+            },
+
+            cancelEdit() {
+                this.editing = false;
+                this.bio = this.original;
+            },
+
+            async saveBio() {
+                try {
+                    const form = this.$refs.bioForm;
+
+                    // Limpa e normaliza o texto
+                    const cleanBio = this.bio
+                        .replace(/\r\n/g, '\n') // normaliza quebras de linha Windows
+                        .replace(/\r/g, '\n') // normaliza CR
+                        .replace(/[^\S\n]+/g, ' ') // remove tabs e espaços extras
+                        .trim(); // remove espaços no início/fim
+
+                    const formData = new FormData(form);
+                    formData.set('bio', cleanBio); // define o valor limpo
+
+                    const res = await fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        }
+                    });
+
+                    if (!res.ok) throw new Error('Erro na requisição.');
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        this.bio = data.bio;
+                        this.original = data.bio;
+                        this.editing = false;
+
+                        // Atualiza a visualização da bio com quebras de linha
+                        const bioDisplay = document.getElementById('bioDisplay');
+                        if (bioDisplay) bioDisplay.innerHTML = data.bio ? data.bio.replace(/\n/g, '<br>') : '';
+                    } else {
+                        alert(data.message || 'Erro ao atualizar biografia.');
+                    }
+                } catch (err) {
+                    console.error('Erro ao atualizar biografia:', err);
+                    alert('Ocorreu um erro ao atualizar sua biografia. Tente novamente.');
+                }
+            }
+        }
+    }
+</script>

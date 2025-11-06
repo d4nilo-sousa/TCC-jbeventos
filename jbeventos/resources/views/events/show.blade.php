@@ -1,278 +1,361 @@
 <x-app-layout>
-    {{-- Main Container --}}
-    <div class="py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-7xl mx-auto space-y-8">
-            {{-- Breadcrumbs and Title --}}
-            <div class="flex items-center justify-between">
-                <a href="{{ route('events.index') }}" class="text-gray-500 hover:text-gray-700 transition-colors">
-                    ← Voltar para todos os eventos
-                </a>
+    {{-- Main Container (AGORA COM LIMITAÇÃO AMPLA: max-w-screen-2xl ou similar) --}}
+    <div class="py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
+        {{-- Usando mx-auto e uma largura máxima muito ampla para um layout mais confortável --}}
+        <div class="max-w-screen-2xl mx-auto space-y-6">
+
+            {{-- 1. TÍTULO E BREADCRUMBS (Largura Total) --}}
+            <div class="mb-6">
+                @php
+                    $previousUrl = url()->previous();
+                    $isFromFeed = str_contains($previousUrl, '/feed');
+                    $isFromProfile = str_contains($previousUrl, '/perfil');
+
+                    // Detecta se veio de um curso específico /courses/{id}
+                    $courseId = null;
+                    if (preg_match('/\/courses\/(\d+)$/', $previousUrl, $matches)) {
+                        $courseId = $matches[1];
+                        $course = \App\Models\Course::find($courseId); // pega o curso pelo ID
+                    }
+                @endphp
+
+                @if ($isFromFeed)
+                    <a href="{{ route('feed.index') }}"
+                        class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                        <i class="ph-fill ph-arrow-left text-lg"></i> Voltar para o Feed de Eventos
+                    </a>
+                @elseif ($isFromProfile)
+                    <a href="{{ route('profile.show') }}"
+                        class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                        <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Minha Página de Perfil
+                    </a>
+                @elseif ($courseId && $course)
+                    <a href="{{ route('courses.show', $course) }}"
+                        class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                        <i class="ph-fill ph-arrow-left text-lg"></i> Voltar ao Curso: {{ $course->course_name }}
+                    </a>
+                @else
+                    <a href="{{ route('events.index') }}"
+                        class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                        <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Lista de Eventos
+                    </a>
+                @endif
+
+                <h1 class="text-4xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+                    {{ $event->event_name }}
+                </h1>
             </div>
 
-            <h1 class="text-4xl font-bold text-gray-900 leading-tight">{{ $event->event_name }}</h1>
+            {{-- 2. MAIN CONTENT GRID (12 Colunas: 6/12 Conteúdo | 6/12 Comentários) --}}
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-            {{-- Main Content Grid (IMAGEM e DETALHES RÁPIDOS FICAM LADO A LADO) --}}
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {{-- COLUNA DA ESQUERDA (Conteúdo Principal - 6/12 da Largura) --}}
+                <div class="lg:col-span-6 space-y-6">
 
-                {{-- Image Carousel Section (2/3 da largura em telas grandes) --}}
-                <div class="lg:col-span-2 relative">
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden border">
-                        @if ($event->images->count())
-                            <div class="relative aspect-video w-full" id="carouselContainer">
-                                {{-- Carousel Images --}}
-                                <div class="w-full h-full relative" id="carousel">
+                    {{-- CARTÃO PRINCIPAL (Carrossel, Reações, Descrição e Detalhes) --}}
+                    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+
+                        {{-- IMAGEM / CARROSSEL --}}
+                        <div class="relative aspect-video w-full" id="carouselContainer">
+                            <div class="w-full h-full relative" id="carousel">
+                                @if ($event->images->count())
                                     @foreach ($event->images as $img)
                                         <img src="{{ asset('storage/' . $img->image_path) }}"
-                                             class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out carousel-img {{ $loop->first ? '' : 'hidden' }}">
+                                            class="absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out carousel-img {{ $loop->first }}">
                                     @endforeach
-                                </div>
 
-                                {{-- Carousel Controls & Indicator --}}
-                                @if ($event->images->count() > 1)
-                                    <button id="prevBtn"
-                                            class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
-                                        <i class="fas fa-chevron-left w-4 h-4"></i>
-                                    </button>
-                                    <button id="nextBtn"
-                                            class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
-                                        <i class="fas fa-chevron-right w-4 h-4"></i>
-                                    </button>
-                                    <div id="indicator" class="absolute bottom-4 right-4 bg-black/60 text-white text-sm px-3 py-1 rounded-full">
-                                        1 / {{ $event->images->count() }}
+                                    {{-- Controles do Carrossel (Removendo z-index desnecessário) --}}
+                                    <div
+                                        class="absolute inset-0 flex items-center justify-between p-4 pointer-events-none">
+                                        @if ($event->images->count() > 1)
+                                            <button id="prevBtn"
+                                                class="hidden absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 text-white p-3 rounded-full hover:bg-black/60 transition-colors shadow-lg z-0 pointer-events-auto">
+                                                <i class="ph ph-caret-left text-xl"></i>
+                                            </button>
+                                            <button id="nextBtn"
+                                                class="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 text-white p-3 rounded-full hover:bg-black/60 transition-colors shadow-lg z-0 pointer-events-auto">
+                                                <i class="ph ph-caret-right text-xl"></i>
+                                            </button>
+                                        @endif
+                                        <div class="absolute bottom-4 right-4 flex gap-2 z-0 pointer-events-auto">
+                                            <div id="indicator"
+                                                class="bg-black/60 text-white text-sm px-3 py-1 rounded-full font-medium mt-2">
+                                                1 / {{ $event->images->count() }}
+                                            </div>
+                                            <button id="zoomBtn"
+                                                class="bg-black/60 text-white p-2 rounded-full hover:bg-black/80 transition-colors shadow-md"
+                                                title="Visualizar em Tela Cheia">
+                                                <i class="ph-fill ph-magnifying-glass text-lg"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="aspect-video w-full flex items-center justify-center bg-gray-100">
+                                        <span class="text-gray-400 text-lg flex items-center gap-2">
+                                            <i class="ph-fill ph-image text-2xl"></i> Sem Imagem de Galeria
+                                        </span>
                                     </div>
                                 @endif
-                                
-                                {{-- Zoom Button --}}
-                                <button id="zoomBtn"
-                                        class="absolute bottom-4 left-4 bg-white/50 text-gray-800 p-2 rounded-full hover:bg-white/80 transition-colors shadow-md">
-                                    <i class="fas fa-expand w-4 h-4"></i>
-                                </button>
                             </div>
-                        @else
-                            <div class="aspect-video w-full flex items-center justify-center bg-gray-100 rounded-2xl">
-                                <span class="text-gray-400 text-lg">Sem imagem de capa.</span>
-                            </div>
-                        @endif
-                    </div>
-                </div>
+                        </div>
 
-                {{-- Event Info & Details (1/3 da largura em telas grandes, ao lado da imagem) --}}
-                <div class="lg:col-span-1 space-y-6">
-                    {{-- Quick Details Card --}}
-                    <div class="bg-white rounded-2xl shadow-lg p-6 border space-y-4">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-map-marker-alt text-blue-600"></i>
-                            <p class="text-gray-800 text-base">
-                                <span class="font-bold">Local:</span> {{ $event->event_location }}
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <i class="far fa-calendar-alt text-blue-600"></i>
-                            <p class="text-gray-800 text-base">
-                                <span class="font-bold">Data:</span> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D MMMM YYYY') }}
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <i class="far fa-clock text-blue-600"></i>
-                            <p class="text-gray-800 text-base">
-                                <span class="font-bold">Horário:</span> {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('HH:mm') }}
-                            </p>
-                        </div>
-                        {{-- Coordinator's Actions --}}
-                        @if (auth()->check() && auth()->user()->user_type === 'coordinator' && auth()->user()->coordinator->id === $event->coordinator_id)
-                            <div class="pt-4 mt-4 border-t border-gray-200 flex flex-wrap gap-2">
-                                <a href="{{ route('events.edit', $event->id) }}"
-                                    class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
-                                    <i class="fas fa-edit"></i> Editar Evento
-                                </a>
-                                {{-- Botão de Excluir que abre o modal --}}
-                                <button onclick="openModal('deleteModal-{{ $event->id }}')"
-                                    class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
-                                    <i class="fas fa-trash-alt"></i> Excluir Evento
-                                </button>
-                            </div>
-                        @endif
-                    </div>
+                        {{-- BARRA DE REAÇÕES (Elementos usados pelo event-reactions.js) --}}
+                        <div class="p-4 sm:p-6 flex items-center justify-between border-t border-gray-100">
+                            <div id="reactions" class="flex flex-wrap gap-4">
+                                @foreach (['like' => 'Curtir', 'save' => 'Salvar', 'notify' => 'Notificar'] as $type => $label)
+                                    @php
+                                        $isActive = in_array($type, $userReactions);
+                                        $count = $event->reactions->where('reaction_type', $type)->count();
 
-                    {{-- Additional Details Card --}}
-                    <div class="bg-white rounded-2xl shadow-lg p-6 border space-y-4 text-gray-700">
-                        <div>
-                            <p class="font-bold mb-1">Coordenador:</p>
-                            <p>
-                                @if (!$event->eventCoordinator || $event->eventCoordinator->coordinator_type !== $event->event_type)
-                                    Nenhum coordenador definido
-                                @else
-                                    {{ $event->eventCoordinator?->userAccount?->name ?? 'N/A' }}
-                                @endif
-                            </p>
-                        </div>
-                        <div>
-                            <p class="font-bold mb-1">Tipo de Evento:</p>
-                            <p>{{ $event->event_type === 'general' ? 'Evento Geral' : ($event->event_type === 'course' ? 'Evento de Curso' : 'N/A') }}</p>
-                        </div>
-                        @if ($event->event_type === 'course')
-                            <div>
-                                <p class="font-bold mb-1">Curso Relacionado:</p>
-                                <p>{{ $event->eventCourse->course_name ?? 'Sem Curso' }}</p>
-                            </div>
-                        @endif
-                        <div>
-                            <p class="font-bold mb-1">Categorias:</p>
-                            <div class="mt-2 flex flex-wrap gap-2">
-                                @forelse($event->eventCategories as $category)
-                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
-                                        {{ $category->category_name }}
-                                    </span>
-                                @empty
-                                    <span class="text-gray-400 text-sm">Nenhuma categoria atribuída.</span>
-                                @endforelse
+                                        // Definições de Estilos para o estado INICIAL (o JS irá manipulá-las)
+                                        $icon = match ($type) {
+                                            'like' => $isActive ? 'ph-fill ph-heart' : 'ph ph-heart',
+                                            'save' => $isActive
+                                                ? 'ph-fill ph-bookmark-simple'
+                                                : 'ph ph-bookmark-simple',
+                                            'notify' => $isActive ? 'ph-fill ph-bell-ringing' : 'ph ph-bell-ringing',
+                                            default => 'ph ph-question',
+                                        };
+
+                                        // Ajuste das classes de cor conforme a lógica que está no JS (azul)
+                                        $activeColor = 'bg-blue-600 text-white border-blue-600';
+                                        $inactiveColor = 'bg-white text-red-600 border-blue-500 hover:bg-blue-50';
+
+                                        // Exceções para cores de Notificar e Salvar se necessário (mantendo o que foi definido antes)
+                                        if ($type === 'notify') {
+                                            $activeColor =
+                                                'bg-yellow-500 text-gray-900 border-yellow-500 hover:bg-yellow-600';
+                                            $inactiveColor =
+                                                'bg-white text-yellow-600 border-yellow-300 hover:bg-yellow-50';
+                                        } elseif ($type === 'save') {
+                                            $activeColor =
+                                                'bg-green-500 text-white border-green-500 hover:bg-green-600';
+                                            $inactiveColor =
+                                                'bg-white text-green-600 border-green-300 hover:bg-green-50';
+                                        } elseif ($type === 'like') {
+                                            $activeColor = 'bg-red-500 text-white border-red-500 hover:bg-red-600';
+                                            $inactiveColor = 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
+                                        }
+
+                                        $buttonClass = $isActive ? $activeColor : $inactiveColor;
+                                    @endphp
+
+                                    <form class="reaction-form" method="POST"
+                                        action="{{ route('events.react', ['event' => $event->id]) }}">
+                                        @csrf
+                                        <input type="hidden" name="reaction_type" value="{{ $type }}">
+
+                                        <button type="submit" data-type="{{ $type }}"
+                                            data-count="{{ $count }}"
+                                            class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-semibold shadow-sm {{ $buttonClass }}">
+                                            <i class="{{ $icon }} text-lg"></i>
+                                            @if ($type === 'like')
+                                                <span class="font-semibold">{{ $label }}</span>
+                                                <span
+                                                    class="reaction-count text-xs px-2 py-0.5 rounded-full {{ $isActive ? 'bg-white text-red-500' : 'bg-gray-200 text-gray-700' }}">
+                                                    {{ $count }}
+                                                </span>
+                                            @else
+                                                <span class="toggle-text">
+                                                    {{ $isActive ? ($type == 'save' ? 'Salvo' : 'Notificando') : $label }}
+                                                </span>
+                                            @endif
+                                        </button>
+                                    </form>
+                                @endforeach
                             </div>
                         </div>
-                        {{-- Botão de navegação --}}
-                        <div class="flex justify-start pt-4 border-t border-gray-200">
-                            <a href="{{ route('events.index') }}"
-                                class="inline-flex items-center rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300">
-                                ← Voltar
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div> {{-- FIM do grid grid-cols-1 lg:grid-cols-3 --}}
 
-            {{-- **SEÇÕES EMPILHADAS DE LARGURA TOTAL** --}}
+                        {{-- SOBRE O EVENTO --}}
+                        <div class="p-6 sm:p-8 border-t border-gray-100">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="ph-fill ph-file-text text-red-600"></i> Sobre o Evento
+                            </h2>
+                            <div
+                                class="text-gray-700 leading-relaxed text-base mb-8 pb-4 border-b border-gray-100 text-left max-w-3xl pl-4 break-words">
+                                {{ $event->event_info ?? '(Sem informações sobre o evento)' }}
+                            </div>
 
-            {{-- Description Section (100% de largura) --}}
-            <div class="bg-white rounded-2xl shadow-lg p-6 border">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">Sobre o Evento</h2>
-                <p class="text-gray-700 leading-relaxed">{{ $event->event_description }}</p>
-            </div>
-            
-            {{-- Reactions Section (100% de largura) --}}
-            <div class="bg-white rounded-2xl shadow-lg p-6 border">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="far fa-heart text-red-500"></i> Reações
-                </h2>
-                <div id="reactions" class="flex flex-wrap gap-4">
-                    @foreach (['like' => 'Curtir', 'save' => 'Salvar', 'notify' => 'Notificar'] as $type => $label)
-                        @php
-                            $isActive = in_array($type, $userReactions);
-                            $count = $event->reactions->where('reaction_type', $type)->count();
-                        @endphp
-                        
-                        <form class="reaction-form" method="POST" action="{{ route('events.react', ['event' => $event->id]) }}">
-                            @csrf
-                            <input type="hidden" name="reaction_type" value="{{ $type }}">
-                            
-                            {{-- Lógica para o botão CURTIR (Com contador) --}}
-                            @if ($type === 'like')
-                                <button type="submit" data-type="{{ $type }}" data-count="{{ $count }}"
-                                    class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
-                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
-                                    <i class="fas fa-thumbs-up"></i>
-                                    {{ $label }}
-                                    <span class="reaction-count text-xs font-semibold px-2 py-1 rounded-full {{ $isActive ? 'bg-white text-blue-600' : 'bg-blue-100' }}">
-                                        {{ $count }}
-                                    </span>
-                                </button>
-                            
-                            {{-- Lógica para SALVAR e NOTIFICAR (Ação binária sem contador) --}}
-                            @else
-                                <button type="submit" data-type="{{ $type }}"
-                                    class="reaction-btn-toggle flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
-                                    {{ $isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-600 border-blue-500 hover:bg-blue-50' }}">
-                                    <i class="fas fa-{{ $type == 'save' ? 'bookmark' : 'bell' }}"></i>
-                                    <span class="toggle-text font-semibold">
-                                        {{ $isActive ? ($type == 'save' ? 'Salvo' : 'Notificando') : $label }}
-                                    </span>
-                                </button>
+
+                            {{-- INFORMAÇÕES ESSENCIAIS EM FORMATO GRID --}}
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+                                {{-- Data e Hora --}}
+                                <div class="flex items-start gap-3">
+                                    <i class="ph-fill ph-calendar-blank text-2xl text-red-600 mt-0.5"></i>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-500">Data e Hora</p>
+                                        <p class="text-gray-800 font-semibold">
+                                            {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY') }}
+                                        </p>
+                                        <p class="text-gray-600 text-sm">
+                                            às
+                                            {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('HH:mm') }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Local --}}
+                                <div class="flex items-start gap-3">
+                                    <i class="ph-fill ph-map-pin text-2xl text-red-600 mt-0.5"></i>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-500">Local</p>
+                                        <p class="text-gray-800 font-semibold">{{ $event->event_location }}</p>
+                                    </div>
+                                </div>
+
+                                {{-- Tipo/Curso --}}
+                                <div class="flex items-start gap-3">
+                                    <i class="ph-fill ph-tag text-2xl text-red-600 mt-0.5"></i>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-500">Tipo de Evento</p>
+                                        <span class="font-semibold text-gray-800">
+                                            {{ $event->event_type === 'general' ? 'Geral' : ($event->event_type === 'course' ? 'De Curso' : 'N/A') }}
+                                        </span>
+                                        @if ($event->event_type === 'course')
+                                            @forelse ($event->courses as $course)
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    <i class="ph-fill ph-graduation-cap mr-1"></i>
+                                                    Curso: {{ $course->course_name }}
+                                                </p>
+                                            @empty
+                                                <p class="text-xs text-gray-500 mt-1 italic">
+                                                    <i class="ph-fill ph-warning-circle mr-1"></i> Sem cursos vinculados
+                                                </p>
+                                            @endforelse
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- Coordenador --}}
+                                <div class="flex items-start gap-3">
+                                    <i class="ph-fill ph-user-circle text-2xl text-red-600 mt-0.5"></i>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-500">Promovido por</p>
+                                        <p class="text-gray-800 font-semibold">
+                                            @if (!$event->eventCoordinator || $event->eventCoordinator->coordinator_type !== $event->event_type)
+                                                <span class="text-gray-500">Nenhum coordenador atribuído</span>
+                                            @else
+                                                {{ $event->eventCoordinator?->userAccount?->name ?? 'N/A' }}
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- Categorias (Largura Total) --}}
+                                <div class="sm:col-span-2 border-t border-gray-200 pt-4 mt-4">
+                                    <p class="text-sm font-bold text-gray-500 mb-2 flex items-center gap-1">
+                                        <i class="ph-fill ph-hash text-base text-red-600"></i> Categorias:
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        @forelse($event->eventCategories as $category)
+                                            <span
+                                                class="inline-block bg-blue-100 text-red-800 text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+                                                {{ $category->category_name }}
+                                            </span>
+                                        @empty
+                                            <span class="text-gray-400 text-sm">Nenhuma categoria atribuída.</span>
+                                        @endforelse
+                                    </div>
+                                </div>
+
+                            </div> {{-- FIM do grid de detalhes --}}
+
+                            {{-- Ações do Coordenador --}}
+                            @if (auth()->check() &&
+                                    auth()->user()->user_type === 'coordinator' &&
+                                    auth()->user()->coordinator->id === $event->coordinator_id)
+                                <div class="pt-4 mt-4 border-t border-gray-200 flex flex-wrap gap-2">
+                                    <a href="{{ route('events.edit', $event->id) }}"
+                                        class="flex items-center gap-2 px-4 py-2 bg-yellow-400 text-yellow-900 rounded-lg font-semibold hover:bg-yellow-500 transition-colors">
+                                        <i class="ph-fill ph-pencil-simple-line"></i> Editar Evento
+                                    </a>
+                                    {{-- Botão de Excluir que abre o modal --}}
+                                    <button onclick="openModal('deleteModal-{{ $event->id }}')"
+                                        class="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                                        <i class="ph-fill ph-trash"></i> Excluir Evento
+                                    </button>
+                                </div>
                             @endif
+                        </div>
+                    </div> {{-- FIM do CARTÃO PRINCIPAL --}}
+                </div> {{-- FIM da COLUNA PRINCIPAL (6/12) --}}
 
-                        </form>
-                    @endforeach
+                {{-- COLUNA DA DIREITA (COMENTÁRIOS - 6/12 da Largura) --}}
+                <div class="lg:col-span-6">
+                    {{-- Torna a coluna de comentários fixa em telas grandes. --}}
+                    <div class="lg:sticky lg:top-10 bg-white rounded-3xl shadow-xl p-6 border border-gray-100 space-y-4"
+                        style="max-height: calc(100vh - 4rem); overflow-y: auto;">
+                        {{-- O Livewire Component de comentários se expandirá para essa largura --}}
+                        {{-- O TÍTULO E A CONTAGEM SERÃO RENDERIZADOS A PARTIR DESTE COMPONENTE AGORA --}}
+                        @livewire('event-comments', ['event' => $event])
+                    </div>
                 </div>
-            </div>
+            </div> {{-- FIM do MAIN CONTENT GRID --}}
 
-            {{-- Comments Section (Livewire) (100% de largura) --}}
-            <div class="bg-white rounded-2xl shadow-lg p-6 border">
-                <h2 class="text-2xl font-bold text-gray-900 mb-4">
-                    Comentários
-                </h2>
-                @livewire('event-comments', ['event' => $event])
-            </div>
-
-        </div> {{-- FIM do max-w-7xl mx-auto space-y-8 --}}
+        </div> {{-- FIM do container amplo --}}
     </div> {{-- FIM do Main Container --}}
 
-    {{-- MODAIS PRONTOS NO HTML --}}
-    
-    {{-- Modal de Zoom --}}
-    <div id="zoomModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] hidden">
+    {{-- MODAIS (Ajustando Z-index para prevenir vazamento) --}}
+
+    {{-- Modal de Zoom (Agora em z-[500]) --}}
+    <div id="zoomModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[500] hidden">
         <div class="relative w-full h-full p-4 flex items-center justify-center">
-            <img id="zoomImg" src="" class="max-w-full max-h-full object-contain rounded-lg">
-            <button id="closeZoom" class="absolute top-5 right-5 text-white text-4xl font-light hover:text-gray-300 transition-colors">
-                &times;
+            <img id="zoomImg" src="" class="max-w-full max-h-full object-contain rounded-xl">
+            <button id="closeZoom"
+                class="absolute top-5 right-5 text-white/80 text-4xl font-light hover:text-white transition-colors p-2 rounded-full bg-black/30">
+                <i class="ph ph-x text-2xl"></i>
             </button>
         </div>
     </div>
 
-    {{-- Modal para cadastrar telefone --}}
-    <div id="phoneModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden z-50">
-        <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
-            <h3 class="text-xl font-semibold mb-4">Cadastre seu número de celular</h3>
-            <form id="phoneForm" method="POST" action="{{ route('user.phone.update') }}" class="space-y-4">
-                @csrf
-                @method('PUT')
-                <input type="text" name="phone_number" id="phone_number" placeholder="(99) 99999-9999"
-                    pattern="\([0-9]{2}\) [0-9]{5}-[0-9]{4}" class="w-full border border-gray-300 rounded px-3 py-2"
-                    required>
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="closeModal('phoneModal')" id="cancelPhoneModal"
-                        class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-                    <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    {{-- Modal de Exclusão --}}
+    {{-- Modal de Exclusão (Evento) --}}
     <div id="deleteModal-{{ $event->id }}"
-        class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white p-6 rounded-md shadow-md w-full max-w-md">
-            <h2 class="text-lg font-semibold mb-4 text-red-600">Confirmar Exclusão</h2>
-            <p>Tem certeza que deseja excluir este evento? Esta ação não poderá ser desfeita.</p>
-            <div class="mt-6 flex justify-end space-x-2">
+        class="modal hidden fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 p-4">
+
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md overflow-hidden"
+            onclick="event.stopPropagation();">
+
+            {{-- Cabeçalho --}}
+            <h2 class="text-xl font-bold mb-4 text-red-600 flex items-center gap-2 flex-wrap">
+                <i class="ph-bold ph-warning-circle text-2xl"></i> Confirmar Exclusão
+            </h2>
+
+            {{-- Texto --}}
+            <p class="text-gray-700 w-full break-words whitespace-normal text-left">
+                Tem certeza que deseja excluir o evento
+                <strong class="break-words whitespace-normal">{{ $event->event_name }}</strong>?
+                Esta ação não poderá ser desfeita.
+            </p>
+
+            {{-- Botões --}}
+            <div class="mt-6 flex justify-end space-x-3 flex-wrap">
                 <button onclick="closeModal('deleteModal-{{ $event->id }}')"
-                    class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+                    class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 font-medium transition">
+                    Cancelar
+                </button>
                 <form action="{{ route('events.destroy', $event->id) }}" method="POST">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Confirmar
-                        Exclusão</button>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm bg-red-600 text-white rounded-full hover:bg-red-700 font-medium transition">
+                        Confirmar Exclusão
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 
-    {{-- Toast simples (mantido) --}}
-    <div id="toast" class="fixed bottom-5 right-5 bg-blue-600 text-white px-4 py-2 rounded shadow hidden z-50">
-        <span id="toast-message"></span>
+    {{-- Toast simples --}}
+    <div id="toast"
+        class="fixed bottom-5 right-5 text-white px-4 py-2 rounded-lg shadow-xl hidden z-50 transition-all duration-300">
+        <span id="toast-message" class="font-medium"></span>
     </div>
 
 </x-app-layout>
 
-{{-- SCRIPTS DE LÓGICA ESPECÍFICA --}}
 <script>
-    // Funções globais para Modais
-    function openModal(id) {
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
-
-    // Função showToast (necessária para o event-reactions.js)
+    // Função showToast (necessária para o event-reactions.js funcionar)
     function showToast(message) {
         const toast = document.getElementById('toast');
         const toastMsg = document.getElementById('toast-message');
@@ -284,38 +367,7 @@
             toast.classList.add('hidden');
         }, 3000);
     }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // Lógica para fechar modais ao clicar fora (mantida aqui, pois usa a função closeModal)
-        const zoomModal = document.getElementById('zoomModal');
-        const phoneModal = document.getElementById('phoneModal');
-
-        // Fechar modal de telefone ao clicar fora
-        if(phoneModal) {
-            phoneModal.addEventListener('click', (e) => {
-                // Remove a lógica de telefone, mas mantém a função closeModal
-                if(e.target === phoneModal) {
-                    closeModal('phoneModal');
-                }
-            });
-            
-            // Remove a lógica de submissão do formulário de telefone, pois não será mais usada.
-            // O botão de cancelar deve chamar apenas closeModal('phoneModal') no onclick
-        }
-        
-        // Fechar modal de zoom ao clicar fora
-        if(zoomModal) {
-            zoomModal.addEventListener('click', (e) => {
-                if(e.target === zoomModal) {
-                    closeModal('zoomModal');
-                }
-            });
-        }
-        
-        // IMPORTANTE: Toda a lógica de reações (AJAX) foi MOVIDA para event-reactions.js.
-        // NENHUM CÓDIGO DE REAÇÃO DEVE FICAR AQUI.
-    });
 </script>
 
-{{-- Scripts compilados (Agora o app.js importa o event-reactions.js) --}}
+{{-- Chamada para os scripts externos --}}
 @vite('resources/js/app.js')

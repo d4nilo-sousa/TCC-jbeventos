@@ -7,13 +7,12 @@ trait PasswordValidationRules
     /**
      * Retorna as regras de validação da senha.
      *
-     * @param string $userType Tipo do usuário ('user' ou 'coordinator')
+     * @param string $userType Tipo do usuário ('user', 'coordinator' ou 'admin')
      * @return array
      */
     protected function passwordRules(string $userType = 'user'): array
     {
-        if ($userType === 'coordinator') {
-            // Coordenador: requisitos fortes
+        if ($userType === 'coordinator' || $userType === 'admin') {
             return [
                 'required',
                 'string',
@@ -23,7 +22,6 @@ trait PasswordValidationRules
             ];
         }
 
-        // Usuário comum: só precisa de 8 caracteres
         return [
             'required',
             'string',

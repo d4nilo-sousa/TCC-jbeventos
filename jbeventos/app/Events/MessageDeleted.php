@@ -23,7 +23,6 @@ class MessageDeleted implements ShouldBroadcast
         $this->receiverId = $receiverId;
     }
 
-    // Apenas essa linha foi alterada para retornar um array
     public function broadcastOn(): array
     {
         $ids = [$this->senderId, $this->receiverId];

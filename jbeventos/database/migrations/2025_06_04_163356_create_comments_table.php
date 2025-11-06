@@ -16,8 +16,10 @@ return new class extends Migration
             $table->id(); // ID único do comentário
 
             $table->text('comment'); // Texto do comentário feito pelo usuário
-            $table->boolean('visible_comment')->default(true); // Flag para indicar se o comentário está visível
 
+            // Relacionamento de auto-referência para Comentários Pai/Resposta
+            $table->foreignId('parent_id')->nullable()->constrained('comments')->onDelete('cascade');
+            
             // Relacionamento com o usuário que fez o comentário
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Excluir comentário se usuário for deletado
             // Relacionamento com o evento comentado

@@ -7,24 +7,49 @@ use App\Models\Course;
 
 class CourseFollowController extends Controller
 {
-    //Seguir um Curso
-    public function follow(Course $course){
+    public function follow(Course $course)
+    {
         $user = auth()->user();
         
-        if(!$user->followedCourses->contains($course->id)){ //Verifica se o usuário segue o curso
-            $user->followedCourses()->attach($course->id);
-        }
+        // 1. Executa a ação de seguir
+        $user->followedCourses()->syncWithoutDetaching([$course->id]);
 
-        return back()->with('success', 'Você está seguindo este curso');
+        // 2. Calcula a nova contagem
+        $newFollowersCount = $course->followers()->count(); // <-- OBRIGATÓRIO
+
+        // 3. Retorna a contagem no JSON com a chave correta
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Você está seguindo este curso.',
+            'followers_count' => $newFollowersCount // <-- CHAVE NECESSÁRIA PARA O JS
+        ]);
     }
 
-    public function unfollow(Course $course){
+    public function unfollow(Course $course)
+    {
         $user = auth()->user();
         
-        if($user->followedCourses->contains($course->id)){ //Verifica se o usuário segue o curso
-            $user->followedCourses()->detach($course->id); //Desvincula o usuário do curso
-        }
+        // 1. Executa a ação de deixar de seguir
+        $user->followedCourses()->detach($course->id); 
 
-        return back()->with('success', ' Vocé deixou de seguir este curso');
+        // 2. Calcula a nova contagem
+        $newFollowersCount = $course->followers()->count(); // <-- OBRIGATÓRIO
+        
+        // 3. Retorna a contagem no JSON com a chave correta
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Você deixou de seguir este curso.',
+            'followers_count' => $newFollowersCount // <-- CHAVE NECESSÁRIA PARA O JS
+        ]);
+    }
+
+    // O método followersCount pode ser mantido, mas não é usado na lógica de clique do botão
+    public function followersCount(Course $course)
+    {
+        $count = $course->followers()->count();
+
+        return response()->json([
+            'count' => $count
+        ]);
     }
 }

@@ -15,12 +15,13 @@ class EventDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    // Propriedade pública que será enviada no broadcast
     public $eventId;
 
     /**
-     * Construtor: recebe o ID do evento que foi deletado
-     * e guarda para ser transmitido.
+     * Create a new event instance.
+     *
+     * @param int $eventId
+     * @return void
      */
     public function __construct($eventId)
     {
@@ -28,20 +29,22 @@ class EventDeleted implements ShouldBroadcast
     }
 
     /**
-     * Define o canal de transmissão do evento.
-     * Aqui é o mesmo canal público "events".
+     * Get the channels the event should broadcast on.
+     *
+     * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn()
     {
-        return new Channel('events'); // canal
+        return new Channel('events');
     }
 
     /**
-     * Define o nome do evento transmitido.
-     * O frontend vai escutar por "event.deleted".
+     * Get the name the event should broadcast as.
+     *
+     * @return string
      */
     public function broadcastAs()
     {
-        return 'event.deleted'; // nome do evento
+        return 'event.deleted';
     }
 }

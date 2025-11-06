@@ -3,69 +3,96 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage; 
 use App\Models\Event;
-use Carbon\Carbon;
 
-class EventUpdatedNotification extends Notification
+// Adiciona a interface ShouldQueue para que a notificação vá para a fila, o que é necessário para o Broadcast (WebSockets)
+use Illuminate\Contracts\Queue\ShouldQueue; 
+
+class EventUpdatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected $event;
-    protected $changedFields; // Lista dos campos alterados
+    protected $changedFields;
 
     public function __construct(Event $event, array $changedFields = [])
     {
         $this->event = $event;
-        $this->changedFields = $changedFields;
+        $this->changedFields = array_filter(
+            $changedFields,
+            fn($key) => in_array($key, ['event_name', 'event_scheduled_at', 'event_location', 'event_expired_at']),
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
+    /**
+     * Define os canais (meios) de entrega da notificação.
+     * Adiciona 'broadcast' para o tempo real.
+     */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail', 'broadcast']; // Adiciona 'broadcast'
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        // Lista de nomes técnicos para amigáveis
-        $fieldNames = [
-            'event_name'         => 'Nome',
-            'event_description'  => 'Descrição',
-            'event_scheduled_at' => 'Data',
-            'event_location'     => 'Local',
-        ]; // ← Faltava o ponto e vírgula aqui
-
-        $startDate = Carbon::parse($this->event->event_scheduled_at);
-
-        $message = (new MailMessage)
-            ->subject('Atualização no evento: ' . $this->event->event_name)
-            ->greeting('Olá, ' . $notifiable->name . '!')
-            ->line('O evento que você está seguindo foi atualizado.')
-            ->line('**' . $this->event->event_name . '**')
-            ->line($this->event->event_description);
-
-        if (!empty($this->changedFields)) {
-            $message->line('Alterações recentes:');
-            foreach ($this->changedFields as $field => $value) {
-                // Usa o nome amigável se existir, senão gera automaticamente
-                $label = $fieldNames[$field] ?? ucfirst(str_replace('_', ' ', $field));
-                $message->line("• **{$label}**: {$value}");
-            }
-        }
-
-        $message->action('Ver detalhes do evento', route('events.show', $this->event->id))
-                ->line('Fique atento para não perder nada!');
-
-        return $message;
+        return (new MailMessage)
+            ->subject('Evento Atualizado: ' . $this->event->event_name)
+            ->markdown('emails.events.updated', [
+                'event'         => $this->event,
+                'user'          => $notifiable,
+                'changedFields' => $this->changedFields,
+            ]);
     }
 
+    /**
+     * Obtém a representação da notificação para o canal "broadcast" (WebSockets).
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        // Reutiliza o payload de dados do toArray() para consistência
+        $data = $this->toArray($notifiable);
+        
+        return new BroadcastMessage([
+            'data' => $data,
+            // Adiciona a contagem de não lidas para que o frontend possa atualizar o sino
+            'unread_count' => $notifiable->unreadNotifications()->count(), 
+            'event_id' => $this->event->id,
+        ]);
+    }
+
+    /**
+     * Obtém a representação da notificação para o canal "database".
+     * O conteúdo deste array será armazenado no campo 'data' da tabela 'notifications'.
+     */
     public function toArray(object $notifiable): array
     {
+        $message = "O evento **{$this->event->event_name}** foi atualizado. Veja as mudanças.";
+
+        // Traduz as chaves dos campos alterados para o português para melhor visualização na interface
+        $translationMap = [
+            'event_name' => 'Nome',
+            'event_scheduled_at' => 'Data e Hora',
+            'event_location' => 'Local',
+            'event_expired_at' => 'Data de Término',
+        ];
+
+        $changes = [];
+        foreach ($this->changedFields as $field => $newValue) {
+            // Garante que o campo existe no translationMap antes de usar
+            $changes[ $translationMap[$field] ?? $field ] = $newValue; 
+        }
+
         return [
-            'event_id'        => $this->event->id,
-            'changed_fields'  => $this->changedFields,
+            'type' => 'event_updated', // Identificador da notificação
+            'event_id' => $this->event->id,
+            'event_name' => $this->event->event_name,
+            'event_url' => route('events.show', $this->event->id),
+            'message' => $message,
+            'changes' => $changes, // Campos alterados
         ];
     }
 }

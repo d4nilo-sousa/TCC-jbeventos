@@ -8,12 +8,17 @@
     <!-- Exemplo com a fonte Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
 
+    <title>JBeventos</title>
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <!-- Favicon do site-->
+    <link rel="shortcut icon" href="{{ asset('imgs/favicon-JB.ico') }}" type="image/x-icon">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+    <!-- FullCalendar CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -24,7 +29,16 @@
         };
     </script>
 
+    <!-- script Phosphor Icons ao layout principal -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script> 
+
     @livewireStyles
+
+    <!-- FullCalendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/pt-br.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@5.11.3/main.min.js"></script>
 </head>
 
 <body class="font-sans antialiased h-screen flex flex-col">
@@ -33,8 +47,9 @@
 
     @props(['backgroundClass' => 'bg-gradient-to-br from-red-400 via-orange-100 to-red-100'])
 
-    <div class="flex-1 bg-gray-100">
+    <div class="flex-1 bg-gray-100 pt-[60px] lg:pt-[70px]">
         @if (isset($header))
+            {{-- Removido o padding da navbar do header, pois o pt já está no div pai --}}
             <header class="bg-white shadow">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
@@ -42,10 +57,12 @@
             </header>
         @endif
 
-        <main class="flex-1">
-            {{ $slot }}
+        <main class="flex-1 flex flex-col">
+            <div class="flex-1">
+                {{ $slot }}
+            </div>
         </main>
-    </div>
+</div>
 
     @stack('modals')
     @livewireScripts

@@ -3,70 +3,80 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Messages\BroadcastMessage; 
 use App\Models\Event;
-use Carbon\Carbon;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class NewEventNotification extends Notification
+class NewEventNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
     protected $event;
 
-    /**
-     * Create a new notification instance.
-     */
     public function __construct(Event $event)
     {
         $this->event = $event;
     }
 
     /**
-     * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
+     * Define os canais de envio.
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail', 'broadcast'];
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Constrói o email usando Markdown.
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $startDate = Carbon::parse($this->event->event_scheduled_at);
-        $diff = Carbon::now()->diffForHumans($startDate, [
-            'parts' => 2,
-            'short' => true,
-            'syntax' => Carbon::DIFF_RELATIVE_TO_NOW,
-        ]);
-
         return (new MailMessage)
             ->subject('Novo Evento: ' . $this->event->event_name)
-            ->greeting('Olá, ' . $notifiable->name . '!')
-            ->line('Um novo evento foi adicionado ao curso que você segue:')
-            ->line('**' . $this->event->event_name . '**')
-            ->line($this->event->event_description)
-            ->line('⏳ Começa ' . $diff . '.')
-            ->action('Ver detalhes do evento', route('events.show', $this->event->id))
-            ->line('Fique ligado para não perder!');
+            ->markdown('emails.events.new', [
+                'event' => $this->event,
+                'user'  => $notifiable,
+            ]);
     }
 
     /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
+     * Obtém a representação da notificação para o canal "broadcast" (WebSockets).
+     * Este é o payload que o Livewire irá escutar.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        // Reutiliza o payload de dados da notificação de banco de dados
+        $data = $this->toArray($notifiable);
+        
+        // Adiciona dados relevantes para a Livewire, como a contagem (que será recalculada
+        // no componente Livewire, mas podemos enviar o mínimo)
+        return new BroadcastMessage([
+            'data' => $data,
+            'unread_count' => $notifiable->unreadNotifications()->count(),
+            'event_id' => $this->event->id,
+        ]);
+    }
+    
+    
+    /**
+     * Obtém a representação da notificação para o canal "database".
+     * O conteúdo deste array será armazenado no campo 'data' da tabela 'notifications'.
      */
     public function toArray(object $notifiable): array
     {
+        $coordinatorName = optional(optional($this->event->eventCoordinator)->userAccount)->name ?? 'Coordenador';
+        
+        $message = "🎉 **{$coordinatorName}** publicou um novo evento que pode te interessar: **{$this->event->event_name}**!";
+        
         return [
+            'type' => 'new_event', // Identificador da notificação
             'event_id' => $this->event->id,
             'event_name' => $this->event->event_name,
-            'course_id' => $this->event->course_id,
+            'event_url' => route('events.show', $this->event->id),
+            'message' => $message,
+            'event_scheduled_at' => optional($this->event->event_scheduled_at)->format('d/m H:i'),
         ];
     }
 }

@@ -19,15 +19,12 @@ class ResetUserPassword implements ResetsUserPasswords
      */
     public function reset(User $user, array $input): void
     {
-        // Descobre o tipo do usuário do banco
         $userType = $user->user_type ?? 'user';
 
-        // Valida a senha usando as regras corretas
         Validator::make($input, [
             'password' => $this->passwordRules($userType),
         ])->validate();
 
-        // Salva a nova senha
         $user->forceFill([
             'password' => Hash::make($input['password']),
         ])->save();

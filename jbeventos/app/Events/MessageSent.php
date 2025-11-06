@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\PresenceChannel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -15,31 +16,39 @@ class MessageSent implements ShouldBroadcast
     public Message $messageModel;
 
     /**
-     * Cria o evento de mensagem
+     * Create a new event instance.
+     *
+     * @param \App\Models\Message $messageModel
+     * @return void
      */
-    // O construtor recebe o objeto da mensagem
     public function __construct(Message $messageModel)
     {
         $this->messageModel = $messageModel;
     }
 
     /**
-     * Canal de broadcast
+     * Get the channels the event should broadcast on.
+     *
+     * @return array
      */
     public function broadcastOn()
     {
         $ids = [$this->messageModel->sender_id, $this->messageModel->receiver_id];
         sort($ids);
 
-        return [new PresenceChannel('chat.' . implode('.', $ids))];
+        return [
+            new PresenceChannel('chat.' . implode('.', $ids)),
+            new PrivateChannel('user.' . $this->messageModel->receiver_id),
+        ];
     }
 
     /**
-     * Dados enviados no broadcast
+     * Get the data to broadcast.
+     *
+     * @return array
      */
     public function broadcastWith()
     {
-        //Retorna os dados completos da mensagem
         return [
             'id' => $this->messageModel->id,
             'sender_id' => $this->messageModel->sender_id,

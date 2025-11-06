@@ -28,13 +28,11 @@ class SendWeeklyEventsSummary extends Command
      */
     public function handle()
     {
-        $startOfWeek = Carbon::now()->startOfWeek(); // Segunda-feira 00:00
-        $endOfWeek = Carbon::now()->endOfWeek();     // Domingo 23:59:59
+        $startOfWeek = Carbon::now()->startOfWeek(); 
+        $endOfWeek = Carbon::now()->endOfWeek();     
 
-        // Busca usuários com seus cursos seguidos e eventos da semana
         $users = User::with(['followedCourses.events' => function ($query) use ($startOfWeek, $endOfWeek) {
             $query->whereBetween('event_scheduled_at', [$startOfWeek, $endOfWeek])
-                  ->where('visible_event', true)
                   ->orderBy('event_scheduled_at');
         }])->get();
 

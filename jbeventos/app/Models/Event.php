@@ -13,11 +13,11 @@ class Event extends Model
     protected $fillable = [
         'event_name',
         'event_description',
+        'event_info',
         'event_location',
         'event_scheduled_at',
         'event_expired_at',
         'event_image',
-        'visible_event',
         'event_type',
         'coordinator_id', // Relacionamento com Coordenador
         'course_id', // Relacionamento com Curso
@@ -29,7 +29,6 @@ class Event extends Model
         return [
             'event_scheduled_at' => 'datetime',
             'event_expired_at' => 'datetime',
-            'visible_event' => 'boolean',
         ];
     }
 
@@ -59,29 +58,31 @@ class Event extends Model
         return $this->hasMany(EventUserReaction::class, 'event_id');
     }
 
-    public function notifiableUsers() {
+    public function likes()
+    {
+        return $this->hasMany(EventUserReaction::class, 'event_id')
+            ->where('reaction_type', 'like');
+    }
+
+    public function notifiableUsers()
+    {
         return $this->belongsToMany(User::class, 'event_user_alerts', 'event_id', 'user_id');
     }
 
-    // Relação com o modelo Course
-    public function course()
+    public function courses()
     {
-        return $this->belongsTo(Course::class);
-    }
-
-    // Retorna o curso que está assossiado ao evento
-    public function eventCourse()
-    {
-        return $this->belongsTo(Course::class, 'course_id');
+        return $this->belongsToMany(Course::class, 'course_event');
     }
 
     public function images()
     {
         return $this->hasMany(EventImage::class);
-    }    
-    public function saivers(){
+    }
+
+    public function saivers()
+    {
         return $this->belongsToMany(User::class, 'event_user_reaction')
-                ->wherePivot('reaction_type', 'save')
-                ->withTimestamps();
+            ->wherePivot('reaction_type', 'save')
+            ->withTimestamps();
     }
 }

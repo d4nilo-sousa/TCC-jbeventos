@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\CommentReaction;
 
 class Comment extends Model
 {
@@ -11,8 +12,6 @@ class Comment extends Model
 
     protected $fillable = [
         'comment',
-        'visible_comment',
-        'edited_at',
         'parent_id',
         'media_path',
         'user_id',
@@ -20,8 +19,6 @@ class Comment extends Model
     ];
 
     protected $casts = [
-        'visible_comment' => 'boolean',
-        'edited_at' => 'datetime',
     ];
 
     /*
@@ -50,10 +47,11 @@ class Comment extends Model
         return $this->hasMany(Comment::class, 'parent_id');
     }
 
+    /*
     public function mentions()
     {
         return $this->hasMany(CommentMention::class);
-    }
+    } */
 
     public function reactions()
     {
@@ -89,5 +87,29 @@ class Comment extends Model
     public function repliesCount(): int
     {
         return $this->replies()->count();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CORREÇÃO DE CHAVE ESTRANGEIRA (ON DELETE CASCADE VIA MODEL EVENT)
+    |--------------------------------------------------------------------------
+    */
+     /**
+     * Deleta todos os filhos relacionados (reações e respostas) antes de deletar o comentário pai.
+     * Isso resolve o erro 'Integrity constraint violation'.
+     */
+    protected static function booted()
+    {
+        static::deleting(function ($comment) {
+            // 1. Excluir Reações do Comentário
+            // O relacionamento "reactions" é o que está causando a falha de Foreign Key (1451)
+            $comment->reactions()->delete();
+
+            // 2. Excluir Respostas (garante que o deleting hook de cada resposta seja acionado)
+            // Se o comentário for pai, esta iteração garantirá a exclusão em cascata.
+            foreach ($comment->replies as $reply) {
+                $reply->delete(); // Isso dispara o hook 'deleting' de cada resposta
+            }
+        });
     }
 }

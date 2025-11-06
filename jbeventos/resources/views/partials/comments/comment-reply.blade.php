@@ -93,29 +93,6 @@
                 <button wire:click="deleteComment({{ $reply->id }})"
                         class="hover:underline text-red-500">Excluir</button>
             @endif
-
-            @if(auth()->check() && auth()->user()->user_type === 'coordinator') 
-            {{-- Só permite continuar se o usuário estiver logado e for coordenador --}}
-
-                @php
-                    $loggedCoordinator = auth()->user()->coordinator;
-                    // Pega o coordenador vinculado ao usuário logado
-                @endphp
-
-                @if($loggedCoordinator && $loggedCoordinator->id === $event->coordinator_id)
-                {{-- Garante que o coordenador logado é o responsável pelo evento --}}
-
-                    {{-- Formulário para ocultar o comentário --}}
-                    <form action="{{ route('events.updateComment', $reply->id) }}" method="POST"
-                    onsubmit="return confirm('Tem certeza que deseja ocultar este comentário?')" class="inline">
-                        @csrf {{-- Proteção contra CSRF --}}
-                        @method('PATCH') {{-- Requisição será do tipo PATCH --}}
-                        <button type="submit" class="hover:underline text-gray-700">
-                            Ocultar
-                        </button>
-                    </form>
-                @endif
-            @endif
         </div>
 
         {{-- Respostas aninhadas (collapse) --}}

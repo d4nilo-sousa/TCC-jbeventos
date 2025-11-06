@@ -32,7 +32,7 @@ class MessageEdited implements ShouldBroadcast
         return [
             'id' => $this->messageModel->id,
             'message' => $this->messageModel->message,
-            'is_edited' => true, // ADIÇÃO: Inclui a flag de edição no evento
+            'is_edited' => true, 
         ];
     }
 }

@@ -6,162 +6,318 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventUserReaction;
 use App\Models\Comment;
+use App\Models\Post;
+use App\Models\Reply;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CoordinatorDashboardController extends Controller
 {
-    public function index()
+    /**
+     * Prepara os dados do dashboard para exibição ou exportação (sempre 6 meses).
+     * @param string|null $startDateString Data de início da filtragem (Y-m-d). *IGNORADO NA EXPORTAÇÃO PADRÃO*
+     * @param string|null $endDateString Data de fim da filtragem (Y-m-d). *IGNORADO NA EXPORTAÇÃO PADRÃO*
+     * @return array
+     */
+    private function getDashboardData($startDateString = null, $endDateString = null)
     {
         $user = auth()->user();
         $coordinator = $user->coordinator;
+        $now = Carbon::now();
 
         if (! $coordinator) {
             abort(403, 'Perfil de coordenador não encontrado.');
         }
 
-        // IDs dos eventos gerenciados por esse coordenador
-        $eventIds = Event::where('coordinator_id', $coordinator->id)->pluck('id');
+        // ----------------------------------------------------
+        // 1. Definição do Período de Análise (SEMPRE 6 MESES)
+        // ----------------------------------------------------
+        
+        $months = collect();
+        // Padrão: Últimos 6 meses (Cálculo unificado)
+        for ($i = 5; $i >= 0; $i--) {
+            $months->push($now->copy()->subMonths($i));
+        }
+        $startDate = $months->first()->copy()->startOfMonth();
+        $endDate = $now->copy(); 
+        
+        // Rótulos do gráfico (Mês) e Chaves Únicas (AnoMês)
+        $labels = $months->map(fn ($m) => $m->format('M'));
+        $periodKeys = $months->map(fn ($m) => $m->format('Ym'));
 
-        // Totais simples
-        $eventsCount = $eventIds->count();
+        // Define o formato de agrupamento de data para as queries
+        $groupFormat = "DATE_FORMAT(created_at, '%Y%m')";
 
-        if ($eventIds->isEmpty()) {
+
+        // IDs de TODOS os eventos e posts do coordenador
+        $allCoordinatorEventIds = Event::where('coordinator_id', $coordinator->id)->pluck('id');
+        $allCoordinatorPostIds = Post::where('user_id', $user->id)->pluck('id');
+
+        // ----------------------------------------------------
+        // 2. Totais Simples (Dentro do período de $startDate a $endDate)
+        // ----------------------------------------------------
+        
+        $eventsCount = Event::where('coordinator_id', $coordinator->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count();
+
+        $postsCount = Post::where('user_id', $user->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->count(); 
+            
+        if ($allCoordinatorEventIds->isEmpty()) {
             $likes = 0;
             $saves = 0;
             $comments = 0;
         } else {
-            $likes = EventUserReaction::whereIn('event_id', $eventIds)
+            $likes = EventUserReaction::whereIn('event_id', $allCoordinatorEventIds)
                 ->where('reaction_type', 'like')
+                ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
 
-            $saves = EventUserReaction::whereIn('event_id', $eventIds)
+            $saves = EventUserReaction::whereIn('event_id', $allCoordinatorEventIds)
                 ->where('reaction_type', 'save')
+                ->whereBetween('created_at', [$startDate, $endDate])
                 ->count();
 
-            $comments = Comment::whereIn('event_id', $eventIds)->count();
+            $comments = Comment::whereIn('event_id', $allCoordinatorEventIds)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count();
         }
 
-        // --- Engajamento por mês (últimos 6 meses) ---
-        $now = Carbon::now();
-        $months = collect();
-        for ($i = 5; $i >= 0; $i--) {
-            $months->push($now->copy()->subMonths($i));
+
+        // ----------------------------------------------------
+        // 3. DADOS POR PERÍODO (Para os gráficos de Evolução)
+        // ----------------------------------------------------
+        
+        $engagementByPeriodArr = [];
+        $likesByPeriodArr = [];
+        $savesByPeriodArr = [];
+        $commentsByPeriodArr = [];
+        $eventsByPeriodArr = [];
+        $postsByPeriodArr = []; 
+        $postInteractionsByPeriodArr = []; 
+        
+        foreach ($periodKeys as $key) {
+            $engagementByPeriodArr[$key] = 0;
+            $likesByPeriodArr[$key] = 0;
+            $savesByPeriodArr[$key] = 0;
+            $commentsByPeriodArr[$key] = 0;
+            $eventsByPeriodArr[$key] = 0;
+            $postsByPeriodArr[$key] = 0;
+            $postInteractionsByPeriodArr[$key] = 0;
         }
-
-        // Inicializa arrays com 0 para cada mês
-        $engagementByMonthArr = [];
-        $likesByMonthArr = [];
-        $savesByMonthArr = [];
-        $commentsByMonthArr = [];
-        $eventsByMonthArr = [];
-        foreach ($months as $m) {
-            $monthNum = (int)$m->format('n');
-            $engagementByMonthArr[$monthNum] = 0;
-            $likesByMonthArr[$monthNum] = 0;
-            $savesByMonthArr[$monthNum] = 0;
-            $commentsByMonthArr[$monthNum] = 0;
-            $eventsByMonthArr[$monthNum] = 0;
-        }
-
-        if (! $eventIds->isEmpty()) {
-            $startDate = $months->first()->copy()->startOfMonth();
-
-            // Interações
-            $reactionsByMonth = EventUserReaction::whereIn('event_id', $eventIds)
-                ->where('created_at', '>=', $startDate)
-                ->selectRaw('MONTH(created_at) as month, reaction_type, COUNT(*) as total')
-                ->groupBy('month', 'reaction_type')
+        
+        // --- Interações de Eventos ---
+        if (! $allCoordinatorEventIds->isEmpty()) {
+            $reactionsByPeriod = EventUserReaction::whereIn('event_id', $allCoordinatorEventIds)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->select(DB::raw("{$groupFormat} as period_label, reaction_type, COUNT(*) as total"))
+                ->groupBy('period_label', 'reaction_type')
                 ->get();
             
-            foreach ($reactionsByMonth as $reaction) {
-                if ($reaction->reaction_type == 'like') {
-                    $likesByMonthArr[(int)$reaction->month] = (int) $reaction->total;
-                } elseif ($reaction->reaction_type == 'save') {
-                    $savesByMonthArr[(int)$reaction->month] = (int) $reaction->total;
+            foreach ($reactionsByPeriod as $reaction) {
+                $label = $reaction->period_label;
+                if (isset($likesByPeriodArr[$label])) {
+                    if ($reaction->reaction_type == 'like') {
+                        $likesByPeriodArr[$label] = (int) $reaction->total;
+                    } elseif ($reaction->reaction_type == 'save') {
+                        $savesByPeriodArr[$label] = (int) $reaction->total;
+                    }
+                    $engagementByPeriodArr[$label] += (int) $reaction->total;
                 }
-                $engagementByMonthArr[(int)$reaction->month] += (int) $reaction->total;
             }
 
-            // Comentários
-            $commentsByMonth = Comment::whereIn('event_id', $eventIds)
-                ->where('created_at', '>=', $startDate)
-                ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
-                ->groupBy('month')
-                ->pluck('total', 'month')
+            $commentsByPeriodData = Comment::whereIn('event_id', $allCoordinatorEventIds)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->select(DB::raw("{$groupFormat} as period_label, COUNT(*) as total"))
+                ->groupBy('period_label')
+                ->pluck('total', 'period_label')
                 ->toArray();
 
-            foreach ($commentsByMonth as $month => $total) {
-                $commentsByMonthArr[(int)$month] = (int) $total;
-                $engagementByMonthArr[(int)$month] += (int) $total;
-            }
-            
-            // Eventos Criados
-            $eventsByMonth = Event::where('coordinator_id', $coordinator->id)
-                ->where('created_at', '>=', $startDate)
-                ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
-                ->groupBy('month')
-                ->pluck('total', 'month')
-                ->toArray();
-            
-            foreach ($eventsByMonth as $month => $total) {
-                $eventsByMonthArr[(int)$month] = (int) $total;
+            foreach ($commentsByPeriodData as $label => $total) {
+                if(isset($commentsByPeriodArr[$label])) {
+                    $commentsByPeriodArr[$label] = (int) $total;
+                    $engagementByPeriodArr[$label] += (int) $total;
+                }
             }
         }
         
-        // Transforma em Collection preservando a ordem dos meses
-        $likesByMonth = collect();
-        $savesByMonth = collect();
-        $commentsByMonth = collect();
-        $eventsByMonth = collect();
-        $labels = collect();
-        $values = collect(); 
+        // Eventos Criados
+        $eventsByPeriodData = Event::where('coordinator_id', $coordinator->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select(DB::raw("{$groupFormat} as period_label, COUNT(*) as total"))
+            ->groupBy('period_label')
+            ->pluck('total', 'period_label')
+            ->toArray();
         
-        foreach ($months as $m) {
-            $monthNum = (int)$m->format('n');
-            $labels->push($m->format('M'));
-            $likesByMonth->push($likesByMonthArr[$monthNum] ?? 0);
-            $savesByMonth->push($savesByMonthArr[$monthNum] ?? 0);
-            $commentsByMonth->push($commentsByMonthArr[$monthNum] ?? 0);
-            $eventsByMonth->push($eventsByMonthArr[$monthNum] ?? 0);
-            $values->push($engagementByMonthArr[$monthNum] ?? 0);
+        foreach ($eventsByPeriodData as $label => $total) {
+            if(isset($eventsByPeriodArr[$label])) {
+                $eventsByPeriodArr[$label] = (int) $total;
+            }
         }
 
-        // --- Top 3 eventos mais engajados ---
+        // Posts Criados
+        $postsByPeriodData = Post::where('user_id', $user->id)
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->select(DB::raw("{$groupFormat} as period_label, COUNT(*) as total"))
+            ->groupBy('period_label')
+            ->pluck('total', 'period_label')
+            ->toArray();
+        
+        foreach ($postsByPeriodData as $label => $total) {
+            if(isset($postsByPeriodArr[$label])) {
+                $postsByPeriodArr[$label] = (int) $total;
+            }
+        }
+        
+        // Interações nos Posts (Respostas)
+        if (! $allCoordinatorPostIds->isEmpty()) {
+            $repliesByPeriod = Reply::whereIn('post_id', $allCoordinatorPostIds)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->select(DB::raw("{$groupFormat} as period_label, COUNT(*) as total"))
+                ->groupBy('period_label')
+                ->pluck('total', 'period_label')
+                ->toArray();
+            
+            foreach ($repliesByPeriod as $label => $total) {
+                if(isset($postInteractionsByPeriodArr[$label])) {
+                    $postInteractionsByPeriodArr[$label] += (int) $total; 
+                }
+            }
+        }
+        
+        // ----------------------------------------------------
+        // 4. TOP EVENTOS MAIS ENGAJADOS e Tendências (Mantidos)
+        // ----------------------------------------------------
+        
         $topEvents = collect();
-        if (! $eventIds->isEmpty()) {
-            $topEvents = Event::where('coordinator_id', $coordinator->id)
+        if (! $allCoordinatorEventIds->isEmpty()) {
+            $topEvents = Event::whereIn('id', $allCoordinatorEventIds) 
                 ->withCount([
-                    'reactions as likes_count' => function ($q) { $q->where('reaction_type', 'like'); },
-                    'reactions as saves_count' => function ($q) { $q->where('reaction_type', 'save'); },
-                    'eventComments'
+                    'reactions as likes_count' => function ($q) use ($startDate, $endDate) { 
+                        $q->where('reaction_type', 'like')->whereBetween('created_at', [$startDate, $endDate]); 
+                    },
+                    'reactions as saves_count' => function ($q) use ($startDate, $endDate) { 
+                        $q->where('reaction_type', 'save')->whereBetween('created_at', [$startDate, $endDate]); 
+                    },
+                    'eventComments' => function ($q) use ($startDate, $endDate) { 
+                        $q->whereBetween('created_at', [$startDate, $endDate]); 
+                    }
                 ])
                 ->get()
                 ->map(function ($e) {
                     $e->total_engagement = ($e->likes_count ?? 0) + ($e->event_comments_count ?? 0) + ($e->saves_count ?? 0);
                     return $e;
                 })
+                ->filter(fn($e) => $e->total_engagement > 0)
                 ->sortByDesc('total_engagement')
                 ->take(3);
         }
+        
+        // Cálculo de Tendências (Mantido, usa o Carbon::now() interno)
+        $currentMonthStart = Carbon::now()->startOfMonth();
+        $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
+        $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+        
+        $calculateTrend = function ($currentCount, $lastCount) {
+            if ($lastCount == 0) {
+                return $currentCount > 0 ? 100 : 0;
+            }
+            return round((($currentCount - $lastCount) / $lastCount) * 100);
+        };
+        
+        $currentPosts = Post::where('user_id', $user->id)->whereBetween('created_at', [$currentMonthStart, Carbon::now()])->count();
+        $lastPosts = Post::where('user_id', $user->id)->whereBetween('created_at', [$lastMonthStart, $lastMonthEnd])->count();
+        $postsTrend = $calculateTrend($currentPosts, $lastPosts);
 
-        // Mensagem dinâmica para Coordenador
-        $message = 'Bem-vindo(a) ao seu painel de controle. Aqui você pode acompanhar as interações dos usuários nos eventos que você cria/criou!';
 
-        return view('coordinator.dashboard', compact(
-            'eventsCount',
-            'likes',
-            'saves',
-            'comments',
-            'labels',
-            'values',
-            'topEvents',
-            'likesByMonth',
-            'savesByMonth',
-            'commentsByMonth',
-            'eventsByMonth'
-        ))->with([
+        // Garante que os arrays de valores sigam a ORDEM do $periodKeys
+        $eventEngagementValues = $periodKeys->map(fn($key) => $engagementByPeriodArr[$key] ?? 0);
+        $postsValues = $periodKeys->map(fn($key) => $postsByPeriodArr[$key] ?? 0); 
+        $postInteractionsValues = $periodKeys->map(fn($key) => $postInteractionsByPeriodArr[$key] ?? 0); 
+        $eventsByPeriod = $periodKeys->map(fn($key) => $eventsByPeriodArr[$key] ?? 0);
+        $likesByPeriod = $periodKeys->map(fn($key) => $likesByPeriodArr[$key] ?? 0);
+        $savesByPeriod = $periodKeys->map(fn($key) => $savesByPeriodArr[$key] ?? 0);
+        $commentsByPeriod = $periodKeys->map(fn($key) => $commentsByPeriodArr[$key] ?? 0);
+
+
+        $message = 'Bem-vindo(a) ao seu painel de controle. Acompanhe o desempenho dos seus posts e o engajamento dos eventos que você gerencia.';
+        
+        return [
+            'eventsCount' => $eventsCount,
+            'likes' => $likes,
+            'saves' => $saves,
+            'comments' => $comments,
+            'postsCount' => $postsCount, 
+            'postsTrend' => $postsTrend, 
+            'topEvents' => $topEvents,
+            
+            'labels' => $labels,
+            'eventEngagementValues' => $eventEngagementValues, 
+            'eventsByMonth' => $eventsByPeriod,
+            'likesByMonth' => $likesByPeriod,
+            'savesByMonth' => $savesByPeriod,
+            'commentsByMonth' => $commentsByPeriod,
+            'postsValues' => $postsValues, 
+            'postInteractionsValues' => $postInteractionsValues,
+
             'name' => $user->name,
-            'message' => $message // Passa a nova variável para a view
+            'message' => $message,
+            'currentDate' => Carbon::now()->format('d/m/Y H:i:s'),
+            'logoBase64' => 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('imgs/logoJb.png'))), 
+            
+            // Datas do relatório (para o PDF)
+            'reportStartDate' => $startDate->format('d/m/Y'),
+            'reportEndDate' => $endDate->format('d/m/Y'),
+        ];
+    }
+
+    /**
+     * Exibe o dashboard do coordenador com os dados dos últimos 6 meses.
+     */
+    public function index()
+    {
+        // Carrega o padrão de 6 meses (sem argumentos)
+        $data = $this->getDashboardData();
+
+        return view('coordinator.dashboard', $data)->with([
+            'name' => $data['name'],
+            'message' => $data['message'] 
         ]);
+    }
+
+    /**
+     * Exporta os dados dos últimos 6 meses para PDF (função simplificada).
+     * @param \Illuminate\Http\Request $request
+     */
+    public function exportPdf(Request $request)
+    {
+        // 1. Gera os dados do último período de 6 meses (ignora qualquer filtro do request)
+        $data = $this->getDashboardData();
+        
+        // 2. Coleta as imagens Base64 que foram capturadas na View
+        $chartImages = [
+            'eventEngagementChartImage' => $request->input('eventEngagementChartImage'),
+            'publicationsChartImage'    => $request->input('publicationsChartImage'),
+            'postInteractionsChartImage'  => $request->input('postInteractionsChartImage'),
+        ];
+        
+        $logoBase64 = $data['logoBase64'] ?? '';
+
+        $dataToPdf = array_merge($data, [
+            'userName' => $data['name'],
+            'chartImages' => $chartImages,
+            'logoBase64' => $logoBase64,
+        ]);
+        
+        $filename = 'Relatorio_Coordenador_' . auth()->user()->id . '_' . Carbon::now()->format('Ymd_His') . '.pdf';
+
+        $pdf = Pdf::loadView('coordinator.dashboard-pdf', $dataToPdf); 
+
+        $pdf->setOptions(['defaultFont' => 'sans-serif']);
+
+        return $pdf->download($filename);
     }
 }

@@ -3,13 +3,30 @@ import './datetime-validation';
 import './event-reactions';
 import './event-realtime';
 import './filter-menu';
-import './order-menu';
 import './password-generator';
 import './password-validator';
-import './phone-mask';
 import './echo';
-import 'alpinejs';
 import './image-viewer';
 import './preview-images';
 import './search-highlight';
 import './modal-actions';
+import './tabs-navigation';
+import './delete-images';
+
+
+import { initializeEventsPage } from './events-calendar'; 
+
+
+// -----------------------------------------------------
+// Inicialização do FullCalendar / Eventos
+// -----------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Verifica se os elementos da página de eventos existem antes de inicializar
+    const isEventsPage = document.getElementById('list-view');
+
+    if (isEventsPage) {
+        initializeEventsPage();
+    }
+
+});

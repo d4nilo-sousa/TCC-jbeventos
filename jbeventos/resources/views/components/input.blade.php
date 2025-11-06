@@ -1,3 +1,11 @@
-@props(['disabled' => false])
+@props(['disabled' => false, 'type' => 'text'])
 
-<input {{ $disabled ? 'disabled' : '' }} {!! $attributes->merge(['class' => 'border-gray-300 focus:border-stone-100 focus:ring-stone-500 rounded-xl shadow-sm']) !!}>
+<input
+    {{ $disabled ? 'disabled' : '' }}
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    type="{{ $type }}"
+    autocomplete="{{ $attributes->get('autocomplete') ?? 'off' }}"
+    {!! $attributes->merge(['class' => 'border-gray-200 focus:border-gray-400 focus:ring-white rounded-xl shadow-sm']) !!}
+>
