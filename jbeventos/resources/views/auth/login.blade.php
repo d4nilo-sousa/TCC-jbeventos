@@ -2,7 +2,7 @@
     <x-authentication-card>
         <x-slot name="logo">
             <a href="/">
-                <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-1/6 h-auto mx-auto">
+                <img src="{{ asset('imgs/logoJb.png') }}" alt="Logo" class="w-[15%] h-auto mx-auto">
             </a>
         </x-slot>
 
@@ -28,8 +28,7 @@
             <div>
                 <x-label for="email" value="{{ __('Email') }}" />
                 <x-input id="email" class="block mt-1 w-full placeholder-gray-300 placeholder:text-base text-base"
-                    type="email" name="email" :value="old('email')" required autofocus autocomplete="off"
-                    placeholder="exemplo@gmail.com" />
+                    type="email" name="email" :value="old('email')" required autofocus autocomplete="off" />
             </div>
 
             <!-- Senha -->
@@ -38,8 +37,7 @@
                 <div class="relative">
                     <x-input id="password"
                         class="block mt-1 w-full pr-10 placeholder-gray-300 placeholder:text-base text-base"
-                        type="password" name="password" required autocomplete="current-password"
-                        placeholder="Digite sua senha" />
+                        type="password" name="password" required autocomplete="current-password" />
 
                     <button type="button"
                         class="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 toggle-password"

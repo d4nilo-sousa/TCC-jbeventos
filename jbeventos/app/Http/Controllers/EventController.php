@@ -557,17 +557,74 @@ class EventController extends Controller
         }
 
         // =====================
-        // 10. DETECTA MUDANÇAS
-        // =====================
-        $changedFields = [];
-        foreach (['event_name', 'event_scheduled_at', 'event_location'] as $field) {
-            if ($original->$field != $event->$field) {
-                $changedFields[$field] = [
-                    'old' => $original->$field,
-                    'new' => $event->$field,
-                ];
-            }
-        }
+// 10. DETECTA MUDANÇAS
+// =====================
+$changedFields = [];
+$changed = $event->getChanges();
+
+// Campos considerados 'alterações importantes'
+$importantFields = ['event_name', 'event_scheduled_at', 'event_location', 'event_expired_at'];
+$importantChanges = array_intersect_key($changed, array_flip($importantFields));
+
+// Preenche $changedFields com old/new
+foreach ($importantChanges as $field => $newValue) {
+    $changedFields[$field] = [
+        'old' => $original->$field,
+        'new' => $newValue,
+    ];
+}
+
+// =====================
+// 11. NOTIFICA USUÁRIOS (notify)
+// =====================
+
+// Coleta seguidores dos cursos vinculados
+$courseFollowers = $event->courses
+    ->pluck('followers')
+    ->flatten()
+    ->keyBy('id'); // garante unicidade
+
+// Coleta usuários que salvaram o evento
+$event->load('saivers');
+$eventSavers = $event->saivers->keyBy('id');
+
+// Combina todos os destinatários
+$allUniqueRecipients = $courseFollowers->merge($eventSavers);
+
+// Notifica os seguidores/cursistas
+if ($allUniqueRecipients->isNotEmpty()) {
+    Notification::send($allUniqueRecipients, new \App\Notifications\EventUpdatedNotification(
+        $event,
+        $changedFields
+    ));
+}
+
+// Verifica mudanças nos cursos associados
+$newCourseIds = collect($finalCourseIds)->sort()->values()->all();
+$coursesChanged = $originalCourseIds !== $newCourseIds;
+
+// Notifica apenas os usuários que clicaram em "notificar"
+if (!empty($changedFields) || $coursesChanged) {
+    $userIds = \App\Models\EventUserReaction::where('event_id', $event->id)
+        ->where('reaction_type', 'notify')
+        ->pluck('user_id')
+        ->toArray();
+
+    $users = \App\Models\User::whereIn('id', $userIds)->get();
+
+    $oldCourses = \App\Models\Course::whereIn('id', $originalCourseIds)->get();
+    $newCourses = \App\Models\Course::whereIn('id', $newCourseIds)->get();
+
+    foreach ($users as $user) {
+        $user->notify(new \App\Notifications\EventUpdatedNotification(
+            $event,
+            $changedFields,
+            $coursesChanged,
+            $oldCourses,
+            $newCourses
+        ));
+    }
+}
 
         $newCourseIds = collect($finalCourseIds)->sort()->values()->all();
         $coursesChanged = $originalCourseIds !== $newCourseIds;

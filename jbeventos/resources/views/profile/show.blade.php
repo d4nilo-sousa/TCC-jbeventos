@@ -290,7 +290,7 @@
                                                     class="bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
                                                     <a href="{{ route('events.show', $event) }}" class="block">
                                                         <div
-                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden rounded-t-xl">
                                                             @if ($event->event_image)
                                                                 <img src="{{ asset('storage/' . $event->event_image) }}"
                                                                     alt="{{ $event->event_name }}"
@@ -306,7 +306,7 @@
 
                                                         <div class="px-6 pt-6 pb-0">
                                                             <p
-                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0">
+                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0 text-base">
                                                                 {{ $event->event_name }}
                                                             </p>
                                                         </div>
@@ -325,41 +325,65 @@
                                                 </div>
                                             @endforeach
                                         </div>
-                                    @endif
-                                </div>
+                                        {{-- FIM DO CONTÊINER DE ROLAGEM --}}
 
+                                    </div>
+                                @endif
+                            </div>
+                            {{-- FIM DO CONTEÚDO DA ABA: Eventos Interagidos --}}
+
+
+                            {{-- TRECHO DE EVENTOS SALVOS --}}
+                            {{-- O bloco de Eventos Salvos a seguir está correto e completo: --}}
+
+                            <div x-show="activeTab === 'savedEvents'">
                                 {{-- CONTEÚDO DA ABA: Eventos Salvos --}}
-                                <div x-show="activeTab === 'savedEvents'">
-                                    <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pt-4 pb-2">
-                                        <i class="ph ph-heart-straight text-xl mr-2 text-red-500"></i>
-                                        Eventos que você salvou
-                                    </h3>
+                                <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center pt-4 pb-2">
+                                    <i class="ph ph-heart-straight text-xl mr-2 text-red-500"></i>
+                                    Eventos que você salvou
+                                </h3>
 
-                                    @if ($savedEvents->isEmpty())
-                                        <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
-                                            <i class="ph ph-magnifying-glass text-4xl text-gray-400"></i>
-                                            <p class="text-gray-500 text-sm mt-2">
-                                                Você ainda não salvou nenhum evento interessante.
-                                            </p>
-                                            <a href="{{ route('events.index') }}"
-                                                class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
-                                                <i class="ph ph-arrow-right text-sm mr-1"></i>
-                                                Explore eventos agora!
-                                            </a>
-                                        </div>
-                                    @else
-                                        {{-- Container com altura máxima e scroll vertical --}}
-                                        <div
-                                            class="max-h-[800px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                                @if ($savedEvents->isEmpty())
+                                    {{-- Bloco: Vazio (Inalterado) --}}
+                                    <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
+                                        <i class="ph ph-magnifying-glass text-4xl text-gray-400"></i>
+                                        <p class="text-gray-500 text-sm mt-2">
+                                            Você ainda não salvou nenhum evento interessante.
+                                        </p>
+                                        <a href="{{ route('events.index') }}"
+                                            class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                            <i class="ph ph-arrow-right text-sm mr-1"></i>
+                                            Explore eventos agora!
+                                        </a>
+                                    </div>
+                                @else
+                                    <div x-data="{ scrollContainer: null, scrollStep: 300 }" x-init="scrollContainer = $refs.scrollTrack" class="relative">
+
+                                        {{-- BOTÃO ESQUERDO (Anterior) --}}
+                                        <button @click="scrollContainer.scrollBy({ left: -scrollStep, behavior: 'smooth' })"
+                                            class="absolute left-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
+                                            <i class="ph ph-caret-left text-xl text-gray-700"></i>
+                                        </button>
+
+                                        {{-- BOTÃO DIREITO (Próximo) --}}
+                                        <button @click="scrollContainer.scrollBy({ left: scrollStep, behavior: 'smooth' })"
+                                            class="absolute right-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
+                                            <i class="ph ph-caret-right text-xl text-gray-700"></i>
+                                        </button>
+
+                                        {{-- CONTÊINER DE ROLAGEM (x-ref para o Alpine.js) --}}
+                                        <div x-ref="scrollTrack" class="flex overflow-x-auto gap-6 pb-4 -mb-4 scroll-smooth" style="scrollbar-width: none;">
+
                                             @foreach ($savedEvents as $event)
                                                 <div
-                                                    class="bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
+                                                    class="flex-none w-72 bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 relative">
+                                                    {{-- Classes: flex-none e w-72 garantem que fique na horizontal --}}
 
-                                                    {{-- Link do evento --}}
+                                                    {{-- Link do evento (Conteúdo inalterado) --}}
                                                     <a href="{{ route('events.show', $event) }}" class="block">
                                                         {{-- Imagem / Placeholder --}}
                                                         <div
-                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden rounded-t-xl">
                                                             @if ($event->event_image)
                                                                 <img src="{{ asset('storage/' . $event->event_image) }}"
                                                                     alt="{{ $event->event_name }}"
@@ -374,15 +398,15 @@
                                                         </div>
 
                                                         {{-- Nome do evento --}}
-                                                        <div class="px-6 pt-6 pb-0">
+                                                        <div class="px-4 pt-4 pb-0">
                                                             <p
-                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0">
+                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0 text-base">
                                                                 {{ $event->event_name }}
                                                             </p>
                                                         </div>
 
-                                                        {{-- Linha divisória + Data e hora --}}
-                                                        <div class="px-6 pb-6 mt-0.5">
+                                                        {{-- Data e hora --}}
+                                                        <div class="px-4 pb-4 mt-0.5">
                                                             @if ($event->event_scheduled_at)
                                                                 <p
                                                                     class="flex items-center gap-1 text-gray-500 mt-2 text-sm">
@@ -400,7 +424,7 @@
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                            class="bg-white/80 backdrop-blur-sm p-2 pt-2 pb-0.5 rounded-full text-red-500 hover:text-red-700 shadow-md transition-colors duration-200"
+                                                            class="bg-white/90 p-2 rounded-full text-red-500 hover:text-red-700 shadow-md transition-colors duration-200"
                                                             title="Remover dos Salvos">
                                                             <i class="ph ph-x-circle text-xl"></i>
                                                         </button>
@@ -408,8 +432,10 @@
                                                 </div>
                                             @endforeach
                                         </div>
-                                    @endif
-                                </div>
+                                    </div>
+                                @endif
+                            </div>
+                            {{-- FIM DO CONTEÚDO DA ABA: Eventos Salvos --}}
 
                                 {{-- CONTEÚDO DA ABA: Eventos Criados (apenas para coordenadores) --}}
                                 @if ($user->user_type === 'coordinator')

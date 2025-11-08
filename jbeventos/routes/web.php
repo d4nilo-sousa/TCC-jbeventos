@@ -35,6 +35,9 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     //rota do feed
     Route::get('/feed', [FeedController::class, 'index'])->name('feed.index');
 
+    //Rota para desabilitar o modal de boas-vindas manualmente
+    Route::post('/feed/disable-welcome',[FeedController::class, 'disableWelcomeModal'])->name('feed.disable-welcome')->middleware('auth');
+
 
     /*
     |----------------------------------------------------------------------

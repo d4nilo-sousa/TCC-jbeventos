@@ -2,26 +2,41 @@
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
-            {{-- Boas-vindas e Botão de Exportar PDF --}}
-            <div class="p-5 bg-white rounded-xl shadow-md flex justify-between items-center border border-red-200">
-                <div>
-                    <h2 class="text-2xl font-extrabold text-gray-900 mb-2">Olá, {{ $name }}!</h2>
-                    <p class="text-gray-600 break-words whitespace-pre-wrap max-w-[880px] mt-1">{{ $message }}</p>
-                </div>
+            {{-- Boas-vindas --}}
+            <div class="p-8 bg-white rounded-2xl shadow-lg border border-red-200 flex items-center justify-between gap-6">
 
-                <button type="button" id="submitExportButton"
-                    class="inline-flex flex-col items-center px-4 py-2 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:border-red-700 focus:ring focus:ring-red-300 disabled:opacity-25 transition">
+                <div class="flex-1">
+                    <h2 class="text-3xl font-extrabold text-gray-900 leading-tight">
+                        Olá, {{ $name }}! 👋
+                    </h2>
 
-                    <span class="flex items-center gap-2 font-normal">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    <p class="text-gray-600 mt-2 max-w-[700px] text-base leading-relaxed">
+                        {{ $message }}
+                    </p>
+
+                    <button
+                        type="button"
+                        id="submitExportButton"
+                        class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 border border-transparent rounded-lg text-sm font-semibold text-white transition shadow-md hover:shadow-lg"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
-                        Gerar PDF
-                    </span>
-                    <span class="text-xs font-bold mt-1">(6 Últimos Meses)</span>
-                </button>
+                        Gerar Relatório PDF
+                    </button>
+                </div>
+
+                {{-- Imagem à direita --}}
+                <div class="hidden md:flex">
+                    <img
+                        src="{{ asset('imgs/coordinator-dashboard.png') }}"
+                        alt="Dashboard Illustration"
+                        class="w-52 h-auto drop-shadow-lg select-none pointer-events-none"
+                    >
+                </div>
+
             </div>
 
             {{-- Cards de Resumo (5 CARDS) --}}

@@ -37,6 +37,7 @@ class User extends Authenticatable
         'user_banner',
         'bio',
         'user_type',
+        'welcome_modal_shown',
     ];
 
     /**
@@ -70,6 +71,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'welcome_modal_shown' => 'boolean',
         ];
     }
 
