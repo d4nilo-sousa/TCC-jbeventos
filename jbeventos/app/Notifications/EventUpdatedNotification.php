@@ -13,16 +13,27 @@ class EventUpdatedNotification extends Notification
 
     protected $event;
     protected $changedFields;
+    protected $oldCourses;
+    protected $newCourses;
 
-    public function __construct(Event $event, array $changedFields = [])
+    public function __construct(Event $event, array $changedFields = [], bool $coursesChanged = false, $oldCourses = [], $newCourses = [])
     {
         $this->event = $event;
-        // Filtra apenas os campos importantes: nome, data e local
+
+        // Filtra apenas os campos importantes
         $this->changedFields = array_filter(
             $changedFields,
             fn($key) => in_array($key, ['event_name', 'event_scheduled_at', 'event_location']),
             ARRAY_FILTER_USE_KEY
         );
+
+        // Se cursos mudaram, adiciona flag descritiva
+        if ($coursesChanged) {
+            $this->changedFields['courses'] = 'Alteração nos cursos associados';
+        }
+
+        $this->oldCourses = $oldCourses;
+        $this->newCourses = $newCourses;
     }
 
     public function via(object $notifiable): array
@@ -38,6 +49,8 @@ class EventUpdatedNotification extends Notification
                 'event'         => $this->event,
                 'user'          => $notifiable,
                 'changedFields' => $this->changedFields,
+                'oldCourses'    => $this->oldCourses,
+                'newCourses'    => $this->newCourses,
             ]);
     }
 

@@ -137,7 +137,7 @@ class EventController extends Controller
             ->get();
 
         $formattedEvents = $events->map(function ($event) {
-            
+
             $color = match ($event->event_type) {
                 'course' => '#009688', // Teal
                 'general' => '#E91E63', // Rosa (Para eventos gerais)
@@ -146,31 +146,31 @@ class EventController extends Controller
 
             $coordinatorName = optional($event->eventCoordinator->userAccount)->name ?? 'N/A';
             $courseNames = $event->courses->pluck('course_name')->implode(', ');
-            
+
             // 1. DATA DE TÉRMINO (END)
             $end = null; // Começa como null por padrão
 
             if ($event->event_expired_at) {
                 // Se tiver data de término, formata. 
                 $end = $event->event_expired_at->format('Y-m-d H:i:s');
-            } 
-            
+            }
+
             // 2. ALL-DAY
             // Consideramos all-day se o evento é de um dia inteiro (sem hora de início/fim específica)
             $isAllDay = $event->event_scheduled_at->format('H:i:s') == '00:00:00' && $event->event_expired_at === null;
-            
+
             // Se for um evento pontual (sem data/hora de término), 'end' deve ser nulo. 
 
             return [
                 'id' => $event->id,
                 'title' => $event->event_name,
                 // START: Sempre no formato ISO
-                'start' => $event->event_scheduled_at->format('Y-m-d H:i:s'), 
-                
+                'start' => $event->event_scheduled_at->format('Y-m-d H:i:s'),
+
                 // END: Apenas se for um evento de mais de um dia/hora. Se for pontual, DEVE ser null.
-                'end' => $end, 
-                
-                'allDay' => $isAllDay, 
+                'end' => $end,
+
+                'allDay' => $isAllDay,
                 'color' => $color,
                 'extendedProps' => [
                     'description' => $event->event_description,
@@ -182,7 +182,7 @@ class EventController extends Controller
                 ],
             ];
         });
-        
+
         return response()->json($formattedEvents);
     }
 
@@ -402,7 +402,7 @@ class EventController extends Controller
         $validated = $request->validate([
             'event_name' => 'required|string|unique:events,event_name,' . $event->id,
             'event_description' => 'nullable|string',
-            'event_info' => 'nullable|string', // <-- ADICIONADO
+            'event_info' => 'nullable|string',
             'event_location' => 'required|string',
             'event_scheduled_at' => 'required|date',
             'event_expired_at' => 'nullable|date_format:Y-m-d\TH:i|after:event_scheduled_at',
@@ -423,14 +423,18 @@ class EventController extends Controller
         }
 
         // =====================
-        // 3. PREPARAÇÃO DOS DADOS
+        // 3. ESTADO ORIGINAL
         // =====================
-        $original = $event->getOriginal();
+        $original = $event->replicate(); // Clona estado antes da atualização
+        $originalCourseIds = $event->courses()->pluck('id')->sort()->values()->all();
 
+        // =====================
+        // 4. DADOS ATUALIZADOS
+        // =====================
         $data = $request->only([
             'event_name',
             'event_description',
-            'event_info', // <-- ADICIONADO
+            'event_info',
             'event_location',
             'event_scheduled_at',
             'event_expired_at',
@@ -439,7 +443,7 @@ class EventController extends Controller
         $data['coordinator_id'] = $coordinator->id;
 
         // =====================
-        // 4. IMAGEM PRINCIPAL
+        // 5. IMAGEM PRINCIPAL
         // =====================
         if ($request->input('remove_event_image') == '1') {
             if ($event->event_image) {
@@ -447,6 +451,7 @@ class EventController extends Controller
             }
             $data['event_image'] = null;
         } elseif ($request->hasFile('event_image')) {
+
             $upload = $request->file('event_image');
             $image = Image::read($upload);
 
@@ -455,12 +460,14 @@ class EventController extends Controller
                 $constraint->upsize();
             });
 
+            // Centraliza corte
             $width = $image->width();
             $height = $image->height();
             $cropX = max(0, intval(($width - 1200) / 2));
             $cropY = max(0, intval(($height - 600) / 2));
             $image->crop(1200, 600, $cropX, $cropY);
 
+            // Salva imagem processada
             $originalName = pathinfo($upload->getClientOriginalName(), PATHINFO_FILENAME);
             $slug = Str::slug($originalName);
             $uniqueId = uniqid();
@@ -468,7 +475,6 @@ class EventController extends Controller
             $imageName = "{$uniqueId}_{$slug}.{$extension}";
 
             $path = storage_path('app/public/event_images/' . $imageName);
-
             $quality = ($extension === 'png') ? 9 : 90;
             $image->save($path, $quality);
 
@@ -476,7 +482,7 @@ class EventController extends Controller
         }
 
         // =====================
-        // 5. IMAGENS EXTRAS
+        // 6. IMAGENS EXTRAS
         // =====================
         if ($request->filled('remove_event_images')) {
             foreach ($request->input('remove_event_images') as $imageId => $remove) {
@@ -492,6 +498,7 @@ class EventController extends Controller
 
         if ($request->hasFile('event_images')) {
             foreach ($request->file('event_images') as $upload) {
+
                 $image = Image::read($upload);
 
                 $image->resize(1200, 600, function ($constraint) {
@@ -512,7 +519,6 @@ class EventController extends Controller
                 $imageName = "{$uniqueId}_{$slug}.{$extension}";
 
                 $path = storage_path('app/public/event_images/' . $imageName);
-
                 $quality = ($extension === 'png') ? 9 : 90;
                 $image->save($path, $quality);
 
@@ -523,27 +529,26 @@ class EventController extends Controller
         }
 
         // =====================
-        // 6. ATUALIZA EVENTO
+        // 7. ATUALIZA EVENTO
         // =====================
         $event->update($data);
 
-        // ===================================
-        // 7. SINCRONIZA CURSOS (PIVOT M:N)
-        // ===================================
-        $formCourseIds = $request->input('courses') ? array_map('intval', $request->input('courses')) : [];
-        $coordinatorCourseId = optional($coordinator->coordinatedCourse)->id;
+        // =====================
+        // 8. SINCRONIZA CURSOS
+        // =====================
+        $formCourseIds = $request->input('courses', []);
+        $formCourseIds = array_map('intval', $formCourseIds);
 
-        $finalCourseIds = collect($formCourseIds);
+        $coordinatorCourseId = optional($coordinator->coordinatedCourse)->id;
         if ($coordinatorCourseId) {
-            $finalCourseIds = $finalCourseIds->push($coordinatorCourseId)->unique()->values()->all();
-        } else {
-            $finalCourseIds = $finalCourseIds->unique()->values()->all();
+            $formCourseIds[] = $coordinatorCourseId;
         }
 
+        $finalCourseIds = collect($formCourseIds)->unique()->values()->all();
         $event->courses()->sync($finalCourseIds);
 
         // =====================
-        // 8. SINCRONIZA CATEGORIAS (PIVOT)
+        // 9. SINCRONIZA CATEGORIAS
         // =====================
         if ($request->has('categories')) {
             $event->eventCategories()->sync($request->input('categories'));
@@ -552,35 +557,56 @@ class EventController extends Controller
         }
 
         // =====================
-        // 9. NOTIFICAÇÃO
+        // 10. DETECTA MUDANÇAS
         // =====================
-        $changed = $event->getChanges();
-        $importantChanges = array_intersect_key($changed, array_flip(['event_name', 'event_scheduled_at', 'event_location']));
-
-        if (!empty($importantChanges)) {
-            $allFollowers = collect();
-
-            foreach ($event->courses as $course) {
-                if ($course->followers->isNotEmpty()) {
-                    $allFollowers = $allFollowers->merge($course->followers);
-                }
-            }
-
-            if ($allFollowers->isNotEmpty()) {
-                $uniqueFollowers = $allFollowers->unique('id');
-                Notification::send($uniqueFollowers, new EventUpdatedNotification($event, $importantChanges));
-            }
-
-            if ($event->notifiableUsers->isNotEmpty()) {
-                Notification::send($event->notifiableUsers, new EventUpdatedNotification($event, $importantChanges));
+        $changedFields = [];
+        foreach (['event_name', 'event_scheduled_at', 'event_location'] as $field) {
+            if ($original->$field != $event->$field) {
+                $changedFields[$field] = [
+                    'old' => $original->$field,
+                    'new' => $event->$field,
+                ];
             }
         }
 
-        return redirect()->route('events.show', $event->id)
+        $newCourseIds = collect($finalCourseIds)->sort()->values()->all();
+        $coursesChanged = $originalCourseIds !== $newCourseIds;
+
+        // =====================
+        // 11. NOTIFICA USUÁRIOS (notify)
+        // =====================
+        if (!empty($changedFields) || $coursesChanged) {
+            $userIds = \App\Models\EventUserReaction::where('event_id', $event->id)
+                ->where('reaction_type', 'notify')
+                ->pluck('user_id')
+                ->toArray();
+
+            $users = \App\Models\User::whereIn('id', $userIds)->get();
+
+            $oldCourses = \App\Models\Course::whereIn('id', $originalCourseIds)->get();
+            $newCourses = \App\Models\Course::whereIn('id', $newCourseIds)->get();
+
+            foreach ($users as $user) {
+                $user->notify(new \App\Notifications\EventUpdatedNotification(
+                    $event,
+                    $changedFields,
+                    $coursesChanged,
+                    $oldCourses,
+                    $newCourses
+                ));
+            }
+        }
+
+        // =====================
+        // 12. RETORNO
+        // =====================
+        return redirect()
+            ->route('events.show', $event->id)
             ->with('success', 'Evento atualizado com sucesso!');
     }
 
-    // Exclui um evento
+
+
     public function destroy($id)
     {
         $event = Event::findOrFail($id);
@@ -589,6 +615,19 @@ class EventController extends Controller
         // Verifica permissão
         if (!$coordinator || $event->coordinator_id !== $coordinator->id) {
             abort(403, "Você não tem permissão para excluir este evento.");
+        }
+
+        // Pega usuários que clicaram em "notificar"
+        $userIds = \App\Models\EventUserReaction::where('event_id', $event->id)
+            ->where('reaction_type', 'notify')
+            ->pluck('user_id')
+            ->toArray();
+
+        $users = \App\Models\User::whereIn('id', $userIds)->get();
+
+        // Envia notificação de evento excluído
+        foreach ($users as $user) {
+            $user->notify(new \App\Notifications\EventDeletedNotification($event));
         }
 
         // Exclui a imagem, se houver
@@ -600,10 +639,10 @@ class EventController extends Controller
         $eventId = $event->id;
 
         // Deleta o evento do banco
-        $event = $event->delete();
+        $event->delete();
 
         broadcast(new EventDeleted($eventId))->toOthers();
 
-        return redirect()->route('events.index')->with('success', 'Evento excluído com sucesso!');
+        return redirect()->route('events.index')->with('success', 'Evento excluído e usuários notificados com sucesso!');
     }
 }

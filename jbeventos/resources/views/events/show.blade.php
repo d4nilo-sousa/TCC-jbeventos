@@ -140,7 +140,7 @@
                                                 'bg-white text-green-600 border-green-300 hover:bg-green-50';
                                         } elseif ($type === 'like') {
                                             $activeColor = 'bg-red-500 text-white border-red-500 hover:bg-red-600';
-                                            $inactiveColor = 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
+                                            $inactiveColor = 'bg-white text-red-600 border-red-300 hover:bg-red-50';
                                         }
 
                                         $buttonClass = $isActive ? $activeColor : $inactiveColor;
@@ -156,7 +156,10 @@
                                             class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-semibold shadow-sm {{ $buttonClass }}">
                                             <i class="{{ $icon }} text-lg"></i>
                                             @if ($type === 'like')
-                                                <span class="font-semibold">{{ $label }}</span>
+                                                <span class="toggle-text font-semibold">
+                                                    {{ $isActive ? 'Curtido' : 'Curtir' }}
+                                                </span>
+
                                                 <span
                                                     class="reaction-count text-xs px-2 py-0.5 rounded-full {{ $isActive ? 'bg-white text-red-500' : 'bg-gray-200 text-gray-700' }}">
                                                     {{ $count }}
