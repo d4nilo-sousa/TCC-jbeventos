@@ -65,7 +65,7 @@ class CoordinatorSeeder extends Seeder
             ],
             [
                 'name' => 'Eduardo',
-                'email' => 'Eduardo@coordenador.com',
+                'email' => 'eduardo@coordenador.com',
                 'password' => 'eduardo@123',
                 'type' => 'course',
                 'icon_file' => 'eduardo-user-icon.png',
