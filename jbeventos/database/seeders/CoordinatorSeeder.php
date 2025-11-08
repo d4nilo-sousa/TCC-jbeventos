@@ -30,7 +30,7 @@ class CoordinatorSeeder extends Seeder
             // Coordenadores de Curso
             [
                 'name' => 'Thiago',
-                'email' => 'Thiago@coordenador.com',
+                'email' => 'thiago@coordenador.com',
                 'password' => 'thiago@123',
                 'type' => 'course',
                 'icon_file' => 'thiago-user-icon.png',
