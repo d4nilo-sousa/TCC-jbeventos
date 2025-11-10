@@ -12,15 +12,25 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        // Lista de categorias iniciais para popular a tabela 'categories'
+        // Lista de categorias para popular a tabela 'categories'
+        // 'Inovação' foi listada duas vezes, será cadastrada apenas uma vez.
         $categories = [
-            'Teste1',
-            'Teste2',
+            'Cultural',
+            'Tecnológico',
+            'Profissionalizante',
+            'Educacional',
+            'Esportivo',
+            'Meio Ambiente',
+            'Inovação',
+            'Empreendedorismo',
+            'Arte',
+            'Musical',
+            'Integração de Cursos',
         ];
 
-        // Cria cada categoria no banco de dados
+        // Cria cada categoria no banco de dados, verificando se já existe para evitar erros
         foreach ($categories as $categoryName) {
-            Category::create([
+            Category::firstOrCreate([
                 'category_name' => $categoryName
             ]);
         }
