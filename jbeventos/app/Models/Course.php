@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Storage;
 
 class Course extends Model
 {
@@ -51,5 +52,22 @@ class Course extends Model
     // Relação com o modelo Event para os eventos associados a um curso
     public function courseEvents() {
          return $this->hasMany(Event::class);
+    }
+
+    public function getCourseBannerUrlAttribute() {
+        if ($this->course_banner){
+            //se for uma cor hexadecimal
+            if (preg_match('/^#[a-f0-9]{6}$/i', $this->course_banner)) {
+                return $this->course_banner; // Retorna o código da cor
+            }
+
+            // Se for um caminho de arquivo, verifica se o arquivo existe e retorna a URL de storage
+            if (Storage::disk('public')->exists($this->course_banner)) {
+                return asset('storage/' . $this->course_banner);
+            }
+
+            //retorna a cor padrão
+            return '#B0B0B0';
+        }
     }
 }

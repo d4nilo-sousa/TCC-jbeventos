@@ -75,6 +75,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
         // ✅ Atualizações rápidas de cursos (somente admin)
         Route::put('/courses/{course}/update-banner', [CourseController::class, 'updateBanner'])->name('courses.updateBanner');
+        Route::put('/courses/{course}/update-banner-color',[CourseController::class, 'updateBannerColor'])->name('courses.updateBannerColor');
         Route::put('/courses/{course}/update-icon', [CourseController::class, 'updateIcon'])->name('courses.updateIcon');
         Route::put('/courses/{course}/update-description', [CourseController::class, 'updateDescription'])->name('courses.updateDescription');
     });

@@ -7,74 +7,183 @@ use App\Models\Event;
 use App\Models\Coordinator;
 use App\Models\Course;
 use App\Models\Category;
+use App\Models\EventImage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Symfony\Component\HttpFoundation\File\File as SymfonyFile;
 
 class EventSeeder extends Seeder
 {
+    /**
+     * Define a função auxiliar para copiar o arquivo
+     */
+    private function copyFile(string $fileName, string $targetDir): ?string
+    {
+        $sourceDir = database_path('image-data/event-images');
+        $targetDisk = 'public';
+        $sourceFilePath = $sourceDir . '/' . $fileName;
+
+        if (File::exists($sourceFilePath)) {
+            // Garante que o diretório de destino existe (storage/app/public/event-images)
+            Storage::disk($targetDisk)->makeDirectory($targetDir);
+            
+            // Copia o arquivo usando putFileAs
+            Storage::disk($targetDisk)->putFileAs(
+                $targetDir, 
+                new SymfonyFile($sourceFilePath), 
+                $fileName
+            );
+            
+            // Retorna o caminho que será salvo no BD (ex: 'event-images/interclasses-capa.jpeg')
+            return $targetDir . '/' . $fileName;
+        }
+
+        return null;
+    }
+
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        // Pega um Coordenador de Curso
-        $courseCoordinator = Coordinator::where('coordinator_type', 'course')
-            ->whereHas('userAccount', function ($query) {
-                $query->where('user_type', 'coordinator');
-            })->first();
+        // 1. Inicialização de dados estáticos
+        $courses = Course::all()->keyBy('course_name'); // Indexa por nome para busca rápida
+        $categories = Category::all()->keyBy('category_name'); // Indexa por nome para busca rápida
+        
+        // Define o diretório de destino das imagens
+        $imageTargetDir = 'event-images';
 
-        // Pega o primeiro curso disponível (para o evento de curso)
-        $course = Course::first();
-
-        // Pega outros cursos (para simular a associação de múltiplos cursos, se houver)
-        $extraCourse = Course::where('id', '!=', optional($course)->id)->inRandomOrder()->first();
-
-        $categories = Category::all();
-
-        // Pega um Coordenador Geral
-        $generalCoordinator = Coordinator::where('coordinator_type', 'general')
-            ->whereHas('userAccount', function ($query) {
-                $query->where('user_type', 'coordinator');
-            })->first();
-
-        // --- Evento de Curso ---
-        if ($courseCoordinator && $course && $categories->count() >= 2) {
-            $eventCourse = Event::create([
-                'event_name' => 'Evento de Curso (Teste)',
-                'event_description' => 'Este evento foi criado apenas para testes',
-                'event_location' => 'Local Teste',
-                'event_scheduled_at' => Carbon::now()->addDays(10),
+        // 2. Dados Consolidados dos Eventos
+        $eventsData = [
+            // --- EVENTO GERAL 1: Interclasses 2025 ---
+            [
+                'event_name' => 'Interclasses 2025',
+                'event_description' => 'Veja fotos do Interclasses da Etec JB! Torneio de esportes que promove a competição saudável e a união entre as classes.', // CORRIGIDO
+                'event_location' => 'Escola (Quadras)',
+                'event_scheduled_at' => '2025-06-23 08:00:00',
                 'event_expired_at' => null,
-                'event_image' => null,
-                'event_type' => 'course',
-                'coordinator_id' => $courseCoordinator->id,
-            ]);
-
-            // Associa cursos
-            $coursesToAttach = [$course->id];
-            if ($extraCourse) {
-                $coursesToAttach[] = $extraCourse->id;
-            }
-            $eventCourse->courses()->attach($coursesToAttach);
-
-            // Associa categorias
-            $eventCourse->eventCategories()->attach($categories->pluck('id')->take(2));
-        }
-
-        // --- Evento Geral ---
-        if ($generalCoordinator && $categories->count() >= 2) {
-            $eventGeneral = Event::create([
-                'event_name' => 'Evento Geral (Teste)',
-                'event_description' => 'Este evento foi criado apenas para testes',
-                'event_location' => 'Local Teste',
-                'event_scheduled_at' => Carbon::now()->addDays(10),
-                'event_expired_at' => null,
-                'event_image' => null,
                 'event_type' => 'general',
-                'coordinator_id' => $generalCoordinator->id,
+                'coordinator_emails' => ['paula@coordenadora.com'],
+                'course_names' => [],
+                'categories' => ['Esportivo', 'Integração de Cursos'],
+                'capa_file' => 'interclasses-capa.jpeg',
+                'galeria_files' => ['interclasses-1.jpeg', 'interclasses-2.jpeg', 'interclasses-3.jpeg', 'interclasses-4.jpeg'],
+            ],
+            // --- EVENTO GERAL 2: Festa Junina ---
+            [
+                'event_name' => 'Festa Junina',
+                'event_description' => 'Venha curtir o nosso arraiá! Comidas típicas, danças e muita diversão para a comunidade escolar celebrar a cultura junina.', // CORRIGIDO
+                'event_location' => 'Praça da Escola',
+                'event_scheduled_at' => '2025-06-16 08:30:00',
+                'event_expired_at' => null,
+                'event_type' => 'general',
+                'coordinator_emails' => ['paula@coordenadora.com'],
+                'course_names' => [],
+                'categories' => ['Cultural', 'Educacional'],
+                'capa_file' => 'festa-junina-capa-e-galeria.jpg',
+                'galeria_files' => ['festa-junina-capa-e-galeria.jpg'],
+            ],
+            // --- EVENTO DE CURSO 1: Palestra CRQ ---
+            [
+                'event_name' => 'Palestra CRQ',
+                'event_description' => 'alunos do curso de Química diurno e noturno puderam assistir a uma palestra realizada pelo representante e fiscal do Conselho Regional de Química (CRQ 4)', // CORRIGIDO
+                'event_location' => 'Auditório',
+                'event_scheduled_at' => '2025-10-02 09:30:00',
+                'event_expired_at' => null,
+                'event_type' => 'course',
+                'coordinator_emails' => ['thiago@coordenador.com'],
+                'course_names' => ['Química'],
+                'categories' => ['Educacional'],
+                'capa_file' => 'palestraCRQ-capa.jpg',
+                'galeria_files' => ['palestraCRQ-1.jpg', 'palestraCRQ-2.jpg', 'palestraCRQ-3.jpg'],
+            ],
+            // --- EVENTO DE CURSO 2: Palestra Eventos Corporativos ---
+            [
+                'event_name' => 'Palestra - Eventos Corporativos e Sociais na Hotelaria',
+                'event_description' => 'Palestra proferida pela Gerente de Alimentos e Bebidas do Eco Resort Canto da Floresta - Mara Beatriz Pereira e também pelo nosso estimado professor Daniel da Costa Matoso Fabri.', // CORRIGIDO
+                'event_location' => 'auditório',
+                'event_scheduled_at' => '2025-04-30 08:00:00',
+                'event_expired_at' => null,
+                'event_type' => 'course',
+                'coordinator_emails' => ['evandro@coordenador.com'],
+                'course_names' => ['Eventos'],
+                'categories' => ['Educacional'],
+                'capa_file' => 'palestra-eventos-capa.jpg',
+                'galeria_files' => ['palestra-eventos-1.jpg', 'palestra-eventos-2.jpg'],
+            ],
+            // --- EVENTO DE CURSO 3: Palestra - Merlin Batista (Múltiplos Cursos) ---
+            [
+                'event_name' => 'palestra - Merlin Batista',
+                'event_description' => 'Tivemos a honra de receber Merllin Batista - cientista, fisioterapeuta, especialista em Saúde Digital e População Negra, doutora-mestra e Ph.D sanduíche em Harvard. Uma trajetória que inspira!', // CORRIGIDO
+                'event_location' => 'Auditório',
+                'event_scheduled_at' => '2025-10-22 08:00:00',
+                'event_expired_at' => null,
+                'event_type' => 'course',
+                'coordinator_emails' => ['lidiane@coordenadora.com', 'truzzi@coordenadora.com', 'thiago@coordenador.com'],
+                'course_names' => ['Ciências da Natureza', 'Edificações', 'Química'],
+                'categories' => ['Educacional', 'Profissionalizante'],
+                'capa_file' => 'palestra-Merlin-Batista-capa.jpg',
+                'galeria_files' => ['palestra-Merlin-Batista-1.jpg', 'palestra-Merlin-Batista-2.jpg'],
+            ],
+        ];
+
+        // 3. Itera e Cria os Eventos
+        foreach ($eventsData as $eventData) {
+            // A) Busca Coordenador (usa apenas o primeiro e-mail da lista)
+            $coordinator = Coordinator::whereHas('userAccount', function ($query) use ($eventData) {
+                $query->where('email', $eventData['coordinator_emails'][0]);
+            })->first();
+
+            if (!$coordinator) {
+                echo "Aviso: Coordenador '{$eventData['coordinator_emails'][0]}' não encontrado para o evento '{$eventData['event_name']}'. Pulando.\n";
+                continue;
+            }
+
+            // B) Copia a Imagem de Capa
+            $eventImagePath = $this->copyFile($eventData['capa_file'], $imageTargetDir);
+            
+            // C) Cria o Evento
+            $event = Event::create([
+                'event_name' => $eventData['event_name'],
+                'event_description' => $eventData['event_description'], // USO CORRETO DO NOME DA CHAVE
+                'event_location' => $eventData['event_location'],
+                'event_scheduled_at' => Carbon::createFromFormat('Y-m-d H:i:s', $eventData['event_scheduled_at']),
+                'event_expired_at' => $eventData['event_expired_at'] ? Carbon::createFromFormat('Y-m-d H:i:s', $eventData['event_expired_at']) : null,
+                
+                'event_image' => $eventImagePath, // Caminho da Capa
+                
+                'event_type' => $eventData['event_type'],
+                'coordinator_id' => $coordinator->id,
             ]);
 
-            // Associa categorias
-            $eventGeneral->eventCategories()->attach($categories->pluck('id')->take(2));
+            // D) Associa Categorias (Relação muitos-para-muitos)
+            $categoryIds = $categories->whereIn('category_name', $eventData['categories'])->pluck('id');
+            if ($categoryIds->isNotEmpty()) {
+                $event->eventCategories()->attach($categoryIds);
+            }
+
+            // E) Associa Cursos (Relação muitos-para-muitos)
+            if (!empty($eventData['course_names'])) {
+                $courseIds = $courses->whereIn('course_name', $eventData['course_names'])->pluck('id');
+                if ($courseIds->isNotEmpty()) {
+                    $event->courses()->attach($courseIds);
+                }
+            }
+
+            // F) Copia e Salva as Imagens de Galeria (Relação hasMany)
+            $galleryImagesToCreate = [];
+            foreach ($eventData['galeria_files'] as $galeriaFile) {
+                $imagePath = $this->copyFile($galeriaFile, $imageTargetDir);
+                if ($imagePath) {
+                    $galleryImagesToCreate[] = ['image_path' => $imagePath];
+                }
+            }
+            
+            // Cria todas as imagens de galeria de uma vez
+            if (!empty($galleryImagesToCreate)) {
+                $event->images()->createMany($galleryImagesToCreate);
+            }
         }
     }
 }
