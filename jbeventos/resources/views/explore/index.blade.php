@@ -372,7 +372,7 @@
                         <h2
                             class="text-4xl font-extrabold text-gray-900 mb-8 border-b-4 border-red-500/70 pb-3 flex items-center">
                             <i class="ph ph-user-circle text-red-500 mr-3 text-3xl"></i>
-                            Lista Completa de Coordenadores
+                            Top 5 Coordenadores mais Ativos
                         </h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
