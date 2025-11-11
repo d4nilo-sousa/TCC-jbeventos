@@ -8,6 +8,7 @@ use App\Models\Coordinator;
 use App\Models\Course;
 use App\Models\Category;
 use Carbon\Carbon;
+// Não precisamos de Storage/File aqui, pois as imagens estão nulas por enquanto.
 
 class EventSeeder extends Seeder
 {
@@ -16,65 +17,74 @@ class EventSeeder extends Seeder
      */
     public function run(): void
     {
-        // Pega um Coordenador de Curso
-        $courseCoordinator = Coordinator::where('coordinator_type', 'course')
-            ->whereHas('userAccount', function ($query) {
-                $query->where('user_type', 'coordinator');
-            })->first();
-
-        // Pega o primeiro curso disponível (para o evento de curso)
-        $course = Course::first();
-
-        // Pega outros cursos (para simular a associação de múltiplos cursos, se houver)
-        $extraCourse = Course::where('id', '!=', optional($course)->id)->inRandomOrder()->first();
-
+        // 1. Busca todos os Cursos e Categorias
+        $courses = Course::all();
         $categories = Category::all();
 
-        // Pega um Coordenador Geral
-        $generalCoordinator = Coordinator::where('coordinator_type', 'general')
-            ->whereHas('userAccount', function ($query) {
-                $query->where('user_type', 'coordinator');
-            })->first();
+        // 2. Busca o Coordenador Geral (Paula)
+        $paulaCoordinator = Coordinator::whereHas('userAccount', function ($query) {
+            $query->where('email', 'paula@coordenadora.com');
+        })->first();
 
-        // --- Evento de Curso ---
-        if ($courseCoordinator && $course && $categories->count() >= 2) {
-            $eventCourse = Event::create([
-                'event_name' => 'Evento de Curso (Teste)',
-                'event_description' => 'Este evento foi criado apenas para testes',
-                'event_location' => 'Local Teste',
-                'event_scheduled_at' => Carbon::now()->addDays(10),
-                'event_expired_at' => null,
-                'event_image' => null,
-                'event_type' => 'course',
-                'coordinator_id' => $courseCoordinator->id,
-            ]);
-
-            // Associa cursos
-            $coursesToAttach = [$course->id];
-            if ($extraCourse) {
-                $coursesToAttach[] = $extraCourse->id;
-            }
-            $eventCourse->courses()->attach($coursesToAttach);
-
-            // Associa categorias
-            $eventCourse->eventCategories()->attach($categories->pluck('id')->take(2));
+        if (!$paulaCoordinator) {
+            echo "Aviso: Coordenadora Geral (paula@coordenadora.com) não encontrada. Os eventos gerais não serão cadastrados.\n";
+            return;
         }
 
-        // --- Evento Geral ---
-        if ($generalCoordinator && $categories->count() >= 2) {
-            $eventGeneral = Event::create([
-                'event_name' => 'Evento Geral (Teste)',
-                'event_description' => 'Este evento foi criado apenas para testes',
-                'event_location' => 'Local Teste',
-                'event_scheduled_at' => Carbon::now()->addDays(10),
-                'event_expired_at' => null,
-                'event_image' => null,
-                'event_type' => 'general',
-                'coordinator_id' => $generalCoordinator->id,
+        // 3. Definição dos Eventos Gerais
+        $generalEventsData = [
+            [
+                'name' => 'Interclasses 2025',
+                'description' => 'Veja fotos do Interclasses da Etec JB! Torneio de esportes que promove a competição saudável e a união entre as classes.',
+                'location' => 'Escola (Quadras)',
+                'scheduled_at' => '2025-06-23 08:00:00',
+                'expired_at' => null,
+                'categories' => ['Esportivo', 'Integração de Cursos'],
+                'type' => 'general',
+            ],
+            [
+                'name' => 'Festa Junina',
+                'description' => 'Venha curtir o nosso arraiá! Comidas típicas, danças e muita diversão para a comunidade escolar celebrar a cultura junina.',
+                'location' => 'Praça da Escola',
+                'scheduled_at' => '2025-06-16 08:30:00',
+                'expired_at' => null,
+                'categories' => ['Cultural', 'Educacional'],
+                'type' => 'general',
+            ],
+            [
+                'name' => 'HalloMuertos',
+                'description' => 'Celebração unindo as tradições do Halloween (EUA) e o Dia de Muertos (México). Uma festa de cultura, arte e fantasias!',
+                'location' => 'Praça da Escola',
+                'scheduled_at' => '2025-10-31 08:00:00',
+                'expired_at' => null,
+                'categories' => ['Cultural', 'Educacional', 'Arte'],
+                'type' => 'general',
+            ],
+        ];
+
+        // 4. Criação dos Eventos Gerais
+        foreach ($generalEventsData as $eventData) {
+            
+            $event = Event::create([
+                'event_name' => $eventData['name'],
+                'event_description' => $eventData['description'],
+                'event_location' => $eventData['location'],
+                'event_scheduled_at' => Carbon::parse($eventData['scheduled_at']),
+                'event_expired_at' => $eventData['expired_at'] ? Carbon::parse($eventData['expired_at']) : null,
+                
+                'event_image' => null, // Imagem nula por enquanto
+                
+                // *** CORREÇÃO APLICADA: REMOVIDO 'course_id' ***
+                
+                'event_type' => $eventData['type'],
+                'coordinator_id' => $paulaCoordinator->id,
             ]);
 
-            // Associa categorias
-            $eventGeneral->eventCategories()->attach($categories->pluck('id')->take(2));
+            // Associa Categorias (via tabela pivot category_event)
+            $categoryIds = $categories->whereIn('category_name', $eventData['categories'])->pluck('id');
+            if ($categoryIds->isNotEmpty()) {
+                $event->eventCategories()->attach($categoryIds);
+            }
         }
     }
 }
