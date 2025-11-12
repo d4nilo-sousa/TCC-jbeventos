@@ -308,7 +308,7 @@
                         @forelse ($topEventsOfTheMonth as $event)
                             <li class="py-3 flex justify-between items-center">
                                 <span class="text-gray-900 font-medium">{{ $event->event_name }}</span>
-                                <span class="text-sm text-gray-500">{{ $event->total_interactions }} interações</span>
+                                <span class="text-sm text-gray-500">{{ $event->total_interactions_month }} interações</span>
                             </li>
                         @empty
                             <p class="text-gray-500">Nenhum evento com interações neste mês.</p>
