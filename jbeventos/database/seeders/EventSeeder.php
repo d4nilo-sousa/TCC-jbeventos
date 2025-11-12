@@ -59,7 +59,7 @@ class EventSeeder extends Seeder
             // --- EVENTO GERAL 1: Interclasses 2025 ---
             [
                 'event_name' => 'Interclasses 2025',
-                'event_description' => 'Veja fotos do Interclasses da Etec JB! Torneio de esportes que promove a competição saudável e a união entre as classes.', // CORRIGIDO
+                'event_info' => 'Veja fotos do Interclasses da Etec JB! Torneio de esportes que promove a competição saudável e a união entre as classes.', // CORRIGIDO
                 'event_location' => 'Escola (Quadras)',
                 'event_scheduled_at' => '2025-06-23 08:00:00',
                 'event_expired_at' => null,
@@ -73,7 +73,7 @@ class EventSeeder extends Seeder
             // --- EVENTO GERAL 2: Festa Junina ---
             [
                 'event_name' => 'Festa Junina',
-                'event_description' => 'Venha curtir o nosso arraiá! Comidas típicas, danças e muita diversão para a comunidade escolar celebrar a cultura junina.', // CORRIGIDO
+                'event_info' => 'Venha curtir o nosso arraiá! Comidas típicas, danças e muita diversão para a comunidade escolar celebrar a cultura junina.', // CORRIGIDO
                 'event_location' => 'Praça da Escola',
                 'event_scheduled_at' => '2025-06-16 08:30:00',
                 'event_expired_at' => null,
@@ -87,7 +87,7 @@ class EventSeeder extends Seeder
             // --- EVENTO DE CURSO 1: Palestra CRQ ---
             [
                 'event_name' => 'Palestra CRQ',
-                'event_description' => 'alunos do curso de Química diurno e noturno puderam assistir a uma palestra realizada pelo representante e fiscal do Conselho Regional de Química (CRQ 4)', // CORRIGIDO
+                'event_info' => 'alunos do curso de Química diurno e noturno puderam assistir a uma palestra realizada pelo representante e fiscal do Conselho Regional de Química (CRQ 4)', // CORRIGIDO
                 'event_location' => 'Auditório',
                 'event_scheduled_at' => '2025-10-02 09:30:00',
                 'event_expired_at' => null,
@@ -101,7 +101,7 @@ class EventSeeder extends Seeder
             // --- EVENTO DE CURSO 2: Palestra Eventos Corporativos ---
             [
                 'event_name' => 'Palestra - Eventos Corporativos e Sociais na Hotelaria',
-                'event_description' => 'Palestra proferida pela Gerente de Alimentos e Bebidas do Eco Resort Canto da Floresta - Mara Beatriz Pereira e também pelo nosso estimado professor Daniel da Costa Matoso Fabri.', // CORRIGIDO
+                'event_info' => 'Palestra proferida pela Gerente de Alimentos e Bebidas do Eco Resort Canto da Floresta - Mara Beatriz Pereira e também pelo nosso estimado professor Daniel da Costa Matoso Fabri.', // CORRIGIDO
                 'event_location' => 'auditório',
                 'event_scheduled_at' => '2025-04-30 08:00:00',
                 'event_expired_at' => null,
@@ -115,7 +115,7 @@ class EventSeeder extends Seeder
             // --- EVENTO DE CURSO 3: Palestra - Merlin Batista (Múltiplos Cursos) ---
             [
                 'event_name' => 'palestra - Merlin Batista',
-                'event_description' => 'Tivemos a honra de receber Merllin Batista - cientista, fisioterapeuta, especialista em Saúde Digital e População Negra, doutora-mestra e Ph.D sanduíche em Harvard. Uma trajetória que inspira!', // CORRIGIDO
+                'event_info' => 'Tivemos a honra de receber Merllin Batista - cientista, fisioterapeuta, especialista em Saúde Digital e População Negra, doutora-mestra e Ph.D sanduíche em Harvard. Uma trajetória que inspira!', // CORRIGIDO
                 'event_location' => 'Auditório',
                 'event_scheduled_at' => '2025-10-22 08:00:00',
                 'event_expired_at' => null,
@@ -146,7 +146,7 @@ class EventSeeder extends Seeder
             // C) Cria o Evento
             $event = Event::create([
                 'event_name' => $eventData['event_name'],
-                'event_description' => $eventData['event_description'], // USO CORRETO DO NOME DA CHAVE
+                'event_info' => $eventData['event_info'],
                 'event_location' => $eventData['event_location'],
                 'event_scheduled_at' => Carbon::createFromFormat('Y-m-d H:i:s', $eventData['event_scheduled_at']),
                 'event_expired_at' => $eventData['event_expired_at'] ? Carbon::createFromFormat('Y-m-d H:i:s', $eventData['event_expired_at']) : null,
