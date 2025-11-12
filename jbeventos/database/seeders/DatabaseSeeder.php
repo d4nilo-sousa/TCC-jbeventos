@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             EventAlertSeeder::class, // Seeder para os Alertas dos Eventos
             ReplySeeder::class, // Seeder para as Respostas aos Posts
             EventCommentSeeder::class, // Seeder para os Comentários dos Eventos
+            NotificationSeeder::class, // Seeder para as Notificações
         ]);
     }
 }
