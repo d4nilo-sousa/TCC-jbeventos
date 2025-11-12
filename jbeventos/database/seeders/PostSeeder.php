@@ -53,7 +53,7 @@ class PostSeeder extends Seeder
         $postsData = [
             // --- POST 1: Palestra Eventos Corporativos por Evandro ---
             [
-                'user_email' => 'evandro@coordenador.com',
+                'user_email' => 'evandro@example.com',
                 'course_name' => 'Eventos',
                 'content' => 'Nossa palestra sobre Eventos Corporativos e Sociais na Hotelaria com a Gerente Mara e o Prof. Daniel foi incrível! Informações valiosas para a carreira dos nossos alunos. Obrigado pela presença! 🎤 #EventosEtec #Hotelaria #Profissionalizante',
                 'created_at' => '2025-05-01 14:30:00',
@@ -62,7 +62,7 @@ class PostSeeder extends Seeder
             ],
             // --- POST 2: Palestra Merlin Batista por Lidiane ---
             [
-                'user_email' => 'lidiane@coordenadora.com',
+                'user_email' => 'lidiane@example.com',
                 'course_name' => 'Ciências da Natureza', // Postado por Lidiane, mas associado a 3 cursos no evento
                 'content' => 'Que honra receber Merllin Batista! Uma verdadeira inspiração em Saúde Digital e Ciência. Nossos alunos de Ciências, Edificações e Química tiveram uma experiência transformadora. O futuro é agora! ✨ #CienciaNaEtec #MerlinBatista #Inspiração',
                 'created_at' => '2025-10-23 09:00:00',
