@@ -76,8 +76,28 @@ function initializeCalendar() {
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
 
-        // Fonte de dados dos eventos: Puxa do endpoint JSON
-        events: '/events/calendar-feed', 
+        // ------------------------------------
+        // CORREÇÃO: Enviar parâmetros de filtro da URL para o feed do calendário
+        // ------------------------------------
+        events: {
+            url: '/events/calendar-feed',
+            method: 'GET',
+            // Função para injetar dinamicamente os parâmetros da URL (filtros)
+            extraParams: function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const params = {};
+                for (const [key, value] of urlParams.entries()) {
+                    // Ignora parâmetros que o FullCalendar envia automaticamente
+                    if (key !== 'start' && key !== 'end' && key !== '_') {
+                        params[key] = value;
+                    }
+                }
+                return params;
+            },
+            failure: function() {
+                console.error('Erro ao carregar os eventos do calendário.');
+            }
+        }, 
 
         // ------------------------------------
         // Interatividade: Clicar em um DIA (dateClick)
@@ -98,6 +118,13 @@ function initializeCalendar() {
             // Adiciona um tooltip simples ou informação extra ao passar o mouse
             info.el.setAttribute('title', info.event.title + ' | Local: ' + (info.event.extendedProps.location || 'Não Informado'));
         },
+        
+        // Adiciona um listener para quando a navegação do calendário for alterada (mês/ano)
+        datesSet: function(info) {
+            // Recarrega os eventos com os novos parâmetros de start/end 
+            // (Isso é mais redundante, mas ajuda a forçar a atualização após uma navegação)
+            calendarInstance.refetchEvents();
+        }
     });
 
     // Renderiza o calendário uma vez, mas ele só ficará visível se a view 'calendar' for ativada.
@@ -139,6 +166,8 @@ function showCalendarView(updateStorage = true) {
     // Garante que o calendário seja redimensionado corretamente ao ser exibido.
     if (calendarInstance) {
         calendarInstance.updateSize(); 
+        // Força o recarregamento ao mudar para a visualização do calendário
+        calendarInstance.refetchEvents(); 
     }
 
     // Atualiza a seleção visual dos botões
@@ -258,6 +287,9 @@ function toggleFilterMenu() {
     document.getElementById('filterMenu')?.classList.toggle('hidden');
 }
 
+/**
+ * Limpa os filtros e submete o formulário, retornando à visualização de lista.
+ */
 function resetFilters() {
     const filterForm = document.getElementById('filterMenu').querySelector('form');
     // Limpa os campos visíveis
@@ -269,8 +301,15 @@ function resetFilters() {
         }
     });
 
-    // Marca o primeiro tipo de evento como padrão ou não marca nada, dependendo da UX desejada.
-    // Aqui, vamos desmarcar tudo, e o 'search' (hidden) é mantido.
+    // Se houver um input 'event_type' com valor 'general', marque-o como padrão após o reset
+    const generalRadio = filterForm.querySelector('input[name="event_type"][value="general"]');
+    if (generalRadio) {
+        generalRadio.checked = true;
+    }
+    
+    // Garantir que a view de lista seja exibida após o reset (limpa o localStorage)
+    showListView(true); 
+
     // Submete o formulário com os campos limpos.
     filterForm.submit();
 }

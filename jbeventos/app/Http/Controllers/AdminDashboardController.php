@@ -96,13 +96,27 @@ class AdminDashboardController extends Controller
         $coursesData = $coursesRanking->pluck('events_count')->toArray();
 
         // Top 5 eventos do mês
-        $topEventsOfTheMonth = Event::whereBetween('event_scheduled_at', [
+        // 1. Calcula o total de interações (likes, saves, comments) neste mês, agrupado por evento.
+        $topEventsOfTheMonthIds = EventUserReaction::select('event_id', DB::raw('count(*) as total_interactions'))
+            ->whereBetween('created_at', [
                 $now->copy()->startOfMonth(), 
                 $now->copy()->endOfMonth()
             ])
-            ->withCount(['reactions as total_interactions'])
+            ->groupBy('event_id')
             ->orderByDesc('total_interactions')
             ->limit(5)
+            ->pluck('event_id'); // Obtém apenas os IDs dos eventos mais interagidos
+            
+        // 2. Carrega os eventos com base nos IDs, e carrega novamente a contagem de interações do mês atual.
+        $topEventsOfTheMonth = Event::whereIn('id', $topEventsOfTheMonthIds)
+            ->withCount(['reactions as total_interactions_month' => function ($query) use ($now) {
+                // Usa o withCount com filtro para contar apenas as reações do mês atual
+                $query->whereBetween('created_at', [
+                    $now->copy()->startOfMonth(), 
+                    $now->copy()->endOfMonth()
+                ]);
+            }])
+            ->orderByDesc('total_interactions_month')
             ->get();
             
         // Dados mensais últimos 6 meses

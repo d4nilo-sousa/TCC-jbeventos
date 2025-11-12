@@ -406,44 +406,54 @@ class CoursePosts extends Component
     // ==========================================================
 
     #[On('postCreated')]
-public function render()
-{
-    // 🔹 Filtra posts pelo curso atual (caso a propriedade exista)
-    $query = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies'])
-        ->latest();
+    public function render()
+    {
+        // 🔹 Filtra posts pelo curso atual
+        $query = Post::with(['course.courseCoordinator.userAccount', 'author', 'replies'])
+            ->latest();
 
-    if (property_exists($this, 'courseId') && $this->courseId) {
-        $query->where('course_id', $this->courseId);
+        // **CORREÇÃO APLICADA AQUI:**
+        // Se a propriedade $this->course (o objeto Course injetado) não for nula, filtra.
+        if ($this->course) {
+            $query->where('course_id', $this->course->id);
+        }
+
+        // Se o usuário for um coordenador de curso e o curso estiver carregado no mount,
+        // garantimos que o post de criação seja direcionado para o curso correto.
+        if ($this->isCoordinator && $this->course && $this->course->id) {
+            $this->newPostCourseId = $this->course->id;
+        }
+
+        // A paginação deve ser aplicada aqui
+        $posts = $query->paginate(10); // Ajustei para usar paginação, conforme 'use WithPagination'
+
+        // 🔹 Adiciona metadados (usado no feed)
+        $feedItems = $posts->getCollection()->map(function ($post) { // Ajustado para coleções paginadas
+            $post->type = 'post';
+            $post->sort_date = $post->created_at;
+            return $post;
+        });
+
+        // 🔹 Carrega post expandido (quando abre o modal)
+        if ($this->selectedPostId && !$this->expandedPost) {
+            $this->expandedPost = Post::with([
+                'course.courseCoordinator.userAccount',
+                'author',
+                'replies.author'
+            ])->findOrFail($this->selectedPostId);
+        }
+
+        // 🔹 Garante que o campo de edição de resposta esteja preparado
+        if ($this->editingReplyId && empty($this->editingReplyContent)) {
+            // Este método já garante que o conteúdo é carregado, é ok.
+            // $this->startEditReply($this->editingReplyId); 
+        }
+
+        // ✅ Agora renderiza a view correta
+        return view('livewire.course-posts', [
+            'feedItems' => $feedItems,
+            'posts' => $posts, // Passa o objeto paginado
+        ]);
     }
-
-    $posts = $query->get();
-
-    // 🔹 Adiciona metadados (usado no feed)
-    $feedItems = $posts->map(function ($post) {
-        $post->type = 'post';
-        $post->sort_date = $post->created_at;
-        return $post;
-    });
-
-    // 🔹 Carrega post expandido (quando abre o modal)
-    if ($this->selectedPostId && !$this->expandedPost) {
-        $this->expandedPost = Post::with([
-            'course.courseCoordinator.userAccount',
-            'author',
-            'replies.author'
-        ])->findOrFail($this->selectedPostId);
-    }
-
-    // 🔹 Garante que o campo de edição de resposta esteja preparado
-    if ($this->editingReplyId && empty($this->editingReplyContent)) {
-        $this->startEditReply($this->editingReplyId);
-    }
-
-    // ✅ Agora renderiza a view correta
-    return view('livewire.course-posts', [
-        'feedItems' => $feedItems,
-        'posts' => $posts,
-    ]);
-}
 
 }

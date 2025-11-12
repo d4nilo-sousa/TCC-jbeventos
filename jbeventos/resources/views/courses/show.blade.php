@@ -44,25 +44,46 @@
 
 
 
-            {{-- Card de Informações (ampliado) --}}
+            {{-- Card de Informações --}}
             <div class="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
                 <div class="relative mb-10">
-                    <div class="w-full h-40 bg-gray-200 rounded-xl overflow-hidden group">
-                        <img id="courseBannerImg"
-                            src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
-                            alt="Banner do Curso" class="object-cover w-full h-full">
+                    {{-- CONTAINER DO BANNER --}}
+                    <div id="courseBannerContainer" class="w-full h-40 rounded-xl overflow-hidden group relative"
+                         style="@if (preg_match('/^#[a-f0-9]{6}$/i', $course->course_banner_url)) background-color: {{ $course->course_banner_url }}; @else background-color: #B0B0B0; @endif">
+                        
+                        {{-- IMAGEM DO BANNER (Exibida se for um caminho de arquivo) --}}
+                        @if (!preg_match('/^#[a-f0-9]{6}$/i', $course->course_banner_url))
+                            <img id="courseBannerImg"
+                                src="{{ $course->course_banner_url }}"
+                                alt="Banner do Curso" class="object-cover w-full h-full">
+                        @else
+                            <img id="courseBannerImg"
+                                src=""
+                                alt="Banner do Curso" class="object-cover w-full h-full hidden">
+                        @endif
 
+                        {{-- CONTROLES DO ADMIN: UPLOAD E SELETOR DE COR --}}
                         @if (auth()->user()->user_type === 'admin')
-                            <form id="bannerForm" enctype="multipart/form-data"
-                                class="absolute top-3 right-3 transition-opacity">
-                                @csrf
-                                @method('PUT')
-                                <input type="file" name="course_banner" id="bannerUpload" class="hidden">
-                                <button type="button" onclick="document.getElementById('bannerUpload').click()"
-                                    class="bg-white/90 backdrop-blur-sm px-3 py-1 text-xs rounded-full shadow hover:bg-gray-100 transition font-medium flex items-center gap-1">
-                                    <i class="ph-bold ph-image-square text-sm"></i> Trocar Banner
-                                </button>
-                            </form>
+                            <div class="absolute top-3 right-3 flex gap-2 items-center">
+                                {{-- Seletor de Cores --}}
+                                <div class="relative flex items-center bg-white/90 backdrop-blur-sm p-1 rounded-full shadow-md">
+                                    <label for="bannerColorPicker" class="text-xs text-gray-700 font-medium mr-1">Cor</label>
+                                    <input type="color" id="bannerColorPicker"
+                                        value="{{ preg_match('/^#[a-f0-9]{6}$/i', $course->course_banner) ? $course->course_banner : '#B0B0B0' }}" 
+                                        class="w-8 h-8 cursor-pointer rounded-full p-0 m-0 border-none overflow-hidden [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch-wrapper]:p-0">
+                                </div>
+
+                                {{-- Formulário para Upload de Banner (Imagem) --}}
+                                <form id="bannerForm" enctype="multipart/form-data" class="transition-opacity">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="file" name="course_banner" id="bannerUpload" class="hidden">
+                                    <button type="button" onclick="document.getElementById('bannerUpload').click()"
+                                        class="bg-white/90 backdrop-blur-sm px-3 py-1 text-xs rounded-full shadow hover:bg-gray-100 transition font-medium flex items-center gap-1">
+                                        <i class="ph-bold ph-image-square text-sm"></i> Trocar Imagem
+                                    </button>
+                                </form>
+                            </div>
                         @endif
                     </div>
 
@@ -320,7 +341,7 @@
     }
 </script>
 
-{{-- Script seguir/deixar de seguir (mantive igual) --}}
+{{-- Script seguir/deixar de seguir e atualizações rápidas --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // --- SEGUIR / DEIXAR DE SEGUIR ---
@@ -454,9 +475,16 @@
                     .then(response => response.json())
                     .then(data => {
                         const img = document.getElementById(imgId);
-                        if (img) {
-                            const key = imgId.includes('Icon') ? 'icon_url' : 'banner_url';
-                            img.src = data[key] + '?t=' + new Date().getTime();
+                        const container = document.getElementById('courseBannerContainer');
+                        if (data.success) {
+                            // Atualiza a imagem e esconde a cor de fundo (se houver)
+                            if (img) {
+                                img.src = data.banner_url + '?t=' + new Date().getTime();
+                                img.classList.remove('hidden');
+                                container.style.backgroundColor = ''; // Remove cor se for imagem
+                            }
+                        } else {
+                            alert(data.message || 'Erro ao atualizar a imagem.');
                         }
                     })
                     .catch(error => {
@@ -465,6 +493,56 @@
                     });
             });
         }
+
+        // --- FUNÇÃO PARA ATUALIZAR COR DO BANNER ---
+        const colorPicker = document.getElementById('bannerColorPicker');
+        const bannerContainer = document.getElementById('courseBannerContainer');
+        const bannerImg = document.getElementById('courseBannerImg');
+
+        if (colorPicker) {
+            colorPicker.addEventListener('change', function() {
+                const newColor = this.value;
+
+                // 1. Atualiza a view imediatamente
+                bannerContainer.style.backgroundColor = newColor;
+                // 2. Esconde a imagem (pois agora é cor)
+                if (bannerImg) {
+                    bannerImg.classList.add('hidden');
+                }
+
+                // 3. Envia a cor via AJAX
+                const url = '{{ route('courses.updateBannerColor', $course->id) }}';
+                
+                fetch(url, {
+                        method: 'POST', // Usamos POST com o override
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-HTTP-Method-Override': 'PUT', // Forçando o PUT
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            banner_color: newColor
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log(data.message);
+                            // Opcional: mostrar uma notificação de sucesso
+                        } else {
+                            alert(data.message || 'Erro ao salvar a cor.');
+                            // Reverter a cor se a requisição falhar (opcional)
+                            // bannerContainer.style.backgroundColor = originalColor; 
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao atualizar a cor do banner:", error);
+                        alert("Erro de comunicação ao salvar a cor.");
+                    });
+            });
+        }
+
 
         // --- CONFIGURAÇÃO DE UPLOADS ---
         setupImageUpload('iconUpload', 'iconForm', 'courseIconImg',
