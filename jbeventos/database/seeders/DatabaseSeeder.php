@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CourseSeeder::class, // Seeder para os Cursos
             EventSeeder::class, // Seeder para os Eventos
             PostSeeder::class, // Seeder para os Posts
+            EventReactionSeeder::class, // Seeder para as Reações dos Eventos
         ]);
     }
 }
