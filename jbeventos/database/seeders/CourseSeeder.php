@@ -40,7 +40,7 @@ class CourseSeeder extends Seeder
             [
                 'name' => 'Química',
                 'description' => 'Bem vindo ao curso de Química!',
-                'coordinator_email' => 'thiago@example.com',
+                'coordinator_email' => 'paulomazieiro@example.com',
                 'icon_file' => 'etiq-course-icon.jpg',
                 'banner_color' => '#6103a0ff',
             ],

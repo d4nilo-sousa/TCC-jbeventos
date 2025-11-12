@@ -29,11 +29,11 @@ class CoordinatorSeeder extends Seeder
         $coordinators = [
             // Coordenadores de Curso
             [
-                'name' => 'Thiago',
-                'email' => 'thiago@example.com',
-                'password' => 'thiago@123',
+                'name' => 'Paulo',
+                'email' => 'paulomazieiro@example.com',
+                'password' => 'mazieiro@123',
                 'type' => 'course',
-                'icon_file' => 'thiago-user-icon.png',
+                'icon_file' => 'paulo-user-icon.png',
             ],
             [
                 'name' => 'Lidiane',
@@ -95,7 +95,7 @@ class CoordinatorSeeder extends Seeder
                     $coordinatorData['icon_file']
                 );
                 
-                // Salva o caminho que será usado no campo user_icon (ex: 'avatars/thiago-user-icon.png')
+                // Salva o caminho que será usado no campo user_icon (ex: 'avatars/paulo-user-icon.png')
                 $iconPath = $targetDir . '/' . $coordinatorData['icon_file'];
             }
             
