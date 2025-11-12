@@ -42,7 +42,7 @@ class CourseSeeder extends Seeder
                 'description' => 'Bem vindo ao curso de Química!',
                 'coordinator_email' => 'paulomazieiro@example.com',
                 'icon_file' => 'etiq-course-icon.jpg',
-                'banner_color' => '#6103a0ff',
+                'banner_color' => '#6103a0',
             ],
             [
                 'name' => 'Ciências da Natureza',
@@ -56,28 +56,28 @@ class CourseSeeder extends Seeder
                 'description' => 'Bem vindo ao curso de Edificações!',
                 'coordinator_email' => 'truzzi@example.com',
                 'icon_file' => 'eda-course-icon.jpg',
-                'banner_color' => '#dcd800ff',
+                'banner_color' => '#dcd800',
             ],
             [
                 'name' => 'Eventos',
                 'description' => 'Bem vindo ao curso de Eventos!',
                 'coordinator_email' => 'evandro@example.com',
                 'icon_file' => 'eventos-course-icon.jpg',
-                'banner_color' => '#c01d00ff',
+                'banner_color' => '#c01d00',
             ],
             [
                 'name' => 'Eletrônica',
                 'description' => 'Bem vindo ao curso de Eletrônica',
                 'coordinator_email' => 'guilhermebim@example.com',
                 'icon_file' => 'etel-course-icon.jpg',
-                'banner_color' => '#1d0087ff',
+                'banner_color' => '#1d0087',
             ],
             [
                 'name' => 'Administração',
                 'description' => 'Bem vindo ao curso de Administração',
                 'coordinator_email' => 'eduardo@example.com',
                 'icon_file' => 'ada-course-icon.jpg', 
-                'banner_color' => '#46007cff', 
+                'banner_color' => '#46007c', 
             ],
         ];
 
