@@ -51,16 +51,7 @@ class PostSeeder extends Seeder
         $courses = Course::all()->keyBy('course_name');
         
         $postsData = [
-            // --- POST 1: Interclasses (Geral) por Paula ---
-            [
-                'user_email' => 'paula@coordenadora.com',
-                'course_name' => null, // Evento Geral, não tem curso associado no post
-                'content' => 'O Interclasses deste ano foi um sucesso estrondoso! Muita energia, competição saudável e união entre os cursos. Confira algumas fotos dos nossos atletas em ação! 🏆 #Interclasses #Etec #Esporte',
-                'created_at' => '2025-06-24 10:00:00',
-                // Usando imagens do evento Interclasses
-                'post_files' => ['interclasses-1.jpeg', 'interclasses-2.jpeg'],
-            ],
-            // --- POST 2: Palestra Eventos Corporativos por Evandro ---
+            // --- POST 1: Palestra Eventos Corporativos por Evandro ---
             [
                 'user_email' => 'evandro@coordenador.com',
                 'course_name' => 'Eventos',
@@ -69,7 +60,7 @@ class PostSeeder extends Seeder
                 // Usando imagem do evento de Hotelaria
                 'post_files' => ['palestra-eventos-1.jpg'],
             ],
-            // --- POST 3: Palestra Merlin Batista por Lidiane ---
+            // --- POST 2: Palestra Merlin Batista por Lidiane ---
             [
                 'user_email' => 'lidiane@coordenadora.com',
                 'course_name' => 'Ciências da Natureza', // Postado por Lidiane, mas associado a 3 cursos no evento
