@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             EventSeeder::class, // Seeder para os Eventos
             PostSeeder::class, // Seeder para os Posts
             EventReactionSeeder::class, // Seeder para as Reações dos Eventos
+            ReplySeeder::class, // Seeder para as Respostas aos Posts
         ]);
     }
 }
