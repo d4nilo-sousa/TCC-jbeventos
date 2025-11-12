@@ -208,16 +208,6 @@
                                 </div>
                             </div>
 
-                            {{-- Descrição do Evento --}}
-<div class="mt-4">
-    <x-input-label for="event_description" value="Descrição do Evento" />
-    <textarea name="event_description" id="event_description" rows="4"
-        class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('event_description') }}</textarea>
-    @error('event_description')
-        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-    @enderror
-</div>
-
                             {{-- Sobre o Evento --}}
                             <div>
                                 <x-input-label for="event_info" value="Sobre o Evento" />

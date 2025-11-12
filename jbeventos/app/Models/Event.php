@@ -12,7 +12,6 @@ class Event extends Model
     // Campos que podem ser preenchidos em massa
     protected $fillable = [
         'event_name',
-        'event_description',
         'event_info',
         'event_location',
         'event_scheduled_at',

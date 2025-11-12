@@ -90,7 +90,7 @@
                                 <x-input-label for="event_info" value="Sobre o Evento"
                                     class="text-left mb-1 block" />
                                 <textarea name="event_info" id="event_info" rows="4"
-                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500 text-left block">{{ old('event_description', $event->event_description) }}</textarea>
+                                    class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500 text-left block">{{ old('event_info', $event->event_info) }}</textarea>
                                 @error('event_info')
                                     <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
                                 @enderror

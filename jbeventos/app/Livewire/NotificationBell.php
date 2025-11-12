@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Notifications\DatabaseNotification; 
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
 
 class NotificationBell extends Component
@@ -18,17 +18,21 @@ class NotificationBell extends Component
         // 🛑 NOVO: Consulta direta ao relacionamento, forçando o DB
         return Auth::user()->notifications()->whereNull('read_at')->count();
     }
-    
+
     // Função auxiliar para recarregar a lista (sempre do DB)
     private function getDbNotifications()
     {
-        return Auth::user()->notifications->take(5);
+        return Auth::user()->notifications()
+            ->whereNull('read_at')
+            ->latest()   // opcional, para trazer as mais recentes primeiro
+            ->take(5)
+            ->get();
     }
-    
+
     // Método para disparar o evento para o Alpine
     private function dispatchUpdate()
     {
-         $this->dispatch('notificationsUpdated', count: $this->unreadCount);
+        $this->dispatch('notificationsUpdated', count: $this->unreadCount);
     }
 
     public function getListeners()
@@ -36,8 +40,8 @@ class NotificationBell extends Component
         $userId = Auth::id();
 
         return [
-            "echo-private:users.{$userId},Illuminate\\Notifications\\Events\\BroadcastNotificationCreated" 
-                 => 'broadcastUpdate',
+            "echo-private:users.{$userId},Illuminate\\Notifications\\Events\\BroadcastNotificationCreated"
+            => 'broadcastUpdate',
             'refreshBell' => '$refresh',
         ];
     }
@@ -57,7 +61,7 @@ class NotificationBell extends Component
         // Recalcula o estado com a nova contagem
         $this->unreadCount = $this->getDbUnreadCount();
         $this->notifications = $this->getDbNotifications();
-        
+
         $this->dispatchUpdate();
     }
 
@@ -67,43 +71,49 @@ class NotificationBell extends Component
     public function markAsRead()
     {
         $user = Auth::user();
-        $userId = $user->id;
-        
-        // 1. Marca todas como lidas diretamente no DB
-        DB::table('notifications')
-            ->where('notifiable_type', get_class($user)) // Garante que é o modelo User
-            ->where('notifiable_id', $userId)
-            ->whereNull('read_at')
-            ->update(['read_at' => now()]); // Força o timestamp de leitura no DB
 
-        // 2. Recalcula o estado com a nova contagem (que deve ser 0 agora)
-        $this->unreadCount = $this->getDbUnreadCount(); 
+        $user->unreadNotifications()->update(['read_at' => now()]);
+
+        // Atualiza contagem e lista de notificações
+        $this->unreadCount = $this->getDbUnreadCount();
         $this->notifications = $this->getDbNotifications();
-        
-        $this->dispatchUpdate(); 
+
+        // Se não houver notificações não lidas, força lista vazia
+        if ($this->unreadCount === 0) {
+            $this->notifications = collect([]);
+        }
+
+        $this->dispatchUpdate();
     }
 
     /**
-     * ✅ Marcar uma específica como lida e redirecionar
+     * Marca UMA notificação como lida e redireciona, se necessário
      */
-    public function markOneAsRead($id, $url = '#')
+    public function markOneAsRead($id) // Remova o parâmetro $url
     {
         $user = Auth::user();
-        $notification = $user->notifications()->where('id', $id)->first();
+        // Encontra a notificação
+        $notification = $user->notifications()->find($id);
+
+        // Inicializa a URL para ser segura
+        $url = '#';
 
         if ($notification) {
-            $notification->markAsRead();
+            // Tenta buscar a URL dos dados, garantindo um valor seguro como fallback
+            $url = data_get($notification->data, 'event_url', '#');
+
+            if (is_null($notification->read_at)) {
+                $notification->markAsRead();
+            }
         }
-        
-        // Recalcula o estado após a marcação (Contagem e Lista)
-        $this->unreadCount = $this->getDbUnreadCount(); 
+
+        $this->unreadCount = $this->getDbUnreadCount();
         $this->notifications = $this->getDbNotifications();
-        
         $this->dispatchUpdate();
-        
-        // Redireciona via Livewire
-        if ($url !== '#') {
-            $this->dispatch('navigateToUrl', url: $url);
+
+        // Redireciona apenas se houver URL válida (diferente de #)
+        if ($url && $url !== '#') {
+            $this->dispatch('navigateToUrl', ['url' => $url]);
         }
     }
 
@@ -113,7 +123,7 @@ class NotificationBell extends Component
     public function refreshUnreadCount()
     {
         $newCount = $this->getDbUnreadCount();
-        
+
         if ($this->unreadCount !== $newCount) {
             $this->unreadCount = $newCount;
             $this->notifications = $this->getDbNotifications();

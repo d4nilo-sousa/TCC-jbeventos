@@ -21,8 +21,7 @@ class ExploreController extends Controller
         $events = Event::with('courses')
             ->withCount('likes')
             ->when($search, function ($query, $search) {
-                return $query->where('event_name', 'like', "%{$search}%")
-                    ->orWhere('event_description', 'like', "%{$search}%");
+                return $query->where('event_name', 'like', "%{$search}%");
             })
             ->orderByDesc('likes_count')           // mais curtidos primeiro
             ->orderBy('event_scheduled_at', 'asc') // desempate pela data

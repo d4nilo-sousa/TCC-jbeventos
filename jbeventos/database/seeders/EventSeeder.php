@@ -40,7 +40,6 @@ class EventSeeder extends Seeder
         if ($courseCoordinator && $course && $categories->count() >= 2) {
             $eventCourse = Event::create([
                 'event_name' => 'Evento de Curso (Teste)',
-                'event_description' => 'Este evento foi criado apenas para testes',
                 'event_location' => 'Local Teste',
                 'event_scheduled_at' => Carbon::now()->addDays(10),
                 'event_expired_at' => null,
@@ -64,7 +63,6 @@ class EventSeeder extends Seeder
         if ($generalCoordinator && $categories->count() >= 2) {
             $eventGeneral = Event::create([
                 'event_name' => 'Evento Geral (Teste)',
-                'event_description' => 'Este evento foi criado apenas para testes',
                 'event_location' => 'Local Teste',
                 'event_scheduled_at' => Carbon::now()->addDays(10),
                 'event_expired_at' => null,

@@ -173,7 +173,6 @@ class EventController extends Controller
                 'allDay' => $isAllDay,
                 'color' => $color,
                 'extendedProps' => [
-                    'description' => $event->event_description,
                     'location' => $event->event_location,
                     'type' => $event->event_type,
                     'coordinator' => $coordinatorName,
@@ -192,7 +191,6 @@ class EventController extends Controller
         // 1. VALIDAÇÃO: Adiciona a validação para o novo campo 'courses'
         $request->validate([
             'event_name' => 'required|unique:events,event_name',
-            'event_description' => 'required|string',
             'event_info' => 'nullable|string|max:2000',
             'event_location' => 'required|string',
             'event_scheduled_at' => 'required|date',
@@ -211,7 +209,6 @@ class EventController extends Controller
 
         $data = $request->only([
             'event_name',
-            'event_description',
             'event_info',
             'event_location',
             'event_scheduled_at',
@@ -334,21 +331,27 @@ class EventController extends Controller
 
         // 3. LÓGICA DE NOTIFICAÇÃO ADAPTADA PARA MÚLTIPLOS CURSOS
 
-        // Carrega os cursos e seus seguidores para evitar consultas N+1
+
+        // Carrega os cursos e seus seguidores (evita N+1)
         $event->load('courses.followers');
-        $notifiedUsers = []; // Array para rastrear usuários já notificados
+        $notifiedUsers = []; // Evita duplicações
 
         foreach ($event->courses as $course) {
             foreach ($course->followers as $user) {
-                // Verifica se o usuário já foi notificado (evita notificação duplicada)
                 if (!in_array($user->id, $notifiedUsers)) {
-                    $user->notify(new NewEventNotification($event));
+
+                    // 🔔 Envia notificação por e-mail e salva no banco
+                    $user->notify(new \App\Notifications\NewEventNotification($event));
+
                     $notifiedUsers[] = $user->id;
                 }
             }
         }
 
-        return redirect()->route('events.index')->with('success', 'Evento criado com sucesso!');
+        // Retorno
+        return redirect()
+            ->route('events.index')
+            ->with('success', 'Evento criado com sucesso! Usuários seguidores foram notificados.');
     }
 
     // Detalhes do evento
@@ -401,7 +404,6 @@ class EventController extends Controller
         // =====================
         $validated = $request->validate([
             'event_name' => 'required|string|unique:events,event_name,' . $event->id,
-            'event_description' => 'nullable|string',
             'event_info' => 'nullable|string',
             'event_location' => 'required|string',
             'event_scheduled_at' => 'required|date',
@@ -433,7 +435,6 @@ class EventController extends Controller
         // =====================
         $data = $request->only([
             'event_name',
-            'event_description',
             'event_info',
             'event_location',
             'event_scheduled_at',
@@ -557,81 +558,38 @@ class EventController extends Controller
         }
 
         // =====================
-// 10. DETECTA MUDANÇAS
-// =====================
-$changedFields = [];
-$changed = $event->getChanges();
+        // 10. DETECTA MUDANÇAS
+        // =====================
+        $changedFields = [];
+        $importantFields = ['event_name', 'event_scheduled_at', 'event_location', 'event_expired_at'];
 
-// Campos considerados 'alterações importantes'
-$importantFields = ['event_name', 'event_scheduled_at', 'event_location', 'event_expired_at'];
-$importantChanges = array_intersect_key($changed, array_flip($importantFields));
+        foreach ($importantFields as $field) {
+            $originalValue = $original->$field;
+            $currentValue = $event->$field;
 
-// Preenche $changedFields com old/new
-foreach ($importantChanges as $field => $newValue) {
-    $changedFields[$field] = [
-        'old' => $original->$field,
-        'new' => $newValue,
-    ];
-}
+            // Se for campo de data, compara como timestamp
+            if (in_array($field, ['event_scheduled_at', 'event_expired_at'])) {
+                $originalValue = $originalValue ? \Carbon\Carbon::parse($originalValue)->timestamp : null;
+                $currentValue = $currentValue ? \Carbon\Carbon::parse($currentValue)->timestamp : null;
+            }
 
-// =====================
-// 11. NOTIFICA USUÁRIOS (notify)
-// =====================
-
-// Coleta seguidores dos cursos vinculados
-$courseFollowers = $event->courses
-    ->pluck('followers')
-    ->flatten()
-    ->keyBy('id'); // garante unicidade
-
-// Coleta usuários que salvaram o evento
-$event->load('saivers');
-$eventSavers = $event->saivers->keyBy('id');
-
-// Combina todos os destinatários
-$allUniqueRecipients = $courseFollowers->merge($eventSavers);
-
-// Notifica os seguidores/cursistas
-if ($allUniqueRecipients->isNotEmpty()) {
-    Notification::send($allUniqueRecipients, new \App\Notifications\EventUpdatedNotification(
-        $event,
-        $changedFields
-    ));
-}
-
-// Verifica mudanças nos cursos associados
-$newCourseIds = collect($finalCourseIds)->sort()->values()->all();
-$coursesChanged = $originalCourseIds !== $newCourseIds;
-
-// Notifica apenas os usuários que clicaram em "notificar"
-if (!empty($changedFields) || $coursesChanged) {
-    $userIds = \App\Models\EventUserReaction::where('event_id', $event->id)
-        ->where('reaction_type', 'notify')
-        ->pluck('user_id')
-        ->toArray();
-
-    $users = \App\Models\User::whereIn('id', $userIds)->get();
-
-    $oldCourses = \App\Models\Course::whereIn('id', $originalCourseIds)->get();
-    $newCourses = \App\Models\Course::whereIn('id', $newCourseIds)->get();
-
-    foreach ($users as $user) {
-        $user->notify(new \App\Notifications\EventUpdatedNotification(
-            $event,
-            $changedFields,
-            $coursesChanged,
-            $oldCourses,
-            $newCourses
-        ));
-    }
-}
-
-        $newCourseIds = collect($finalCourseIds)->sort()->values()->all();
-        $coursesChanged = $originalCourseIds !== $newCourseIds;
+            if ($originalValue != $currentValue) {
+                $changedFields[$field] = [
+                    'old' => $original->$field,
+                    'new' => $event->$field,
+                ];
+            }
+        }
 
         // =====================
         // 11. NOTIFICA USUÁRIOS (notify)
         // =====================
+
+        // 1. Verifica mudanças nos campos importantes
+        $newCourseIds = collect($finalCourseIds)->sort()->values()->all();
+        $coursesChanged = $originalCourseIds !== $newCourseIds;
+
+        // 2. Pega somente usuários que clicaram em "notificar"
         if (!empty($changedFields) || $coursesChanged) {
             $userIds = \App\Models\EventUserReaction::where('event_id', $event->id)
                 ->where('reaction_type', 'notify')
