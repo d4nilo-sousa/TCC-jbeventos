@@ -130,12 +130,62 @@ class EventController extends Controller
         return view('coordinator.events.create', compact('categories', 'minExpiredAt', 'eventExpiredAt', 'allCourses'));
     }
 
-    public function calendarEvents()
+    public function calendarEvents(Request $request)
     {
-        $events = Event::with(['eventCoordinator.userAccount', 'courses'])
-            ->whereDate('event_scheduled_at', '>=', now()->subMonths(3))
-            ->get();
+        // 1. Inicializa a query com os relacionamentos
+        $query = Event::with(['eventCoordinator.userAccount', 'courses']);
 
+        // 2. Aplica Filtros de Data do FullCalendar
+        // FullCalendar envia 'start' e 'end' no formato ISO 8601 para a view atual.
+        if ($request->filled('start') && $request->filled('end')) {
+            // Usa event_scheduled_at para o início do evento
+            $query->whereBetween('event_scheduled_at', [
+                $request->input('start'), 
+                $request->input('end')
+            ]);
+        } else {
+            // Se a data não for fornecida (apenas por segurança), usa a lógica antiga.
+            // No entanto, é altamente recomendado que o FullCalendar sempre envie 'start'/'end'.
+            $query->whereDate('event_scheduled_at', '>=', now()->subMonths(3));
+        }
+        
+        // 3. Aplica Filtros Personalizados do Formulário (enviados via JS extraParams)
+
+        // Filtro de Busca por Título
+        if ($request->filled('search')) {
+            $query->where('event_name', 'like', '%' . $request->input('search') . '%');
+        }
+
+        // Filtro por Tipo de Evento (event_type)
+        if ($request->filled('event_type')) {
+            $eventType = $request->input('event_type');
+            if ($eventType === 'general' || $eventType === 'course') {
+                $query->where('event_type', $eventType);
+            }
+        }
+        
+        // Filtro por Cursos (course_id) - Assumindo que course_id pode ser um array de IDs
+        if ($request->filled('course_id')) {
+            $courseIds = $request->input('course_id');
+            // Garante que a query só inclua eventos que estejam relacionados a um dos IDs de curso
+            $query->whereHas('courses', function ($q) use ($courseIds) {
+                // Verifica se é um array (múltiplas checkboxes) ou uma string (seleção única)
+                $ids = is_array($courseIds) ? $courseIds : [$courseIds];
+                $q->whereIn('courses.id', $ids);
+            });
+        }
+
+        // Filtro por Categoria (category_id)
+        if ($request->filled('category_id')) {
+            $categoryIds = $request->input('category_id');
+            $ids = is_array($categoryIds) ? $categoryIds : [$categoryIds];
+            $query->whereIn('category_id', $ids);
+        }
+        
+        // Executa a consulta
+        $events = $query->get();
+
+        // 4. Formata os eventos para o FullCalendar
         $formattedEvents = $events->map(function ($event) {
 
             $color = match ($event->event_type) {
@@ -148,18 +198,25 @@ class EventController extends Controller
             $courseNames = $event->courses->pluck('course_name')->implode(', ');
 
             // 1. DATA DE TÉRMINO (END)
-            $end = null; // Começa como null por padrão
+            $end = null; 
 
-            if ($event->event_expired_at) {
-                // Se tiver data de término, formata. 
+            // Adicionando 1 dia para que eventos 'allDay' apareçam corretamente no FullCalendar
+            if ($event->event_expired_at && $event->event_scheduled_at->format('Y-m-d') === $event->event_expired_at->format('Y-m-d')) {
+                // Se for um evento de um dia, mas com hora de término (não allDay)
                 $end = $event->event_expired_at->format('Y-m-d H:i:s');
+            } elseif ($event->event_expired_at) {
+                // Se for evento de vários dias, adicione 1 dia inteiro para o FullCalendar.
+                // Exemplo: 2025-06-01 a 2025-06-03 deve ter 'end' como 2025-06-04
+                $end = $event->event_expired_at->copy()->addDay()->format('Y-m-d H:i:s');
             }
-
+            
             // 2. ALL-DAY
-            // Consideramos all-day se o evento é de um dia inteiro (sem hora de início/fim específica)
-            $isAllDay = $event->event_scheduled_at->format('H:i:s') == '00:00:00' && $event->event_expired_at === null;
-
-            // Se for um evento pontual (sem data/hora de término), 'end' deve ser nulo. 
+            // Consideramos all-day se: 
+            // a) O horário agendado é meia-noite E não tem hora de término OU
+            // b) O horário agendado e de término são ambos meia-noite (múltiplos dias inteiros)
+            $isAllDay = $event->event_scheduled_at->format('H:i:s') == '00:00:00' && (
+                $event->event_expired_at === null || $event->event_expired_at->format('H:i:s') == '00:00:00'
+            );
 
             return [
                 'id' => $event->id,
@@ -167,7 +224,7 @@ class EventController extends Controller
                 // START: Sempre no formato ISO
                 'start' => $event->event_scheduled_at->format('Y-m-d H:i:s'),
 
-                // END: Apenas se for um evento de mais de um dia/hora. Se for pontual, DEVE ser null.
+                // END: Data de término corrigida para FullCalendar
                 'end' => $end,
 
                 'allDay' => $isAllDay,
