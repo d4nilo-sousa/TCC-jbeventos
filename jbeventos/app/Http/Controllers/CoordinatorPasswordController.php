@@ -19,12 +19,12 @@ class CoordinatorPasswordController extends Controller
     {
         // Valida: senha obrigatória, mínimo: 8 caracteres, 1 letra maiscula, 1 numero e 1 caracter especial (!@#$%&*), confirmação da senha.
         $request->validate([
-             'password' => 'required|string|min:8|confirmed|regex:/[A-Z]/|regex:/[0-9]/|regex:/[!@#$%&*]/',
+            'password' => 'required|string|min:8|confirmed|regex:/[A-Z]/|regex:/[0-9]/|regex:/[!@#$%&*]/',
         ]);
 
         // Pega o usuário autenticado
         $user = auth()->user();
-        
+
         // Busca o coordenador associado ao usuário atual
         $coordinator = \App\Models\Coordinator::where('user_id', $user->id)->first();
 
@@ -46,7 +46,7 @@ class CoordinatorPasswordController extends Controller
             $coordinator->save();
         }
 
-        // Redireciona para o dashboard com mensagem de sucesso
-        return redirect()->route('coordinator.dashboard')->with('success', 'Senha atualizada com sucesso!');
+        return redirect()
+            ->route('events.create');
     }
 }

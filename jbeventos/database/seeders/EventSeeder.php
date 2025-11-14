@@ -112,9 +112,9 @@ class EventSeeder extends Seeder
                 'capa_file' => 'palestra-eventos-capa.jpg',
                 'galeria_files' => ['palestra-eventos-1.jpg', 'palestra-eventos-2.jpg'],
             ],
-            // --- EVENTO DE CURSO 3: Palestra - Merlin Batista (Múltiplos Cursos) ---
+            // --- EVENTO DE CURSO 3: Palestra - Merlin Batista ---
             [
-                'event_name' => 'palestra - Merlin Batista',
+                'event_name' => 'Palestra - Merlin Batista',
                 'event_info' => 'Tivemos a honra de receber Merllin Batista - cientista, fisioterapeuta, especialista em Saúde Digital e População Negra, doutora-mestra e Ph.D sanduíche em Harvard. Uma trajetória que inspira!', // CORRIGIDO
                 'event_location' => 'Auditório',
                 'event_scheduled_at' => '2025-10-22 08:00:00',
@@ -150,20 +150,18 @@ class EventSeeder extends Seeder
                 'event_location' => $eventData['event_location'],
                 'event_scheduled_at' => Carbon::createFromFormat('Y-m-d H:i:s', $eventData['event_scheduled_at']),
                 'event_expired_at' => $eventData['event_expired_at'] ? Carbon::createFromFormat('Y-m-d H:i:s', $eventData['event_expired_at']) : null,
-                
-                'event_image' => $eventImagePath, // Caminho da Capa
-                
+                'event_image' => $eventImagePath,
                 'event_type' => $eventData['event_type'],
                 'coordinator_id' => $coordinator->id,
             ]);
 
-            // D) Associa Categorias (Relação muitos-para-muitos)
+            // D) Associa Categorias
             $categoryIds = $categories->whereIn('category_name', $eventData['categories'])->pluck('id');
             if ($categoryIds->isNotEmpty()) {
                 $event->eventCategories()->attach($categoryIds);
             }
 
-            // E) Associa Cursos (Relação muitos-para-muitos)
+            // E) Associa Cursos
             if (!empty($eventData['course_names'])) {
                 $courseIds = $courses->whereIn('course_name', $eventData['course_names'])->pluck('id');
                 if ($courseIds->isNotEmpty()) {
@@ -171,7 +169,7 @@ class EventSeeder extends Seeder
                 }
             }
 
-            // F) Copia e Salva as Imagens de Galeria (Relação hasMany)
+            // F) Copia e Salva as Imagens de Galeria
             $galleryImagesToCreate = [];
             foreach ($eventData['galeria_files'] as $galeriaFile) {
                 $imagePath = $this->copyFile($galeriaFile, $imageTargetDir);
@@ -179,8 +177,7 @@ class EventSeeder extends Seeder
                     $galleryImagesToCreate[] = ['image_path' => $imagePath];
                 }
             }
-            
-            // Cria todas as imagens de galeria de uma vez
+
             if (!empty($galleryImagesToCreate)) {
                 $event->images()->createMany($galleryImagesToCreate);
             }

@@ -161,10 +161,16 @@
                                 <div class="grid grid-cols-1 gap-4">
                                     {{-- Aqui iteramos sobre os posts JÁ ordenados e limitados a 3 --}}
                                     @forelse ($posts->take(3) as $post)
+                                        @php
+                                            $course = optional($post->course);
+                                            $author = optional($post->author);
+                                        @endphp
+
                                         {{-- Exemplo do wrapper do post (adapte se a estrutura for diferente) --}}
-                                        <a href="{{ route('courses.show', $post->course->id) }}#post-{{ $post->id }}"
+                                        <a href="{{ $course->id ? route('courses.show', $course->id) . '#post-' . $post->id : '#' }}"
                                             id="post-{{ $post->id }}"
                                             class="post-card flex bg-white p-4 rounded-xl border border-gray-200 shadow-lg overflow-hidden relative transform transition duration-300 hover:scale-[1.01] hover:shadow-2xl">
+
                                             <div class="flex-shrink-0 mr-4">
                                                 @if ($post->images && count($post->images) > 0)
                                                     <img src="{{ asset('storage/' . $post->images[0]) }}"
@@ -181,20 +187,28 @@
                                             <div class="flex-grow">
                                                 <p
                                                     class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
-                                                    POST em <span
-                                                        class="text-red-600 font-bold">{{ $post->course->course_name ?? 'Curso Desconhecido' }}</span>
+                                                    POST em
+                                                    <span class="text-red-600 font-bold">
+                                                        {{ $course->course_name ?? 'Curso Desconhecido' }}
+                                                    </span>
                                                 </p>
+
                                                 <h4
                                                     class="font-extrabold text-lg text-gray-900 leading-snug line-clamp-2">
                                                     {{ $post->content }}
                                                 </h4>
+
                                                 <p class="text-sm text-gray-600 mt-2 flex items-center">
-                                                    Por <span
-                                                        class="font-bold text-red-600 ml-1">{{ $post->author->name }}</span>
+                                                    Por
+                                                    <span class="font-bold text-red-600 ml-1">
+                                                        {{ $author->name ?? 'Autor Desconhecido' }}
+                                                    </span>
+
                                                     <span class="text-xs text-gray-400 ml-3 flex items-center">
                                                         <i class="ph ph-clock-counter-clockwise mr-1"></i>
                                                         {{ $post->created_at->diffForHumans() }}
                                                     </span>
+
                                                     <span class="text-xs text-red-600 ml-3 flex items-center font-bold">
                                                         <i class="ph ph-chat-circle-dots mr-1 text-lg"></i>
                                                         {{ $post->replies_count ?? $post->replies->count() }}
@@ -203,8 +217,9 @@
                                             </div>
                                         </a>
                                     @empty
-                                        <p class="text-gray-500 col-span-full py-4 text-center">Nenhuma discussão em
-                                            destaque no momento. 😔</p>
+                                        <p class="text-gray-500 col-span-full py-4 text-center">
+                                            Nenhuma discussão em destaque no momento. 😔
+                                        </p>
                                     @endforelse
                                 </div>
                             </div>
@@ -372,7 +387,7 @@
                         <h2
                             class="text-4xl font-extrabold text-gray-900 mb-8 border-b-4 border-red-500/70 pb-3 flex items-center">
                             <i class="ph ph-user-circle text-red-500 mr-3 text-3xl"></i>
-                            Top 5 Coordenadores mais Ativos
+                            Lista Completa de Coordenadores
                         </h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">

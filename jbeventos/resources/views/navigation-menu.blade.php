@@ -34,18 +34,25 @@
 
 
                         {{-- Dashboard --}}
-                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->is('*dashboard*')"
-                            class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg 
+                        @php
+                            $user = Auth::user();
+                        @endphp
+
+                        @if ($user && in_array($user->user_type, ['coordinator', 'admin']))
+                            <x-nav-link href="{{ route('dashboard') }}" :active="request()->is('*dashboard*')"
+                                class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg 
         {{ request()->is('*dashboard*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-                            <i
-                                class="ph-fill ph-gauge text-lg
+                                <i
+                                    class="ph-fill ph-gauge text-lg
         {{ request()->is('*dashboard*') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}"></i>
-                            <span
-                                class="hidden sm:inline ms-2
+                                <span
+                                    class="hidden sm:inline ms-2
         {{ request()->is('*dashboard*') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}">
-                                {{ __('Dashboard') }}
-                            </span>
-                        </x-nav-link>
+                                    {{ __('Dashboard') }}
+                                </span>
+                            </x-nav-link>
+                        @endif
+
 
 
                         {{-- Explorar --}}
@@ -358,7 +365,7 @@
 
                     {{-- Botão de Logoff Direto (Desktop) --}}
                     <div class="hidden sm:block">
-                        <form method="POST" action="{{ route('logout') }}" x-data>
+                        <form id="logout-form" method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
                                 class="flex items-center size-9 rounded-full justify-center text-red-500 bg-red-50 hover:bg-red-100 focus:outline-none transition shadow-md">

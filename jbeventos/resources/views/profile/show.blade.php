@@ -327,7 +327,7 @@
                                         </div>
                                         {{-- FIM DO CONTÊINER DE ROLAGEM --}}
 
-                                    </div>
+                                </div>
                                 @endif
                             </div>
                             {{-- FIM DO CONTEÚDO DA ABA: Eventos Interagidos --}}
@@ -360,19 +360,23 @@
                                     <div x-data="{ scrollContainer: null, scrollStep: 300 }" x-init="scrollContainer = $refs.scrollTrack" class="relative">
 
                                         {{-- BOTÃO ESQUERDO (Anterior) --}}
-                                        <button @click="scrollContainer.scrollBy({ left: -scrollStep, behavior: 'smooth' })"
+                                        <button
+                                            @click="scrollContainer.scrollBy({ left: -scrollStep, behavior: 'smooth' })"
                                             class="absolute left-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
                                             <i class="ph ph-caret-left text-xl text-gray-700"></i>
                                         </button>
 
                                         {{-- BOTÃO DIREITO (Próximo) --}}
-                                        <button @click="scrollContainer.scrollBy({ left: scrollStep, behavior: 'smooth' })"
+                                        <button
+                                            @click="scrollContainer.scrollBy({ left: scrollStep, behavior: 'smooth' })"
                                             class="absolute right-0 top-1/2 -mt-10 z-10 p-2 bg-white rounded-full shadow-lg border border-gray-100 hidden md:block opacity-80 hover:opacity-100 transition-opacity">
                                             <i class="ph ph-caret-right text-xl text-gray-700"></i>
                                         </button>
 
                                         {{-- CONTÊINER DE ROLAGEM (x-ref para o Alpine.js) --}}
-                                        <div x-ref="scrollTrack" class="flex overflow-x-auto gap-6 pb-4 -mb-4 scroll-smooth" style="scrollbar-width: none;">
+                                        <div x-ref="scrollTrack"
+                                            class="flex overflow-x-auto gap-6 pb-4 -mb-4 scroll-smooth"
+                                            style="scrollbar-width: none;">
 
                                             @foreach ($savedEvents as $event)
                                                 <div
@@ -437,258 +441,269 @@
                             </div>
                             {{-- FIM DO CONTEÚDO DA ABA: Eventos Salvos --}}
 
-                                {{-- CONTEÚDO DA ABA: Eventos Criados (apenas para coordenadores) --}}
-                                @if ($user->user_type === 'coordinator')
-                                    <div x-show="activeTab === 'createdEvents'">
-                                        <div class="flex items-center justify-between pt-4 pb-6">
-                                            <h3 class="text-lg font-bold text-gray-800 flex items-center">
-                                                <i class="ph ph-rocket-launch text-xl mr-2 text-red-500"></i> Eventos
-                                                que você publicou
-                                            </h3>
+                            {{-- CONTEÚDO DA ABA: Eventos Criados (apenas para coordenadores) --}}
+                            @if ($user->user_type === 'coordinator')
+                                <div x-show="activeTab === 'createdEvents'">
+                                    <div class="flex items-center justify-between pt-4 pb-6">
+                                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                                            <i class="ph ph-rocket-launch text-xl mr-2 text-red-500"></i> Eventos
+                                            que você publicou
+                                        </h3>
+                                    </div>
+
+                                    @if ($createdEvents->isEmpty())
+                                        <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
+                                            <i class="ph ph-package text-4xl text-gray-400"></i>
+                                            <p class="text-gray-500 text-sm mt-2">Você ainda não criou nenhum
+                                                evento. Está na hora de começar!</p>
+                                            <a href="{{ route('events.create') }}"
+                                                class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
+                                                <i class="ph ph-plus-circle text-sm mr-1"></i> Crie seu primeiro
+                                                evento!
+                                            </a>
                                         </div>
+                                    @else
+                                        <div
+                                            class="max-h-[800px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            @foreach ($createdEvents as $event)
+                                                <div
+                                                    class="bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
+                                                    {{-- Link do evento --}}
+                                                    <a href="{{ route('events.show', $event) }}" class="block">
+                                                        {{-- Imagem / Placeholder --}}
+                                                        <div
+                                                            class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden">
+                                                            @if ($event->event_image)
+                                                                <img src="{{ asset('storage/' . $event->event_image) }}"
+                                                                    alt="{{ $event->event_name }}"
+                                                                    class="w-full h-full object-cover">
+                                                            @else
+                                                                <div
+                                                                    class="flex flex-col items-center justify-center w-full h-full text-red-500">
+                                                                    <i class="ph-bold ph-calendar-blank text-6xl"></i>
+                                                                    <p class="mt-2 text-sm">Sem Imagem de Capa</p>
+                                                                </div>
+                                                            @endif
+                                                        </div>
 
-                                        @if ($createdEvents->isEmpty())
-                                            <div class="text-center py-10 border border-dashed rounded-lg bg-gray-50">
-                                                <i class="ph ph-package text-4xl text-gray-400"></i>
-                                                <p class="text-gray-500 text-sm mt-2">Você ainda não criou nenhum
-                                                    evento. Está na hora de começar!</p>
-                                                <a href="{{ route('events.create') }}"
-                                                    class="mt-4 inline-block text-red-600 font-medium hover:text-red-800 transition-colors">
-                                                    <i class="ph ph-plus-circle text-sm mr-1"></i> Crie seu primeiro
-                                                    evento!
-                                                </a>
-                                            </div>
-                                        @else
-                                            <div
-                                                class="max-h-[800px] overflow-y-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                @foreach ($createdEvents as $event)
-                                                    <div
-                                                        class="bg-white rounded-xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden relative">
-                                                        {{-- Link do evento --}}
-                                                        <a href="{{ route('events.show', $event) }}" class="block">
-                                                            {{-- Imagem / Placeholder --}}
-                                                            <div
-                                                                class="h-40 bg-gray-200 flex items-center justify-center overflow-hidden">
-                                                                @if ($event->event_image)
-                                                                    <img src="{{ asset('storage/' . $event->event_image) }}"
-                                                                        alt="{{ $event->event_name }}"
-                                                                        class="w-full h-full object-cover">
-                                                                @else
-                                                                    <div
-                                                                        class="flex flex-col items-center justify-center w-full h-full text-red-500">
-                                                                        <i
-                                                                            class="ph-bold ph-calendar-blank text-6xl"></i>
-                                                                        <p class="mt-2 text-sm">Sem Imagem de Capa</p>
-                                                                    </div>
-                                                                @endif
-                                                            </div>
+                                                        {{-- Nome do evento --}}
+                                                        <div class="px-6 pt-6 pb-0">
+                                                            <p
+                                                                class="font-bold text-gray-900 line-clamp-2 break-words mb-0">
+                                                                {{ $event->event_name }}
+                                                            </p>
+                                                        </div>
 
-                                                            {{-- Nome do evento --}}
-                                                            <div class="px-6 pt-6 pb-0">
+                                                        {{-- Linha divisória + Data e hora --}}
+                                                        <div class="px-6 pb-6 mt-0.5">
+                                                            @if ($event->event_scheduled_at)
                                                                 <p
-                                                                    class="font-bold text-gray-900 line-clamp-2 break-words mb-0">
-                                                                    {{ $event->event_name }}
+                                                                    class="flex items-center gap-1 text-gray-500 mt-2 text-sm">
+                                                                    <i
+                                                                        class="ph-fill ph-clock-clockwise text-red-600 text-base"></i>
+                                                                    {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
                                                                 </p>
-                                                            </div>
-
-                                                            {{-- Linha divisória + Data e hora --}}
-                                                            <div class="px-6 pb-6 mt-0.5">
-                                                                @if ($event->event_scheduled_at)
-                                                                    <p
-                                                                        class="flex items-center gap-1 text-gray-500 mt-2 text-sm">
-                                                                        <i
-                                                                            class="ph-fill ph-clock-clockwise text-red-600 text-base"></i>
-                                                                        {{ \Carbon\Carbon::parse($event->event_scheduled_at)->isoFormat('D [de] MMMM [de] YYYY, [às] HH:mm') }}
-                                                                    </p>
-                                                                @endif
-                                                            </div>
-                                                        </a>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Coluna SECUNDÁRIA (Sidebar com Detalhes e Ações Estáticas) --}}
-                    <div class="lg:col-span-1 space-y-6">
-
-                        {{-- Card de Informações Básicas --}}
-                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                            <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                                <i class="ph ph-identification-card text-2xl mr-2 text-red-500"></i> Detalhes da Conta
-                            </h3>
-
-                            <div class="space-y-4 text-sm text-gray-700">
-                                {{-- E-mail (Visível apenas para o próprio usuário) --}}
-                                @if (auth()->id() === $user->id)
-                                    <div class="flex items-center">
-                                        <i class="ph ph-at text-lg w-5 text-red-500 mr-3"></i>
-                                        <div class="flex-1">
-                                            <p class="font-semibold text-gray-900">E-mail</p>
-                                            <p class="truncate">{{ $user->email }}</p>
+                                                            @endif
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                    </div>
-                                @endif
-
-                                {{-- Tipo de Usuário --}}
-                                @php
-                                    $type = $userTypeData[$user->user_type] ?? [
-                                        'label' => ucfirst($user->user_type),
-                                        'color' => 'bg-red-500',
-                                        'icon' => 'ph-person',
-                                    ];
-                                @endphp
-                                <div class="flex items-center">
-                                    <i class="ph ph-user-circle text-lg w-5 text-red-500 mr-3"></i>
-                                    <div class="flex-1">
-                                        <p class="font-semibold text-gray-900">Nível</p>
-                                        <span
-                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white {{ $type['color'] }}">
-                                            {{ $type['label'] }}
-                                        </span>
-                                    </div>
+                                    @endif
                                 </div>
-
-                                {{-- CAMPO: Curso Coordenado, Coordenador Geral ou Administrador --}}
-                                @if ($user->user_type === 'admin')
-                                    <div class="flex items-start">
-                                        <i class="ph ph-shield-star text-lg w-5 text-red-500 mr-3 mt-1"></i>
-                                        <div class="flex-1">
-                                            <p class="font-semibold text-gray-900">Administrador do Sistema</p>
-                                            <p class="text-sm font-medium text-gray-700">Responsável pelo Gerenciamento
-                                                do Sistema</p>
-                                        </div>
-                                    </div>
-                                @elseif ($coordinator)
-                                    <div class="flex items-start">
-                                        <i class="ph ph-chalkboard-teacher text-lg w-5 text-red-500 mr-3 mt-1"></i>
-                                        <div class="flex-1">
-                                            @if ($coordinator->coordinator_type === 'general')
-                                                <p class="font-semibold text-gray-900">Coordenador Geral</p>
-                                                <p class="text-sm font-medium text-gray-700">Responsável pelos Eventos
-                                                    Gerais</p>
-                                            @elseif($coordinator->coordinator_type === 'course')
-                                                <p class="font-semibold text-gray-900">Coordenador de Curso</p>
-                                                <p class="text-sm font-medium text-gray-700">
-                                                    {{ $coordinator->coordinatedCourse?->course_name
-                                                        ? 'Responsável pelo Curso: ' . $coordinator->coordinatedCourse->course_name
-                                                        : 'Não é Responsável por Nenhum Curso' }}
-                                                </p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endif
-
-                                {{-- Membro Desde --}}
-                                <div class="flex items-center">
-                                    <i class="ph ph-calendar-check text-lg w-5 text-red-500 mr-3"></i>
-                                    <div class="flex-1">
-                                        <p class="font-semibold text-gray-900">Membro desde</p>
-                                        <p>{{ $user->created_at->format('d/m/Y') }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Card de Ação --}}
-                        @if (auth()->id() === $user->id)
-                            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                                <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                                    <i class="ph ph-sign-out text-2xl mr-2 text-red-500"></i> Ações Rápidas
-                                </h3>
-
-                                {{-- NOVO BOTÃO: Abrir Modal de Configurações --}}
-                                <button @click="settingsModalOpen = true"
-                                    class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center mb-3 border border-gray-200">
-                                    <i class="ph ph-gear text-lg mr-2"></i>
-                                    Configurações da Conta
-                                </button>
-
-                                {{-- Botão Logout (Sair) --}}
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit"
-                                        class="w-full text-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center">
-                                        <i class="ph ph-sign-out text-lg mr-2"></i>
-                                        Sair da Conta
-                                    </button>
-                                </form>
-                            </div>
-                        @endif
-
-                    </div>
-
-                </div>
-            </div>
-
-            {{-- MODAL DE CONFIGURAÇÕES (LAYOUT DE DUAS COLUNAS COM DIVISORES) --}}
-            <div x-cloak x-show="settingsModalOpen" x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-75 flex items-start justify-center p-4 sm:p-6 lg:p-8">
-
-                <div x-show="settingsModalOpen" x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-6xl w-full mx-auto my-12 transform transition-all p-6 sm:p-8">
-
-                    <div class="flex justify-between items-center pb-4 border-b border-gray-100">
-                        <h3 class="text-xl font-extrabold text-gray-900 flex items-center">
-                            <i class="ph ph-gear-six text-2xl mr-2 text-red-600"></i> Configurações da Conta
-                        </h3>
-                        <button @click="settingsModalOpen = false"
-                            class="text-gray-400 hover:text-gray-600 transition-colors">
-                            <i class="ph ph-x-circle text-2xl"></i>
-                        </button>
-                    </div>
-
-                    {{-- LAYOUT DE 2 COLUNAS PRINCIPAIS --}}
-                    <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-10 relative">
-
-                        {{-- DIVISOR VERTICAL PARA SEPARAR AS COLUNAS (VISÍVEL APENAS EM TELAS GRANDES) --}}
-                        <div
-                            class="hidden lg:block absolute top-0 bottom-0 left-1/2 w-px bg-gray-200 transform -translate-x-1/2">
-                        </div>
-
-                        {{-- COLUNA 1: DADOS BÁSICOS (Informações e Senha) --}}
-                        <div class="space-y-10">
-                            {{-- Formulário de Informações de Perfil --}}
-                            @livewire('profile.update-profile-information-form')
-
-                            {{-- DIVISOR HORIZONTAL ENTRE PERFIL E SENHA --}}
-                            <div class="border-t border-gray-100"></div>
-
-                            {{-- Formulário de Atualização de Senha --}}
-                            @livewire('profile.update-password-form')
-                        </div>
-
-                        {{-- COLUNA 2: SEGURANÇA E SESSÕES (apenas Sair de outros navegadores e Deletar conta) --}}
-                        <div class="space-y-10 pt-0 lg:pt-0">
-
-                            {{-- Sessões de Navegador --}}
-                            @livewire('profile.logout-other-browser-sessions-form')
-
-                            {{-- DIVISOR HORIZONTAL ENTRE SESSÕES E EXCLUSÃO DE CONTA --}}
-                            <div class="border-t border-gray-100"></div>
-
-                            {{-- SEÇÃO DE EXCLUSÃO DE CONTA --}}
-                            @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
-                                @livewire('profile.delete-user-form')
                             @endif
                         </div>
                     </div>
+
+                {{-- Coluna SECUNDÁRIA (Sidebar com Detalhes e Ações Estáticas) --}}
+                <div class="lg:col-span-1 space-y-6">
+
+                    {{-- Card de Informações Básicas --}}
+                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                            <i class="ph ph-identification-card text-2xl mr-2 text-red-500"></i> Detalhes da Conta
+                        </h3>
+
+                        <div class="space-y-4 text-sm text-gray-700">
+                            {{-- E-mail (Visível apenas para o próprio usuário) --}}
+                            @if (auth()->id() === $user->id)
+                                <div class="flex items-center">
+                                    <i class="ph ph-at text-lg w-5 text-red-500 mr-3"></i>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-900">E-mail</p>
+                                        <p class="truncate">{{ $user->email }}</p>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Tipo de Usuário --}}
+                            @php
+                                $type = $userTypeData[$user->user_type] ?? [
+                                    'label' => ucfirst($user->user_type),
+                                    'color' => 'bg-red-500',
+                                    'icon' => 'ph-person',
+                                ];
+                            @endphp
+                            <div class="flex items-center">
+                                <i class="ph ph-user-circle text-lg w-5 text-red-500 mr-3"></i>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Nível</p>
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold text-white {{ $type['color'] }}">
+                                        {{ $type['label'] }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- CAMPO: Curso Coordenado, Coordenador Geral ou Administrador --}}
+                            @if ($user->user_type === 'admin')
+                                <div class="flex items-start">
+                                    <i class="ph ph-shield-star text-lg w-5 text-red-500 mr-3 mt-1"></i>
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-900">Administrador do Sistema</p>
+                                        <p class="text-sm font-medium text-gray-700">Responsável pelo Gerenciamento
+                                            do Sistema</p>
+                                    </div>
+                                </div>
+                            @elseif ($coordinator)
+                                <div class="flex items-start">
+                                    <i class="ph ph-chalkboard-teacher text-lg w-5 text-red-500 mr-3 mt-1"></i>
+                                    <div class="flex-1">
+                                        @if ($coordinator->coordinator_type === 'general')
+                                            <p class="font-semibold text-gray-900">Coordenador Geral</p>
+                                            <p class="text-sm font-medium text-gray-700">Responsável pelos Eventos
+                                                Gerais</p>
+                                        @elseif($coordinator->coordinator_type === 'course')
+                                            <p class="font-semibold text-gray-900">Coordenador de Curso</p>
+                                            <p class="text-sm font-medium text-gray-700">
+                                                {{ $coordinator->coordinatedCourse?->course_name
+                                                    ? 'Responsável pelo Curso: ' . $coordinator->coordinatedCourse->course_name
+                                                    : 'Não é Responsável por Nenhum Curso' }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- Membro Desde --}}
+                            <div class="flex items-center">
+                                <i class="ph ph-calendar-check text-lg w-5 text-red-500 mr-3"></i>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-gray-900">Membro desde</p>
+                                    <p>{{ $user->created_at->format('d/m/Y') }}</p>
+                                </div>
+                            </div>
+
+                           <div class="border-b border-gray-200 w-4/4 mx-auto"></div>
+
+                            {{-- Botão: Ir para o Dashboard (somente para usuários comuns) --}}
+                            @if ($user->user_type === 'user')
+                                <div class="pt-2 flex justify-center">
+                                    <a href="{{ route('dashboard') }}"
+                                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition">
+                                        <i class="ph ph-gauge text-lg"></i>
+                                        Ir para o Dashboard
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Card de Ação --}}
+                    @if (auth()->id() === $user->id)
+                        <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                            <h3 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+                                <i class="ph ph-sign-out text-2xl mr-2 text-red-500"></i> Ações Rápidas
+                            </h3>
+
+                            {{-- NOVO BOTÃO: Abrir Modal de Configurações --}}
+                            <button @click="settingsModalOpen = true"
+                                class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center mb-3 border border-gray-200">
+                                <i class="ph ph-gear text-lg mr-2"></i>
+                                Configurações da Conta
+                            </button>
+
+                            {{-- Botão Logout (Sair) --}}
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full text-center bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-lg shadow-md transition-colors duration-200 flex items-center justify-center">
+                                    <i class="ph ph-sign-out text-lg mr-2"></i>
+                                    Sair da Conta
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
                 </div>
-                {{-- FIM DO MODAL DE CONFIGURAÇÕES --}}
 
             </div>
+        </div>
+
+        {{-- MODAL DE CONFIGURAÇÕES (LAYOUT DE DUAS COLUNAS COM DIVISORES) --}}
+        <div x-cloak x-show="settingsModalOpen" x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-75 flex items-start justify-center p-4 sm:p-6 lg:p-8">
+
+            <div x-show="settingsModalOpen" x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                class="bg-white rounded-xl shadow-2xl overflow-hidden max-w-6xl w-full mx-auto my-12 transform transition-all p-6 sm:p-8">
+
+                <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+                    <h3 class="text-xl font-extrabold text-gray-900 flex items-center">
+                        <i class="ph ph-gear-six text-2xl mr-2 text-red-600"></i> Configurações da Conta
+                    </h3>
+                    <button @click="settingsModalOpen = false"
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="ph ph-x-circle text-2xl"></i>
+                    </button>
+                </div>
+
+                {{-- LAYOUT DE 2 COLUNAS PRINCIPAIS --}}
+                <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-10 relative">
+
+                    {{-- DIVISOR VERTICAL PARA SEPARAR AS COLUNAS (VISÍVEL APENAS EM TELAS GRANDES) --}}
+                    <div
+                        class="hidden lg:block absolute top-0 bottom-0 left-1/2 w-px bg-gray-200 transform -translate-x-1/2">
+                    </div>
+
+                    {{-- COLUNA 1: DADOS BÁSICOS (Informações e Senha) --}}
+                    <div class="space-y-10">
+                        {{-- Formulário de Informações de Perfil --}}
+                        @livewire('profile.update-profile-information-form')
+
+                        {{-- DIVISOR HORIZONTAL ENTRE PERFIL E SENHA --}}
+                        <div class="border-t border-gray-100"></div>
+
+                        {{-- Formulário de Atualização de Senha --}}
+                        @livewire('profile.update-password-form')
+                    </div>
+
+                    {{-- COLUNA 2: SEGURANÇA E SESSÕES (apenas Sair de outros navegadores e Deletar conta) --}}
+                    <div class="space-y-10 pt-0 lg:pt-0">
+
+                        {{-- Sessões de Navegador --}}
+                        @livewire('profile.logout-other-browser-sessions-form')
+
+                        {{-- DIVISOR HORIZONTAL ENTRE SESSÕES E EXCLUSÃO DE CONTA --}}
+                        <div class="border-t border-gray-100"></div>
+
+                        {{-- SEÇÃO DE EXCLUSÃO DE CONTA --}}
+                        @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
+                            @livewire('profile.delete-user-form')
+                        @endif
+                    </div>
+                </div>
+            </div>
+            {{-- FIM DO MODAL DE CONFIGURAÇÕES --}}
+
+        </div>
 </x-app-layout>
 
 <script>

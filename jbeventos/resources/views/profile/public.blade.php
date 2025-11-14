@@ -4,12 +4,23 @@
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
             @php
                 $fromTab = request('fromTab'); // vai receber 'coordinators' se veio da aba coordenadores
+                $previousUrl = url()->previous();
             @endphp
 
-            @if ($fromTab === 'coordinators')
+            @if (Str::contains($previousUrl, 'coordinator/dashboard'))
+                <a href="{{ route('coordinator.dashboard') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar ao Dashboard
+                </a>
+            @elseif (Str::contains($previousUrl, 'coordinator/events/create'))
+                <a href="{{ route('events.create') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar à Criação de Evento
+                </a>
+            @elseif ($fromTab === 'coordinators')
                 <a href="{{ route('explore.index', ['tab' => 'coordinators']) }}"
                     class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
-                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar a Aba de Coordenadores
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar à Aba de Coordenadores
                 </a>
             @else
                 <a href="{{ route('explore.index') }}"

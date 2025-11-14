@@ -43,7 +43,7 @@ class CoordinatorSeeder extends Seeder
                 'icon_file' => 'lidiane-user-icon.png',
             ],
             [
-                'name' => 'truzzi',
+                'name' => 'Truzzi',
                 'email' => 'truzzi@example.com',
                 'password' => 'truzzi@123',
                 'type' => 'course',

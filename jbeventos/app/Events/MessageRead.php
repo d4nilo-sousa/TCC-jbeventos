@@ -3,30 +3,35 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
-use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
 
-class MessageRead implements ShouldBroadcastNow
+class MessageRead implements ShouldBroadcast
 {
-    use Dispatchable, SerializesModels;
+    use InteractsWithSockets, SerializesModels;
 
     public $messageId;
+    public $senderId;
     public $receiverId;
 
-    public function __construct($messageId, $receiverId)
+    public function __construct($messageId, $senderId, $receiverId)
     {
         $this->messageId = $messageId;
+        $this->senderId = $senderId;
         $this->receiverId = $receiverId;
     }
 
     public function broadcastOn()
     {
-        return new Channel("user.{$this->receiverId}");
+        // Canal privado do remetente
+        return new PrivateChannel('user.' . $this->senderId);
     }
 
+    // 🔹 Define um alias curto para o evento
     public function broadcastAs()
     {
-        return 'message.read';
+        return 'MessageRead';
     }
 }

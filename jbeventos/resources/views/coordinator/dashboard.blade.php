@@ -3,7 +3,8 @@
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
 
             {{-- Boas-vindas --}}
-            <div class="p-8 bg-white rounded-2xl shadow-lg border border-red-200 flex items-center justify-between gap-6">
+            <div
+                class="p-8 bg-white rounded-2xl shadow-lg border border-red-200 flex items-center justify-between gap-6">
 
                 <div class="flex-1">
                     <h2 class="text-3xl font-extrabold text-gray-900 leading-tight">
@@ -14,11 +15,8 @@
                         {{ $message }}
                     </p>
 
-                    <button
-                        type="button"
-                        id="submitExportButton"
-                        class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 border border-transparent rounded-lg text-sm font-semibold text-white transition shadow-md hover:shadow-lg"
-                    >
+                    <button type="button" id="submitExportButton"
+                        class="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 active:bg-red-800 border border-transparent rounded-lg text-sm font-semibold text-white transition shadow-md hover:shadow-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                             xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -26,15 +24,22 @@
                         </svg>
                         Gerar Relatório PDF
                     </button>
+                    {{-- Botão Contatar Administrador --}}
+                    <a href="{{ route('profile.view', ['user' => 1]) }}"
+                        class="mt-3 ml-2 inline-flex items-center gap-2 px-5 py-2.5 bg-gray-700 hover:bg-gray-800 active:bg-gray-900 border border-transparent rounded-lg text-sm font-semibold text-white transition shadow-md hover:shadow-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 12a4 4 0 01-8 0m8 0a4 4 0 00-8 0m8 0v5a2 2 0 002 2h2m-12-7v5a2 2 0 01-2 2H4" />
+                        </svg>
+                        Contatar Administrador
+                    </a>
                 </div>
 
                 {{-- Imagem à direita --}}
                 <div class="hidden md:flex">
-                    <img
-                        src="{{ asset('imgs/coordinator-dashboard.png') }}"
-                        alt="Dashboard Illustration"
-                        class="w-52 h-auto drop-shadow-lg select-none pointer-events-none"
-                    >
+                    <img src="{{ asset('imgs/coordinator-dashboard.png') }}" alt="Dashboard Illustration"
+                        class="w-52 h-auto drop-shadow-lg select-none pointer-events-none">
                 </div>
 
             </div>
@@ -44,7 +49,8 @@
 
                 {{-- Eventos Criados --}}
                 {{-- Gráfico Evolução de Posts e Respostas --}}
-                <div class="p-4 bg-white rounded-xl shadow-sm border border-gray-200 relative transform hover:scale-[1.02] transition-transform duration-200">
+                <div
+                    class="p-4 bg-white rounded-xl shadow-sm border border-gray-200 relative transform hover:scale-[1.02] transition-transform duration-200">
                     <div class="flex items-center space-x-3">
                         <div class="p-2 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"

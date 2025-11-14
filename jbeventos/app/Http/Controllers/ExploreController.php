@@ -49,7 +49,6 @@ class ExploreController extends Controller
                 });
             })
             ->orderByDesc('managed_events_count') // ✅ observe o _count gerado pelo withCount
-            ->take(5)
             ->get();
 
         // 🚀 Lógica para buscar os posts (Top 3 Discussões) (MANTIDO)

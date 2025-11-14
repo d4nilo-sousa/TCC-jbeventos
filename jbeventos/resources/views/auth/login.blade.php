@@ -28,7 +28,7 @@
             <div>
                 <x-label for="email" value="{{ __('Email') }}" />
                 <x-input id="email" class="block mt-1 w-full placeholder-gray-300 placeholder:text-base text-base"
-                    type="email" name="email" :value="old('email')" required autofocus autocomplete="off" />
+                    type="email" name="email" :value="old('email')" placeholder="exemplo@gmail.com" required autofocus autocomplete="off" />
             </div>
 
             <!-- Senha -->

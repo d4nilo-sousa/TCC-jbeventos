@@ -135,38 +135,35 @@ class Chat extends Component
 
     public function markMessagesAsRead()
     {
-        $messagesToUpdate = Message::where('receiver_id', Auth::id())
+        $messagesToUpdate = Message::where('receiver_id', auth()->id())
             ->where('sender_id', $this->otherUser->id)
             ->where('is_read', false)
             ->get();
 
-        $updatedIds = [];
-
         foreach ($messagesToUpdate as $msg) {
             $msg->update(['is_read' => true]);
-            $updatedIds[] = $msg->id;
 
-            // 🔊 Dispara broadcast para o remetente (outra pessoa)
-            broadcast(new MessageRead($msg->id, $msg->sender_id, $msg->receiver_id))->toOthers();
+            // 🔊 Dispara broadcast para o REMETENTE (outro usuário)
+            broadcast(new MessageRead(
+                messageId: $msg->id,
+                senderId: $msg->sender_id,
+                receiverId: $msg->receiver_id
+            ))->toOthers(); // toOthers() garante que você não receba o evento local
         }
 
-        // Atualiza a propriedade $this->messages na tela local
-        if (!empty($updatedIds)) {
-            $this->messages = collect($this->messages)->map(function ($m) use ($updatedIds) {
-                if (in_array($m['id'], $updatedIds)) {
-                    $m['is_read'] = true;
-                }
-                return $m;
-            })->toArray();
-        }
+        // Atualiza localmente o array de mensagens
+        $this->messages = collect($this->messages)->map(function ($m) use ($messagesToUpdate) {
+            if (collect($messagesToUpdate)->pluck('id')->contains($m['id'])) {
+                $m['is_read'] = true;
+            }
+            return $m;
+        })->toArray();
 
-        // 🔁 Atualiza componentes locais (como contador de não lidas)
+        // Atualiza contador de não lidas
         $this->dispatch('messageRead')->to('unread-messages');
-
-        // 🔔 Atualiza Livewire da própria página
         $this->dispatch('messageReadUpdated');
     }
-    
+
     public function sendMessage()
     {
         $this->validate([

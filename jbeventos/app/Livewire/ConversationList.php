@@ -13,7 +13,7 @@ class ConversationList extends Component
     public Collection $conversations;
     // 💡 NOVO: Propriedade para guardar o ID do usuário do chat ativo.
     // O valor será passado do Blade pai ou da rota.
-    public $activeChatUserId = null; 
+    public $activeChatUserId = null;
 
     public function getListeners()
     {
@@ -31,7 +31,7 @@ class ConversationList extends Component
         // 💡 Ajuste: Usar $this->mount() pode ser custoso. Se o objetivo é 
         // apenas atualizar a lista na tela, $this->dispatch('$refresh') já faz isso.
         // Se a lógica do mount for necessária para reordenar, mantenha:
-        $this->mount(); 
+        $this->mount();
     }
 
     // Nenhuma alteração é necessária em mount(), pois a lógica de unread_count 
@@ -58,14 +58,14 @@ class ConversationList extends Component
                 $lastMessage = $msgs->first();
                 // 💡 Melhoria: Use Eager Loading se possível, ou faça o find fora do loop.
                 // Mas, para o exemplo, mantemos o find.
-                $otherUser = User::find($otherUserId); 
+                $otherUser = User::find($otherUserId);
 
                 // Contagem de mensagens não lidas
                 $unreadCount = $msgs->where('receiver_id', $userId)
                     ->where('is_read', false)
                     ->count();
                 // ... (restante da lógica de detecção de última mensagem)
-                
+
                 $lastMessageText = '';
 
                 if ($lastMessage->attachment_path) {
@@ -85,7 +85,7 @@ class ConversationList extends Component
                 } else {
                     $lastMessageText = $lastMessage->message;
                 }
-                
+
                 return [
                     'user' => $otherUser,
                     'last_message' => $lastMessageText,
