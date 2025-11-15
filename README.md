@@ -1,29 +1,11 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
 # JB Eventos
 
 <p align="center">
   <img src="public/imgs/logoJb-com-fundo.jpeg" alt="Logo JB Eventos" width="300">
 </p>
 
-<p align="center">
-  <a href="https://github.com/d4nilo-sousa/TCC-jbeventos/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/d4nilo-sousa/TCC-jbeventos/laravel.yml?style=flat-square" alt="Build Status">
-  </a>
-  <a href="https://github.com/d4nilo-sousa/TCC-jbeventos">
-    <img src="https://img.shields.io/github/stars/d4nilo-sousa/TCC-jbeventos?style=flat-square" alt="Stars">
-  </a>
-  <a href="https://github.com/d4nilo-sousa/TCC-jbeventos/blob/develop/LICENSE">
-    <img src="https://img.shields.io/github/license/d4nilo-sousa/TCC-jbeventos?style=flat-square" alt="License">
-  </a>
-</p>
 
 JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a informações sobre os eventos escolares da Etec João Belarmino. A plataforma permite que administradores, coordenadores e usuários interajam em um ambiente intuitivo e funcional, promovendo maior engajamento e organização.
 
