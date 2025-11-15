@@ -27,7 +27,7 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   <tr>
     <td><strong>Laravel</strong></td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/laravel/framework/10.x/art/laravel-logo.svg" height="55">
+     <img src="https://cdn.simpleicons.org/laravel/FF2D20" height="55"
     </td>
     <td>Backend (estrutura principal do sistema)</td>
   </tr>
