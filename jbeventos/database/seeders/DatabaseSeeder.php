@@ -16,7 +16,14 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class, // Seeder para os Admins
             CoordinatorSeeder::class, // Seeder para os Coordenadores
             CourseSeeder::class, // Seeder para os Cursos
+            CourseFollowerSeeder::class, // Seeder para os Seguidores dos Cursos
             EventSeeder::class, // Seeder para os Eventos
+            PostSeeder::class, // Seeder para os Posts
+            EventReactionSeeder::class, // Seeder para as Reações dos Eventos
+            EventAlertSeeder::class, // Seeder para os Alertas dos Eventos
+            ReplySeeder::class, // Seeder para as Respostas aos Posts
+            EventCommentSeeder::class, // Seeder para os Comentários dos Eventos
+            NotificationSeeder::class, // Seeder para as Notificações
         ]);
     }
 }

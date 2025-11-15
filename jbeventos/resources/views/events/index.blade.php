@@ -4,18 +4,24 @@
         /* Estilos dos botões do FullCalendar */
         .fc-toolbar-chunk .fc-button {
             background-color: transparent;
-            border-color: #e5e7eb; /* Cor da borda suave */
-            color: #1f2937; /* Cor do texto/ícone: Preto Suave */
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03); /* Sombra suave */
-            text-transform: capitalize; /* Deixa o texto normalizado */
-            font-weight: 500; /* Medium weight */
+            border-color: #e5e7eb;
+            /* Cor da borda suave */
+            color: #1f2937;
+            /* Cor do texto/ícone: Preto Suave */
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+            /* Sombra suave */
+            text-transform: capitalize;
+            /* Deixa o texto normalizado */
+            font-weight: 500;
+            /* Medium weight */
             transition: all 0.2s;
         }
 
         /* Hover e Focus dos botões */
         .fc-toolbar-chunk .fc-button:hover,
         .fc-toolbar-chunk .fc-button:focus {
-            background-color: #f3f4f6; /* Fundo leve no hover */
+            background-color: #f3f4f6;
+            /* Fundo leve no hover */
             border-color: #d1d5db;
             outline: none;
             box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.07);
@@ -23,8 +29,10 @@
 
         /* Botão Ativo */
         .fc-toolbar-chunk .fc-button-primary:not(:disabled).fc-button-active {
-            background-color: #1f2937; /* Fundo Preto */
-            color: white; /* Texto Branco */
+            background-color: #1f2937;
+            /* Fundo Preto */
+            color: white;
+            /* Texto Branco */
             border-color: #1f2937;
         }
 
@@ -37,57 +45,81 @@
 
         /* Cabeçalho da Semana (dom, seg, ter...) */
         .fc-col-header-cell {
-            background-color: #f9fafb; /* Fundo cinza bem claro */
+            background-color: #f9fafb;
+            /* Fundo cinza bem claro */
             padding: 0.5rem 0;
             border-top: 1px solid #e5e7eb;
             border-bottom: 2px solid #e5e7eb;
-            font-weight: 600; /* Semibold */
-            color: #4b5563; /* Cor mais escura para o texto */
+            font-weight: 600;
+            /* Semibold */
+            color: #4b5563;
+            /* Cor mais escura para o texto */
         }
 
         /* Células do Corpo do Calendário */
         .fc-daygrid-body,
         .fc-daygrid-day {
-            border-color: #f3f4f6; /* Bordas mais suaves */
+            border-color: #f3f4f6;
+            /* Bordas mais suaves */
         }
-        
+
         /* Células da tabela do calendário (para o layout fixo) */
         .fc-scrollgrid-sync-table {
-            width: 100% !important; /* Garante que a tabela use 100% do container */
-            table-layout: fixed; /* Ajuda a distribuir o espaço uniformemente */
+            width: 100% !important;
+            /* Garante que a tabela use 100% do container */
+            table-layout: fixed;
+            /* Ajuda a distribuir o espaço uniformemente */
         }
 
         /* Realçar o dia atual em vermelho suave */
         .fc .fc-daygrid-day.fc-day-today {
-            background-color: #fee2e2; /* Red 100 - Vermelho muito suave */
-            border-left: 3px solid #dc2626; /* Borda esquerda vermelha (Red 600) para ênfase */
+            background-color: #fee2e2;
+            /* Red 100 - Vermelho muito suave */
+            border-left: 3px solid #dc2626;
+            /* Borda esquerda vermelha (Red 600) para ênfase */
         }
 
         /* Ocultar dias de outros meses (fallback visual e ajuste fino) */
         .fc-day-other .fc-daygrid-day-number {
-            opacity: 0; /* Esconde o número do dia */
-            pointer-events: none; /* Impede clique */
+            opacity: 0;
+            /* Esconde o número do dia */
+            pointer-events: none;
+            /* Impede clique */
         }
+
         /* Ocultar os eventos dos dias de outros meses */
         .fc-day-other .fc-daygrid-event-harness {
             opacity: 0;
             pointer-events: none;
         }
-        
+
         /* Cor dos números dos dias - Mantém o contraste */
         .fc-daygrid-day-number {
-            color: #4b5563; /* Cinza escuro */
+            color: #4b5563;
+            /* Cinza escuro */
         }
 
         /* Estilo para eventos - Melhorias de legibilidade */
         .fc-event {
-            border-radius: 0.25rem; /* Bordas arredondadas */
+            border-radius: 0.25rem;
+            /* Bordas arredondadas */
             padding: 2px 4px;
             font-size: 0.8rem;
             white-space: normal;
         }
+
         .fc-event-title {
             font-weight: 500;
+        }
+
+        /* Remove o botão de limpar padrão do Chrome/Safari */
+        input[type="search"]::-webkit-search-cancel-button,
+        input[type="search"]::-webkit-search-decoration,
+        input[type="search"]::-webkit-search-results-button,
+        input[type="search"]::-webkit-search-results-decoration {
+            -webkit-appearance: none;
+            appearance: none;
+            display: none;
         }
     </style>
     {{-- FIM: ESTILOS PERSONALIZADOS PARA O FULLCALENDAR --}}
@@ -104,7 +136,8 @@
                     <div class="w-16 h-1 bg-red-500 rounded-full mt-2 shadow-lg"></div>
                 </div>
 
-                <div class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
+                <div
+                    class="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 w-full md:w-auto">
                     {{-- Botão de Alternância de Visualização --}}
                     <div class="inline-flex rounded-full shadow-md bg-white border border-gray-200">
                         <button id="view-list-btn" data-view="list"
@@ -119,7 +152,8 @@
 
                     {{-- Formulário de Pesquisa de Eventos --}}
                     <form method="GET" action="{{ route('events.index') }}" class="w-full flex-grow max-w-sm">
-                        <div class="relative flex items-center w-full shadow-md rounded-full bg-white ">
+                        <div class="relative flex items-center w-full shadow-md rounded-full bg-white">
+                            {{-- Ícone de lupa --}}
                             <svg class="absolute left-4 w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
                                 stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
                                 aria-hidden="true">
@@ -127,12 +161,48 @@
                                     d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"></path>
                             </svg>
 
+                            {{-- Input de pesquisa --}}
                             <input type="search" name="search" id="search-input" placeholder="Pesquisar eventos..."
                                 value="{{ request('search') }}"
-                                class="w-full pl-11 pr-5 py-2.5 border border-gray-200 rounded-full focus:ring-red-500 focus:border-red-500 text-sm placeholder-gray-500 bg-transparent">
+                                class="w-full pl-11 pr-10 py-2.5 border border-gray-200 rounded-full focus:ring-red-500 focus:border-red-500 text-sm placeholder-gray-500 bg-transparent">
 
+                            {{-- Botão de limpar --}}
+                            <button type="button" id="clear-search-events"
+                                class="absolute right-3 text-gray-400 hover:text-red-600 transition hidden"
+                                onclick="
+                const input = document.getElementById('search-input');
+                input.value = '';
+                input.focus();
+                this.classList.add('hidden');
+                input.dispatchEvent(new Event('input')); // dispara AJAX ou atualiza lista
+            ">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
                     </form>
+
+                    <script>
+                        const eventSearchInput = document.getElementById('search-input');
+                        const clearButtonEvents = document.getElementById('clear-search-events');
+
+                        // Mostra ou esconde o botão conforme o valor do input
+                        eventSearchInput.addEventListener('input', () => {
+                            if (eventSearchInput.value.trim() === '') {
+                                clearButtonEvents.classList.add('hidden');
+                            } else {
+                                clearButtonEvents.classList.remove('hidden');
+                            }
+                        });
+
+                        // Se houver valor inicial, mostra o botão
+                        if (eventSearchInput.value.trim() !== '') {
+                            clearButtonEvents.classList.remove('hidden');
+                        }
+                    </script>
+
 
                     {{-- Botão e Menu Dropdown de Filtros --}}
                     <div class="relative inline-block text-left w-full sm:w-auto">
@@ -282,13 +352,12 @@
             </div>
 
             {{-- Lista de Eventos --}}
-            <div id="list-view"
+            <div id="list-view" data-events-container
                 class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10 justify-items-center">
 
                 @forelse ($events as $event)
                     @include('partials.events.event-card', ['event' => $event])
                 @empty
-                    {{-- Mensagem inicial quando não houver eventos --}}
                     <div id="no-initial-events-message"
                         class="col-span-full flex flex-col items-center justify-center gap-6 text-center w-full my-4 p-6">
                         <img src="{{ asset('imgs/notFound.png') }}" class="w-auto h-40 object-contain"
@@ -303,7 +372,7 @@
                 @endforelse
             </div>
 
-            {{-- Pagination (Container de AJAX) --}}
+            {{-- Paginação --}}
             <div id="pagination-links" class="mt-8">
                 {{ $events->links() }}
             </div>
@@ -312,8 +381,8 @@
 </x-app-layout>
 
 {{-- NOVO: Modal de Detalhes do Dia --}}
-<div id="dayDetailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog"
-    aria-modal="true">
+<div id="dayDetailsModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title"
+    role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
             onclick="closeModal('dayDetailsModal')">

@@ -1,33 +1,44 @@
 <x-app-layout>
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
+            @php
+                $fromTab = request('fromTab'); 
+                $previousUrl = url()->previous();
+            @endphp
+
+            @if (Str::contains($previousUrl, '/perfil'))
+                <a href="{{ route('profile.show') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar ao Perfil
+                </a>
+            @endif
 
             <div class="p-5 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
 
-                <div class="flex-1 max-w-lg md:text-left text-center">
-                    <h1 class="text-3xl font-extrabold text-gray-800 leading-snug">
-                        👋 Olá, <span class="text-red-600">{{ $name }}</span>!
-                    </h1>
-                    {{-- Texto de boas-vindas reduzido --}}
-                    <p class="mt-1 text-md text-gray-600">
-                        Seu dashboard está pronto, confira suas estatísticas e acompanhe suas interações.
-                    </p>
-                    
-                    {{-- Mensagem Dinâmica Original, agora mais compacta --}}
-                    <p class="mt-3 text-sm font-semibold text-gray-700 p-2 bg-red-50 rounded-lg border border-red-100 max-w-lg">
-                        <span class="text-red-600">Atenção:</span> {{ $message }}
-                    </p>
+                    <div class="flex-1 max-w-lg md:text-left text-center">
+                        <h1 class="text-3xl font-extrabold text-gray-800 leading-snug">
+                            👋 Olá, <span class="text-red-600">{{ $name }}</span>!
+                        </h1>
+                        {{-- Texto de boas-vindas reduzido --}}
+                        <p class="mt-1 text-md text-gray-600">
+                            Seu dashboard está pronto, confira suas estatísticas e acompanhe suas interações.
+                        </p>
+
+                        {{-- Mensagem Dinâmica Original, agora mais compacta --}}
+                        <p
+                            class="mt-3 text-sm font-semibold text-gray-700 p-2 bg-red-50 rounded-lg border border-red-100 max-w-lg">
+                            <span class="text-red-600">Atenção:</span> {{ $message }}
+                        </p>
+                    </div>
+
+                    <div class="flex-shrink-0 w-full max-w-[150px] sm:max-w-[200px] mt-4 md:mt-0">
+                        <img src="{{ asset('imgs/user-dashboard.png') }}"
+                            alt="Ilustração de Análise de Dados e Gráficos" class="w-full h-auto object-contain">
+                    </div>
+
                 </div>
-
-                <div class="flex-shrink-0 w-full max-w-[150px] sm:max-w-[200px] mt-4 md:mt-0">
-                    <img src="{{ asset('imgs/user-dashboard.png') }}"
-                        alt="Ilustração de Análise de Dados e Gráficos"
-                        class="w-full h-auto object-contain">
-                </div>
-
             </div>
-        </div>
 
             {{-- Destaque Dinâmico --}}
             <div class="p-3 bg-blue-50 rounded-2xl shadow border border-gray-200 text-center">

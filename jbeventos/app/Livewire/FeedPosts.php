@@ -4,7 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Post;
 use App\Models\Course;
-use App\Models\Reply; 
+use App\Models\Reply;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
@@ -107,9 +107,17 @@ class FeedPosts extends Component
         }
     }
 
-    // Método para CRIAR POST (mantido)
     public function createPost()
     {
+        $user = Auth::user();
+        $coordinator = $user->coordinatorRole ?? null;
+
+        // Bloquear coordenador general
+        if ($coordinator && $coordinator->coordinator_type === 'general') {
+            session()->flash('error', 'Coordenadores do tipo general não podem criar posts.');
+            return;
+        }
+
         if (!$this->isCoordinator || !$this->newPostCourseId) {
             session()->flash('error', 'Você não tem permissão ou curso associado para criar posts.');
             return;
@@ -123,16 +131,13 @@ class FeedPosts extends Component
         }
 
         $imagePaths = [];
-        $filePath = null;
-
         if ($this->media) {
             $filePath = $this->media->store('posts', 'public');
-
             $imagePaths[] = $filePath;
         }
 
         Post::create([
-            'user_id' => Auth::id(),
+            'user_id' => $user->id,
             'course_id' => $this->newPostCourseId,
             'content' => $this->newPostContent,
             'images' => $imagePaths,
@@ -141,7 +146,6 @@ class FeedPosts extends Component
         $this->reset('newPostContent', 'media');
         $this->dispatch('postCreated');
         $this->resetPage();
-
         session()->flash('success', 'Post criado com sucesso!');
     }
 

@@ -10,6 +10,7 @@
                     $previousUrl = url()->previous();
                     $isFromFeed = str_contains($previousUrl, '/feed');
                     $isFromProfile = str_contains($previousUrl, '/perfil');
+                    $isFromExplore = str_contains($previousUrl, '/explore'); // nova condição
 
                     // Detecta se veio de um curso específico /courses/{id}
                     $courseId = null;
@@ -28,6 +29,11 @@
                     <a href="{{ route('profile.show') }}"
                         class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
                         <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Minha Página de Perfil
+                    </a>
+                @elseif ($isFromExplore)
+                    <a href="{{ route('explore.index') }}"
+                        class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                        <i class="ph-fill ph-arrow-left text-lg"></i> Voltar ao Explorar
                     </a>
                 @elseif ($courseId && $course)
                     <a href="{{ route('courses.show', $course) }}"
@@ -134,7 +140,7 @@
                                                 'bg-white text-green-600 border-green-300 hover:bg-green-50';
                                         } elseif ($type === 'like') {
                                             $activeColor = 'bg-red-500 text-white border-red-500 hover:bg-red-600';
-                                            $inactiveColor = 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50';
+                                            $inactiveColor = 'bg-white text-red-600 border-red-300 hover:bg-red-50';
                                         }
 
                                         $buttonClass = $isActive ? $activeColor : $inactiveColor;
@@ -150,7 +156,10 @@
                                             class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-semibold shadow-sm {{ $buttonClass }}">
                                             <i class="{{ $icon }} text-lg"></i>
                                             @if ($type === 'like')
-                                                <span class="font-semibold">{{ $label }}</span>
+                                                <span class="toggle-text font-semibold">
+                                                    {{ $isActive ? 'Curtido' : 'Curtir' }}
+                                                </span>
+
                                                 <span
                                                     class="reaction-count text-xs px-2 py-0.5 rounded-full {{ $isActive ? 'bg-white text-red-500' : 'bg-gray-200 text-gray-700' }}">
                                                     {{ $count }}
@@ -204,7 +213,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Tipo/Curso --}}
+                                {{-- Tipo/Curso Otimizado --}}
                                 <div class="flex items-start gap-3">
                                     <i class="ph-fill ph-tag text-2xl text-red-600 mt-0.5"></i>
                                     <div>
@@ -212,20 +221,58 @@
                                         <span class="font-semibold text-gray-800">
                                             {{ $event->event_type === 'general' ? 'Geral' : ($event->event_type === 'course' ? 'De Curso' : 'N/A') }}
                                         </span>
+
                                         @if ($event->event_type === 'course')
-                                            @forelse ($event->courses as $course)
-                                                <p class="text-xs text-gray-500 mt-1">
-                                                    <i class="ph-fill ph-graduation-cap mr-1"></i>
-                                                    Curso: {{ $course->course_name }}
-                                                </p>
-                                            @empty
-                                                <p class="text-xs text-gray-500 mt-1 italic">
-                                                    <i class="ph-fill ph-warning-circle mr-1"></i> Sem cursos vinculados
-                                                </p>
-                                            @endforelse
+                                            @php
+                                                $courses = $event->courses;
+                                            @endphp
+
+                                            {{-- Curso Principal (Sempre visível) --}}
+                                            <p class="text-sm text-gray-700 mt-1 flex items-center">
+                                                <i class="ph-fill ph-graduation-cap text-red-600 mr-1"></i>
+                                                Curso Principal: <span
+                                                    class="ml-1 font-medium">{{ $courses->first()->course_name }}</span>
+                                            </p>
+
+                                            {{-- Dropdown com os cursos restantes, se houver mais de um --}}
+                                            @if ($courses->count() > 1)
+                                                <div x-data="{ open: false }" @click.outside="open = false"
+                                                    class="relative mt-2">
+                                                    <button @click="open = !open" :aria-expanded="open"
+                                                        class="flex items-center justify-center gap-1 text-xs text-red-600 font-bold px-3 py-1 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition-colors duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1">
+                                                        Ver Mais {{ $courses->count() - 1 }}
+                                                        {{ $courses->count() - 1 > 1 ? 'Cursos' : 'Curso' }}
+                                                        <i :class="open ? 'ph-fill ph-caret-up' : 'ph-fill ph-caret-down'"
+                                                            class="ml-1 text-base transition-transform duration-200"></i>
+                                                    </button>
+
+                                                    <div x-show="open" x-cloak
+                                                        x-transition:enter="transition ease-out duration-200"
+                                                        x-transition:enter-start="opacity-0 scale-95 transform"
+                                                        x-transition:enter-end="opacity-100 scale-100 transform"
+                                                        x-transition:leave="transition ease-in duration-150"
+                                                        x-transition:leave-start="opacity-100 scale-100 transform"
+                                                        x-transition:leave-end="opacity-0 scale-95 transform"
+                                                        class="absolute left-0 mt-2 w-64 max-h-48 overflow-y-auto bg-white border border-gray-200 shadow-xl rounded-lg p-3 z-20 space-y-2">
+                                                        <p class="text-xs font-bold text-gray-500 mb-2 border-b pb-1">
+                                                            Outros Cursos Associados:</p>
+                                                        @foreach ($courses->slice(1) as $course)
+                                                            <div
+                                                                class="flex items-center gap-2 hover:bg-gray-50 p-1 rounded transition-colors duration-150">
+                                                                <i
+                                                                    class="ph-fill ph-graduation-cap text-sm text-red-500 flex-shrink-0"></i>
+                                                                <span class="text-sm text-gray-800 leading-tight">
+                                                                    {{ $course->course_name }}
+                                                                </span>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>
+
 
                                 {{-- Coordenador --}}
                                 <div class="flex items-start gap-3">

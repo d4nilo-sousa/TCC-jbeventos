@@ -34,18 +34,25 @@
 
 
                         {{-- Dashboard --}}
-                        <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard*')"
-                            class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg 
-                                {{ request()->routeIs('dashboard') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
-                            <i
-                                class="ph-fill ph-gauge text-lg
-                                {{ request()->routeIs('dashboard') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}"></i>
-                            <span
-                                class="hidden sm:inline ms-2
-                                {{ request()->routeIs('dashboard') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}">
-                                {{ __('Dashboard') }}
-                            </span>
-                        </x-nav-link>
+                        @php
+                            $user = Auth::user();
+                        @endphp
+
+                        @if ($user && in_array($user->user_type, ['coordinator', 'admin']))
+                            <x-nav-link href="{{ route('dashboard') }}" :active="request()->is('*dashboard*')"
+                                class="group text-base text-gray-700 transition duration-150 ease-in-out p-2 rounded-lg 
+        {{ request()->is('*dashboard*') ? 'bg-red-50 text-red-600 font-bold shadow-sm' : 'hover:bg-gray-50' }}">
+                                <i
+                                    class="ph-fill ph-gauge text-lg
+        {{ request()->is('*dashboard*') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}"></i>
+                                <span
+                                    class="hidden sm:inline ms-2
+        {{ request()->is('*dashboard*') ? 'text-red-600' : 'text-gray-700 group-hover:text-red-600' }}">
+                                    {{ __('Dashboard') }}
+                                </span>
+                            </x-nav-link>
+                        @endif
+
 
 
                         {{-- Explorar --}}
@@ -331,14 +338,17 @@
                             @mouseleave="profileTooltip = false" @focus="profileTooltip = true"
                             @blur="profileTooltip = false">
 
-                            <img :src="userIcon" alt="{{ Auth::user()->name }}"
-                                class="size-9 rounded-full object-cover transition shadow-md
-                {{ request()->routeIs('profile.show')
-                    ? 'border-2 border-red-500'
-                    : 'border-2 border-gray-200 hover:border-red-500' }}">
+                            <div
+                                class="size-9 rounded-full overflow-hidden shadow-md border-2
+            {{ in_array(Auth::user()->user_icon_default, ['avatar_default_1.svg', 'avatar_default_2.svg']) ? 'bg-gray-100' : 'bg-white' }}
+            {{ request()->routeIs('profile.show') ? 'border-red-500' : 'border-gray-200 hover:border-red-500' }}">
+
+                                <img :src="userIcon" alt="{{ Auth::user()->name }}"
+                                    class="w-full h-full object-cover">
+                            </div>
                         </a>
 
-                        <!-- Tooltip/Popover com Nome e Email -->
+                        <!-- Tooltip com Nome e Email -->
                         <div x-cloak x-show="profileTooltip" x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 scale-95 transform"
                             x-transition:enter-end="opacity-100 scale-100 transform"
@@ -355,16 +365,14 @@
 
                     {{-- Botão de Logoff Direto (Desktop) --}}
                     <div class="hidden sm:block">
-                        <form method="POST" action="{{ route('logout') }}" x-data>
+                        <form id="logout-form" method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
                                 class="flex items-center size-9 rounded-full justify-center text-red-500 bg-red-50 hover:bg-red-100 focus:outline-none transition shadow-md">
-                                {{-- Ícone de Sair --}}
                                 <i class="ph-fill ph-sign-out text-lg"></i>
                             </button>
                         </form>
                     </div>
-
                 </div>
 
                 {{-- Hamburger (Mobile) (MANTIDO) --}}

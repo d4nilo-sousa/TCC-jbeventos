@@ -191,6 +191,36 @@ class CourseController extends Controller
         ], 400);
     }
 
+    public function updateBannerColor(Request $request, Course $course)
+    {
+        // Validação: a cor deve ser um código hexadecimal válido
+        $request->validate([
+            'banner_color' => ['required', 'regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/'],
+        ], [
+            'banner_color.required' => 'O campo de cor é obrigatório.',
+            'banner_color.regex' => 'A cor deve ser um código hexadecimal válido (ex: #RRGGBB).',
+        ]);
+
+        $newColor = $request->input('banner_color');
+
+        // Antes de salvar a nova cor, verificamos se existe um banner de imagem antigo.
+        // Se houver, ele deve ser excluído do storage para evitar lixo no servidor,
+        if ($course->course_banner && !preg_match('/^#[a-f0-9]{6}$/i', $course->course_banner)) {
+            // Se o valor não for um código hexadecimal (ou seja, é um caminho de arquivo)
+            Storage::disk('public')->delete($course->course_banner);
+        }
+
+        // Atualiza o curso com o novo código de cor
+        $course->update(['course_banner' => $newColor]);
+
+        // Retorna JSON para o AJAX
+        return response()->json([
+            'success' => true,
+            'color' => $newColor,
+            'message' => 'Cor do banner atualizada com sucesso!',
+        ]);
+    }
+
     public function updateIcon(Request $request, Course $course)
     {
         $request->validate([

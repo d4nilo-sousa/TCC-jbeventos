@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toggleLabels = {
         'save': { 'added': 'Salvo', 'removed': 'Salvar' },
-        'notify': { 'added': 'Notificando', 'removed': 'Notificar' }
+        'notify': { 'added': 'Notificado', 'removed': 'Notificar' },
+        'like': { 'added': 'Curtido', 'removed': 'Curtir' }
     };
 
     // Estilos para cada tipo de reação

@@ -2,8 +2,8 @@
     <x-validation-errors class="mb-4" />
 
     @php
-    $user = \App\Models\User::where('email', $request->email)->first();
-    $userType = $user?->user_type ?? 'user';
+        $user = \App\Models\User::where('email', $request->email)->first();
+        $userType = $user?->user_type ?? 'user';
     @endphp
 
     <!-- 🔹 Fundo da página -->
@@ -48,6 +48,7 @@
                     <div class="relative">
                         <x-input id="password" name="password" type="password" class="block mt-1 w-full pr-10" required
                             autocomplete="new-password" />
+
                         <button type="button"
                             class="absolute inset-y-0 right-3 flex items-center text-gray-500 toggle-password"
                             data-target="#password">
@@ -55,6 +56,13 @@
                                 class="w-5 h-5 opacity-75 hover:opacity-100 transition" />
                         </button>
                     </div>
+
+                    <ul id="password-requirements" class="text-sm mt-2 hidden">
+                        <li id="req-length" class="text-red-500">Pelo menos 8 caracteres</li>
+                        <li id="req-uppercase" class="text-red-500">Uma letra maiúscula</li>
+                        <li id="req-number" class="text-red-500">Um número</li>
+                        <li id="req-special" class="text-red-500">Um caractere especial (!@#$%&*)</li>
+                    </ul>
                 </div>
 
                 <div class="mt-4">
@@ -62,6 +70,7 @@
                     <div class="relative">
                         <x-input id="password_confirmation" name="password_confirmation" type="password"
                             class="block mt-1 w-full pr-10" required autocomplete="new-password" />
+
                         <button type="button"
                             class="absolute inset-y-0 right-3 flex items-center text-gray-500 toggle-password"
                             data-target="#password_confirmation">
@@ -69,6 +78,10 @@
                                 class="w-5 h-5 opacity-75 hover:opacity-100 transition" />
                         </button>
                     </div>
+
+                    <p id="password-mismatch-error" class="text-red-500 text-sm mt-1 hidden">
+                        As senhas são diferentes!
+                    </p>
                 </div>
 
                 <div class="flex items-center justify-center mt-6">

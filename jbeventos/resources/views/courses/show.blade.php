@@ -5,10 +5,22 @@
         {{-- COLUNA ESQUERDA — Informações (Mantida) --}}
         {{-- =============================== --}}
         <div class="xl:w-1/3 lg:w-2/5 space-y-6 xl:sticky xl:top-8 self-start">
-            <a href="{{ route('courses.index') }}"
-                class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
-                <i class="ph-fill ph-arrow-left text-xl"></i> Voltar à Lista de Cursos
-            </a>
+            @php
+                $previousUrl = url()->previous();
+                $isFromExplore = str_contains($previousUrl, '/explore'); // verifica se veio do explore
+            @endphp
+
+            @if ($isFromExplore)
+                <a href="{{ route('explore.index') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar ao Explorar
+                </a>
+            @else
+                <a href="{{ route('courses.index') }}"
+                    class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
+                    <i class="ph-fill ph-arrow-left text-xl"></i> Voltar à Lista de Cursos
+                </a>
+            @endif
 
             {{-- ✅ Mensagem de sucesso específica do curso --}}
             @if (session('success_course'))
@@ -32,25 +44,46 @@
 
 
 
-            {{-- Card de Informações (ampliado) --}}
+            {{-- Card de Informações --}}
             <div class="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
                 <div class="relative mb-10">
-                    <div class="w-full h-40 bg-gray-200 rounded-xl overflow-hidden group">
-                        <img id="courseBannerImg"
-                            src="{{ $course->course_banner ? asset('storage/' . $course->course_banner) : asset('images/default-banner.jpg') }}"
-                            alt="Banner do Curso" class="object-cover w-full h-full">
+                    {{-- CONTAINER DO BANNER --}}
+                    <div id="courseBannerContainer" class="w-full h-40 rounded-xl overflow-hidden group relative"
+                         style="@if (preg_match('/^#[a-f0-9]{6}$/i', $course->course_banner_url)) background-color: {{ $course->course_banner_url }}; @else background-color: #B0B0B0; @endif">
+                        
+                        {{-- IMAGEM DO BANNER (Exibida se for um caminho de arquivo) --}}
+                        @if (!preg_match('/^#[a-f0-9]{6}$/i', $course->course_banner_url))
+                            <img id="courseBannerImg"
+                                src="{{ $course->course_banner_url }}"
+                                alt="Banner do Curso" class="object-cover w-full h-full">
+                        @else
+                            <img id="courseBannerImg"
+                                src=""
+                                alt="Banner do Curso" class="object-cover w-full h-full hidden">
+                        @endif
 
+                        {{-- CONTROLES DO ADMIN: UPLOAD E SELETOR DE COR --}}
                         @if (auth()->user()->user_type === 'admin')
-                            <form id="bannerForm" enctype="multipart/form-data"
-                                class="absolute top-3 right-3 transition-opacity">
-                                @csrf
-                                @method('PUT')
-                                <input type="file" name="course_banner" id="bannerUpload" class="hidden">
-                                <button type="button" onclick="document.getElementById('bannerUpload').click()"
-                                    class="bg-white/90 backdrop-blur-sm px-3 py-1 text-xs rounded-full shadow hover:bg-gray-100 transition font-medium flex items-center gap-1">
-                                    <i class="ph-bold ph-image-square text-sm"></i> Trocar Banner
-                                </button>
-                            </form>
+                            <div class="absolute top-3 right-3 flex gap-2 items-center">
+                                {{-- Seletor de Cores --}}
+                                <div class="relative flex items-center bg-white/90 backdrop-blur-sm p-1 rounded-full shadow-md">
+                                    <label for="bannerColorPicker" class="text-xs text-gray-700 font-medium mr-1">Cor</label>
+                                    <input type="color" id="bannerColorPicker"
+                                        value="{{ preg_match('/^#[a-f0-9]{6}$/i', $course->course_banner) ? $course->course_banner : '#B0B0B0' }}" 
+                                        class="w-8 h-8 cursor-pointer rounded-full p-0 m-0 border-none overflow-hidden [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch-wrapper]:p-0">
+                                </div>
+
+                                {{-- Formulário para Upload de Banner (Imagem) --}}
+                                <form id="bannerForm" enctype="multipart/form-data" class="transition-opacity">
+                                    @csrf
+                                    @method('PUT')
+                                    <input type="file" name="course_banner" id="bannerUpload" class="hidden">
+                                    <button type="button" onclick="document.getElementById('bannerUpload').click()"
+                                        class="bg-white/90 backdrop-blur-sm px-3 py-1 text-xs rounded-full shadow hover:bg-gray-100 transition font-medium flex items-center gap-1">
+                                        <i class="ph-bold ph-image-square text-sm"></i> Trocar Imagem
+                                    </button>
+                                </form>
+                            </div>
                         @endif
                     </div>
 
@@ -308,7 +341,7 @@
     }
 </script>
 
-{{-- Script seguir/deixar de seguir --}}
+{{-- Script seguir/deixar de seguir e atualizações rápidas --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // --- SEGUIR / DEIXAR DE SEGUIR ---
@@ -442,9 +475,16 @@
                     .then(response => response.json())
                     .then(data => {
                         const img = document.getElementById(imgId);
-                        if (img) {
-                            const key = imgId.includes('Icon') ? 'icon_url' : 'banner_url';
-                            img.src = data[key] + '?t=' + new Date().getTime();
+                        const container = document.getElementById('courseBannerContainer');
+                        if (data.success) {
+                            // Atualiza a imagem e esconde a cor de fundo (se houver)
+                            if (img) {
+                                img.src = data.banner_url + '?t=' + new Date().getTime();
+                                img.classList.remove('hidden');
+                                container.style.backgroundColor = ''; // Remove cor se for imagem
+                            }
+                        } else {
+                            alert(data.message || 'Erro ao atualizar a imagem.');
                         }
                     })
                     .catch(error => {
@@ -453,6 +493,56 @@
                     });
             });
         }
+
+        // --- FUNÇÃO PARA ATUALIZAR COR DO BANNER ---
+        const colorPicker = document.getElementById('bannerColorPicker');
+        const bannerContainer = document.getElementById('courseBannerContainer');
+        const bannerImg = document.getElementById('courseBannerImg');
+
+        if (colorPicker) {
+            colorPicker.addEventListener('change', function() {
+                const newColor = this.value;
+
+                // 1. Atualiza a view imediatamente
+                bannerContainer.style.backgroundColor = newColor;
+                // 2. Esconde a imagem (pois agora é cor)
+                if (bannerImg) {
+                    bannerImg.classList.add('hidden');
+                }
+
+                // 3. Envia a cor via AJAX
+                const url = '{{ route('courses.updateBannerColor', $course->id) }}';
+                
+                fetch(url, {
+                        method: 'POST', // Usamos POST com o override
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-HTTP-Method-Override': 'PUT', // Forçando o PUT
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            banner_color: newColor
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log(data.message);
+                            // Opcional: mostrar uma notificação de sucesso
+                        } else {
+                            alert(data.message || 'Erro ao salvar a cor.');
+                            // Reverter a cor se a requisição falhar (opcional)
+                            // bannerContainer.style.backgroundColor = originalColor; 
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao atualizar a cor do banner:", error);
+                        alert("Erro de comunicação ao salvar a cor.");
+                    });
+            });
+        }
+
 
         // --- CONFIGURAÇÃO DE UPLOADS ---
         setupImageUpload('iconUpload', 'iconForm', 'courseIconImg',
@@ -509,4 +599,125 @@
             });
         }
     });
+</script>
+
+{{-- CSS para destaque do post --}}
+<style>
+  /* destaque principal */
+  .highlight-post {
+    position: relative;
+    animation: postHighlightFade 2.8s ease-out forwards;
+    z-index: 10;
+    isolation: isolate;
+  }
+
+  /* efeito de brilho + leve zoom e sombra */
+  @keyframes postHighlightFade {
+    0% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+      background-color: rgba(254, 226, 226, 0);
+      transform: scale(1.02);
+    }
+    15% {
+      background-color: rgba(254, 226, 226, 0.4);
+      box-shadow: 0 8px 30px -10px rgba(239, 68, 68, 0.25);
+    }
+    40% {
+      background-color: rgba(254, 226, 226, 0.2);
+      transform: scale(1.01);
+    }
+    70% {
+      background-color: rgba(254, 226, 226, 0.1);
+      box-shadow: 0 4px 15px -8px rgba(239, 68, 68, 0.1);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: none;
+      transform: scale(1);
+    }
+  }
+
+  /* borda pulsante */
+  .highlight-post::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 1rem;
+    border: 2px solid rgba(239, 68, 68, 0.35);
+    pointer-events: none;
+    animation: borderGlow 2.5s ease-out forwards;
+    z-index: -1;
+  }
+
+  @keyframes borderGlow {
+    0% {
+      opacity: 0;
+      transform: scale(0.96);
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    20% {
+      opacity: 1;
+      box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.25);
+    }
+    60% {
+      opacity: 0.8;
+      box-shadow: 0 0 10px 3px rgba(239, 68, 68, 0.15);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1);
+      box-shadow: none;
+    }
+  }
+</style>
+
+<script>
+(function() {
+  const DEBUG = false;
+  function debugLog(...args) { if (DEBUG) console.log('[post-highlight]', ...args); }
+
+  // 🧩 Etapa 1 — impedir scroll automático do hash
+  let savedHash = null;
+  if (window.location.hash) {
+    savedHash = window.location.hash;
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    debugLog('temporarily removed hash to prevent auto-scroll');
+  }
+
+  // 🧭 Após tudo carregar, restaura hash e aplica destaque
+  window.addEventListener('load', () => {
+    if (savedHash) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search + savedHash);
+      setTimeout(() => tryHighlight(savedHash), 600); // espera o layout se estabilizar
+    }
+  });
+
+  function tryHighlight(selector) {
+    const el = document.querySelector(selector);
+    if (!el) {
+      debugLog('element not found for', selector);
+      return;
+    }
+
+    // scroll suave e centralizado
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // animação
+    el.classList.remove('highlight-post');
+    void el.offsetWidth;
+    el.classList.add('highlight-post');
+
+    setTimeout(() => el.classList.remove('highlight-post'), 4000);
+  }
+
+  // Se Livewire atualizar a lista, tenta novamente
+  document.addEventListener('livewire:load', () => {
+    if (savedHash) setTimeout(() => tryHighlight(savedHash), 700);
+    if (window.Livewire && Livewire.hook) {
+      Livewire.hook('message.processed', () => {
+        if (savedHash) tryHighlight(savedHash);
+      });
+    }
+  });
+})();
 </script>

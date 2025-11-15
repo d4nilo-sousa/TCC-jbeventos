@@ -3,53 +3,76 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-lg rounded-xl overflow-hidden p-6 md:p-10">
 
-                {{-- Título da Página --}}
-                <div class="flex flex-col items-center justify-center mb-10 text-center">
-                    <div class="p-4 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center w-16 h-16">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600" viewBox="0 0 256 256"
-                            fill="currentColor">
-                            <path
-                                d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48V56a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z" />
-                        </svg>
-                    </div>
-                    <h1 class="text-3xl font-bold text-gray-800">Criar Novo Evento</h1>
-                    <p class="mt-2 text-gray-600">Preencha os detalhes do evento abaixo</p>
-                </div>
-
-                {{-- Exibição de erros de validação do Laravel/PHP --}}
-                @if ($errors->any())
-                    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md animate-fade-in"
-                        role="alert">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-red-500" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span class="font-bold">Atenção!</span>
-                        </div>
-                        <ul class="mt-2 list-disc list-inside space-y-1 text-sm">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                {{-- Mensagem de alerta para coordenador de curso sem curso vinculado --}}
+                {{-- Mensagem de alerta aprimorada para coordenador de curso sem curso vinculado --}}
                 @if (auth()->user()->coordinator->coordinator_type === 'course' && !auth()->user()->coordinator->coordinatedCourse)
-                    <div class="mb-6 p-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700 rounded-md">
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3 text-yellow-500" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p class="text-sm">Você é coordenador de curso, mas ainda não está vinculado a nenhum curso.
-                                Não é possível criar eventos até que um curso seja atribuído a você.</p>
+                    <div class="mb-8 p-5 bg-yellow-50 border-t-4 border-yellow-500 rounded-lg shadow-lg" role="alert">
+                        <div class="flex items-start">
+                            {{-- Ícone de Alerta Aprimorado --}}
+                            <div class="flex-shrink-0 mt-0.5">
+                                <i class="ph-fill ph-warning-circle text-2xl text-yellow-600 mr-4"></i>
+                            </div>
+
+                            <div class="flex-1">
+                                {{-- Título do Alerta --}}
+                                <h3 class="text-lg font-bold text-yellow-800 leading-snug">
+                                    Atenção: Curso não Vinculado
+                                </h3>
+
+                                {{-- Mensagem --}}
+                                <p class="text-sm text-yellow-700 mt-1.5">
+    Você está registrado como 
+    <span class="font-semibold text-yellow-800">Coordenador de Curso</span>, 
+    mas ainda não está vinculado a <strong>nenhum curso específico</strong>.
+    <br class="hidden sm:inline">
+    <strong>Atenção:</strong> Você não poderá criar ou gerenciar eventos até que um curso seja
+    atribuído ao seu perfil.
+</p>
+
+                                {{-- Ação (Opcional, mas melhora a UX) --}}
+                                <div class="mt-3">
+                                   <a href="{{ route('profile.view', ['user' => 1]) }}"
+                                        class="text-sm font-semibold text-yellow-700 hover:text-yellow-800 underline transition duration-150">
+                                        Entre em contato com a administração.
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @else
+                    {{-- Título da Página --}}
+                    <div class="flex flex-col items-center justify-center mb-10 text-center">
+                        <div
+                            class="p-4 bg-red-100 rounded-full mb-4 shadow-md flex items-center justify-center w-16 h-16">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-600" viewBox="0 0 256 256"
+                                fill="currentColor">
+                                <path
+                                    d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM72,48V56a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V80H48V48ZM208,208H48V96H208V208Z" />
+                            </svg>
+                        </div>
+                        <h1 class="text-3xl font-bold text-gray-800">Criar Novo Evento</h1>
+                        <p class="mt-2 text-gray-600">Preencha os detalhes do evento abaixo</p>
+                    </div>
+
+                    {{-- Exibição de erros de validação do Laravel/PHP --}}
+                    @if ($errors->any())
+                        <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-md animate-fade-in"
+                            role="alert">
+                            <div class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-3 text-red-500" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="font-bold">Atenção!</span>
+                            </div>
+                            <ul class="mt-2 list-disc list-inside space-y-1 text-sm">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     {{-- BARRA DE NAVEGAÇÃO DAS ABAS --}}
                     <div class="flex items-center justify-center mb-10 text-center">
                         <div class="flex items-center space-x-2 sm:space-x-4">
@@ -207,16 +230,6 @@
                                     @enderror
                                 </div>
                             </div>
-
-                            {{-- Descrição do Evento --}}
-<div class="mt-4">
-    <x-input-label for="event_description" value="Descrição do Evento" />
-    <textarea name="event_description" id="event_description" rows="4"
-        class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">{{ old('event_description') }}</textarea>
-    @error('event_description')
-        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
-    @enderror
-</div>
 
                             {{-- Sobre o Evento --}}
                             <div>

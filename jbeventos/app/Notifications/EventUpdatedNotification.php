@@ -5,11 +5,11 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Messages\BroadcastMessage; 
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use App\Models\Event;
 
 // Adiciona a interface ShouldQueue para que a notificação vá para a fila, o que é necessário para o Broadcast (WebSockets)
-use Illuminate\Contracts\Queue\ShouldQueue; 
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class EventUpdatedNotification extends Notification implements ShouldQueue
 {
@@ -17,15 +17,27 @@ class EventUpdatedNotification extends Notification implements ShouldQueue
 
     protected $event;
     protected $changedFields;
+    protected $oldCourses;
+    protected $newCourses;
 
-    public function __construct(Event $event, array $changedFields = [])
+    public function __construct(Event $event, array $changedFields = [], bool $coursesChanged = false, $oldCourses = [], $newCourses = [])
     {
         $this->event = $event;
+
+        // Filtra apenas os campos importantes
         $this->changedFields = array_filter(
             $changedFields,
             fn($key) => in_array($key, ['event_name', 'event_scheduled_at', 'event_location', 'event_expired_at']),
             ARRAY_FILTER_USE_KEY
         );
+
+        // Se cursos mudaram, adiciona flag descritiva
+        if ($coursesChanged) {
+            $this->changedFields['courses'] = 'Alteração nos cursos associados';
+        }
+
+        $this->oldCourses = $oldCourses;
+        $this->newCourses = $newCourses;
     }
 
     /**
@@ -45,6 +57,8 @@ class EventUpdatedNotification extends Notification implements ShouldQueue
                 'event'         => $this->event,
                 'user'          => $notifiable,
                 'changedFields' => $this->changedFields,
+                'oldCourses'    => $this->oldCourses,
+                'newCourses'    => $this->newCourses,
             ]);
     }
 
@@ -55,11 +69,11 @@ class EventUpdatedNotification extends Notification implements ShouldQueue
     {
         // Reutiliza o payload de dados do toArray() para consistência
         $data = $this->toArray($notifiable);
-        
+
         return new BroadcastMessage([
             'data' => $data,
             // Adiciona a contagem de não lidas para que o frontend possa atualizar o sino
-            'unread_count' => $notifiable->unreadNotifications()->count(), 
+            'unread_count' => $notifiable->unreadNotifications()->count(),
             'event_id' => $this->event->id,
         ]);
     }
@@ -70,9 +84,12 @@ class EventUpdatedNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
-        $message = "O evento **{$this->event->event_name}** foi atualizado. Veja as mudanças.";
+        $message = '
+    <p class="text-[17px] text-gray-700 mb-1 leading-relaxed">
+        O evento <span class="font-semibold">' . e($this->event->event_name) . '</span> foi 
+        <span class="font-semibold">atualizado</span>! 🔄
+    </p>';
 
-        // Traduz as chaves dos campos alterados para o português para melhor visualização na interface
         $translationMap = [
             'event_name' => 'Nome',
             'event_scheduled_at' => 'Data e Hora',
@@ -82,17 +99,16 @@ class EventUpdatedNotification extends Notification implements ShouldQueue
 
         $changes = [];
         foreach ($this->changedFields as $field => $newValue) {
-            // Garante que o campo existe no translationMap antes de usar
-            $changes[ $translationMap[$field] ?? $field ] = $newValue; 
+            $changes[$translationMap[$field] ?? $field] = $newValue;
         }
 
         return [
-            'type' => 'event_updated', // Identificador da notificação
+            'type' => 'event_updated',
             'event_id' => $this->event->id,
             'event_name' => $this->event->event_name,
             'event_url' => route('events.show', $this->event->id),
             'message' => $message,
-            'changes' => $changes, // Campos alterados
+            'changes' => $changes,
         ];
     }
 }

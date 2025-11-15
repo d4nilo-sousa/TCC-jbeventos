@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
     // =========================================================
     // FUNÇÕES COMUNS E DE HIGHLIGHT
@@ -79,61 +79,81 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 400));
     }
 
-    // =========================================================
-    // 🔎 LÓGICA DE EVENTOS (JSON + PAGINAÇÃO)
-    // =========================================================
-    const eventSearchInput = document.getElementById('search-input');
-    const eventsContainer = document.getElementById('events-container');
-    const paginationLinks = document.getElementById('pagination-links');
+// =========================================================
+// 🔎 LÓGICA DE EVENTOS (JSON + PAGINAÇÃO)
+// =========================================================
+const eventSearchInput = document.getElementById('search-input'); // <-- corrigido
+const eventsContainer = document.getElementById('events-container') || document.getElementById('list-view');
+const paginationLinks = document.getElementById('pagination-links');
+const clearButton = document.getElementById('clear-search-events'); // <-- corrigido
 
-    if (eventSearchInput && eventsContainer && paginationLinks) {
-        const getSearchParams = (currentQuery) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const params = new URLSearchParams();
-            Array.from(urlParams.entries()).forEach(([key, value]) => {
-                if (key !== 'search' && key !== 'page') params.append(key, value);
-            });
-            params.append('search', currentQuery);
-            return params.toString();
-        };
+if (eventSearchInput && eventsContainer) {
 
-        const performEventSearch = async (query) => {
-            const queryString = getSearchParams(query);
-            const url = `/events?${queryString}`;
+    // Mostra/esconde botão de limpar
+    eventSearchInput.addEventListener('input', () => {
+        if (eventSearchInput.value.trim() === '') {
+            clearButton.classList.add('hidden');
+        } else {
+            clearButton.classList.remove('hidden');
+        }
+    });
 
-            try {
-                const response = await fetch(url, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-
-                if (!response.ok) throw new Error('Falha na rede: ' + response.status);
-                const data = await response.json();
-
-                eventsContainer.innerHTML = data.eventsHtml;
-                paginationLinks.innerHTML = data.paginationHtml;
-
-                if (query) {
-                    eventsContainer.querySelectorAll('.event-name-searchable').forEach(el => highlightText(el, query));
-                }
-
-            } catch (error) {
-                console.error('Erro na pesquisa AJAX de Eventos:', error);
-                eventsContainer.innerHTML = `
-                    <div class="col-span-full text-center p-10 text-red-600 font-semibold">
-                        Ocorreu um erro ao buscar os eventos. Por favor, tente recarregar a página.
-                    </div>
-                `;
-                paginationLinks.innerHTML = '';
-            }
-        };
-
-        eventSearchInput.addEventListener('input', debounce((e) => {
-            performEventSearch(e.target.value);
-        }, 300));
+    // Se houver valor inicial, mostra o botão
+    if (eventSearchInput.value.trim() !== '') {
+        clearButton.classList.remove('hidden');
     }
 
+    const getSearchParams = (currentQuery) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams();
+        Array.from(urlParams.entries()).forEach(([key, value]) => {
+            if (key !== 'search' && key !== 'page') params.append(key, value);
+        });
+        params.append('search', currentQuery);
+        return params.toString();
+    };
+
+    const performEventSearch = async (query) => {
+        const queryString = getSearchParams(query);
+        const url = `/events?${queryString}`;
+
+        try {
+            const response = await fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) throw new Error('Falha na rede: ' + response.status);
+            const data = await response.json();
+
+            // Atualiza container com os eventos
+            eventsContainer.innerHTML = data.eventsHtml;
+
+            // Atualiza paginação
+            if (paginationLinks) paginationLinks.innerHTML = data.paginationHtml;
+
+            // Highlight de busca
+            if (query) {
+                eventsContainer.querySelectorAll('.event-name-searchable').forEach(el => highlightText(el, query));
+            }
+
+        } catch (error) {
+            console.error('Erro na pesquisa AJAX de Eventos:', error);
+            eventsContainer.innerHTML = `
+                <div class="col-span-full text-center p-10 text-red-600 font-semibold">
+                    Ocorreu um erro ao buscar os eventos. Por favor, tente recarregar a página.
+                </div>
+            `;
+            if (paginationLinks) paginationLinks.innerHTML = '';
+        }
+    };
+
+    // Debounce de 300ms
+    eventSearchInput.addEventListener('input', debounce((e) => {
+        performEventSearch(e.target.value);
+    }, 150));
+}
     // =========================================================
-    // 📘 LÓGICA DE CURSOS (HTML Parsing)
+    // 📘 LÓGICA DE CURSOS (HTML Parsing) – AJAX + Botão de Limpar
     // =========================================================
     const courseSearchInput = document.getElementById("searchInput");
 
@@ -167,29 +187,48 @@ document.addEventListener('DOMContentLoaded', function() {
                             newCards.forEach(card => list.appendChild(card));
                         }
 
+                        // Aplica highlight se houver query
                         if (query) {
                             list.querySelectorAll(`.${cardClass}`).forEach(el => highlightText(el, query));
                         }
-                        if (noMessage) noMessage.style.display = list.children.length > 0 ? "none" : "flex";
+
+                        // Mostra ou esconde a mensagem "nenhum curso"
+                        if (noMessage) {
+                            noMessage.style.display = list.children.length > 0 ? "none" : "flex";
+                        }
                     })
                     .catch(err => console.error('Erro na pesquisa AJAX de Cursos:', err));
             }
 
-            courseSearchInput.addEventListener("keyup", debounce(() => {
+            // Ouve o input, capturando digitação e clique no botão de limpar
+            courseSearchInput.addEventListener("input", debounce(() => {
                 const query = courseSearchInput.value.trim();
-                if (!query) {
-                    list.innerHTML = originalHTML;
-                    if (noMessage) noMessage.style.display = list.children.length > 0 ? "none" : "flex";
-                }
-                fetchList(query);
+                fetchList(query); // sempre chama AJAX, mesmo se vazio
             }, 150));
 
+            // Submit do formulário
             searchForm.addEventListener("submit", e => {
                 if (!courseSearchInput.value.trim()) {
                     e.preventDefault();
                     window.location.href = baseUrl;
                 }
             });
+
+            // Botão de limpar
+            const clearButton = document.getElementById('clearSearchButton');
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    courseSearchInput.value = '';
+                    courseSearchInput.focus();
+                    clearButton.classList.add('hidden');
+                    courseSearchInput.dispatchEvent(new Event('input')); // dispara AJAX com valor vazio
+                });
+
+                // Inicializa visibilidade do botão
+                if (courseSearchInput.value.trim() !== '') {
+                    clearButton.classList.remove('hidden');
+                }
+            }
         }
 
         setupCourseSearch("coursesList", "course-title", "noCoursesMessage");

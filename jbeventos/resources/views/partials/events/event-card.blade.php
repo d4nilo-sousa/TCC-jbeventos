@@ -2,8 +2,8 @@
     class="feed-card bg-white rounded-xl overflow-hidden transform transition duration-300 hover:shadow-2xl border border-gray-200 w-[408px]">
 
     <a href="{{ route('events.show', $event->id) }}" class="block">
-        <!-- Imagem -->
-        <div class="relative w-full h-56 bg-gray-200">
+        {{-- Imagem --}}
+        <div class="relative w-full h-56 bg-gray-200 overflow-hidden rounded-t-xl">
             @if ($event->event_image)
                 <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}"
                     class="object-cover w-full h-full">

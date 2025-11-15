@@ -6,6 +6,9 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Coordinator;
+use Illuminate\Support\Facades\Storage; // Importa Storage
+use Illuminate\Support\Facades\File;    // Importa File
+use Symfony\Component\HttpFoundation\File\File as SymfonyFile; // Alias para evitar conflito
 
 class CoordinatorSeeder extends Seeder
 {
@@ -14,35 +17,101 @@ class CoordinatorSeeder extends Seeder
      */
     public function run(): void
     {
-        // Dados dos coordenadores a serem criados
+        // 1. Configurações de Ícones
+        $sourceDir = database_path('image-data/user-icons');
+        $targetDisk = 'public';
+        $targetDir = 'avatars'; // Pasta de destino dentro do disco 'public'
+        
+        // Garante que o diretório de destino existe (storage/app/public/avatars)
+        Storage::disk($targetDisk)->makeDirectory($targetDir);
+
+        // 2. Dados dos coordenadores a serem criados
         $coordinators = [
+            // Coordenadores de Curso
             [
-                'name' => 'Coordenador Geral',
-                'email' => 'geral@example.com',
-                'type' => 'general',
+                'name' => 'Paulo',
+                'email' => 'paulomazieiro@example.com',
+                'password' => 'mazieiro@123',
+                'type' => 'course',
+                'icon_file' => 'paulo-user-icon.png',
             ],
             [
-                'name' => 'Coordenador de Curso',
-                'email' => 'curso@example.com',
+                'name' => 'Lidiane',
+                'email' => 'lidiane@example.com',
+                'password' => 'lidiane@123',
                 'type' => 'course',
+                'icon_file' => 'lidiane-user-icon.png',
+            ],
+            [
+                'name' => 'Truzzi',
+                'email' => 'truzzi@example.com',
+                'password' => 'truzzi@123',
+                'type' => 'course',
+                'icon_file' => 'truzzi-user-icon.png',
+            ],
+            [
+                'name' => 'Evandro',
+                'email' => 'evandro@example.com',
+                'password' => 'evandro@123',
+                'type' => 'course',
+                'icon_file' => 'evandro-user-icon.png',
+            ],
+            [
+                'name' => 'Guilherme Bim',
+                'email' => 'guilhermebim@example.com',
+                'password' => 'bim@123',
+                'type' => 'course',
+                'icon_file' => 'bim-user-icon.png',
+            ],
+            [
+                'name' => 'Eduardo',
+                'email' => 'eduardo@example.com',
+                'password' => 'eduardo@123',
+                'type' => 'course',
+                'icon_file' => 'eduardo-user-icon.png',
+            ],
+            // Coordenador Geral
+            [
+                'name' => 'Paula',
+                'email' => 'paula@example.com',
+                'password' => 'paula@geral123',
+                'type' => 'general',
+                'icon_file' => 'paula-geral-user-icon.png',
             ],
         ];
 
-        // Itera sobre os dados e cria usuários e registros de coordenadores
+        // 3. Itera sobre os dados, cria usuários e registra coordenadores
         foreach ($coordinators as $coordinatorData) {
-
-            // Cria um usuário com senha padrão e tipo 'coordinator'
+            $iconPath = null;
+            $sourceFilePath = $sourceDir . '/' . $coordinatorData['icon_file'];
+            
+            // Lógica para copiar o ícone
+            if (File::exists($sourceFilePath)) {
+                // Copia o arquivo usando putFileAs, simulando um upload
+                // Nota: Usamos new SymfonyFile para criar um objeto File a partir do caminho
+                Storage::disk($targetDisk)->putFileAs(
+                    $targetDir, 
+                    new SymfonyFile($sourceFilePath), 
+                    $coordinatorData['icon_file']
+                );
+                
+                // Salva o caminho que será usado no campo user_icon (ex: 'avatars/paulo-user-icon.png')
+                $iconPath = $targetDir . '/' . $coordinatorData['icon_file'];
+            }
+            
+            // Cria o usuário
             $user = User::create([
                 'name' => $coordinatorData['name'], 
                 'email' => $coordinatorData['email'], 
-                'password' => Hash::make('Coordinator@123'),
-                'user_type' => 'coordinator'
+                'password' => Hash::make($coordinatorData['password']),
+                'user_type' => 'coordinator',
+                'user_icon' => $iconPath, // Salva o caminho do ícone
             ]);
 
             // Cria o registro de coordenador vinculado ao usuário
             Coordinator::create([
                 'coordinator_type' => $coordinatorData['type'],
-                'temporary_password' => false, // Para não ter que cadastrar uma nova senha
+                'temporary_password' => false, 
                 'user_id' => $user->id,
             ]);
         }

@@ -16,20 +16,58 @@
                 <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
 
                     {{-- Formulário de Pesquisa --}}
-                    <form action="{{ route('courses.index') }}" method="GET" class="w-full flex-grow max-w-sm">
-                        <div class="relative flex items-center w-full shadow-md rounded-full bg-white">
-                            <svg class="absolute left-4 w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
-                                stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
-                                aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"></path>
-                            </svg>
-                            {{-- Input de pesquisa --}}
-                            <input id="searchInput" type="text" name="search" value="{{ request('search') }}"
-                                placeholder="Pesquisar cursos..." autocomplete="off"
-                                class="w-full pl-11 pr-5 py-2.5 border border-gray-200 rounded-full focus:ring-red-500 focus:border-red-500 text-sm placeholder-gray-500 bg-transparent">
-                        </div>
-                    </form>
+<form action="{{ route('courses.index') }}" method="GET" class="w-full flex-grow max-w-sm">
+    <div class="relative flex items-center w-full shadow-md rounded-full bg-white">
+        {{-- Ícone de lupa --}}
+        <svg class="absolute left-4 w-5 h-5 text-gray-500" fill="none" stroke="currentColor"
+            stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z"></path>
+        </svg>
+
+        {{-- Input de pesquisa --}}
+        <input id="searchInput" type="text" name="search" value="{{ request('search') }}"
+            placeholder="Pesquisar cursos..." autocomplete="off"
+            class="w-full pl-11 pr-10 py-2.5 border border-gray-200 rounded-full focus:ring-red-500 focus:border-red-500 text-sm placeholder-gray-500 bg-transparent">
+
+        {{-- Botão de limpar --}}
+        <button type="button" id="clearSearchButton"
+            class="absolute right-3 text-gray-400 hover:text-red-600 transition hidden"
+            onclick="
+                const input = document.getElementById('searchInput');
+                input.value = '';
+                input.focus();
+                this.classList.add('hidden');
+                input.dispatchEvent(new Event('input')); // força o AJAX a atualizar
+            ">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+</form>
+
+<script>
+const searchInput = document.getElementById('searchInput');
+const clearButton = document.getElementById('clearSearchButton');
+
+// Mostra ou esconde o botão conforme o valor do input
+searchInput.addEventListener('input', () => {
+    if (searchInput.value.trim() === '') {
+        clearButton.classList.add('hidden');
+    } else {
+        clearButton.classList.remove('hidden');
+    }
+});
+
+// Se houver valor inicial (ex.: reload com query), mostra o botão
+if (searchInput.value.trim() !== '') {
+    clearButton.classList.remove('hidden');
+}
+</script>
+
                 </div>
             </div>
 
