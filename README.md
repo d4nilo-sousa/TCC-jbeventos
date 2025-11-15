@@ -3,7 +3,7 @@
 # JB Eventos
 
 <p align="center">
-  <img src="public/imgs/logoJb-com-fundo.jpeg" alt="Logo JB Eventos" width="300">
+  <img src="jbeventos/public/imgs/logoJb-com-fundo.jpeg" alt="Logo JB Eventos" width="300">
 </p>
 
 
