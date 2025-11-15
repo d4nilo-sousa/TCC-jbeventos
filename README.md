@@ -15,12 +15,65 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
 - **Relatórios Gerenciais:** Geração de relatórios em PDF para análise de desempenho.
 - **Sistema de Usuários:** Perfis personalizados para administradores, coordenadores e usuários comuns.
 
-## Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas
 
-- **Backend:** Laravel Framework
-- **Frontend:** Blade Templates, Tailwind CSS
-- **Banco de Dados:** MySQL
-- **Outras Ferramentas:** Vite, Livewire, FullCalendar
+<table align="center">
+  <tr>
+    <th>Tecnologia</th>
+    <th>Logo</th>
+    <th>Função no Projeto</th>
+  </tr>
+
+  <tr>
+    <td><strong>Laravel</strong></td>
+    <td align="center">
+      <img src="https://laravel.com/img/logomark.min.svg" width="55">
+    </td>
+    <td>Backend (estrutura principal do sistema)</td>
+  </tr>
+
+  <tr>
+    <td><strong>PHP</strong></td>
+    <td align="center">
+      <img src="https://www.php.net/images/logos/new-php-logo.svg" width="55">
+    </td>
+    <td>Linguagem utilizada no backend</td>
+  </tr>
+
+  <tr>
+    <td><strong>Tailwind CSS</strong></td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/tailwindlabs/tailwindcss/master/.github/logo.svg" width="55">
+    </td>
+    <td>Estilização do front-end</td>
+  </tr>
+
+  <tr>
+    <td><strong>Livewire</strong></td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/livewire/livewire/master/art/brand/logo.svg" width="55">
+    </td>
+    <td>Interatividade no front sem uso excessivo de JavaScript</td>
+  </tr>
+
+  <tr>
+    <td><strong>Vite</strong></td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/vitejs/vite/main/docs/public/logo.svg" width="55">
+    </td>
+    <td>Build e processamento dos assets (JS/CSS)</td>
+  </tr>
+
+
+  <tr>
+    <td><strong>MySQL</strong></td>
+    <td align="center">
+      <img src="https://www.vectorlogo.zone/logos/mysql/mysql-icon.svg" width="55">
+    </td>
+    <td>Banco de dados relacional do sistema</td>
+  </tr>
+</table>
+
 
 ## Requisitos do Sistema
 
