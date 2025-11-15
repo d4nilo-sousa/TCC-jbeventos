@@ -36,13 +36,16 @@ class EventDeletedNotification extends Notification
 
     public function toArray(object $notifiable): array
     {
+        $coordinatorName = optional(optional($this->event->eventCoordinator)->userAccount)->name ?? 'Coordenador';
+
         // Mensagem com estilo visual semelhante à de atualização
-        $message = '
-            <p class="text-[17px] text-gray-700 mb-1 leading-relaxed">
-                O evento <span class="font-semibold text-red-600">' . e($this->event->event_name) . '</span> foi 
-                <span class="font-semibold text-red-700">cancelado/excluído</span>! ❌
-            </p>
-        ';
+        $message = '<p class="text-[17px] text-gray-700 mb-1 leading-relaxed"> 
+                        ❌ O evento <span class="font-semibold">' . e($this->event->event_name) . '</span> que você acompanha foi 
+                        cancelado/excluído! 
+                    </p>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Cancelado/Excluído por <span class="font-medium text-gray-700">' . e($coordinatorName) . '</span>.
+                    </p>';
 
         return [
             'type'       => 'deleted',

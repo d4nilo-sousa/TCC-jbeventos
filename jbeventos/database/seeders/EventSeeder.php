@@ -102,7 +102,7 @@ class EventSeeder extends Seeder
             [
                 'event_name' => 'Palestra - Eventos Corporativos e Sociais na Hotelaria',
                 'event_info' => 'Palestra proferida pela Gerente de Alimentos e Bebidas do Eco Resort Canto da Floresta - Mara Beatriz Pereira e também pelo nosso estimado professor Daniel da Costa Matoso Fabri.', // CORRIGIDO
-                'event_location' => 'auditório',
+                'event_location' => 'Auditório',
                 'event_scheduled_at' => '2025-04-30 08:00:00',
                 'event_expired_at' => null,
                 'event_type' => 'course',

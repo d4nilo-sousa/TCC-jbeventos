@@ -239,22 +239,53 @@ function showDayEventsModal(dateStr) {
             }
 
             const eventHtml = `
-                <div class="p-3 border-b border-gray-100 last:border-b-0 flex items-start space-x-3">
-                    <div class="pt-1">
-                        <i class="ph-fill ph-calendar-blank text-xl text-red-500"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800">
-                            <a href="${event.extendedProps.url || '#'}" class="hover:text-red-600 transition-colors">${event.title}</a>
-                        </h4>
-                        <p class="text-sm text-gray-500 mt-0.5">
-                            <span class="font-medium text-red-600">${timeDisplay}</span> |
-                            <strong>Local:</strong> ${event.extendedProps.location || 'Não Informado'}<br>
-                            <strong>Coordenador:</strong> ${event.extendedProps.coordinator || 'Não Informado'}
-                        </p>
-                    </div>
+    <div class="p-4 border-b border-gray-100 last:border-b-0 transition-colors duration-200 hover:bg-red-50/50 rounded-lg">
+
+        <!-- Container completo com borda -->
+        <div class="flex items-start space-x-4 border border-red-300 bg-red-50/20 rounded-xl p-3">
+
+            <!-- Ícone -->
+            <div class="pt-0.5 shrink-0">
+                <div class="p-2 bg-red-100/80 rounded-full border border-red-300">
+                    <i class="ph-fill ph-calendar-blank text-lg text-red-600 group-hover:text-red-700 transition-colors"></i>
                 </div>
-            `;
+            </div>
+
+            <!-- Conteúdo do Evento -->
+            <div class="flex-1 min-w-0">
+
+                <!-- Título -->
+                <h4 class="text-base font-extrabold text-gray-800 truncate mb-1">
+                    <span class="text-gray-800 group-hover:text-red-600 transition-colors">${event.title}</span>
+                </h4>
+
+                <!-- Detalhes -->
+                <div class="text-sm text-gray-600 space-y-0.5">
+                    
+                    <!-- Data e Hora -->
+                    <p class="font-bold text-red-600 flex items-center">
+                        <i class="ph-fill ph-clock text-base mr-2"></i>
+                        ${timeDisplay}
+                    </p>
+
+                    <!-- Local -->
+                    <p class="truncate">
+                        <span class="font-semibold text-gray-700">Local:</span>
+                        <span class="text-gray-500">${event.extendedProps.location ?? 'Não Informado'}</span>
+                    </p>
+                    
+                    <!-- Coordenador -->
+                    <p class="truncate">
+                        <span class="font-semibold text-gray-700">Coord.:</span> 
+                        <span class="text-gray-500">${event.extendedProps.coordinator ?? 'Não Informado'}</span>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+`;
+
             modalEventsList.innerHTML += eventHtml;
         });
     } else {
@@ -264,54 +295,6 @@ function showDayEventsModal(dateStr) {
             </div>
         `;
     }
-}
-
-// MELHORIA: Funções de Filtro
-function toggleCourseSelect(event) {
-    const courseSelectWrapper = document.getElementById('courseSelectWrapper');
-    const checkedCheckbox = event.target;
-
-    if (checkedCheckbox.value === 'course' && checkedCheckbox.checked) {
-        courseSelectWrapper?.classList.remove('hidden');
-    } else if (checkedCheckbox.value === 'general' && checkedCheckbox.checked) {
-        // Se 'Geral' for marcado, esconde o seletor de curso
-        courseSelectWrapper?.classList.add('hidden');
-        // Opcional: desmarcar todos os cursos ao mudar para 'Geral'
-        document.querySelectorAll('#courseSelectWrapper input[type="checkbox"]').forEach(checkbox => {
-            checkbox.checked = false;
-        });
-    }
-}
-
-function toggleFilterMenu() {
-    document.getElementById('filterMenu')?.classList.toggle('hidden');
-}
-
-/**
- * Limpa os filtros e submete o formulário, retornando à visualização de lista.
- */
-function resetFilters() {
-    const filterForm = document.getElementById('filterMenu').querySelector('form');
-    // Limpa os campos visíveis
-    filterForm.querySelectorAll('input:not([type="hidden"]), select').forEach(input => {
-        if (input.type === 'checkbox' || input.type === 'radio') {
-            input.checked = false;
-        } else {
-            input.value = '';
-        }
-    });
-
-    // Se houver um input 'event_type' com valor 'general', marque-o como padrão após o reset
-    const generalRadio = filterForm.querySelector('input[name="event_type"][value="general"]');
-    if (generalRadio) {
-        generalRadio.checked = true;
-    }
-    
-    // Garantir que a view de lista seja exibida após o reset (limpa o localStorage)
-    showListView(true); 
-
-    // Submete o formulário com os campos limpos.
-    filterForm.submit();
 }
 
 // Exporta a função principal para uso no app.js 
