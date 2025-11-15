@@ -7,55 +7,104 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+# JB Eventos
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <img src="public/imgs/logoJb-com-fundo.jpeg" alt="Logo JB Eventos" width="300">
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+<p align="center">
+  <a href="https://github.com/d4nilo-sousa/TCC-jbeventos/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/d4nilo-sousa/TCC-jbeventos/laravel.yml?style=flat-square" alt="Build Status">
+  </a>
+  <a href="https://github.com/d4nilo-sousa/TCC-jbeventos">
+    <img src="https://img.shields.io/github/stars/d4nilo-sousa/TCC-jbeventos?style=flat-square" alt="Stars">
+  </a>
+  <a href="https://github.com/d4nilo-sousa/TCC-jbeventos/blob/develop/LICENSE">
+    <img src="https://img.shields.io/github/license/d4nilo-sousa/TCC-jbeventos?style=flat-square" alt="License">
+  </a>
+</p>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a informações sobre os eventos escolares da Etec João Belarmino. A plataforma permite que administradores, coordenadores e usuários interajam em um ambiente intuitivo e funcional, promovendo maior engajamento e organização.
 
-## Learning Laravel
+## Funcionalidades Principais
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Gerenciamento de Eventos:** Criação, edição e exclusão de eventos.
+- **Interação Social:** Comentários, curtidas e compartilhamento de eventos.
+- **Notificações em Tempo Real:** Atualizações instantâneas sobre eventos e interações.
+- **Relatórios Gerenciais:** Geração de relatórios em PDF para análise de desempenho.
+- **Sistema de Usuários:** Perfis personalizados para administradores, coordenadores e usuários comuns.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Tecnologias Utilizadas
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Backend:** Laravel Framework
+- **Frontend:** Blade Templates, Tailwind CSS
+- **Banco de Dados:** MySQL
+- **Outras Ferramentas:** Vite, Livewire, FullCalendar
 
-## Laravel Sponsors
+## Requisitos do Sistema
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **PHP:** Versão 8.1 ou superior
+- **Composer:** Versão 2 ou superior
+- **Node.js:** Versão 16 ou superior
+- **Banco de Dados:** MySQL 8.0 ou superior
 
-### Premium Partners
+## Instruções de Instalação
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/d4nilo-sousa/TCC-jbeventos.git
+   cd TCC-jbeventos/jbeventos
+   ```
 
-## Contributing
+2. Instale as dependências do PHP:
+   ```bash
+   composer install
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. Instale as dependências do Node.js:
+   ```bash
+   npm install
+   ```
 
-## Code of Conduct
+4. Configure o arquivo `.env`:
+   - Copie o arquivo de exemplo:
+     ```bash
+     cp .env.example .env
+     ```
+   - Atualize as variáveis de ambiente, como conexão com o banco de dados e chave da aplicação.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. Gere a chave da aplicação:
+   ```bash
+   php artisan key:generate
+   ```
 
-## Security Vulnerabilities
+6. Execute as migrações e seeders para configurar o banco de dados:
+   ```bash
+   php artisan migrate --seed
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Como Rodar o Projeto
 
-## License
+1. Inicie o servidor de desenvolvimento do Laravel:
+   ```bash
+   php artisan serve
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+2. Compile os arquivos front-end:
+   ```bash
+   npm run dev
+   ```
+
+3. Acesse o sistema no navegador:
+   ```
+   http://localhost:8000
+   ```
+
+## Contribuição
+
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e enviar pull requests no repositório oficial.
+
+## Licença
+
+Este projeto está licenciado sob a [Licença MIT](https://opensource.org/licenses/MIT).
