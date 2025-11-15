@@ -27,7 +27,7 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   <tr>
     <td><strong>Laravel</strong></td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/laravel/art/master/logo-mark/red.svg" width="55">
+      <img src="https://raw.githubusercontent.com/laravel/framework/10.x/art/laravel-logo.svg" height="55">
     </td>
     <td>Backend (estrutura principal do sistema)</td>
   </tr>
@@ -35,7 +35,7 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   <tr>
     <td><strong>PHP</strong></td>
     <td align="center">
-      <img src="https://www.php.net/images/logos/new-php-logo.svg" width="55">
+      <img src="https://www.php.net/images/logos/new-php-logo.svg" height="55">
     </td>
     <td>Linguagem utilizada no backend</td>
   </tr>
@@ -43,7 +43,7 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   <tr>
     <td><strong>Tailwind CSS</strong></td>
     <td align="center">
-      <img src="https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-icon.svg" width="55">
+      <img src="https://www.vectorlogo.zone/logos/tailwindcss/tailwindcss-icon.svg" height="55">
     </td>
     <td>Estilização do front-end</td>
   </tr>
@@ -51,7 +51,7 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   <tr>
     <td><strong>Livewire</strong></td>
     <td align="center">
-      <img src="https://raw.githubusercontent.com/livewire/livewire/main/art/logo.svg" width="55">
+      <img src="https://raw.githubusercontent.com/livewire/livewire/main/art/logo.svg" height="55">
     </td>
     <td>Interatividade no front sem uso excessivo de JavaScript</td>
   </tr>
@@ -59,7 +59,7 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   <tr>
     <td><strong>Vite</strong></td>
     <td align="center">
-      <img src="https://www.svgrepo.com/show/374167/vite.svg" width="55">
+      <img src="https://www.svgrepo.com/show/374167/vite.svg" height="55">
     </td>
     <td>Build e processamento dos assets (JS/CSS)</td>
   </tr>
@@ -67,11 +67,13 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   <tr>
     <td><strong>MySQL</strong></td>
     <td align="center">
-      <img src="https://www.vectorlogo.zone/logos/mysql/mysql-official.svg" width="55">
+      <img src="https://www.vectorlogo.zone/logos/mysql/mysql-official.svg" height="55">
     </td>
     <td>Banco de dados relacional do sistema</td>
   </tr>
+
 </table>
+
 
 
 
