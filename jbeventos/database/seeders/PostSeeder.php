@@ -57,8 +57,8 @@ class PostSeeder extends Seeder
                 'course_name' => 'Eventos',
                 'content' => 'Nossa palestra sobre Eventos Corporativos e Sociais na Hotelaria com a Gerente Mara e o Prof. Daniel foi incrível! Informações valiosas para a carreira dos nossos alunos. Obrigado pela presença! 🎤 #EventosEtec #Hotelaria #Profissionalizante',
                 'created_at' => '2025-05-01 14:30:00',
-                // Usando imagem do evento de Hotelaria
-                'post_files' => ['palestra-eventos-capa.jpg'],
+                //sem imagens de post
+                'post_files' => [],
             ],
             // --- POST 2: Palestra Merlin Batista por Lidiane ---
             [
@@ -66,8 +66,8 @@ class PostSeeder extends Seeder
                 'course_name' => 'Ciências da Natureza', // Postado por Lidiane, mas associado a 3 cursos no evento
                 'content' => 'Que honra receber Merllin Batista! Uma verdadeira inspiração em Saúde Digital e Ciência. Nossos alunos de Ciências, Edificações e Química tiveram uma experiência transformadora. O futuro é agora! ✨ #CienciaNaEtec #MerlinBatista #Inspiração',
                 'created_at' => '2025-10-23 09:00:00',
-                // Usando imagem do evento Merlin Batista
-                'post_files' => ['palestra-Merlin-Batista-2.jpg'],
+                //sem imagens de post
+                'post_files' => [],
             ],
         ];
 

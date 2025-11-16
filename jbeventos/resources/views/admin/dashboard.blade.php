@@ -97,21 +97,6 @@
                             </div>
                             <span class="text-sm font-medium text-gray-600">Eventos Totais</span>
                         </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $eventsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                @if ($eventsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($eventsTrend) }}%</span>
-                        </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $eventsCount }}</p>
                 </div>
@@ -131,21 +116,6 @@
                             </div>
                             <span class="text-sm font-medium text-gray-600">Curtidas no Sistema</span>
                         </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $likesTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                @if ($likesTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($likesTrend) }}%</span>
-                        </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $likesCount }}</p>
                 </div>
@@ -163,21 +133,6 @@
                                 </svg>
                             </div>
                             <span class="text-sm font-medium text-gray-600">Comentários Feitos</span>
-                        </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $commentsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                @if ($commentsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($commentsTrend) }}%</span>
                         </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $commentsCount }}</p>
@@ -197,21 +152,6 @@
                             </div>
                             <span class="text-sm font-medium text-gray-600">Eventos Salvos</span>
                         </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $savedEventsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                @if ($savedEventsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($savedEventsTrend) }}%</span>
-                        </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $savedEventsCount }}</p>
                 </div>
@@ -229,21 +169,6 @@
                                 </svg>
                             </div>
                             <span class="text-sm font-medium text-gray-600">Posts de Cursos</span>
-                        </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $postsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                @if ($postsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($postsTrend) }}%</span>
                         </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $postsCount }}</p>
