@@ -69,6 +69,15 @@ class PostSeeder extends Seeder
                 //sem imagens de post
                 'post_files' => [],
             ],
+            // ---POST 3: Palestra CRQ por paulo ---
+            [
+                'user_email' => 'paulomazieiro@example.com',
+                'course_name' => 'Química',
+                'content' => 'A palestra do Conselho Regional de Química foi um sucesso! Nossos alunos agora estão mais preparados para os desafios da profissão. Agradecemos ao CRQ pela parceria e pelo conhecimento compartilhado., #QuímicaEtec #CRQ #Profissionalizante',
+                'created_at' => '2025-10-02 10:00:00',
+                //sem imagens de post
+                'post_files' => [],
+            ],
         ];
 
         // 2. Itera e Cria os Posts
