@@ -48,6 +48,12 @@ class ReplySeeder extends Seeder
             'Essa palestra foi muito motivacional! É ótimo ver a interseção de Ciências, Edificações e Química.',
             'Um agradecimento especial à Lidiane por organizar algo tão relevante. O conteúdo sobre Ciência e Tecnologia foi demais!',
             'Realmente transformador! A visão da Merlin abriu minha mente para novas possibilidades na área de Química.',
+
+            // Respostas ao Post 3: Palestra CRQ
+            'A palestra do CRQ foi extremamente informativa! Me sinto mais preparado para os desafios da profissão.',
+            'Excelente iniciativa do curso de Química em trazer o CRQ para compartilhar conhecimento.',
+            'Agradeço ao CRQ pela parceria e pelo conteúdo compartilhado. Foi uma experiência enriquecedora!',
+            'Com certeza, essa palestra vai fazer a diferença na minha carreira como químico.',
         ];
 
         $replyIndex = 0;
