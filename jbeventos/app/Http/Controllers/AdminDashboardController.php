@@ -38,7 +38,7 @@ class AdminDashboardController extends Controller
         $coursesCount = Course::count(); 
         
         $likesCount = EventUserReaction::where('reaction_type', 'like')->whereBetween('created_at', [$start, $end])->count();
-        $commentsCount = EventUserReaction::where('reaction_type', 'comment')->whereBetween('created_at', [$start, $end])->count();
+        $commentsCount = Comment::whereBetween('created_at', [$start, $end])->count();
         $savedEventsCount = EventUserReaction::where('reaction_type', 'save')->whereBetween('created_at', [$start, $end])->count();
         
         $eventCommentsCount = Comment::whereBetween('created_at', [$start, $end])->count();
@@ -46,7 +46,7 @@ class AdminDashboardController extends Controller
         // Tendências mês anterior
         $eventsPrev = Event::whereMonth('created_at', $prevMonth->month)->whereYear('created_at', $prevMonth->year)->count();
         $likesPrev = EventUserReaction::where('reaction_type', 'like')->whereMonth('created_at', $prevMonth->month)->whereYear('created_at', $prevMonth->year)->count();
-        $commentsPrev = EventUserReaction::where('reaction_type', 'comment')->whereMonth('created_at', $prevMonth->month)->whereYear('created_at', $prevMonth->year)->count();
+        $commentsPrev = Comment::whereMonth('created_at', $prevMonth->month)->whereYear('created_at', $prevMonth->year)->count();
         $savedPrev = EventUserReaction::where('reaction_type', 'save')->whereMonth('created_at', $prevMonth->month)->whereYear('created_at', $prevMonth->year)->count();
         $postsPrev = Post::whereMonth('created_at', $prevMonth->month)->whereYear('created_at', $prevMonth->year)->count(); 
 
@@ -128,7 +128,6 @@ class AdminDashboardController extends Controller
             'commentsCount' => $commentsCount,
             'savedEventsCount' => $savedEventsCount,
             'postsCount' => $postsCount,
-            'eventCommentsCount' => $eventCommentsCount,
             'coursesCount' => $coursesCount,
             
             'eventsTrend' => $eventsTrend,
