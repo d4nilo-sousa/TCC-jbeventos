@@ -1,49 +1,51 @@
 <x-app-layout>
     {{-- Mensagem de boas-vindas --}}
-<div class="py-10 bg-gray-50 min-h-screen">
-    <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
-        {{-- Card de Saudação com layout Flexbox e BG suave para destacar --}}
-        <div class="p-6 bg-red-50 rounded-xl shadow-lg flex items-center justify-between border border-red-300 overflow-hidden">
-            <div class="max-w-xl pr-4">
+    <div class="py-10 bg-gray-50 min-h-screen">
+        <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6">
+            {{-- Card de Saudação com layout Flexbox e BG suave para destacar --}}
+            <div
+                class="p-6 bg-red-50 rounded-xl shadow-lg flex items-center justify-between border border-red-300 overflow-hidden">
+                <div class="max-w-xl pr-4">
 
-                {{-- Título --}}
-                <h2 class="text-3xl font-extrabold text-red-800 mb-2 leading-snug">
-                    Bem-vindo(a) de volta, {{ $name }}! 
-                </h2>
+                    {{-- Título --}}
+                    <h2 class="text-3xl font-extrabold text-red-800 mb-2 leading-snug">
+                        Bem-vindo(a) de volta, {{ $name }}!
+                    </h2>
 
-                {{-- Descrição do dashboard --}}
-                <p class="text-red-700 mt-1 text-base">
-                    Este é o seu Painel de Controle de Administrador . Aqui, você acompanha o desempenho geral do sistema e monitora as principais métricas de interações e eventos.
-                </p>
+                    {{-- Descrição do dashboard --}}
+                    <p class="text-red-700 mt-1 text-base">
+                        Este é o seu Painel de Controle de Administrador . Aqui, você acompanha o desempenho geral do
+                        sistema e monitora as principais métricas de interações e eventos.
+                    </p>
 
-                {{-- Botão para exportação --}}
-                <form method="POST" action="{{ route('admin.dashboard.export.pdf') }}" id="exportForm" class="mt-4">
-                    @csrf
-                    {{-- CAMPOS OCULTOS PARA AS IMAGENS DOS GRÁFICOS --}}
-                    <input type="hidden" name="interactionsChartImage" id="interactionsChartImage">
-                    <input type="hidden" name="postInteractionsChartImage" id="postInteractionsChartImage">
-                    <input type="hidden" name="coursesChartImage" id="coursesChartImage">
+                    {{-- Botão para exportação --}}
+                    <form method="POST" action="{{ route('admin.dashboard.export.pdf') }}" id="exportForm" class="mt-4">
+                        @csrf
+                        {{-- CAMPOS OCULTOS PARA AS IMAGENS DOS GRÁFICOS --}}
+                        <input type="hidden" name="interactionsChartImage" id="interactionsChartImage">
+                        <input type="hidden" name="postInteractionsChartImage" id="postInteractionsChartImage">
+                        <input type="hidden" name="coursesChartImage" id="coursesChartImage">
 
-                    <button type="submit" id="pdfSubmitButton"
-                        class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-sm font-medium text-white uppercase tracking-widest transition shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50">
+                        <button type="submit" id="pdfSubmitButton"
+                            class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 border border-transparent rounded-lg text-sm font-medium text-white uppercase tracking-widest transition shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50">
 
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                        </svg>
-                        Exportar Relatório em PDF
-                    </button>
-                </form>
-            </div>
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Exportar Relatório em PDF
+                        </button>
+                    </form>
+                </div>
 
-            {{-- Imagem de Ilustração para o Dashboard --}}
-            <div class="hidden md:block flex-shrink-0">
-                <img src="{{ asset('imgs/admin-dashboard.png') }}" alt="Ilustração de Dashboard e Análise de Dados" 
-                    class="h-40 w-auto object-contain" /> 
+                {{-- Imagem de Ilustração para o Dashboard --}}
+                <div class="hidden md:block flex-shrink-0">
+                    <img src="{{ asset('imgs/admin-dashboard.png') }}" alt="Ilustração de Dashboard e Análise de Dados"
+                        class="h-40 w-auto object-contain" />
+                </div>
             </div>
         </div>
-    </div>
 
         <div class="max-w-[1400px] mx-auto sm:px-6 lg:px-16 space-y-6 pt-6">
 
@@ -95,21 +97,6 @@
                             </div>
                             <span class="text-sm font-medium text-gray-600">Eventos Totais</span>
                         </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $eventsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                @if ($eventsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($eventsTrend) }}%</span>
-                        </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $eventsCount }}</p>
                 </div>
@@ -129,21 +116,6 @@
                             </div>
                             <span class="text-sm font-medium text-gray-600">Curtidas no Sistema</span>
                         </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $likesTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                @if ($likesTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($likesTrend) }}%</span>
-                        </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $likesCount }}</p>
                 </div>
@@ -161,21 +133,6 @@
                                 </svg>
                             </div>
                             <span class="text-sm font-medium text-gray-600">Comentários Feitos</span>
-                        </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $commentsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                @if ($commentsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($commentsTrend) }}%</span>
                         </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $commentsCount }}</p>
@@ -195,21 +152,6 @@
                             </div>
                             <span class="text-sm font-medium text-gray-600">Eventos Salvos</span>
                         </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $savedEventsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                @if ($savedEventsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($savedEventsTrend) }}%</span>
-                        </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $savedEventsCount }}</p>
                 </div>
@@ -227,21 +169,6 @@
                                 </svg>
                             </div>
                             <span class="text-sm font-medium text-gray-600">Posts de Cursos</span>
-                        </div>
-                        <div
-                            class="px-2 py-0.5 rounded-full text-xs font-semibold flex items-center
-                        {{ $postsTrend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                @if ($postsTrend >= 0)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 15l7-7 7 7" />
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                @endif
-                            </svg>
-                            <span>{{ abs($postsTrend) }}%</span>
                         </div>
                     </div>
                     <p class="text-3xl font-bold text-gray-800 mt-2 ml-2">{{ $postsCount }}</p>
@@ -290,8 +217,8 @@
                                             <div class="flex-1">
                                                 <h4 class="font-medium text-gray-900">
                                                     {{ $coordinator->eventCoordinator->userAccount->name }}</h4>
-                                                <p class="text-sm text-gray-500">{{ $coordinator->events_count }}
-                                                    eventos criados</p>
+                                                <p class="text-sm text-gray-500">Eventos Criados:
+                                                    {{ $coordinator->events_count }}</p>
                                             </div>
                                         </li>
                                     @endif
@@ -308,7 +235,8 @@
                         @forelse ($topEventsOfTheMonth as $event)
                             <li class="py-3 flex justify-between items-center">
                                 <span class="text-gray-900 font-medium">{{ $event->event_name }}</span>
-                                <span class="text-sm text-gray-500">{{ $event->total_interactions_month }} interações</span>
+                                <span class="text-sm text-gray-500">{{ $event->total_interactions_month }}
+                                    interações</span>
                             </li>
                         @empty
                             <p class="text-gray-500">Nenhum evento com interações neste mês.</p>

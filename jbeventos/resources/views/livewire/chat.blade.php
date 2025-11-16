@@ -392,21 +392,24 @@
 
     {{-- Modal de exclusão de mensagem --}}
     @if ($showDeleteModal)
-        <div
-            class="fixed inset-0 bg-gray-900 bg-opacity-75 overflow-y-auto h-full w-full flex justify-center items-center z-50 transition-opacity duration-300 ease-out">
-            <div
-                class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full transform transition-all duration-300 ease-out scale-100">
-                <h3 class="text-xl font-bold text-gray-900 mb-4">Excluir Mensagem</h3>
-                <p class="text-sm text-gray-600 mb-6">Tem certeza de que deseja **excluir permanentemente** esta
-                    mensagem? Esta ação não pode ser desfeita.</p>
-                <div class="flex justify-end space-x-3">
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md overflow-hidden relative"
+                onclick="event.stopPropagation();">
+                <h3 class="text-xl font-bold mb-4 text-red-600 flex items-center gap-2 flex-wrap">
+                    <i class="ph-bold ph-warning-circle text-2xl"></i> Excluir Mensagem
+                </h3>
+                <p class="text-gray-700 w-full break-words whitespace-normal text-left">
+                    Tem certeza de que deseja <strong class="break-words whitespace-normal">excluir
+                        permanentemente</strong> esta mensagem? Esta ação é irreversível.
+                </p>
+                <div class="mt-6 flex justify-end space-x-3 flex-wrap">
                     <button wire:click="cancelDelete"
-                        class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition">
+                        class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 font-medium transition">
                         Cancelar
                     </button>
                     <button wire:click="deleteSelectedMessage"
-                        class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">
-                        Confirmar Exclusão
+                        class="px-4 py-2 text-sm bg-red-600 text-white rounded-full hover:bg-red-700 font-medium transition">
+                        Confirmar
                     </button>
                 </div>
             </div>

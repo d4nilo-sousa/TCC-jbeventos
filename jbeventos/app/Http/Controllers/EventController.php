@@ -67,9 +67,14 @@ class EventController extends Controller
 
         // Ordenação por agendamento
         if ($request->filled('schedule_order')) {
-            $events = $request->schedule_order === 'soonest'
-                ? $events->orderBy('event_scheduled_at', 'asc')
-                : $events->orderBy('event_scheduled_at', 'desc');
+
+            if ($request->schedule_order === 'soonest') {
+                // Ordena pelo evento mais próximo do momento atual
+                $events = $events->orderByRaw("ABS(TIMESTAMPDIFF(SECOND, event_scheduled_at, NOW())) ASC");
+            } else {
+                // Ordena pelo evento mais distante do momento atual
+                $events = $events->orderByRaw("ABS(TIMESTAMPDIFF(SECOND, event_scheduled_at, NOW())) DESC");
+            }
         } else {
             $events = $events->orderBy('created_at', 'desc');
         }
@@ -140,7 +145,7 @@ class EventController extends Controller
         if ($request->filled('start') && $request->filled('end')) {
             // Usa event_scheduled_at para o início do evento
             $query->whereBetween('event_scheduled_at', [
-                $request->input('start'), 
+                $request->input('start'),
                 $request->input('end')
             ]);
         } else {
@@ -148,7 +153,7 @@ class EventController extends Controller
             // No entanto, é altamente recomendado que o FullCalendar sempre envie 'start'/'end'.
             $query->whereDate('event_scheduled_at', '>=', now()->subMonths(3));
         }
-        
+
         // 3. Aplica Filtros Personalizados do Formulário (enviados via JS extraParams)
 
         // Filtro de Busca por Título
@@ -163,7 +168,7 @@ class EventController extends Controller
                 $query->where('event_type', $eventType);
             }
         }
-        
+
         // Filtro por Cursos (course_id) - Assumindo que course_id pode ser um array de IDs
         if ($request->filled('course_id')) {
             $courseIds = $request->input('course_id');
@@ -181,7 +186,7 @@ class EventController extends Controller
             $ids = is_array($categoryIds) ? $categoryIds : [$categoryIds];
             $query->whereIn('category_id', $ids);
         }
-        
+
         // Executa a consulta
         $events = $query->get();
 
@@ -198,7 +203,7 @@ class EventController extends Controller
             $courseNames = $event->courses->pluck('course_name')->implode(', ');
 
             // 1. DATA DE TÉRMINO (END)
-            $end = null; 
+            $end = null;
 
             // Adicionando 1 dia para que eventos 'allDay' apareçam corretamente no FullCalendar
             if ($event->event_expired_at && $event->event_scheduled_at->format('Y-m-d') === $event->event_expired_at->format('Y-m-d')) {
@@ -209,7 +214,7 @@ class EventController extends Controller
                 // Exemplo: 2025-06-01 a 2025-06-03 deve ter 'end' como 2025-06-04
                 $end = $event->event_expired_at->copy()->addDay()->format('Y-m-d H:i:s');
             }
-            
+
             // 2. ALL-DAY
             // Consideramos all-day se: 
             // a) O horário agendado é meia-noite E não tem hora de término OU
@@ -388,19 +393,22 @@ class EventController extends Controller
 
         // 3. LÓGICA DE NOTIFICAÇÃO ADAPTADA PARA MÚLTIPLOS CURSOS
 
+        // Verifica se o tipo do evento é 'course'
+        if ($event->event_type === 'course') {
 
-        // Carrega os cursos e seus seguidores (evita N+1)
-        $event->load('courses.followers');
-        $notifiedUsers = []; // Evita duplicações
+            // Carrega os cursos e seus seguidores (evita N+1)
+            $event->load('courses.followers');
 
-        foreach ($event->courses as $course) {
-            foreach ($course->followers as $user) {
-                if (!in_array($user->id, $notifiedUsers)) {
+            $notifiedUsers = []; // Evita duplicações
 
-                    // 🔔 Envia notificação por e-mail e salva no banco
-                    $user->notify(new \App\Notifications\NewEventNotification($event));
+            foreach ($event->courses as $course) {
+                foreach ($course->followers as $user) {
+                    if (!in_array($user->id, $notifiedUsers)) {
+                        // 🔔 Envia notificação
+                        $user->notify(new \App\Notifications\NewEventNotification($event));
 
-                    $notifiedUsers[] = $user->id;
+                        $notifiedUsers[] = $user->id;
+                    }
                 }
             }
         }
@@ -411,24 +419,41 @@ class EventController extends Controller
             ->with('success', 'Evento criado com sucesso! Usuários seguidores foram notificados.');
     }
 
-    // Detalhes do evento
     public function show(Event $event)
     {
         $user = auth()->user();
         $event->load(['eventCoordinator.userAccount', 'eventCategories']);
+
+        // ----------------------------------------------------------
+        // Salva a URL anterior COM FILTROS (ex: ?search=abc&type=course)
+        // somente se a página anterior for a página de lista /events
+        // ----------------------------------------------------------
+        $previousUrl = url()->previous();
+
+        if ($previousUrl && $previousUrl !== url()->current()) {
+            $previousPath = parse_url($previousUrl, PHP_URL_PATH);
+
+            // Garante que é uma página de eventos (index com filtros ou paginação)
+            if (Str::contains($previousPath, '/events')) {
+                session(['events_previous_url' => $previousUrl]);
+            }
+        }
+        // ----------------------------------------------------------
 
         // Carrega a relação de reações do usuário
         if ($user) {
             $user->load('commentReactions');
         }
 
+        // Reações do usuário
         $userReactions = \App\Models\EventUserReaction::where('event_id', $event->id)
-            ->where('user_id', $user->id)
+            ->where('user_id', $user?->id ?? null) // proteção caso guest
             ->pluck('reaction_type')
             ->toArray();
 
         return view('events.show', compact('event', 'userReactions', 'user'));
     }
+
 
     // Formulário de edição
     public function edit($id)

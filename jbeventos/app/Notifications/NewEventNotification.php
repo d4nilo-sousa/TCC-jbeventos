@@ -24,11 +24,6 @@ class NewEventNotification extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        // Só notifica se o tipo do evento for "curso"
-        if ($this->event->event_type !== 'curso') {
-            return [];
-        }
-
         return ['mail', 'database'];
     }
 

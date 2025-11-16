@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'like': { 'added': 'Curtido', 'removed': 'Curtir' }
     };
 
-    // Estilos para cada tipo de reação
     const reactionStyles = {
         'like': {
             active: ['bg-red-500', 'text-white', 'border-red-500', 'hover:bg-red-600'],
@@ -25,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Mapeia cores do toast conforme tipo
     const toastColors = {
         'like': 'bg-red-500',
         'save': 'bg-green-500',
@@ -33,32 +31,24 @@ document.addEventListener('DOMContentLoaded', () => {
         'default': 'bg-gray-800'
     };
 
-    // Função para exibir toast com cor por tipo
     function showToast(message, reactionType = 'default') {
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
 
-        // Limpa classes antigas de background
         toast.classList.remove(...Object.values(toastColors));
-
-        // Aplica nova cor
         toast.classList.add(toastColors[reactionType] || toastColors.default);
 
-        // Define a mensagem
         toastMessage.textContent = message;
 
-        // Exibe
         toast.classList.remove('hidden');
         toast.classList.add('opacity-100');
 
-        // Esconde após 3s
         setTimeout(() => {
             toast.classList.add('hidden');
             toast.classList.remove('opacity-100');
         }, 3000);
     }
 
-    // Manipulador principal
     reactionForms.forEach(form => {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -82,59 +72,90 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-                }
-
                 const result = await response.json();
 
-                // Limpa classes anteriores
                 button.classList.remove(...styles.active, ...styles.inactive);
-
                 if (reactionType === 'like') {
                     const countSpan = button.querySelector('.reaction-count');
-                    countSpan.classList.remove(...styles.countActive, ...styles.countInactive);
+                    const icon = button.querySelector('i');
+                    const toggleTextSpan = button.querySelector('.toggle-text');
 
-                    let currentCount = parseInt(countSpan.textContent, 10);
-                    if (isNaN(currentCount)) currentCount = 0;
+                    // ---- RESET COMPLETO DE CLASSES ----
+                    countSpan.className = 'reaction-count text-xs px-2 py-0.5 pt-1 rounded-full flex items-center justify-center min-w-6 h-5 transition-all';
 
+                    // Atualiza contador conforme retorno real do backend
+                    const newCount = parseInt(result.count ?? 0, 10);
+                    countSpan.textContent = newCount;
+
+                    // ---- APLICA NOVO ESTADO VISUAL ----
                     if (result.status === 'added') {
+                        // Botão ativo
+                        button.classList.remove(...styles.inactive);
                         button.classList.add(...styles.active);
-                        countSpan.classList.add(...styles.countActive);
-                        countSpan.textContent = currentCount + 1;
+
+                        // Contador ativo (fundo branco, texto vermelho + borda vermelha)
+                        countSpan.classList.add('bg-white', 'text-red-500', 'border', 'border-red-500');
+
+                        // Ícone e texto
+                        icon.className = 'ph-fill ph-heart text-lg';
+                        toggleTextSpan.textContent = 'Curtido';
+
                         showToast('👍 Você curtiu este evento!', 'like');
+
                     } else {
+                        // Botão inativo
+                        button.classList.remove(...styles.active);
                         button.classList.add(...styles.inactive);
-                        countSpan.classList.add(...styles.countInactive);
-                        countSpan.textContent = Math.max(0, currentCount - 1);
+
+                        // Contador inativo (fundo vermelho, texto branco)
+                        countSpan.classList.add('bg-red-500', 'text-white');
+
+                        // Ícone e texto
+                        icon.className = 'ph ph-heart text-lg';
+                        toggleTextSpan.textContent = 'Curtir';
+
                         showToast('👎 Você descurtiu este evento.', 'like');
                     }
-
                 } else {
+
                     const toggleTextSpan = button.querySelector('.toggle-text');
+                    const icon = button.querySelector('i');
                     const newLabel = toggleLabels[reactionType][result.status];
+
+                    // Remove classes antigas
+                    button.classList.remove(...styles.active, ...styles.inactive);
 
                     if (result.status === 'added') {
                         button.classList.add(...styles.active);
-                        showToast(
-                            reactionType === 'save' ? '💾 Evento salvo com sucesso!' : '🔔 Você receberá notificações deste evento.',
-                            reactionType
-                        );
+
+                        // Ícones corretos quando adiciona
+                        if (reactionType === 'save') {
+                            icon.className = 'ph-fill ph-bookmark-simple text-lg';
+                            showToast('💾 Evento salvo!', 'save');
+                        } else {
+                            icon.className = 'ph-fill ph-bell-ringing text-lg';
+                            showToast('🔔 Notificações ativadas!', 'notify');
+                        }
+
                     } else {
                         button.classList.add(...styles.inactive);
-                        showToast(
-                            reactionType === 'save' ? '📂 Evento removido dos seus salvos.' : '🚫 Você não receberá mais notificações deste evento.',
-                            reactionType
-                        );
+
+                        // Ícones corretos quando remove
+                        if (reactionType === 'save') {
+                            icon.className = 'ph ph-bookmark-simple text-lg';
+                            showToast('📂 Removido dos salvos.', 'save');
+                        } else {
+                            icon.className = 'ph ph-bell-ringing text-lg';
+                            showToast('🚫 Notificações desativadas.', 'notify');
+                        }
                     }
 
+                    // Atualiza o texto
                     toggleTextSpan.textContent = newLabel;
                 }
-
             } catch (error) {
                 console.error('Erro ao enviar reação:', error);
-                alert(`Erro ao processar sua reação. Detalhes: ${error.message}.`);
+                alert(`Erro: ${error.message}`);
             } finally {
                 button.disabled = false;
                 button.classList.remove('opacity-50', 'cursor-not-allowed');

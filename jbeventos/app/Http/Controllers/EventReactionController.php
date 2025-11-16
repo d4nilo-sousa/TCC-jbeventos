@@ -12,7 +12,6 @@ class EventReactionController extends Controller
 {
     public function react(Request $request, $eventId)
     {
-        // ✅ Valida apenas tipos realmente usados no seu sistema
         $request->validate([
             'reaction_type' => 'required|in:like,save,notify',
         ]);
@@ -20,7 +19,6 @@ class EventReactionController extends Controller
         $user = auth()->user();
         $reactionType = $request->reaction_type;
 
-        // ✅ Verifica reação existente
         $existing = EventUserReaction::where('event_id', $eventId)
             ->where('user_id', $user->id)
             ->where('reaction_type', $reactionType)
@@ -28,13 +26,20 @@ class EventReactionController extends Controller
 
         if ($existing) {
             $existing->delete();
+
+            // NOVO: contar após remover
+            $count = EventUserReaction::where('event_id', $eventId)
+                ->where('reaction_type', $reactionType)
+                ->count();
+
             return response()->json([
                 'status' => 'removed',
-                'type'   => $reactionType
+                'type'   => $reactionType,
+                'count'  => $count
             ]);
         }
 
-        // ✅ Remove reações opostas (se futuramente quiser like/dislike)
+        // Se futuramente quiser evitar colisão com outros tipos
         if ($reactionType === 'like') {
             EventUserReaction::where('event_id', $eventId)
                 ->where('user_id', $user->id)
@@ -42,16 +47,21 @@ class EventReactionController extends Controller
                 ->delete();
         }
 
-        // ✅ Cria nova reação
         EventUserReaction::create([
             'event_id' => $eventId,
             'user_id' => $user->id,
             'reaction_type' => $reactionType,
         ]);
 
+        // NOVO: contar após adicionar
+        $count = EventUserReaction::where('event_id', $eventId)
+            ->where('reaction_type', $reactionType)
+            ->count();
+
         return response()->json([
             'status' => 'added',
-            'type'   => $reactionType
+            'type'   => $reactionType,
+            'count'  => $count
         ]);
     }
 }

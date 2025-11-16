@@ -148,25 +148,35 @@
                                                 style="height:200px;background-color:#e5e7eb;overflow:hidden;position:relative;border-top-left-radius:16px;border-top-right-radius:16px;">
 
                                                 @if ($event->event_image)
-                                                    <img src="{{ asset('storage/' . $event->event_image) }}"
-                                                        alt="{{ $event->event_name }}" width="600" height="200"
+                                                    @php
+                                                        $path = storage_path('app/public/' . $event->event_image);
+                                                        $base64 =
+                                                            'data:image/jpeg;base64,' .
+                                                            base64_encode(file_get_contents($path));
+                                                    @endphp
+
+                                                    <img src="{{ $base64 }}" alt="{{ $event->event_name }}"
+                                                        width="600" height="200"
                                                         style="display:block;object-fit:cover;width:100%;height:200px;max-width:100%;">
                                                 @else
                                                     <table role="presentation" width="100%" height="200"
                                                         border="0" cellspacing="0" cellpadding="0">
                                                         <tr>
                                                             <td align="center" valign="middle"
-                                                                style="background-color: #f3f4f6; color:#b91c1c; height: 200px;">
-                                                                <span
-                                                                    style="font-size:48px;line-height:1;display:block;">📅</span>
-                                                                <p
-                                                                    style="margin: 8px 0 0 0; font-size:15px; font-weight: 500; color: #4b5563;">
-                                                                    Sem Imagem de Capa
-                                                                </p>
+                                                                style="background-color: #f3f4f6; color:#0ea5e9; height: 200px; text-align: center;">
+                                                                <div style="display: inline-block; text-align: center;">
+                                                                    <span
+                                                                        style="font-size:48px; line-height:1; display:block;">📝</span>
+                                                                    <p
+                                                                        style="margin: 8px 0 0 0; font-size:15px; font-weight:500; color:#4b5563;">
+                                                                        Sem Imagem de Capa
+                                                                    </p>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 @endif
+
 
                                                 <div style="position:absolute;top:12px;right:12px;">
                                                     <span class="event-card-tag"

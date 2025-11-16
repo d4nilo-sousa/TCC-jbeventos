@@ -84,11 +84,15 @@ class EventUpdatedNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
-        $message = '
-    <p class="text-[17px] text-gray-700 mb-1 leading-relaxed">
-        O evento <span class="font-semibold">' . e($this->event->event_name) . '</span> foi 
-        <span class="font-semibold">atualizado</span>! 🔄
-    </p>';
+        $coordinatorName = optional(optional($this->event->eventCoordinator)->userAccount)->name ?? 'Coordenador';
+
+        $message = '<p class="text-[17px] text-gray-700 mb-1 leading-relaxed"> 
+                        🔄 O evento <span class="font-semibold">' . e($this->event->event_name) . '</span> que você acompanha foi 
+                        atualizado! 
+                    </p>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Atualizado por <span class="font-medium text-gray-700">' . e($coordinatorName) . '</span>.
+                    </p>';
 
         $translationMap = [
             'event_name' => 'Nome',

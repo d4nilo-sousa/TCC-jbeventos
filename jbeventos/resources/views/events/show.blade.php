@@ -41,7 +41,7 @@
                         <i class="ph-fill ph-arrow-left text-lg"></i> Voltar ao Curso: {{ $course->course_name }}
                     </a>
                 @else
-                    <a href="{{ route('events.index') }}"
+                    <a href="{{ session('events_previous_url') ?? route('events.index') }}"
                         class="text-red-600 hover:text-red-800 transition-colors flex items-center gap-1 font-medium text-base mb-2">
                         <i class="ph-fill ph-arrow-left text-lg"></i> Voltar à Lista de Eventos
                     </a>
@@ -112,66 +112,59 @@
                                     @php
                                         $isActive = in_array($type, $userReactions);
                                         $count = $event->reactions->where('reaction_type', $type)->count();
-
-                                        // Definições de Estilos para o estado INICIAL (o JS irá manipulá-las)
-                                        $icon = match ($type) {
-                                            'like' => $isActive ? 'ph-fill ph-heart' : 'ph ph-heart',
-                                            'save' => $isActive
-                                                ? 'ph-fill ph-bookmark-simple'
-                                                : 'ph ph-bookmark-simple',
-                                            'notify' => $isActive ? 'ph-fill ph-bell-ringing' : 'ph ph-bell-ringing',
-                                            default => 'ph ph-question',
-                                        };
-
-                                        // Ajuste das classes de cor conforme a lógica que está no JS (azul)
-                                        $activeColor = 'bg-blue-600 text-white border-blue-600';
-                                        $inactiveColor = 'bg-white text-red-600 border-blue-500 hover:bg-blue-50';
-
-                                        // Exceções para cores de Notificar e Salvar se necessário (mantendo o que foi definido antes)
-                                        if ($type === 'notify') {
-                                            $activeColor =
-                                                'bg-yellow-500 text-gray-900 border-yellow-500 hover:bg-yellow-600';
-                                            $inactiveColor =
-                                                'bg-white text-yellow-600 border-yellow-300 hover:bg-yellow-50';
-                                        } elseif ($type === 'save') {
-                                            $activeColor =
-                                                'bg-green-500 text-white border-green-500 hover:bg-green-600';
-                                            $inactiveColor =
-                                                'bg-white text-green-600 border-green-300 hover:bg-green-50';
-                                        } elseif ($type === 'like') {
-                                            $activeColor = 'bg-red-500 text-white border-red-500 hover:bg-red-600';
-                                            $inactiveColor = 'bg-white text-red-600 border-red-300 hover:bg-red-50';
-                                        }
-
-                                        $buttonClass = $isActive ? $activeColor : $inactiveColor;
                                     @endphp
 
                                     <form class="reaction-form" method="POST"
-                                        action="{{ route('events.react', ['event' => $event->id]) }}">
+                                        action="{{ route('events.react', $event->id) }}">
                                         @csrf
                                         <input type="hidden" name="reaction_type" value="{{ $type }}">
 
-                                        <button type="submit" data-type="{{ $type }}"
-                                            data-count="{{ $count }}"
-                                            class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-semibold shadow-sm {{ $buttonClass }}">
-                                            <i class="{{ $icon }} text-lg"></i>
-                                            @if ($type === 'like')
-                                                <span class="toggle-text font-semibold">
-                                                    {{ $isActive ? 'Curtido' : 'Curtir' }}
-                                                </span>
+                                        <button type="submit"
+                                            class="reaction-btn flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200 text-sm font-semibold shadow-sm
+    {{ $isActive
+        ? ($type === 'like'
+            ? 'bg-red-500 text-white border-red-500 hover:bg-red-600'
+            : ($type === 'save'
+                ? 'bg-green-500 text-white border-green-500 hover:bg-green-600'
+                : 'bg-yellow-500 text-gray-900 border-yellow-500 hover:bg-yellow-600'))
+        : ($type === 'like'
+            ? 'bg-white text-red-600 border-red-300 hover:bg-red-50'
+            : ($type === 'save'
+                ? 'bg-white text-green-600 border-green-300 hover:bg-green-50'
+                : 'bg-white text-yellow-600 border-yellow-300 hover:bg-yellow-50')) }}">
 
+                                            {{-- Ícone --}}
+                                            <i
+                                                class="
+            @if ($type === 'like') {{ $isActive ? 'ph-fill ph-heart' : 'ph ph-heart' }}
+            @elseif($type === 'save')
+                {{ $isActive ? 'ph-fill ph-bookmark-simple' : 'ph ph-bookmark-simple' }}
+            @else
+                {{ $isActive ? 'ph-fill ph-bell-ringing' : 'ph ph-bell-ringing' }} @endif
+        text-lg"></i>
+
+                                            {{-- Texto dinâmico --}}
+                                            <span class="toggle-text">
+                                                @if ($type === 'like')
+                                                    {{ $isActive ? 'Curtido' : 'Curtir' }}
+                                                @else
+                                                    {{ $isActive ? ($type === 'save' ? 'Salvo' : 'Notificado') : $label }}
+                                                @endif
+                                            </span>
+
+                                            {{-- Contador apenas no like --}}
+                                            @if ($type === 'like')
                                                 <span
-                                                    class="reaction-count text-xs px-2 py-0.5 rounded-full {{ $isActive ? 'bg-white text-red-500' : 'bg-gray-200 text-gray-700' }}">
+                                                    class="reaction-count text-xs px-2 py-0.5 pt-1 rounded-full flex items-center justify-center min-w-6 h-5
+        {{ $isActive ? 'bg-white text-red-500 border border-red-500' : 'bg-red-500 text-white' }}">
                                                     {{ $count }}
                                                 </span>
-                                            @else
-                                                <span class="toggle-text">
-                                                    {{ $isActive ? ($type == 'save' ? 'Salvo' : 'Notificando') : $label }}
-                                                </span>
                                             @endif
+
                                         </button>
                                     </form>
                                 @endforeach
+
                             </div>
                         </div>
 
@@ -228,9 +221,11 @@
                                             @endphp
 
                                             {{-- Curso Principal (Sempre visível) --}}
-                                            <p class="text-sm text-gray-700 mt-1 flex items-center">
+                                            <p
+                                                class="text-sm text-gray-700 mt-1 flex items-center whitespace-nowrap overflow-hidden overflow-ellipsis">
                                                 <i class="ph-fill ph-graduation-cap text-red-600 mr-1"></i>
-                                                Curso Principal: <span
+                                                Curso Principal:
+                                                <span
                                                     class="ml-1 font-medium">{{ $courses->first()->course_name }}</span>
                                             </p>
 
