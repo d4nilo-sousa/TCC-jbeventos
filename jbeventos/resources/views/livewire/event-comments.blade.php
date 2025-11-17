@@ -23,7 +23,7 @@
         id="main-comment-form">
 
         <textarea wire:model.defer="commentText" id="comment-textarea"
-            class="w-full p-4 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors resize-none text-base shadow-inner"
+            class="w-full p-4 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 transition-colors resize-none text-base shadow-inner"
             placeholder="Escreva um comentário ou anexe um arquivo..."></textarea>
 
         @error('commentText')
