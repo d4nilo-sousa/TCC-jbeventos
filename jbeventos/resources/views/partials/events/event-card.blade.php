@@ -3,7 +3,7 @@
 
     <a href="{{ route('events.show', $event->id) }}" class="block">
         {{-- Imagem --}}
-        <div class="relative w-full h-56 bg-gray-200 overflow-hidden rounded-t-xl">
+        <div class="relative w-full aspect-video bg-gray-200 overflow-hidden rounded-t-xl">
             @if ($event->event_image)
                 <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->event_name }}"
                     class="object-cover w-full h-full">
