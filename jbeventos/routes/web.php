@@ -22,8 +22,11 @@ use App\Http\Controllers\ImageController;
 |--------------------------------------------------------------------------
 */
 
-// Ao acessar a raiz, redireciona para login
-Route::get('/', fn() => redirect()->route('login'));
+// Ao acessar a raiz, exibe a landing page
+Route::get('/', fn() => view('landing'))->name('landing');
+
+// Rota para login
+Route::get('/login', fn() => view('auth.login'))->name('login');
 
 /*
 |--------------------------------------------------------------------------
