@@ -28,14 +28,12 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   &nbsp;
   <img src="https://cdn.simpleicons.org/livewire/4E56A6" alt="Livewire" height="45"/>
   &nbsp;
-  <img src="https://cdn.simpleicons.org/alpine-dot-js/8BC0D0" alt="Alpine.js" height="45"/>
-  &nbsp;
+  <img src="https://cdn.simpleicons.org/alpinelinux/0D597F" alt="Alpine.js" height="45"/> &nbsp;
   <img src="https://cdn.simpleicons.org/mysql/4479A1" alt="MySQL" height="45"/>
   &nbsp;
   <img src="https://cdn.simpleicons.org/git/F05032" alt="Git" height="45"/>
   &nbsp;
-  <img src="https://cdn.simpleicons.org/css3/1572B6" alt="CSS3" height="45"/>
-  &nbsp;
+  <img src="https://cdn.simpleicons.org/css3/1572B6" alt="CSS3" height="45"/> &nbsp;
   <img src="https://cdn.simpleicons.org/javascript/F7DF1E" alt="JavaScript" height="45"/>
   &nbsp;
   <img src="https://cdn.simpleicons.org/nodedotjs/339933" alt="Node.js" height="45"/>
@@ -57,56 +55,56 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
 ## Instruções de Instalação
 
 1. Clone o repositório:
-   ```bash
-   git clone [https://github.com/d4nilo-sousa/TCC-jbeventos.git](https://github.com/d4nilo-sousa/TCC-jbeventos.git)
-   cd TCC-jbeventos/jbeventos
-   ```
+    ```bash
+    git clone [https://github.com/d4nilo-sousa/TCC-jbeventos.git](https://github.com/d4nilo-sousa/TCC-jbeventos.git)
+    cd TCC-jbeventos/jbeventos
+    ```
 
 2. Instale as dependências do PHP:
-   ```bash
-   composer install
-   ```
+    ```bash
+    composer install
+    ```
 
 3. Instale as dependências do Node.js:
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
 4. Configure o arquivo `.env`:
-   - Copie o arquivo de exemplo:
-     ```bash
-     cp .env.example .env
-     ```
-   - Atualize as variáveis de ambiente, como conexão com o banco de dados e chave da aplicação.
+    - Copie o arquivo de exemplo:
+      ```bash
+      cp .env.example .env
+      ```
+    - Atualize as variáveis de ambiente, como conexão com o banco de dados e chave da aplicação.
 
 5. Gere a chave da aplicação:
-   ```bash
-   php artisan key:generate
-   ```
+    ```bash
+    php artisan key:generate
+    ```
 
 6. Execute as migrações e seeders para configurar o banco de dados:
-   ```bash
-   php artisan migrate --seed
-   ```
+    ```bash
+    php artisan migrate --seed
+    ```
 
 ---
 
 ## Como Rodar o Projeto
 
 1. Inicie o servidor de desenvolvimento do Laravel:
-   ```bash
-   php artisan serve
-   ```
+    ```bash
+    php artisan serve
+    ```
 
 2. Compile os arquivos front-end:
-   ```bash
-   npm run dev
-   ```
+    ```bash
+    npm run dev
+    ```
 
 3. Acesse o sistema no navegador:
-   ```
-   http://localhost:8000
-   ```
+    ```
+    http://localhost:8000
+    ```
 
 ---
 
