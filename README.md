@@ -33,7 +33,7 @@ JB Eventos é uma rede social com foco em centralizar e facilitar o acesso a inf
   &nbsp;
   <img src="https://cdn.simpleicons.org/git/F05032" alt="Git" height="45"/>
   &nbsp;
-  <img src="https://cdn.simpleicons.org/css3/1572B6" alt="CSS3" height="45"/> &nbsp;
+  <img src="https://cdn.simpleicons.org/css/1572B6" alt="CSS3" height="45"/> &nbsp;
   <img src="https://cdn.simpleicons.org/javascript/F7DF1E" alt="JavaScript" height="45"/>
   &nbsp;
   <img src="https://cdn.simpleicons.org/nodedotjs/339933" alt="Node.js" height="45"/>
